@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app:cached
+    ports:
+      - 8000:8000
+    environment:
+      DJANGO_DEBUG: 'True'
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ydcleaning
+      POSTGRES_USER: yduser
+      POSTGRES_PASSWORD: ydpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

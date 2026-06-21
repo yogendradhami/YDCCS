@@ -1,0 +1,649 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}YD Dashboard{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="{% static 'js/dashboard.js' %}"></script>
+
+    <style>
+        .sidebar-dropdown {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-dropdown-btn {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: inherit;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .sidebar-dropdown-btn:hover {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+        }
+
+        .sidebar-arrow {
+            font-size: 12px;
+            transition: 0.25s;
+        }
+
+        .sidebar-dropdown.open .sidebar-arrow {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-submenu {
+            display: none;
+            padding-left: 10px;
+        }
+
+        .sidebar-dropdown.open .sidebar-submenu {
+            display: block;
+        }
+
+        .sidebar-submenu a {
+            padding-left: 24px;
+        }
+    </style>
+</head>
+
+<body class="crm-body">
+
+<button class="crm-mobile-menu-btn" id="crmMenuButton" type="button">☰</button>
+<div class="crm-overlay" id="crmOverlay"></div>
+
+<div class="crm-layout">
+
+    <aside class="crm-sidebar" id="crmSidebar">
+
+        <div class="crm-logo">
+            <img src="{% static 'images/logo.jpeg' %}" alt="YD Cleaning Logo">
+            <h2>YD Cleaning</h2>
+            <p>Business CRM</p>
+        </div>
+
+        <nav class="crm-menu">
+
+            <a href="/dashboard/">
+                <span>Dashboard</span>
+            </a>
+
+            <div class="sidebar-dropdown open">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>Customers & Sales</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="/dashboard/leads/">
+                        <span>Leads / Quotes</span>
+                        {% if notification_counts.quote %}
+                            <span class="side-badge">{{ notification_counts.quote }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/quote-followups/">
+
+                        <span>Quote Follow-Ups</span>
+
+                        {% if notification_counts.quote_followups %}
+                            <span class="side-badge">
+                                {{ notification_counts.quote_followups }}
+                            </span>
+                        {% endif %}
+
+                    </a>
+
+                    <a href="/dashboard/customers/">
+                        <span>Customers</span>
+                        {% if notification_counts.customer %}
+                            <span class="side-badge">{{ notification_counts.customer }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/customer-loyalty/">
+                        <span>Customer Loyalty</span>
+                        {% if notification_counts.loyalty %}
+                            <span class="side-badge">{{ notification_counts.loyalty }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/customer-analytics/">
+                        <span>Customer Analytics</span>
+                        {% if notification_counts.customer_analytics %}
+                            <span class="side-badge">{{ notification_counts.customer_analytics }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/customer-value/">
+                        <span>Customer Value</span>
+                    </a>
+
+                    <a href="/dashboard/vip-campaigns/">
+                        <span>VIP Campaigns</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-dropdown open">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>Jobs & Contracts</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="/dashboard/bookings/">
+                        <span>Bookings</span>
+                        {% if notification_counts.booking %}
+                            <span class="side-badge">{{ notification_counts.booking }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/contracts/">
+                        <span>Recurring Contracts</span>
+                        {% if notification_counts.contract %}
+                            <span class="side-badge">{{ notification_counts.contract }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="/dashboard/contracts/renewals/">
+                        <span>Contract Renewals</span>
+                    </a>
+
+                    <a href="/dashboard/calendar/">
+                        <span>Calendar</span>
+                    </a>
+
+                    <a href="/dashboard/reports/">
+                        <span>Cleaning Reports</span>
+                        {% if notification_counts.report %}
+                            <span class="side-badge">{{ notification_counts.report }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/gallery/">
+                        <span>Gallery</span>
+                        {% if notification_counts.gallery %}
+                            <span class="side-badge">{{ notification_counts.gallery }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-dropdown">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>Employees</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="/dashboard/employees/">
+                        <span>Employees</span>
+                        {% if notification_counts.employee %}
+                            <span class="side-badge">{{ notification_counts.employee }}</span>
+                        {% endif %}
+                    </a>
+
+
+                    <a href="/dashboard/employee-performance-centre/">
+
+                        <span>Performance Centre</span>
+
+                        {% if notification_counts.employee_performance %}
+                            <span class="side-badge">
+                                {{ notification_counts.employee_performance }}
+                            </span>
+                        {% endif %}
+
+                    </a>
+
+                    <a href="/dashboard/employee-kpi/">
+                        <span>Employee KPI</span>
+                    </a>
+
+                    <a href="/dashboard/employee-schedule/">
+                        <span>Employee Schedule</span>
+                    </a>
+
+                    <a href="/dashboard/attendance/">
+                        <span>Attendance Report</span>
+                        {% if notification_counts.attendance %}
+                            <span class="side-badge">{{ notification_counts.attendance }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/employee-attendance-analytics/">
+
+                        <span>Attendance Analytics</span>
+
+                        {% if notification_counts.attendance_analytics %}
+                            <span class="side-badge">
+                                {{ notification_counts.attendance_analytics }}
+                            </span>
+                        {% endif %}
+
+                    </a>
+
+                    <a href="/dashboard/leave/">
+                        <span>Leave Management</span>
+                        {% if notification_counts.leave %}
+                            <span class="side-badge">{{ notification_counts.leave }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/rosters/">
+                        <span>Roster</span>
+                        {% if notification_counts.roster %}
+                            <span class="side-badge">{{ notification_counts.roster }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/payroll/">
+                        <span>Payroll</span>
+                        {% if notification_counts.payroll %}
+                            <span class="side-badge">{{ notification_counts.payroll }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/employee-bonuses/">
+                        <span>Employee Bonuses</span>
+                        {% if notification_counts.bonuses %}
+                            <span class="side-badge">{{ notification_counts.bonuses }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/performance/">
+                        <span>Performance</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-dropdown">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>Finance</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="/dashboard/financials/">
+                        <span>Financials</span>
+                    </a>
+
+                    <a href="/dashboard/invoices/">
+                        <span>Invoices</span>
+                        {% if notification_counts.invoice %}
+                            <span class="side-badge">{{ notification_counts.invoice }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/expenses/">
+                        <span>Expenses</span>
+                    </a>
+
+                    <a href="/dashboard/profit-loss/">
+                        <span>Profit & Loss</span>
+                        {% if notification_counts.profit_loss %}
+                            <span class="side-badge">{{ notification_counts.profit_loss }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/gst-report/">
+                        <span>GST Report</span>
+                        {% if notification_counts.gst_report %}
+                            <span class="side-badge">{{ notification_counts.gst_report }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/finance-trends/">
+                        <span>Finance Trends</span>
+                        {% if notification_counts.finance_trends %}
+                            <span class="side-badge">{{ notification_counts.finance_trends }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-dropdown">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>Marketing</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="/dashboard/reviews/">
+                        <span>Reviews</span>
+                        {% if notification_counts.review %}
+                            <span class="side-badge">{{ notification_counts.review }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/review-requests/">
+                        <span>Review Requests</span>
+                        {% if notification_counts.review_request %}
+                            <span class="side-badge">{{ notification_counts.review_request }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/review-analytics/">
+                        <span>Review Analytics</span>
+                        {% if notification_counts.review_analytics %}
+                            <span class="side-badge">{{ notification_counts.review_analytics }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/campaigns/">
+                        <span>Campaign Center</span>
+                        {% if notification_counts.campaigns %}
+                            <span class="side-badge">{{ notification_counts.campaigns }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/campaign-performance/">
+                        <span>Campaign Performance</span>
+                        {% if notification_counts.campaign_performance %}
+                            <span class="side-badge">{{ notification_counts.campaign_performance }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-dropdown">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>Operations</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+
+
+            <div class="sidebar-submenu">
+
+                <a href="/dashboard/equipment/">
+                    <span>Equipment Inventory</span>
+
+                    {% if notification_counts.equipment %}
+                        <span class="side-badge">
+                            {{ notification_counts.equipment }}
+                        </span>
+                    {% endif %}
+                </a>
+
+                <a href="/dashboard/supplies/">
+                    <span>Cleaning Supplies</span>
+
+                    {% if notification_counts.supplies %}
+                        <span class="side-badge">
+                            {{ notification_counts.supplies }}
+                        </span>
+                    {% endif %}
+                </a>
+
+
+                <a href="/dashboard/purchase-orders/">
+                    <span>Purchase Orders</span>
+
+                    {% if notification_counts.purchase_orders %}
+                        <span class="side-badge">
+                            {{ notification_counts.purchase_orders }}
+                        </span>
+                    {% endif %}
+                </a>
+
+
+                <a href="/dashboard/suppliers/">
+                    <span>Suppliers</span>
+
+                    {% if notification_counts.suppliers %}
+                        <span class="side-badge">
+                            {{ notification_counts.suppliers }}
+                        </span>
+                    {% endif %}
+                </a>
+
+                <a href="/dashboard/vehicles/">
+                    <span>Vehicle Management</span>
+
+                    {% if notification_counts.vehicles %}
+                        <span class="side-badge">
+                            {{ notification_counts.vehicles }}
+                        </span>
+                    {% endif %}
+                </a>
+
+               <a href="/dashboard/maintenance/">
+                    <span>Maintenance History</span>
+
+                    {% if notification_counts.maintenance %}
+                        <span class="side-badge">
+                            {{ notification_counts.maintenance }}
+                        </span>
+                    {% endif %}
+                </a>
+
+
+
+            </div>
+
+
+            <div class="sidebar-dropdown">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>Business Insights</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="/dashboard/business-health/">
+                        <span>Business Health</span>
+                    </a>
+
+                    <a href="/dashboard/business-kpis/">
+                        <span>Business KPIs</span>
+                        {% if notification_counts.business_kpis %}
+                            <span class="side-badge">{{ notification_counts.business_kpis }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/business-intelligence/">
+                        <span>Business Intelligence</span>
+                    </a>
+                    <a href="/dashboard/job-profitability/">
+                        <span>Job Profitability</span>
+                    </a>
+
+                    <a href="/dashboard/executive-bi/">
+                        <span>Executive BI</span>
+                    </a>
+
+                    <a href="/dashboard/service-performance/">
+                        <span>Service Performance</span>
+                    </a>
+
+                    
+
+                    <a href="/dashboard/ai-quote-estimator/">
+                        <span>AI Quote Estimator</span>
+                    </a>
+
+                    <a href="/dashboard/quote-conversion-analytics/">
+                        <span>Quote Conversion Analytics</span>
+                    </a>
+
+
+                    <a href="/dashboard/owner-command-centre/">
+                        <span>Owner Command Centre</span>
+                    </a>
+                    <a href="/dashboard/owner-alerts/">
+                        <span>Owner Alerts</span>
+                    </a>
+
+                    <a href="/dashboard/executive/">
+                        <span>Executive Summary</span>
+                    </a>
+                   <a href="/dashboard/business-forecasting/">
+
+                        <span>Business Forecasting</span>
+
+                        {% if notification_counts.forecasting %}
+                            <span class="side-badge">
+                                {{ notification_counts.forecasting }}
+                            </span>
+                        {% endif %}
+
+                    </a>
+                    <a href="/dashboard/operations-centre/">
+
+                        <span>Operations Command Centre</span>
+
+                        {% if notification_counts.executive_alerts %}
+                            <span class="side-badge">
+                                {{ notification_counts.executive_alerts }}
+                            </span>
+                        {% endif %}
+
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-dropdown">
+                <button class="sidebar-dropdown-btn" type="button">
+                    <span>System</span>
+                    <span class="sidebar-arrow">▼</span>
+                </button>
+
+                <div class="sidebar-submenu">
+                    <a href="/dashboard/reminders/">
+                        <span>Reminder Center</span>
+                        {% if notification_counts.reminders %}
+                            <span class="side-badge">{{ notification_counts.reminders }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/email-center/">
+                        <span>Email Center</span>
+                        {% if notification_counts.email %}
+                            <span class="side-badge">{{ notification_counts.email }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/email-logs/">
+                        <span>Email Logs</span>
+                        {% if notification_counts.email_logs %}
+                            <span class="side-badge">{{ notification_counts.email_logs }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/support/">
+                        <span>Support Centre</span>
+
+                        {% if notification_counts.support %}
+                            <span class="side-badge">
+                                {{ notification_counts.support }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+
+                    <a href="/dashboard/activity/">
+                        <span>Activity Log</span>
+                    </a>
+
+                    <a href="/dashboard/settings/">
+                        <span>Settings</span>
+                    </a>
+
+                    <a href="/admin/">
+                        <span>Django Admin</span>
+                    </a>
+                </div>
+            </div>
+
+        </nav>
+
+    </aside>
+
+    <main class="crm-main">
+
+        <header class="crm-topbar">
+            <div>
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <p>{% block page_subtitle %}Manage your cleaning business operations.{% endblock %}</p>
+            </div>
+
+            <div class="crm-top-actions">
+                <div class="crm-notification-box">
+                    <button class="notification-bell" id="notificationBell" type="button">
+                        🔔
+
+                        {% if global_unread_notifications > 0 %}
+                            <span id="notificationCount">{{ global_unread_notifications }}</span>
+                        {% else %}
+                            <span id="notificationCount" style="display:none;">0</span>
+                        {% endif %}
+                    </button>
+
+                    <div class="notification-dropdown">
+                        <h4>Notifications</h4>
+
+                        {% for note in global_notifications %}
+                            <a href="{{ note.link|default:'#' }}" class="{% if not note.is_read %}unread{% endif %}">
+                                <strong>{{ note.title }}</strong>
+                                <small>{{ note.message }}</small>
+                                <em>{{ note.created_at|date:"d M, g:i A" }}</em>
+                            </a>
+                        {% empty %}
+                            <p>No notifications yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="crm-user-box">
+                    <span>Logged in as</span>
+                    <strong>{{ request.user.username }}</strong>
+                </div>
+            </div>
+        </header>
+
+            {% if messages %}
+                <div class="crm-messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dropdownButtons = document.querySelectorAll(".sidebar-dropdown-btn");
+
+    dropdownButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            const parent = button.closest(".sidebar-dropdown");
+            parent.classList.toggle("open");
+        });
+    });
+});
+</script>
+
+</body>
+</html>

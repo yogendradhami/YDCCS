@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Customer Reviews | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Customer Reviews</h1>
+        <p>See what Adelaide customers say about YD Commercial Cleaning Services.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {% if reviews %}
+            <div class="card-grid">
+                {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="stars">{{ review.stars }}</div>
+                        <p>{{ review.review_text }}</p>
+                        <strong>{{ review.customer_name }}</strong>
+                        {% if review.suburb %}
+                            <small class="review-suburb">{{ review.suburb }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-box">
+                <h3>No reviews uploaded yet.</h3>
+                <p>Add customer reviews from Django Admin.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

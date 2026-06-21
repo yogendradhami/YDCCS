@@ -1,0 +1,271 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Executive BI{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Revenue</span>
+        <h2>${{ total_revenue }}</h2>
+    </div>
+
+
+
+
+    <div class="crm-card">
+        <span>Total Customers</span>
+        <h2>{{ total_customers }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Bookings</span>
+        <h2>{{ total_bookings }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Active Contracts</span>
+        <h2>{{ total_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>VIP Customers</span>
+        <h2>{{ vip_customers }}</h2>
+    </div>
+
+</div>
+
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Monthly Revenue Trend</h2>
+    </div>
+
+    <div style="height:400px;">
+        <canvas id="monthlyRevenueChart"></canvas>
+    </div>
+
+</section>
+
+
+
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Monthly Booking Trend</h2>
+    </div>
+
+    <div style="height:400px;">
+        <canvas id="monthlyBookingChart"></canvas>
+    </div>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Customer Growth</h2>
+    </div>
+
+    <div style="height:400px;">
+        <canvas id="customerGrowthChart"></canvas>
+    </div>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Revenue by Service</h2>
+    </div>
+
+    <div style="height:400px;">
+        <canvas id="serviceRevenueChart"></canvas>
+    </div>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Contract Revenue by Frequency</h2>
+    </div>
+
+    <div style="height:400px;">
+        <canvas id="contractRevenueChart"></canvas>
+    </div>
+</section>
+
+
+<div class="crm-panel">
+    <h2>Executive Overview</h2>
+
+    <p>
+        This dashboard gives a high-level overview of
+        YD Commercial Cleaning Services performance.
+    </p>
+</div>
+
+
+<script>
+function makeLineChart(canvasId, labels, values, labelText) {
+    new Chart(
+        document.getElementById(canvasId),
+        {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: labelText,
+                    data: values,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        }
+    );
+}
+
+function makeBarChart(canvasId, labels, values, labelText) {
+    new Chart(
+        document.getElementById(canvasId),
+        {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: labelText,
+                    data: values
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        }
+    );
+}
+
+makeLineChart(
+    "monthlyRevenueChart",
+    [
+        {% for item in monthly_revenue_labels %}
+            "{{ item }}",
+        {% endfor %}
+    ],
+    [
+        {% for item in monthly_revenue_values %}
+            {{ item }},
+        {% endfor %}
+    ],
+    "Monthly Revenue"
+);
+
+makeLineChart(
+    "monthlyBookingChart",
+    [
+        {% for item in monthly_booking_labels %}
+            "{{ item }}",
+        {% endfor %}
+    ],
+    [
+        {% for item in monthly_booking_values %}
+            {{ item }},
+        {% endfor %}
+    ],
+    "Monthly Bookings"
+);
+
+makeLineChart(
+    "customerGrowthChart",
+    [
+        {% for item in customer_growth_labels %}
+            "{{ item }}",
+        {% endfor %}
+    ],
+    [
+        {% for item in customer_growth_values %}
+            {{ item }},
+        {% endfor %}
+    ],
+    "New Customers"
+);
+
+makeBarChart(
+    "serviceRevenueChart",
+    [
+        {% for item in service_revenue_labels %}
+            "{{ item }}",
+        {% endfor %}
+    ],
+    [
+        {% for item in service_revenue_values %}
+            {{ item }},
+        {% endfor %}
+    ],
+    "Service Revenue"
+);
+
+makeBarChart(
+    "contractRevenueChart",
+    [
+        {% for item in contract_revenue_labels %}
+            "{{ item|title }}",
+        {% endfor %}
+    ],
+    [
+        {% for item in contract_revenue_values %}
+            {{ item }},
+        {% endfor %}
+    ],
+    "Contract Revenue"
+);
+</script>
+
+
+<script>
+
+const monthlyCtx = document.getElementById(
+    "monthlyRevenueChart"
+);
+
+new Chart(monthlyCtx, {
+
+    type: "line",
+
+    data: {
+
+        labels: [
+            {% for item in monthly_revenue_labels %}
+                "{{ item }}",
+            {% endfor %}
+        ],
+
+        datasets: [{
+
+            label: "Revenue",
+
+            data: [
+                {% for item in monthly_revenue_values %}
+                    {{ item }},
+                {% endfor %}
+            ]
+
+        }]
+
+    },
+
+    options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false
+
+    }
+
+});
+
+</script>
+
+
+
+{% endblock %}

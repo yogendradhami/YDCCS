@@ -1,0 +1,397 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}YD Cleaning CRM Dashboard{% endblock %}
+
+{% block page_title %}Business Command Centre{% endblock %}
+{% block page_subtitle %}Urgent actions, operations, revenue, leads and cleaning jobs in one place.{% endblock %}
+
+{% block content %}
+
+<section class="command-alert-strip">
+    <div>
+        <strong>{{ action_alert_count }}</strong>
+        <span>Items need attention</span>
+    </div>
+
+    <div>
+        <strong>{{ unassigned_jobs|length }}</strong>
+        <span>Unassigned jobs</span>
+    </div>
+
+    <div>
+        <strong>{{ overdue_leads|length }}</strong>
+        <span>Overdue follow-ups</span>
+    </div>
+
+    <div>
+        <strong>{{ pending_bookings }}</strong>
+        <span>Pending bookings</span>
+    </div>
+</section>
+
+<section class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Quotes</span>
+        <h2>{{ total_quotes }}</h2>
+        <p>{{ today_quotes }} today / {{ week_quotes }} this week</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Today’s Jobs</span>
+        <h2>{{ today_bookings }}</h2>
+        <p>Scheduled for today</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Upcoming Jobs</span>
+        <h2>{{ upcoming_bookings }}</h2>
+        <p>Future bookings</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Completed Revenue</span>
+        <h2>${{ booking_revenue }}</h2>
+        <p>From completed bookings</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Overdue Equipment</span>
+        <h2>{{ overdue_equipment }}</h2>
+        <p>Service overdue</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Due Today</span>
+        <h2>{{ due_today_equipment }}</h2>
+        <p>Last day for service</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Active Equipment</span>
+        <h2>{{ active_equipment }}</h2>
+        <p>Currently in service</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Equipment Value</span>
+        <h2>${{ total_equipment_value }}</h2>
+        <p>Total asset value</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Low Stock Supplies</span>
+        <h2>{{ low_stock_supplies }}</h2>
+        <p>Need restocking</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Supplies</span>
+        <h2>{{ total_supplies }}</h2>
+        <p>Inventory items</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Supplies Value</span>
+        <h2>${{ total_supplies_value }}</h2>
+        <p>Total stock value</p>
+    </div>
+
+
+    <div class="crm-card">
+    <span>Active Vehicles</span>
+    <h2>{{ active_vehicles }}</h2>
+    <p>Fleet currently active</p>
+</div>
+
+<div class="crm-card">
+    <span>Vehicle Alerts</span>
+    <h2>{{ vehicle_alerts }}</h2>
+    <p>Require attention</p>
+</div>
+
+<div class="crm-card">
+    <span>Insurance Expiring</span>
+    <h2>{{ insurance_expiring }}</h2>
+    <p>Within 30 days</p>
+</div>
+
+<div class="crm-card">
+    <span>Services Due</span>
+    <h2>{{ service_due }}</h2>
+    <p>Within 30 days</p>
+</div>
+
+    
+
+</section>
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/bookings/add/">+ Add Booking</a>
+    <a href="/dashboard/customers/add/">+ Add Customer</a>
+    <a href="/dashboard/invoices/create/">+ Create Invoice</a>
+    <a href="/dashboard/reports/">View Reports</a>
+</section>
+
+<!-- ===================================================== -->
+<!-- Recent Activity Widget -->
+<!-- ===================================================== -->
+
+<!-- ===================================================== -->
+<!-- Recent Activity Table -->
+<!-- ===================================================== -->
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Recent Activity</h2>
+        <a href="/dashboard/activity/">View All</a>
+    </div>
+
+    {% if recent_activity %}
+
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Activity</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for activity in recent_activity %}
+                        <tr>
+                            <td>{{ activity.created_at|date:"d M Y H:i" }}</td>
+
+                            <td>
+                                {% if activity.user %}
+                                    {{ activity.user.username }}
+                                {% else %}
+                                    System
+                                {% endif %}
+                            </td>
+
+                            <td>{{ activity.get_action_type_display }}</td>
+
+                            <td>
+                                <strong>{{ activity.title }}</strong>
+                            </td>
+
+                            <td>{{ activity.description }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% else %}
+
+        <div class="empty-box">
+            <h3>No recent activity found.</h3>
+            <p>New CRM actions will appear here.</p>
+        </div>
+
+    {% endif %}
+</section>
+
+<section class="crm-two-column">
+    <div class="crm-panel action-panel danger-panel">
+        <div class="crm-panel-header">
+            <h2>Unassigned Bookings</h2>
+            <a href="/dashboard/bookings/">View All</a>
+        </div>
+
+        {% if unassigned_jobs %}
+            {% for job in unassigned_jobs %}
+                <div class="action-item">
+                    <div>
+                        <strong>{{ job.customer.full_name }}</strong>
+                        <span>{{ job.service_type }} — {{ job.booking_date }} at {{ job.booking_time }}</span>
+                    </div>
+                    <a href="/dashboard/bookings/{{ job.id }}/edit/">Assign</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No unassigned upcoming jobs.</p>
+        {% endif %}
+    </div>
+
+    <div class="crm-panel action-panel warning-panel">
+        <div class="crm-panel-header">
+            <h2>Overdue Quote Follow-ups</h2>
+            <a href="/dashboard/leads/">View All</a>
+        </div>
+
+        {% if overdue_leads %}
+            {% for lead in overdue_leads %}
+                <div class="action-item">
+                    <div>
+                        <strong>{{ lead.name }}</strong>
+                        <span>{{ lead.property_type }} — {{ lead.created_at|date:"d M Y" }}</span>
+                    </div>
+                    <a href="/dashboard/leads/">Follow Up</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No overdue leads.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="crm-two-column">
+    <div class="crm-panel chart-panel">
+        <div class="crm-panel-header">
+            <h2>Quote Trend</h2>
+        </div>
+        <canvas id="quoteTrendChart"></canvas>
+    </div>
+
+    <div class="crm-panel chart-panel">
+        <div class="crm-panel-header">
+            <h2>Booking Trend</h2>
+        </div>
+        <canvas id="bookingTrendChart"></canvas>
+    </div>
+</section>
+
+<section class="crm-panel chart-panel">
+    <div class="crm-panel-header">
+        <h2>Revenue Trend</h2>
+    </div>
+    <canvas id="revenueTrendChart"></canvas>
+</section>
+
+<section class="crm-two-column">
+    <div class="crm-panel">
+        <div class="crm-panel-header">
+            <h2>Today’s Jobs</h2>
+            <a href="/dashboard/calendar/">Calendar</a>
+        </div>
+
+        {% if urgent_jobs_today %}
+            {% for job in urgent_jobs_today %}
+                <div class="crm-list-item">
+                    <strong>{{ job.booking_time }} — {{ job.customer.full_name }}</strong>
+                    <span>{{ job.service_type }}</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No jobs scheduled today.</p>
+        {% endif %}
+    </div>
+
+    <div class="crm-panel">
+        <div class="crm-panel-header">
+            <h2>Employee Workload</h2>
+            <a href="/dashboard/employees/">View Employees</a>
+        </div>
+
+        {% if employee_workload %}
+            {% for employee in employee_workload %}
+                <div class="workload-row">
+                    <span>{{ employee.assigned_employee__full_name }}</span>
+                    <strong>{{ employee.total }} jobs</strong>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No assigned upcoming workload.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="crm-two-column">
+    <div class="crm-panel">
+        <div class="crm-panel-header">
+            <h2>Lead Pipeline</h2>
+            <a href="/dashboard/leads/">View All</a>
+        </div>
+
+        <div class="crm-pipeline">
+            <div><strong>{{ new_quotes }}</strong><span>New</span></div>
+            <div><strong>{{ contacted_quotes }}</strong><span>Contacted</span></div>
+            <div><strong>{{ quoted_quotes }}</strong><span>Quoted</span></div>
+            <div><strong>{{ booked_quotes }}</strong><span>Booked</span></div>
+            <div><strong>{{ completed_quotes }}</strong><span>Completed</span></div>
+            <div><strong>{{ lost_quotes }}</strong><span>Lost</span></div>
+        </div>
+    </div>
+
+    <div class="crm-panel">
+        <div class="crm-panel-header">
+            <h2>Booking Status</h2>
+            <a href="/dashboard/bookings/">View All</a>
+        </div>
+
+        <div class="crm-pipeline">
+            <div><strong>{{ pending_bookings }}</strong><span>Pending</span></div>
+            <div><strong>{{ confirmed_bookings }}</strong><span>Confirmed</span></div>
+            <div><strong>{{ assigned_bookings }}</strong><span>Assigned</span></div>
+            <div><strong>{{ in_progress_bookings }}</strong><span>Progress</span></div>
+            <div><strong>{{ completed_bookings }}</strong><span>Completed</span></div>
+            <div><strong>{{ cancelled_bookings }}</strong><span>Cancelled</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Upcoming Jobs</h2>
+        <a href="/dashboard/calendar/">Calendar</a>
+    </div>
+
+    {% if upcoming_jobs %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Employee</th>
+                        <th>Status</th>
+                        <th>Report</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for job in upcoming_jobs %}
+                        <tr>
+                            <td>{{ job.customer.full_name }}</td>
+                            <td>{{ job.service_type }}</td>
+                            <td>{{ job.booking_date }}</td>
+                            <td>{{ job.booking_time }}</td>
+                            <td>
+                                {% if job.assigned_employee %}
+                                    {{ job.assigned_employee.full_name }}
+                                {% else %}
+                                    Not assigned
+                                {% endif %}
+                            </td>
+                            <td>{{ job.get_status_display }}</td>
+                            <td>
+                                <a class="small-link-btn" href="/reports/booking/{{ job.id }}/">View</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No upcoming jobs.</p>
+    {% endif %}
+</section>
+
+{{ quote_trend_labels|json_script:"quote-trend-labels" }}
+{{ quote_trend_counts|json_script:"quote-trend-counts" }}
+
+{{ booking_trend_labels|json_script:"booking-trend-labels" }}
+{{ booking_trend_counts|json_script:"booking-trend-counts" }}
+
+{{ revenue_trend_labels|json_script:"revenue-trend-labels" }}
+{{ revenue_trend_counts|json_script:"revenue-trend-counts" }}
+
+{% endblock %}

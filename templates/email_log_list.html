@@ -1,0 +1,64 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Email Logs{% endblock %}
+
+{% block page_title %}Email Logs{% endblock %}
+
+{% block page_subtitle %}
+Track all emails sent from the CRM Email Center.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Email History</h2>
+        <a href="/dashboard/email-center/" class="small-link-btn">
+            Email Center
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="dashboard-table advanced-table">
+            <thead>
+                <tr>
+                    <th>Sent At</th>
+                    <th>Type</th>
+                    <th>Recipient</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Related</th>
+                    <th>Sent By</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for log in email_logs %}
+                    <tr>
+                        <td>{{ log.sent_at|date:"d M Y H:i" }}</td>
+                        <td>{{ log.get_email_type_display }}</td>
+                        <td>{{ log.recipient_name }}</td>
+                        <td>{{ log.recipient_email }}</td>
+                        <td>{{ log.subject }}</td>
+                        <td>{{ log.related_object }}</td>
+                        <td>
+                            {% if log.sent_by %}
+                                {{ log.sent_by.username }}
+                            {% else %}
+                                System
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7">No email logs found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% endblock %}

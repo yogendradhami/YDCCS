@@ -1,0 +1,149 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Create Support Ticket{% endblock %}
+{% block page_title %}Support Centre{% endblock %}
+{% block page_subtitle %}Submit a service issue, question or request for assistance.{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+
+<div class="crm-panel-header">
+    <h2>Create New Support Ticket</h2>
+</div>
+
+<form method="POST" class="crm-form">
+
+    {% csrf_token %}
+
+    <div class="form-grid">
+
+        <div class="form-group">
+            <label>Subject</label>
+            {{ form.subject }}
+        </div>
+
+        <div class="form-group">
+            <label>Priority</label>
+            {{ form.priority }}
+        </div>
+
+    </div>
+
+    <div class="form-group">
+        <label>Message</label>
+        {{ form.message }}
+    </div>
+
+    <div class="ticket-info-box">
+        <h4>Support Response Times</h4>
+
+        <ul>
+            <li>Low Priority → 2–3 Business Days</li>
+            <li>Medium Priority → 1 Business Day</li>
+            <li>High Priority → Same Day</li>
+            <li>Urgent Priority → Immediate Attention</li>
+        </ul>
+    </div>
+
+    <div class="crm-form-actions">
+
+        <button type="submit" class="primary-btn">
+            Submit Ticket
+        </button>
+
+        <a href="/portal/support/" class="secondary-btn">
+            View My Tickets
+        </a>
+
+    </div>
+
+</form>
+
+
+</section>
+
+<style>
+
+.crm-form{
+    max-width:900px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.form-group{
+    margin-bottom:20px;
+}
+
+.form-group label{
+    display:block;
+    font-weight:700;
+    margin-bottom:8px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select{
+    width:100%;
+    padding:12px;
+    border:1px solid #dcdcdc;
+    border-radius:10px;
+}
+
+.ticket-info-box{
+    background:#f8fafc;
+    border-left:5px solid #2563eb;
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+}
+
+.ticket-info-box h4{
+    margin-bottom:10px;
+}
+
+.crm-form-actions{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+    flex-wrap:wrap;
+}
+
+.primary-btn{
+    background:#2563eb;
+    color:white;
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    text-decoration:none;
+    cursor:pointer;
+}
+
+.secondary-btn{
+    background:#e5e7eb;
+    color:#111827;
+    padding:12px 25px;
+    border-radius:10px;
+    text-decoration:none;
+}
+
+@media(max-width:768px){
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .crm-form-actions{
+        flex-direction:column;
+    }
+
+}
+
+</style>
+
+{% endblock %}

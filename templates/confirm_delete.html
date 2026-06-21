@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Confirm Delete | YD Cleaning Dashboard
+{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Confirm Delete</h1>
+        <p>This action cannot be undone.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+
+        <div class="delete-card">
+            <h2>Are you sure?</h2>
+
+            <p>
+                You are about to delete:
+                <strong>{{ object_name }}</strong>
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <button type="submit" class="delete-confirm-btn">
+                    Yes, Delete
+                </button>
+
+                <a href="{{ cancel_url }}" class="btn-outline">
+                    Cancel
+                </a>
+            </form>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

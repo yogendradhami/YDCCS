@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Upload Job Photo | Employee Portal
+{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Upload Job Photo</h1>
+        <p>Upload before or after photos for job verification.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+
+        <div class="auth-card">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="custom-alert {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <h2>{{ booking.service_type }}</h2>
+            <p><strong>Customer:</strong> {{ booking.customer.full_name }}</p>
+            <p><strong>Address:</strong> {{ booking.address }}</p>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Photo Type</label>
+                    {{ form.photo_type }}
+                    <div class="text-danger">{{ form.photo_type.errors }}</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Photo</label>
+                    {{ form.image }}
+                    <div class="text-danger">{{ form.image.errors }}</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    {{ form.notes }}
+                    <div class="text-danger">{{ form.notes.errors }}</div>
+                </div>
+
+                <button type="submit" class="btn-fill full-width">
+                    Upload Photo
+                </button>
+
+                <div class="auth-links center">
+                    <a href="/employee/jobs/{{ booking.id }}/">Back to Job</a>
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

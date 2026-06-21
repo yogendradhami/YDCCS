@@ -1,0 +1,12 @@
+[flake8]
+exclude = .git,__pycache__,venv,build,dist,*/migrations/*,staticfiles
+max-line-length = 88
+extend-ignore = E203,W503
+
+# Reduce noise from many legacy/placeholder files. Gradually remove these
+# per-file ignores as files are cleaned.
+per-file-ignores =
+	*/tests.py: F401,F841,F811
+	*/admin.py: F401
+	*/models.py: F401
+	*/views.py: E402,E501

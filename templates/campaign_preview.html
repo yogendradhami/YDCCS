@@ -1,0 +1,121 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Campaign Preview
+{% endblock %}
+
+{% block page_title %}
+{{ title }}
+{% endblock %}
+
+{% block page_subtitle %}
+Preview recipients before sending campaign emails for YD Commercial Cleaning Services.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Recipients</span>
+        <h2>{{ recipient_count }}</h2>
+        <p>Customers with email addresses</p>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Recipient List</h2>
+
+        <a href="/dashboard/campaigns/" class="small-link-btn">
+            Back to Campaigns
+        </a>
+    </div>
+
+    {% if recipients %}
+
+        <div class="table-wrapper">
+
+            <table class="dashboard-table advanced-table">
+
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Jobs Completed</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for customer in recipients %}
+
+                        <tr>
+                            <td>{{ customer.full_name }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.jobs_completed }}</td>
+                            <td>${{ customer.total_revenue }}</td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-box">
+            <h3>No recipients found.</h3>
+            <p>No customers match this campaign yet.</p>
+        </div>
+
+    {% endif %}
+
+</section>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Send Campaign</h2>
+    </div>
+
+    {% if campaign_type == "vip" %}
+
+        <form method="POST" action="{% url 'send_vip_campaign' %}">
+            {% csrf_token %}
+            <button type="submit" class="small-link-btn">
+                Confirm & Send VIP Campaign
+            </button>
+        </form>
+
+    {% elif campaign_type == "inactive" %}
+
+        <form method="POST" action="{% url 'send_inactive_campaign' %}">
+            {% csrf_token %}
+            <button type="submit" class="small-link-btn">
+                Confirm & Send Inactive Campaign
+            </button>
+        </form>
+
+    {% elif campaign_type == "review" %}
+
+        <form method="POST" action="{% url 'send_review_campaign' %}">
+            {% csrf_token %}
+            <button type="submit" class="small-link-btn">
+                Confirm & Send Review Campaign
+            </button>
+        </form>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

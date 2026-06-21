@@ -1,0 +1,57 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+    <div class="crm-panel-header">
+
+        <h1>Maintenance History</h1>
+
+        <a href="{% url 'add_maintenance' %}"
+           class="btn-fill">
+
+            Add Record
+
+        </a>
+
+    </div>
+
+    <table class="dashboard-table">
+
+        <thead>
+
+            <tr>
+                <th>Asset</th>
+                <th>Date</th>
+                <th>Cost</th>
+                <th>Next Service</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for item in records %}
+
+            <tr>
+
+                <td>{{ item.asset_name }}</td>
+
+                <td>{{ item.maintenance_date }}</td>
+
+                <td>${{ item.cost }}</td>
+
+                <td>{{ item.next_service_date }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

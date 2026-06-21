@@ -1,0 +1,142 @@
+<!-- ===================================================
+     YD Commercial Cleaning Services
+     File: service_detail.html
+     Purpose: SEO service page template
+=================================================== -->
+
+{% extends 'base.html' %}
+
+{% block title %}
+{{ service.title }} | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block meta_description %}
+{{ service.description }}
+{% endblock %}
+
+{% block og_title %}
+{{ service.title }} | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block og_description %}
+{{ service.description }}
+{% endblock %}
+
+{% block content %}
+
+<!-- Service Hero -->
+<section class="page-hero">
+    <div class="container">
+        <h1>{{ service.heading }}</h1>
+        <p>{{ service.description }}</p>
+    </div>
+</section>
+
+<!-- Service Content -->
+<section class="section">
+    <div class="container service-page-grid">
+
+        <div class="service-content-card">
+            <h2>{{ service.title }}</h2>
+
+            <p>
+                YD Commercial Cleaning Services provides professional, reliable and affordable
+                cleaning solutions across Adelaide. Our team focuses on attention to detail,
+                flexible scheduling and high-quality results for every customer.
+            </p>
+
+            <h3>What We Offer</h3>
+
+            <ul class="service-list">
+                <li>✓ Professional and reliable cleaners</li>
+                <li>✓ Fully insured cleaning service</li>
+                <li>✓ Flexible cleaning schedules</li>
+                <li>✓ Residential and commercial cleaning options</li>
+                <li>✓ Adelaide-wide service coverage</li>
+                <li>✓ Free quotes available</li>
+            </ul>
+
+            <h3>Why Choose YD Cleaning?</h3>
+
+            <p>
+                We understand that every property is different. Whether you need regular
+                commercial cleaning, office cleaning, end-of-lease cleaning or a one-off deep
+                clean, we tailor our service to your needs.
+            </p>
+
+            <a href="/#quote" class="btn-fill">Request Free Quote</a>
+        </div>
+
+        <div class="service-sidebar-card">
+            <h3>Contact Details</h3>
+
+            <p><strong>Phone:</strong><br>0430 049 865</p>
+            <p><strong>Email:</strong><br>ydcommercialcleaning@gmail.com</p>
+            <p><strong>Service Area:</strong><br>Adelaide and surrounding suburbs</p>
+            <p><strong>Hours:</strong><br>Monday – Sunday, 8:00 AM – 12:00 PM</p>
+
+            <a href="tel:0430049865" class="btn-fill full-width">Call Now</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- FAQ Schema Content -->
+<section class="section faq-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+        </div>
+
+        <div class="faq-box">
+            <h4>Do you provide free quotes?</h4>
+            <p>Yes, we provide free quotes for cleaning services across Adelaide.</p>
+        </div>
+
+        <div class="faq-box">
+            <h4>Are you fully insured?</h4>
+            <p>Yes, YD Commercial Cleaning Services is fully insured.</p>
+        </div>
+
+        <div class="faq-box">
+            <h4>Which areas do you service?</h4>
+            <p>We service Adelaide CBD, Prospect, Norwood, Unley, Glenelg, Burnside and surrounding suburbs.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Do you provide free quotes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, YD Commercial Cleaning Services provides free quotes for cleaning services across Adelaide."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are you fully insured?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, YD Commercial Cleaning Services is fully insured."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which areas do you service?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We service Adelaide CBD, Prospect, Norwood, Unley, Glenelg, Burnside and surrounding suburbs."
+      }
+    }
+  ]
+}
+</script>
+
+{% endblock %}

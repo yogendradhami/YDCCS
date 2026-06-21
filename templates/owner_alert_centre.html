@@ -1,0 +1,36 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Owner Alert Centre{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Overdue Invoices</span>
+        <h2>{{ overdue_invoices }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Active Contracts</span>
+        <h2>{{ expiring_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Pending Leave</span>
+        <h2>{{ pending_leave_requests }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Low Stock</span>
+        <h2>{{ low_stock_items }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Vehicles Due Service</span>
+        <h2>{{ vehicles_due_service }}</h2>
+    </div>
+
+</div>
+
+{% endblock %}

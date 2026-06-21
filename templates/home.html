@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+
+{% block title %}
+YD Commercial Cleaning Services Adelaide
+{% endblock %}
+
+{% block content %}
+
+<section class="hero-section">
+    <div class="container hero-grid">
+        <div>
+            <span class="hero-badge">Adelaide Local Cleaning Experts</span>
+
+            <h1>Professional Commercial & Residential Cleaning Across Adelaide</h1>
+
+            <p>
+                Reliable, fully insured and affordable cleaning services for homes,
+                offices, businesses, end-of-lease properties and commercial spaces.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#quote" class="btn-fill">Get Free Quote</a>
+                <a href="tel:0430049865" class="btn-light-outline">Call Now</a>
+            </div>
+        </div>
+
+        <div class="hero-card">
+            <h3>Need a Cleaner Today?</h3>
+            <p>Send your details and our team will contact you shortly.</p>
+            <ul>
+                <li>✓ Fully Insured</li>
+                <li>✓ Free Quotes</li>
+                <li>✓ Flexible Scheduling</li>
+                <li>✓ Adelaide-Wide Service</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="trust-strip">
+    <div class="container trust-grid">
+        <div>✅ Fully Insured</div>
+        <div>✅ Free Quotes</div>
+        <div>✅ Satisfaction Focused</div>
+        <div>✅ Local Adelaide Team</div>
+    </div>
+</section>
+
+<section id="services" class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Our Cleaning Services</h2>
+            <p>Professional cleaning solutions for homes and businesses.</p>
+        </div>
+
+        <div class="card-grid">
+            <div class="service-card">
+                <h4>Commercial Cleaning</h4>
+                <p>Reliable cleaning for offices, shops, warehouses and business premises.</p>
+            </div>
+
+            <div class="service-card">
+                <h4>Office Cleaning</h4>
+                <p>Regular office cleaning to keep your workplace fresh and professional.</p>
+            </div>
+
+            <div class="service-card">
+                <h4>End of Lease Cleaning</h4>
+                <p>Detailed move-out cleaning for tenants, landlords and real estate agents.</p>
+            </div>
+
+            <div class="service-card">
+                <h4>House Cleaning</h4>
+                <p>One-off, regular and deep house cleaning for Adelaide homes.</p>
+            </div>
+
+            <div class="service-card">
+                <h4>Window Cleaning</h4>
+                <p>Interior and exterior window cleaning for clear, spotless results.</p>
+            </div>
+
+            <div class="service-card">
+                <h4>Deep Cleaning</h4>
+                <p>Intensive cleaning for kitchens, bathrooms, offices and high-use areas.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="why-section">
+    <div class="container why-grid">
+        <div>
+            <h2>Why Choose YD Cleaning?</h2>
+            <p>
+                We focus on quality, reliability and customer satisfaction. Whether you need
+                a regular office cleaner or a one-time end-of-lease clean, our team is ready
+                to deliver spotless results.
+            </p>
+
+            <div class="features-grid">
+                <div>✓ Professional Team</div>
+                <div>✓ Affordable Pricing</div>
+                <div>✓ Flexible Times</div>
+                <div>✓ Attention to Detail</div>
+            </div>
+        </div>
+
+        <div class="stats-box">
+            <h3>Adelaide Cleaning You Can Trust</h3>
+            <p>
+                Commercial, residential and end-of-lease cleaning services designed around your needs.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="section home-gallery">
+    <div class="container">
+        <div class="section-title">
+            <h2>Before & After Gallery</h2>
+            <p>Real cleaning transformations from our work.</p>
+        </div>
+
+        {% if gallery_items %}
+            <div class="home-gallery-grid">
+                {% for item in gallery_items %}
+                    <div class="home-gallery-card">
+                        <img src="{{ item.after_image.url }}" alt="{{ item.title }}">
+                        <h4>{{ item.title }}</h4>
+                        <p>{{ item.service_type }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div style="text-align:center; margin-top:30px;">
+                <a href="/gallery/" class="btn-fill">View Full Gallery</a>
+            </div>
+        {% else %}
+            <div class="empty-box">
+                <p>No gallery images uploaded yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section id="reviews" class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Customer Reviews</h2>
+            <p>What Adelaide customers say about our cleaning service.</p>
+        </div>
+
+        {% if reviews %}
+            <div class="card-grid">
+                {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="stars">{{ review.stars }}</div>
+                        <p>{{ review.review_text }}</p>
+                        <strong>{{ review.customer_name }}</strong>
+                        {% if review.suburb %}
+                            <small class="review-suburb">{{ review.suburb }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div style="text-align:center; margin-top:30px;">
+                <a href="/reviews/" class="btn-fill">View All Reviews</a>
+            </div>
+        {% else %}
+            <div class="empty-box">
+                <p>No reviews uploaded yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+<section class="areas-section">
+    <div class="container section-title">
+        <h2>Areas We Service</h2>
+        <p>
+            Adelaide CBD, Unley, Norwood, Glenelg, Burnside, Prospect, Campbelltown,
+            Mawson Lakes, Modbury, North Adelaide and surrounding suburbs.
+        </p>
+    </div>
+</section>
+
+<section id="quote" class="quote-section">
+    <div class="container quote-grid">
+        <div>
+            <h2>Get Your Free Quote</h2>
+            <p>
+                Fill out the form and upload property images if available.
+                We will contact you shortly.
+            </p>
+
+            <p><strong>Phone:</strong> 0430 049 865</p>
+            <p><strong>Service Area:</strong> Adelaide and surrounding suburbs</p>
+        </div>
+
+        <div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="custom-alert {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" action="#quote" class="quote-card">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    {{ form.name }}
+                    <div class="text-danger">{{ form.name.errors }}</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    {{ form.email }}
+                    
+                    <div class="text-danger">{{ form.email.errors }}</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    {{ form.phone }}
+                    <div class="text-danger">{{ form.phone.errors }}</div>
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        How Did You Hear About Us?
+                    </label>
+
+                    {{ form.lead_source }}
+
+                </div>
+
+                <div class="form-group">
+                    <label>Property Type *</label>
+                    {{ form.property_type }}
+                    <div class="text-danger">{{ form.property_type.errors }}</div>
+                </div>
+
+                <div class="form-group">
+
+                    <div class="form-group">
+                        <label>Bedrooms</label>
+                        {{ form.bedrooms }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bathrooms</label>
+                        {{ form.bathrooms }}
+                    </div>
+                    <label>Suburb/Postcode *</label>
+                    {{ form.suburb_postcode }}
+                    <div class="text-danger">{{ form.suburb_postcode.errors }}</div>
+                </div>
+
+                <div class="form-group">
+                  
+
+                    <label>Preferred Date *</label>
+                    {{ form.preferred_date }}
+                    <div class="text-danger">{{ form.preferred_date.errors }}</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Property Images Optional</label>
+                    {{ form.property_images }}
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Details/Message</label>
+                    {{ form.message }}
+                    <div class="text-danger">{{ form.message.errors }}</div>
+                </div>
+
+                <div class="form-group">
+                    <label><strong>Would you like any add-ons?</strong></label>
+
+                    <div class="form-check">{{ form.window_cleaning }} <span>Window Cleaning (+$50)</span></div>
+                    <div class="form-check">{{ form.carpet_shampooing }} <span>Carpet Shampooing (+$100)</span></div>
+                    <div class="form-check">{{ form.grout_cleaning }} <span>Grout Cleaning (+$75)</span></div>
+                    <div class="form-check">{{ form.upholstery_cleaning }} <span>Upholstery Cleaning (+$60)</span></div>
+                    <div class="form-check">{{ form.laundry_service }} <span>Laundry Service (+$60)</span></div>
+                </div>
+
+                <div class="form-check robot-check">
+                    {{ form.is_not_robot }}
+                    <span>I'm not a robot</span>
+                    <div class="text-danger">{{ form.is_not_robot.errors }}</div>
+                </div>
+
+                <div class="estimate-box" style="
+                    background:#f8fafc;
+                    border:2px solid #0ea5e9;
+                    padding:20px;
+                    border-radius:12px;
+                    margin-bottom:20px;
+                    text-align:center;
+                ">
+                    <h3>Estimated Quote</h3>
+
+                    <h2 id="estimated-price">$120</h2>
+
+                    <p>
+                        Final pricing will be confirmed by
+                        YD Commercial Cleaning Services.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn-fill full-width">
+                    Get Your Free Quote
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+function getFieldValueByName(name) {
+    const fields = document.querySelectorAll(`[name="${name}"]`);
+    const field = fields[fields.length - 1];
+
+    if (!field) {
+        return 0;
+    }
+
+    return parseInt(field.value || 0);
+}
+
+function isCheckedByName(name) {
+    const fields = document.querySelectorAll(`[name="${name}"]`);
+    const field = fields[fields.length - 1];
+
+    if (!field) {
+        return false;
+    }
+
+    return field.checked;
+}
+
+function updateEstimate() {
+    let price = 120;
+
+    const bedrooms = getFieldValueByName("bedrooms");
+    const bathrooms = getFieldValueByName("bathrooms");
+
+    price += bedrooms * 30;
+    price += bathrooms * 20;
+
+    if (isCheckedByName("window_cleaning")) {
+        price += 50;
+    }
+
+    if (isCheckedByName("carpet_shampooing")) {
+        price += 100;
+    }
+
+    if (isCheckedByName("grout_cleaning")) {
+        price += 75;
+    }
+
+    if (isCheckedByName("upholstery_cleaning")) {
+        price += 60;
+    }
+
+    if (isCheckedByName("laundry_service")) {
+        price += 60;
+    }
+
+    const estimateBox = document.getElementById("estimated-price");
+
+    if (estimateBox) {
+        estimateBox.innerText = "$" + price;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    document
+        .querySelectorAll(
+            'input[name="bedrooms"], input[name="bathrooms"], input[type="checkbox"], select'
+        )
+        .forEach(function (field) {
+            field.addEventListener("change", updateEstimate);
+            field.addEventListener("keyup", updateEstimate);
+            field.addEventListener("input", updateEstimate);
+        });
+
+    updateEstimate();
+});
+</script>
+
+{% endblock %}

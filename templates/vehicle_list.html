@@ -1,0 +1,55 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+    <div class="crm-panel-header">
+        <h1>Vehicle Management</h1>
+
+        <a href="{% url 'add_vehicle' %}" class="btn-fill">
+            Add Vehicle
+        </a>
+    </div>
+
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th>Vehicle</th>
+                <th>Registration</th>
+                <th>Assigned Employee</th>
+                <th>Insurance Expiry</th>
+                <th>Registration Expiry</th>
+                <th>Service Due</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for vehicle in vehicles %}
+                <tr>
+                    <td>{{ vehicle.vehicle_name }}</td>
+                    <td>{{ vehicle.registration_number }}</td>
+                    <td>{{ vehicle.assigned_employee|default:"Not Assigned" }}</td>
+                    <td>{{ vehicle.insurance_expiry }}</td>
+                    <td>{{ vehicle.registration_expiry }}</td>
+                    <td>{{ vehicle.service_due_date }}</td>
+                    <td>{{ vehicle.get_status_display }}</td>
+                    <td>
+                        <a href="{% url 'edit_vehicle' vehicle.id %}">
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8">No vehicles found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

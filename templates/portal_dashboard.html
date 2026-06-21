@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Customer Dashboard | YD Commercial Cleaning
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================== -->
+<!-- Customer Dashboard Hero -->
+<!-- ===================================================== -->
+
+<section class="customer-portal-hero">
+    <div class="container">
+        <div class="customer-hero-box">
+
+            <div>
+                <h1>Welcome, {{ customer.full_name }}</h1>
+                <p>Manage your bookings, invoices, reports and cleaning verification.</p>
+            </div>
+
+            <a href="/portal/logout/" class="customer-back-btn">
+                Logout
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- Customer Dashboard Content -->
+<!-- ===================================================== -->
+
+<section class="section customer-dashboard-section">
+    <div class="container">
+
+        <!-- Customer quick action cards -->
+        <div class="customer-action-grid">
+
+            <a href="/portal/bookings/" class="customer-action-card">
+                <strong>My Bookings</strong>
+                <span>View all cleaning jobs</span>
+            </a>
+
+            <a href="/portal/invoices/" class="customer-action-card">
+                <strong>My Invoices</strong>
+                <span>Payments and invoice history</span>
+            </a>
+
+            <a href="/portal/documents/" class="customer-action-card">
+                <strong>My Documents</strong>
+                <span>Invoices, Reports & Contracts</span>
+            </a>
+
+            <a href="/portal/profile/" class="customer-action-card">
+                <strong>My Profile</strong>
+                <span>Update account details</span>
+            </a>
+
+            <a href="/#quote" class="customer-action-card highlight">
+                <strong>Request Quote</strong>
+                <span>Book another cleaning service</span>
+            </a>
+
+            <a href="/contact/" class="customer-action-card">
+                <strong>Contact Support</strong>
+                <span>Contact YD Cleaning</span>
+            </a>
+
+        </div>
+
+        <!-- Customer summary cards -->
+      <div class="dashboard-grid customer-stats-grid">    
+
+            <div class="dashboard-card">
+                <h3>{{ active_contracts }}</h3>
+                <p>Active Contracts</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ expiring_contracts }}</h3>
+                <p>Contract Renewals</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ upcoming_bookings }}</h3>
+                <p>Upcoming Bookings</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ completed_jobs }}</h3>
+                <p>Completed Jobs</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>${{ outstanding_balance }}</h3>
+                <p>Outstanding Balance</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>${{ total_paid }}</h3>
+                <p>Total Paid</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ paid_invoices }}</h3>
+                <p>Paid Invoices</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ unpaid_invoices }}</h3>
+                <p>Unpaid Invoices</p>
+            </div>
+
+        </div>
+
+        {% if last_cleaning %}
+            <div class="customer-panel">
+                <div class="customer-panel-header">
+                    <h2>Last Completed Cleaning</h2>
+                </div>
+
+                <p><strong>Service:</strong> {{ last_cleaning.service_type }}</p>
+                <p><strong>Date:</strong> {{ last_cleaning.booking_date }}</p>
+                <p><strong>Address:</strong> {{ last_cleaning.address }}</p>
+            </div>
+        {% endif %}
+
+            <div class="dashboard-card">
+                <h3>{{ bookings|length }}</h3>
+                <p>Recent Bookings</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ invoices|length }}</h3>
+                <p>Recent Invoices</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ paid_invoices }}</h3>
+                <p>Paid Invoices</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ unpaid_invoices }}</h3>
+                <p>Unpaid Invoices</p>
+            </div>
+
+        </div>
+
+        <div class="customer-panel">
+
+            <div class="customer-panel-header">
+                <h2>My Contracts</h2>
+                <a href="/portal/documents/">View All</a>
+            </div>
+
+            <p>
+                Active Contracts:
+                <strong>{{ active_contracts }}</strong>
+            </p>
+
+            <p>
+                Contract Renewals:
+                <strong>{{ expiring_contracts }}</strong>
+            </p>
+
+        </div>
+
+        
+
+
+        <div class="customer-panel">
+
+            <div class="customer-panel-header">
+                <h2>
+                    Notifications
+
+                    {% if unread_notifications %}
+                        ({{ unread_notifications }})
+                    {% endif %}
+                </h2>
+            </div>
+
+            {% if notifications %}
+
+                <div class="table-wrapper">
+
+                    <table class="dashboard-table">
+
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for notification in notifications %}
+
+                            <tr>
+
+                                <td>
+                                    {{ notification.title }}
+                                </td>
+
+                                <td>
+                                    {{ notification.message }}
+                                </td>
+
+                                <td>
+                                    {{ notification.created_at|date:"d M Y" }}
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <p>No notifications available.</p>
+
+            {% endif %}
+
+        </div>
+
+
+
+
+        <!-- Recent bookings table -->
+        <div class="customer-panel">
+
+            <div class="customer-panel-header">
+                <h2>Recent Bookings</h2>
+                <a href="/portal/bookings/">View All</a>
+            </div>
+
+            {% if bookings %}
+
+                <div class="table-wrapper">
+
+                    <table class="dashboard-table advanced-table">
+
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                                <th>Report</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for booking in bookings %}
+                                <tr>
+                                    <td>{{ booking.service_type }}</td>
+                                    <td>{{ booking.booking_date }}</td>
+                                    <td>{{ booking.booking_time }}</td>
+                                    <td>{{ booking.address }}</td>
+                                    <td>{{ booking.get_status_display }}</td>
+                                    <td>
+                                        <a href="/portal/bookings/{{ booking.id }}/"
+                                           class="small-link-btn">
+                                            View
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="/reports/booking/{{ booking.id }}/"
+                                           class="small-link-btn">
+                                            Report
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-box">
+                    <h3>No bookings yet.</h3>
+                    <p>Your cleaning bookings will appear here.</p>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        <div class="customer-panel">
+
+            <div class="customer-panel-header">
+                <h2>Cleaning Reports</h2>
+            </div>
+
+            {% if reports %}
+
+                <div class="table-wrapper">
+
+                    <table class="dashboard-table">
+
+                        <thead>
+                            <tr>
+                                <th>Booking</th>
+                                <th>Date</th>
+                                <th>Report</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for report in reports %}
+
+                            <tr>
+
+                                <td>
+                                    {{ report.booking.service_type }}
+                                </td>
+
+                                <td>
+                                    {{ report.generated_at|date:"d M Y" }}
+                                </td>
+
+                                <td>
+
+                                    {% if report.pdf_file %}
+
+                                        <a
+                                            href="{{ report.pdf_file.url }}"
+                                            target="_blank"
+                                            class="small-link-btn"
+                                        >
+                                            Download
+                                        </a>
+
+                                    {% else %}
+
+                                        Not Available
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <p>No cleaning reports available yet.</p>
+
+            {% endif %}
+
+        </div>
+
+
+
+
+        <!-- Recent invoices table -->
+        <div class="customer-panel">
+
+            <div class="customer-panel-header">
+                <h2>Recent Invoices</h2>
+                <a href="/portal/invoices/">View All</a>
+            </div>
+
+            {% if invoices %}
+
+                <div class="table-wrapper">
+
+                    <table class="dashboard-table advanced-table">
+
+                        <thead>
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>View</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for invoice in invoices %}
+                                <tr>
+                                    <td>{{ invoice.invoice_number }}</td>
+                                    <td>{{ invoice.issue_date }}</td>
+                                    <td>${{ invoice.total_amount }}</td>
+                                    <td>{{ invoice.get_status_display }}</td>
+                                    <td>
+                                        <a href="/portal/invoices/{{ invoice.id }}/"
+                                           class="small-link-btn">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-box">
+                    <h3>No invoices yet.</h3>
+                    <p>Your invoices will appear here.</p>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,445 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <title>
+        {% if company_settings and company_settings.business_name %}
+            {{ company_settings.business_name }}
+        {% else %}
+            {% block title %}YD Commercial Cleaning Services{% endblock %}
+        {% endif %}
+    </title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Main website CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- Dynamic favicon from Dashboard → Settings -->
+    {% if company_settings and company_settings.favicon %}
+        <link rel="icon" href="{{ company_settings.favicon.url }}">
+    {% endif %}
+</head>
+
+<body>
+
+<!-- Promotional top bar -->
+<header class="promo-bar">
+    <span>
+        ⚡ 🎉 Limited Time Offer: Get 20% off your first cleaning service! Use code: CLEAN20
+    </span>
+</header>
+
+<!-- Main public website header -->
+<nav class="yd-header">
+
+    <!-- Dynamic logo and business name -->
+    <a href="/" class="yd-logo">
+
+        {% if company_settings and company_settings.logo %}
+            <img src="{{ company_settings.logo.url }}" alt="{{ company_settings.business_name }}">
+        {% else %}
+            <img src="{% static 'images/logo.jpeg' %}" alt="YD Cleaning Logo">
+        {% endif %}
+
+        <span>
+            {% if company_settings and company_settings.business_name %}
+                {{ company_settings.business_name }}
+            {% else %}
+                YD Commercial Cleaning Services
+            {% endif %}
+        </span>
+    </a>
+
+    <!-- Mobile hamburger button -->
+    <button class="yd-menu-btn" id="publicMenuButton" type="button">☰</button>
+
+    <!-- Main navigation menu -->
+    <div class="yd-menu" id="publicMenu">
+
+        <a href="/">Home</a>
+
+        <!-- Services mega menu -->
+        <div class="yd-mega-parent">
+            <a href="#">Services ▾</a>
+
+            <div class="yd-mega-menu">
+                <a href="/house-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🏠</div>
+                    <h4>Residential Cleaning</h4>
+                    <p>Professional house cleaning and deep cleans.</p>
+                </a>
+
+                <a href="/commercial-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🏢</div>
+                    <h4>Commercial Cleaning</h4>
+                    <p>Office and workspace cleaning solutions.</p>
+                </a>
+
+                <a href="/end-of-lease-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🔑</div>
+                    <h4>End-of-Lease Cleaning</h4>
+                    <p>Bond recovery cleaning services.</p>
+                </a>
+
+                <a href="/office-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🧹</div>
+                    <h4>Office Cleaning</h4>
+                    <p>Reliable office cleaning for businesses.</p>
+                </a>
+
+                <a href="/window-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🪟</div>
+                    <h4>Window Cleaning</h4>
+                    <p>Interior and exterior glass cleaning.</p>
+                </a>
+
+                <a href="/post-construction-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🚧</div>
+                    <h4>Post Construction</h4>
+                    <p>After renovation and construction cleanup.</p>
+                </a>
+
+                <div class="yd-mega-footer">
+                    <strong>Not sure which service you need?</strong>
+                    <span>Chat with our team to find the perfect cleaning solution.</span>
+                    <a href="/contact/">Get Consultation</a>
+                </div>
+            </div>
+        </div>
+
+        <a href="/gallery/">Gallery</a>
+        <a href="/reviews/">Reviews</a>
+        <a href="/contact/">Contact</a>
+
+        <!-- Resources dropdown -->
+        <div class="yd-dropdown-parent">
+            <a href="#">Resources ▾</a>
+
+            <div class="yd-dropdown-menu">
+                <a href="/blog/">Blog</a>
+                <a href="/guides/">Guides</a>
+                <a href="/case-studies/">Case Studies</a>
+                <a href="/faq/">FAQ</a>
+            </div>
+        </div>
+
+        <!-- Portals dropdown -->
+        <div class="yd-dropdown-parent">
+            <a href="#">Portals ▾</a>
+
+            <div class="yd-dropdown-menu">
+                {% if request.user.is_authenticated and request.user.customer_profile %}
+                    <a href="/portal/dashboard/">Customer Dashboard</a>
+                {% else %}
+                    <a href="/portal/login/">Customer Portal</a>
+                {% endif %}
+
+                {% if request.user.is_authenticated and request.user.employee_profile %}
+                    <a href="/employee/dashboard/">Employee Dashboard</a>
+                {% else %}
+                    <a href="/employee/login/">Employee Portal</a>
+                {% endif %}
+
+                {% if request.user.is_staff %}
+                    <a href="/dashboard/">Admin Dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Account dropdown only appears after login -->
+        {% if request.user.is_authenticated %}
+            <div class="yd-dropdown-parent">
+                <a href="#">Account ▾</a>
+
+                <div class="yd-dropdown-menu">
+                    {% if request.user.customer_profile %}
+                        <a href="/portal/profile/">My Profile</a>
+                        <a href="/portal/dashboard/">Customer Dashboard</a>
+                        <a href="/portal/logout/">Logout</a>
+                    {% endif %}
+
+                    {% if request.user.employee_profile %}
+                        <a href="/employee/profile/">My Profile</a>
+                        <a href="/employee/dashboard/">Employee Dashboard</a>
+                        <a href="/employee/logout/">Logout</a>
+                    {% endif %}
+
+                    {% if request.user.is_staff %}
+                        <a href="/dashboard/">Admin Dashboard</a>
+                        <a href="/admin/">Django Admin</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Header action buttons -->
+    <div class="yd-header-actions">
+
+        <!-- Global search button -->
+        <button class="yd-search-btn" id="publicSearchButton" type="button">🔍</button>
+
+        <!-- Notification bell only shows in customer/employee portals -->
+        {% if request.user.is_authenticated %}
+            {% if "/portal/" in request.path or "/employee/" in request.path %}
+                <div class="portal-notification-box">
+                    <button class="notification-bell" id="notificationBell" type="button">
+                        🔔
+
+                        {% if global_unread_notifications > 0 %}
+                            <span id="notificationCount">{{ global_unread_notifications }}</span>
+                        {% else %}
+                            <span id="notificationCount" style="display:none;">0</span>
+                        {% endif %}
+                    </button>
+
+                    <div class="notification-dropdown">
+                        <h4>Notifications</h4>
+
+                        {% for note in global_notifications %}
+                            <a href="{{ note.link|default:'#' }}" class="{% if not note.is_read %}unread{% endif %}">
+                                <strong>{{ note.title }}</strong>
+                                <small>{{ note.message }}</small>
+                                <em>{{ note.created_at|date:"d M, g:i A" }}</em>
+                            </a>
+                        {% empty %}
+                            <p>No notifications yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <a href="/#quote" class="yd-book-btn">Book Now</a>
+        <a href="/#quote" class="yd-quote-btn">Get Quote</a>
+    </div>
+</nav>
+
+<!-- Optional dynamic contact strip -->
+{% if company_settings %}
+    <div class="company-contact-strip">
+        {% if company_settings.phone %}
+            <span>📞 {{ company_settings.phone }}</span>
+        {% endif %}
+
+        {% if company_settings.email %}
+            <span>✉️ {{ company_settings.email }}</span>
+        {% endif %}
+
+        {% if company_settings.address %}
+            <span>📍 {{ company_settings.address|truncatechars:80 }}</span>
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- Global search popup -->
+<div class="site-search-box" id="siteSearchBox">
+    <input type="text" id="siteSearchInput" placeholder="Search YD Cleaning website...">
+
+    <div class="site-search-results" id="siteSearchResults">
+        <a href="/">Home</a>
+        <a href="/commercial-cleaning-adelaide/">Commercial Cleaning</a>
+        <a href="/office-cleaning-adelaide/">Office Cleaning</a>
+        <a href="/end-of-lease-cleaning-adelaide/">End of Lease Cleaning</a>
+        <a href="/house-cleaning-adelaide/">House Cleaning</a>
+        <a href="/window-cleaning-adelaide/">Window Cleaning</a>
+        <a href="/gallery/">Gallery</a>
+        <a href="/reviews/">Reviews</a>
+        <a href="/contact/">Contact</a>
+
+        <a href="/portal/login/">Customer Portal</a>
+        <a href="/employee/login/">Employee Portal</a>
+        <a href="/portal/dashboard/">Customer Dashboard</a>
+        <a href="/portal/profile/">Customer Profile</a>
+        <a href="/portal/bookings/">Customer Bookings</a>
+        <a href="/portal/invoices/">Customer Invoices</a>
+
+        <a href="/employee/dashboard/">Employee Dashboard</a>
+        <a href="/employee/profile/">Employee Profile</a>
+        <a href="/employee/jobs/">Employee Jobs</a>
+        <a href="/employee/attendance/">Employee Attendance</a>
+        <a href="/employee/leave/">Employee Leave</a>
+        <a href="/employee/roster/">Employee Schedule</a>
+
+        <a href="/dashboard/">Admin Dashboard</a>
+        <a href="/dashboard/settings/">Company Settings</a>
+    </div>
+</div>
+
+<!-- Page content -->
+<!-- Global Messages -->
+
+{% if messages %}
+<div class="global-message-wrapper">
+
+    {% for message in messages %}
+
+        <div class="global-message {{ message.tags }}">
+            {{ message }}
+        </div>
+
+    {% endfor %}
+
+</div>
+{% endif %}
+
+<!-- Page content -->
+
+{% block content %}
+{% endblock %}
+
+<!-- Floating chat button -->
+<a href="#" class="chat-btn">💬</a>
+
+<script>
+/*
+    Get CSRF cookie value.
+    Required for AJAX POST requests such as marking notifications as read.
+*/
+function getCookie(name) {
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    /*
+        Public/mobile menu toggle.
+    */
+    const menuButton = document.getElementById("publicMenuButton");
+    const publicMenu = document.getElementById("publicMenu");
+
+    /*
+        Global search elements.
+    */
+    const searchButton = document.getElementById("publicSearchButton");
+    const searchBox = document.getElementById("siteSearchBox");
+    const searchInput = document.getElementById("siteSearchInput");
+    const searchResults = document.getElementById("siteSearchResults");
+
+    /*
+        Notification elements.
+    */
+    const notificationBell = document.getElementById("notificationBell");
+    const notificationCount = document.getElementById("notificationCount");
+
+    /*
+        Open/close mobile menu.
+    */
+    if (menuButton && publicMenu) {
+        menuButton.addEventListener("click", function () {
+            publicMenu.classList.toggle("active");
+        });
+    }
+
+    /*
+        Open/close global search popup.
+    */
+    if (searchButton && searchBox) {
+        searchButton.addEventListener("click", function () {
+            searchBox.classList.toggle("active");
+
+            if (searchBox.classList.contains("active")) {
+                searchInput.focus();
+            }
+        });
+    }
+
+    /*
+        Filter search result links as user types.
+    */
+    if (searchInput && searchResults) {
+        searchInput.addEventListener("input", function () {
+            const keyword = searchInput.value.toLowerCase();
+            const links = searchResults.querySelectorAll("a");
+
+            links.forEach(function (link) {
+                link.style.display = link.textContent.toLowerCase().includes(keyword)
+                    ? "block"
+                    : "none";
+            });
+        });
+    }
+
+    /*
+        Mark notifications as read when bell is clicked.
+    */
+    if (notificationBell) {
+        notificationBell.addEventListener("click", function () {
+            fetch("/notifications/mark-read/", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && notificationCount) {
+                    notificationCount.textContent = "0";
+                    notificationCount.style.display = "none";
+
+                    document.querySelectorAll(".notification-dropdown a.unread").forEach(function (item) {
+                        item.classList.remove("unread");
+                    });
+                }
+            });
+        });
+    }
+});
+</script>
+
+
+<style>
+
+.global-message-wrapper{
+    max-width:1200px;
+    margin:20px auto;
+    padding:0 20px;
+}
+
+.global-message{
+    padding:15px 20px;
+    border-radius:12px;
+    margin-bottom:10px;
+    font-weight:600;
+}
+
+.global-message.success{
+    background:#dcfce7;
+    color:#166534;
+    border-left:5px solid #22c55e;
+}
+
+.global-message.error{
+    background:#fee2e2;
+    color:#991b1b;
+    border-left:5px solid #ef4444;
+}
+
+.global-message.warning{
+    background:#fef3c7;
+    color:#92400e;
+    border-left:5px solid #f59e0b;
+}
+
+</style>
+
+</body>
+</html>

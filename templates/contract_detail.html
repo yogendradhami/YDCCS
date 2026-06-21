@@ -1,0 +1,104 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Contract Details | YD Dashboard{% endblock %}
+{% block page_title %}Contract Details{% endblock %}
+{% block page_subtitle %}View contract details and generate recurring bookings.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/contracts/{{ contract.id }}/generate-bookings/">Generate Next 90 Days</a>
+    <a href="/dashboard/contracts/{{ contract.id }}/edit/">Edit Contract</a>
+    <a href="/dashboard/contracts/{{ contract.id }}/delete/">Delete Contract</a>
+    <a href="/dashboard/contracts/">Back to Contracts</a>
+</section>
+
+<section class="crm-panel">
+    <div class="invoice-header-row">
+        <div>
+            <h2>{{ contract.customer.full_name }}</h2>
+            <p><strong>Service:</strong> {{ contract.service_type }}</p>
+            <p><strong>Frequency:</strong> {{ contract.get_frequency_display }}</p>
+            <p><strong>Status:</strong> {{ contract.get_status_display }}</p>
+            <p><strong>Price Per Visit:</strong> ${{ contract.price_per_visit }}</p>
+        </div>
+
+        <div>
+            <h2>Schedule</h2>
+            <p><strong>Start Date:</strong> {{ contract.start_date }}</p>
+            <p><strong>End Date:</strong> {{ contract.end_date|default:"Ongoing" }}</p>
+            <p><strong>Preferred Time:</strong> {{ contract.preferred_time }}</p>
+            <p><strong>Generated Until:</strong> {{ contract.bookings_generated_until|default:"Not generated yet" }}</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <h3>Location</h3>
+    <p>{{ contract.address }}</p>
+    <p>{{ contract.suburb_postcode }}</p>
+
+    <hr>
+
+    <h3>Assigned Employee</h3>
+    {% if contract.assigned_employee %}
+        <p>{{ contract.assigned_employee.full_name }}</p>
+    {% else %}
+        <p>No employee assigned.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Notes</h3>
+    <p>{{ contract.notes|default:"No notes." }}</p>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Generated Bookings</h2>
+    </div>
+
+    {% if bookings %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Employee</th>
+                        <th>Price</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.booking_date }}</td>
+                            <td>{{ booking.booking_time }}</td>
+                            <td>{{ booking.service_type }}</td>
+                            <td>{{ booking.get_status_display }}</td>
+                            <td>
+                                {% if booking.assigned_employee %}
+                                    {{ booking.assigned_employee.full_name }}
+                                {% else %}
+                                    Not assigned
+                                {% endif %}
+                            </td>
+                            <td>${{ booking.quoted_price }}</td>
+                            <td>
+                                <a href="/dashboard/bookings/{{ booking.id }}/edit/" class="small-link-btn">Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No generated bookings yet.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<h1>Employee Attendance Analytics</h1>
+
+<div class="responsive-table-wrap">
+
+<table class="dashboard-table">
+
+    <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Attendance Records</th>
+            <th>Attendance %</th>
+            <th>Total Leave</th>
+            <th>Approved Leave</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+    {% for row in analytics_rows %}
+
+        <tr>
+            <td>{{ row.employee.full_name }}</td>
+            <td>{{ row.attendance_count }}</td>
+            <td>{{ row.attendance_percentage }}%</td>
+            <td>{{ row.leave_count }}</td>
+            <td>{{ row.approved_leave_count }}</td>
+        </tr>
+
+    {% empty %}
+
+        <tr>
+            <td colspan="5">
+                No attendance data found.
+            </td>
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+GST Report
+{% endblock %}
+
+{% block page_title %}
+GST Report Dashboard
+{% endblock %}
+
+{% block page_subtitle %}
+GST reporting for YD Commercial Cleaning Services.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>GST Collected</span>
+        <h2>${{ gst_collected }}</h2>
+        <p>From paid invoices</p>
+    </div>
+
+    <div class="crm-card">
+        <span>GST Paid</span>
+        <h2>${{ gst_paid }}</h2>
+        <p>From expenses</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Net GST Payable</span>
+        <h2>${{ net_gst_payable }}</h2>
+        <p>Estimated BAS amount</p>
+    </div>
+
+    <div class="crm-card">
+        <span>GST Rate</span>
+        <h2>{{ company_gst_rate }}%</h2>
+        <p>Australia GST</p>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>GST Summary</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <tr>
+                    <td>Total Paid Revenue</td>
+                    <td>${{ paid_revenue }}</td>
+                </tr>
+
+                <tr>
+                    <td>Total Expenses</td>
+                    <td>${{ total_expenses }}</td>
+                </tr>
+
+                <tr>
+                    <td>GST Collected</td>
+                    <td>${{ gst_collected }}</td>
+                </tr>
+
+                <tr>
+                    <td>GST Paid</td>
+                    <td>${{ gst_paid }}</td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <strong>Net GST Payable</strong>
+                    </td>
+
+                    <td>
+                        <strong>${{ net_gst_payable }}</strong>
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>GST Formula</h2>
+    </div>
+
+    <p>
+        GST Collected = Revenue ÷ 11
+    </p>
+
+    <p>
+        GST Paid = Expenses ÷ 11
+    </p>
+
+    <p>
+        Net GST Payable =
+        GST Collected − GST Paid
+    </p>
+
+</section>
+
+{% endblock %}

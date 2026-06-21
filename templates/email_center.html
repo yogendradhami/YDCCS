@@ -1,0 +1,185 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Email Center
+{% endblock %}
+
+{% block page_title %}
+Email Center
+{% endblock %}
+
+{% block page_subtitle %}
+Send invoice reminders, booking reminders and quote follow-up emails.
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="custom-alert {{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Overdue Invoices</span>
+        <h2>{{ overdue_invoices|length }}</h2>
+        <p>Send payment reminders</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Tomorrow Bookings</span>
+        <h2>{{ tomorrow_bookings|length }}</h2>
+        <p>Send booking reminders</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Quote Follow-ups</span>
+        <h2>{{ quote_followups|length }}</h2>
+        <p>Follow up old quote requests</p>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Overdue Invoice Reminders</h2>
+        <a href="/dashboard/invoices/">View Invoices</a>
+    </div>
+
+    {% if overdue_invoices %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Due Date</th>
+                        <th>Amount</th>
+                        <th>Send</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for invoice in overdue_invoices %}
+                        <tr>
+                            <td>{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.booking.customer.full_name }}</td>
+                            <td>{{ invoice.booking.customer.email }}</td>
+                            <td>{{ invoice.due_date }}</td>
+                            <td>${{ invoice.total_amount }}</td>
+                            <td>
+                                <form method="POST" action="{% url 'send_invoice_reminder' invoice.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="small-link-btn">
+                                        Send Reminder
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No overdue invoices found.</p>
+    {% endif %}
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Tomorrow Booking Reminders</h2>
+        <a href="/dashboard/calendar/">Calendar</a>
+    </div>
+
+    {% if tomorrow_bookings %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Send</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for booking in tomorrow_bookings %}
+                        <tr>
+                            <td>{{ booking.customer.full_name }}</td>
+                            <td>{{ booking.customer.email }}</td>
+                            <td>{{ booking.service_type }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                            <td>{{ booking.booking_time }}</td>
+                            <td>
+                                <form method="POST" action="{% url 'send_booking_reminder' booking.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="small-link-btn">
+                                        Send Reminder
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No bookings scheduled for tomorrow.</p>
+    {% endif %}
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Quote Follow-ups</h2>
+        <a href="/dashboard/leads/">View Leads</a>
+    </div>
+
+    {% if quote_followups %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Property Type</th>
+                        <th>Suburb</th>
+                        <th>Submitted</th>
+                        <th>Send</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for quote in quote_followups %}
+                        <tr>
+                            <td>{{ quote.name }}</td>
+                            <td>{{ quote.email }}</td>
+                            <td>{{ quote.property_type }}</td>
+                            <td>{{ quote.suburb_postcode }}</td>
+                            <td>{{ quote.created_at|date:"d M Y" }}</td>
+                            <td>
+                                <form method="POST" action="{% url 'send_quote_followup' quote.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="small-link-btn">
+                                        Send Follow-up
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No quote follow-ups needed.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

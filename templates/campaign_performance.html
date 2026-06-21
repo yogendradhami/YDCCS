@@ -1,0 +1,126 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Campaign Performance
+{% endblock %}
+
+{% block page_title %}
+Campaign Performance Dashboard
+{% endblock %}
+
+{% block page_subtitle %}
+Track campaign effectiveness for YD Commercial Cleaning Services.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Campaigns</span>
+        <h2>{{ total_campaigns }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Emails Sent</span>
+        <h2>{{ total_emails_sent }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Top Campaign Type</span>
+        <h2>{{ top_campaign }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>VIP Campaigns</span>
+        <h2>{{ vip_campaigns }}</h2>
+    </div>
+
+</div>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Inactive Campaigns</span>
+        <h2>{{ inactive_campaigns }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Review Campaigns</span>
+        <h2>{{ review_campaigns }}</h2>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Campaign Performance History</h2>
+
+        <a href="/dashboard/campaigns/" class="small-link-btn">
+            Campaign Center
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Campaign</th>
+                    <th>Recipients</th>
+                    <th>Sent By</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for campaign in campaigns %}
+
+                    <tr>
+
+                        <td>
+                            {{ campaign.sent_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+                            {{ campaign.get_campaign_type_display }}
+                        </td>
+
+                        <td>
+                            {{ campaign.recipients_count }}
+                        </td>
+
+                        <td>
+
+                            {% if campaign.sent_by %}
+                                {{ campaign.sent_by.username }}
+                            {% else %}
+                                System
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="4">
+                            No campaign data available.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

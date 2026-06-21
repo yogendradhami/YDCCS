@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}
+My Bookings | Customer Portal
+{% endblock %}
+
+{% block content %}
+
+<section class="customer-portal-hero">
+    <div class="container">
+        <div class="customer-hero-box">
+            <div>
+                <h1>My Bookings</h1>
+                <p>View all your cleaning bookings and completion evidence.</p>
+            </div>
+
+            <a href="/portal/dashboard/" class="customer-back-btn">Dashboard</a>
+        </div>
+    </div>
+</section>
+
+<section class="section customer-dashboard-section">
+    <div class="container">
+
+        <div class="customer-action-row">
+            <a href="/#quote" class="btn-fill customer-spaced-btn">Request New Quote</a>
+            <a href="/portal/invoices/" class="btn-outline customer-spaced-btn">My Invoices</a>
+            <a href="/portal/dashboard/" class="btn-outline customer-spaced-btn">Back to Dashboard</a>
+        </div>
+
+        <div class="customer-panel">
+            <div class="customer-panel-header">
+                <h2>Booking History</h2>
+            </div>
+
+            {% if bookings %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Address</th>
+                                <th>Suburb</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                                <th>Report</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for booking in bookings %}
+                                <tr>
+                                    <td>{{ booking.service_type }}</td>
+                                    <td>{{ booking.booking_date }}</td>
+                                    <td>{{ booking.booking_time }}</td>
+                                    <td>{{ booking.address }}</td>
+                                    <td>{{ booking.suburb_postcode }}</td>
+                                    <td>{{ booking.get_status_display }}</td>
+                                    <td>
+                                        <a href="/portal/bookings/{{ booking.id }}/" class="small-link-btn">
+                                            View
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="/reports/booking/{{ booking.id }}/" class="small-link-btn">
+                                            Report
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No bookings found.</h3>
+                    <p>Your booking history will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

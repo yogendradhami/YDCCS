@@ -1,0 +1,685 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+    <h2>Executive Alerts</h2>
+
+    <h1>
+        {{ executive_alerts }}
+    </h1>
+
+    <p>
+        Items requiring attention today
+    </p>
+
+</div>
+
+<div style="margin-bottom:20px;">
+
+    <a
+        href="/dashboard/export-report/"
+        class="btn btn-primary"
+    >
+        Export PDF Report
+    </a>
+
+</div>
+
+<div style="margin-bottom:20px;">
+
+
+    <a
+        href="/dashboard/email-report/"
+        class="btn btn-success"
+    >
+        Email Report
+    </a>
+
+</div>
+
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Today's Jobs</span>
+        <h2>{{ today_jobs }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Outstanding Invoices</span>
+        <h2>{{ outstanding_invoices }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Low Stock Items</span>
+        <h2>{{ low_stock_items }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Overdue Equipment</span>
+        <h2>{{ overdue_equipment }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Vehicles Due Service</span>
+        <h2>{{ vehicles_due_service }}</h2>
+    </div>
+
+</div>
+
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Revenue This Month</span>
+        <h2>${{ monthly_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Expenses This Month</span>
+        <h2>${{ monthly_expenses }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Estimated Profit</span>
+        <h2>${{ estimated_profit }}</h2>
+    </div>
+
+</div>
+
+<div class="crm-two-column">
+
+    <div class="crm-panel chart-panel">
+        <div class="crm-panel-header">
+            <h2>Revenue Trend</h2>
+        </div>
+
+        <canvas id="revenueChart"></canvas>
+    </div>
+
+    <div class="crm-panel chart-panel">
+        <div class="crm-panel-header">
+            <h2>Expense Categories</h2>
+        </div>
+
+        <canvas id="expenseCategoryChart"></canvas>
+    </div>
+
+
+    <div class="crm-panel chart-panel">
+
+        <div class="crm-panel-header">
+            <h2>Profit Trend</h2>
+        </div>
+
+        <canvas id="profitChart"></canvas>
+
+    </div>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Top Customers</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Bookings</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for customer in top_customers %}
+
+            <tr>
+                <td>{{ customer.full_name }}</td>
+                <td>{{ customer.total_bookings }}</td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Top Employees</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Completed Jobs</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for employee in top_employees %}
+
+            <tr>
+                <td>{{ employee.full_name }}</td>
+                <td>{{ employee.completed_jobs }}</td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Most Popular Services</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Total Jobs</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for service in top_services %}
+
+            <tr>
+                <td>{{ service.service_type }}</td>
+                <td>{{ service.total_jobs }}</td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Top Revenue Customers</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Total Revenue</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for customer in top_revenue_customers %}
+
+            <tr>
+                <td>{{ customer.full_name }}</td>
+                <td>${{ customer.total_revenue }}</td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Customer Lifetime Value</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Bookings</th>
+                <th>Total Revenue</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for customer in customer_lifetime_value %}
+
+            <tr>
+
+                <td>{{ customer.full_name }}</td>
+
+                <td>{{ customer.booking_count }}</td>
+
+                <td>${{ customer.total_revenue }}</td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Top Suburbs</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Suburb</th>
+                <th>Total Jobs</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for suburb in top_suburbs %}
+
+            <tr>
+
+                <td>{{ suburb.suburb_postcode }}</td>
+
+                <td>{{ suburb.total_jobs }}</td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Repeat Customer Rate</h2>
+
+    <table class="dashboard-table">
+
+        <tr>
+            <th>Total Customers</th>
+            <td>{{ total_customer_count }}</td>
+        </tr>
+
+        <tr>
+            <th>Repeat Customers</th>
+            <td>{{ repeat_customer_count }}</td>
+        </tr>
+
+        <tr>
+            <th>Repeat Rate</th>
+            <td>{{ repeat_customer_rate }}%</td>
+        </tr>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Monthly Growth</h2>
+
+    <table class="dashboard-table">
+
+        <tr>
+            <th>Last Month Revenue</th>
+            <td>${{ last_month_revenue }}</td>
+        </tr>
+
+        <tr>
+            <th>This Month Revenue</th>
+            <td>${{ this_month_revenue }}</td>
+        </tr>
+
+        <tr>
+            <th>Growth</th>
+            <td>{{ monthly_growth }}%</td>
+        </tr>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Employee Revenue Leaderboard</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+
+            <tr>
+                <th>Employee</th>
+                <th>Jobs</th>
+                <th>Revenue</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for employee in employee_revenue %}
+
+            <tr>
+
+                <td>{{ employee.full_name }}</td>
+
+                <td>{{ employee.completed_jobs }}</td>
+
+                <td>
+                    ${{ employee.revenue_generated|default:0 }}
+                </td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Quote Conversion Rate</h2>
+
+    <table class="dashboard-table">
+
+        <tr>
+            <th>Total Quotes</th>
+            <td>{{ total_quotes }}</td>
+        </tr>
+
+        <tr>
+            <th>Accepted Quotes</th>
+            <td>{{ accepted_quotes }}</td>
+        </tr>
+
+        <tr>
+            <th>Conversion Rate</th>
+            <td>{{ quote_conversion_rate }}%</td>
+        </tr>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>New Customers This Month</h2>
+
+    <table class="dashboard-table">
+
+        <tr>
+            <th>New Customers</th>
+            <td>{{ new_customers_this_month }}</td>
+        </tr>
+
+    </table>
+
+</div>
+
+
+<div class="dashboard-card">
+
+    <h2>Average Job Value</h2>
+
+    <table class="dashboard-table">
+
+        <tr>
+            <th>Completed Jobs</th>
+            <td>{{ completed_jobs_count }}</td>
+        </tr>
+
+        <tr>
+            <th>Average Job Value</th>
+            <td>${{ average_job_value }}</td>
+        </tr>
+
+    </table>
+
+</div>
+
+
+<div class="dashboard-card">
+
+    <h2>Revenue by Service Type</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Jobs</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for service in revenue_by_service %}
+
+            <tr>
+                <td>{{ service.service_type }}</td>
+                <td>{{ service.total_jobs }}</td>
+                <td>${{ service.total_revenue }}</td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Revenue by Suburb</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Suburb</th>
+                <th>Jobs</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for suburb in revenue_by_suburb %}
+
+            <tr>
+
+                <td>{{ suburb.suburb_postcode }}</td>
+
+                <td>{{ suburb.total_jobs }}</td>
+
+                <td>${{ suburb.total_revenue }}</td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Top 10 Customers By Revenue</h2>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Jobs</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for customer in top_10_customers %}
+
+            <tr>
+
+                <td>{{ customer.full_name }}</td>
+
+                <td>{{ customer.total_jobs }}</td>
+
+                <td>${{ customer.total_revenue }}</td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<div class="dashboard-card">
+
+    <h2>Business Health Score</h2>
+
+    <div style="text-align:center;padding:30px;">
+
+        <h1 style="
+            font-size:60px;
+            margin:0;
+        ">
+            {{ health_score }}/100
+        </h1>
+
+        <h3 style="
+            font-size:60px;
+            margin:0;
+        ">
+            {{ health_status }}
+        </h3>
+
+        <p>
+            Overall Business Performance
+        </p>
+
+    </div>
+
+</div>
+
+
+
+{{ revenue_labels|json_script:"revenue-labels" }}
+{{ revenue_values|json_script:"revenue-values" }}
+{{ profit_values|json_script:"profit-values" }}
+
+{{ category_labels|json_script:"category-labels" }}
+{{ category_values|json_script:"category-values" }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const revenueLabels = JSON.parse(
+        document.getElementById("revenue-labels").textContent
+    );
+
+    const revenueValues = JSON.parse(
+        document.getElementById("revenue-values").textContent
+    );
+
+    const categoryLabels = JSON.parse(
+        document.getElementById("category-labels").textContent
+    );
+
+    const categoryValues = JSON.parse(
+        document.getElementById("category-values").textContent
+    );
+
+    const profitValues = JSON.parse(
+    document.getElementById("profit-values").textContent
+    );
+
+    const revenueCanvas = document.getElementById("revenueChart");
+
+    if (revenueCanvas) {
+        new Chart(revenueCanvas, {
+            type: "line",
+            data: {
+                labels: revenueLabels,
+                datasets: [{
+                    label: "Revenue",
+                    data: revenueValues,
+                    tension: 0.3
+                }]
+            }
+        });
+    }
+
+    const expenseCanvas = document.getElementById("expenseCategoryChart");
+
+    if (expenseCanvas) {
+        new Chart(expenseCanvas, {
+            type: "bar",
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: "Expenses",
+                    data: categoryValues
+                }]
+            }
+        });
+    }
+
+    const profitCanvas =
+    document.getElementById("profitChart");
+
+if (profitCanvas) {
+
+    new Chart(profitCanvas, {
+
+        type: "line",
+
+        data: {
+
+            labels: revenueLabels,
+
+            datasets: [{
+                label: "Profit",
+                data: profitValues,
+                tension: 0.3
+            }]
+        }
+    });
+}
+
+});
+</script>
+
+{% endblock %}
