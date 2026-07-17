@@ -1,0 +1,362 @@
+
+
+{% extends 'base.html' %}
+
+{% block title %}
+Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block content %}
+
+<style>
+.invoice-page {
+    background: #f7f9fc;
+    padding: 40px 0;
+}
+
+.invoice-card {
+    max-width: 1100px;
+    margin: auto;
+    background: #fff;
+    border-radius: 18px;
+    padding: 35px;
+    box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
+    color: #111827;
+}
+
+.invoice-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 35px;
+}
+
+.invoice-brand {
+    display: flex;
+    gap: 22px;
+    align-items: flex-start;
+}
+
+.invoice-logo {
+    width: 150px;
+    height: auto;
+}
+
+.invoice-brand h1 {
+    font-size: 38px;
+    line-height: 1.1;
+    margin: 0;
+    color: #050b2e;
+}
+
+.invoice-brand p,
+.invoice-meta p,
+.invoice-box p {
+    margin: 7px 0;
+    color: #4b5563;
+    font-size: 16px;
+}
+
+.invoice-meta {
+    text-align: right;
+}
+
+.invoice-number {
+    font-size: 44px;
+    font-weight: 800;
+    color: #050b2e;
+    margin-bottom: 15px;
+}
+
+.status-pill {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 12px 35px;
+    border-radius: 8px;
+    font-weight: 800;
+    border: 1px solid #ef4444;
+    background: #fff1f2;
+    color: #dc2626;
+    text-transform: uppercase;
+}
+
+.status-paid {
+    border-color: #22c55e;
+    background: #ecfdf5;
+    color: #16a34a;
+}
+
+.invoice-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin: 35px 0;
+}
+
+.invoice-box {
+    border: 1px solid #dbe3f0;
+    border-radius: 14px;
+    padding: 25px;
+    background: #ffffff;
+}
+
+.invoice-box h3 {
+    color: #0759c9;
+    margin-top: 0;
+    margin-bottom: 18px;
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    overflow: hidden;
+    border: 1px solid #dbe3f0;
+    border-radius: 12px;
+}
+
+.invoice-table th {
+    background: #f1f5f9;
+    text-align: left;
+    padding: 18px;
+    color: #050b2e;
+}
+
+.invoice-table td {
+    padding: 18px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.invoice-bottom {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 40px;
+    margin-top: 35px;
+}
+
+.invoice-note-box {
+    border: 1px solid #dbe3f0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 18px;
+    color: #374151;
+}
+
+.invoice-total-box {
+    font-size: 18px;
+}
+
+.invoice-total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.invoice-grand-total {
+    border-top: 2px solid #dbe3f0;
+    padding-top: 22px;
+    margin-top: 18px;
+    font-size: 28px;
+    font-weight: 900;
+    color: #0759c9;
+}
+
+.invoice-actions {
+    display: flex;
+    gap: 18px;
+    margin-top: 35px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 28px;
+    flex-wrap: wrap;
+}
+
+.invoice-btn {
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid #0759c9;
+}
+
+.btn-blue {
+    color: #0759c9;
+    background: #fff;
+}
+
+.btn-green {
+    background: #22c55e;
+    color: #fff;
+    border-color: #22c55e;
+}
+
+.thank-you {
+    text-align: center;
+    margin-top: 30px;
+    color: #64748b;
+}
+
+@media (max-width: 800px) {
+    .invoice-top,
+    .invoice-brand,
+    .invoice-info-grid,
+    .invoice-bottom {
+        display: block;
+    }
+
+    .invoice-meta {
+        text-align: left;
+        margin-top: 25px;
+    }
+
+    .invoice-brand h1 {
+        font-size: 28px;
+    }
+}
+</style>
+
+<section class="invoice-page">
+    <div class="invoice-card">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="custom-alert {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="invoice-top">
+            <div class="invoice-brand">
+                <img src="/static/images/logo.jpeg" alt="YD Commercial Cleaning Services Logo" class="invoice-logo">
+
+                <div>
+                    <h1>YD Commercial<br>Cleaning Services</h1>
+                    <p><strong>ABN:</strong> 95 916 203 175</p>
+                    <p>📍 2/10 Da Costa Avenue, Prospect SA 5082</p>
+                    <p>📞 0430 049 865</p>
+                    <p>✉ ydcommercialcleaning@gmail.com</p>
+                </div>
+            </div>
+
+            <div class="invoice-meta">
+                <div class="invoice-number">Invoice#{{ invoice.id|stringformat:"02d" }}</div>
+                <p><strong>Issued Date:</strong> {{ invoice.issue_date }}</p>
+
+                {% if invoice.due_date %}
+                    <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
+                {% else %}
+                    <p><strong>Due Date:</strong> Not set</p>
+                {% endif %}
+
+                <span class="status-pill {% if invoice.status == 'paid' %}status-paid{% endif %}">
+                    {{ invoice.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="invoice-info-grid">
+            <div class="invoice-box">
+                <h3>👤 Bill To</h3>
+                <p><strong>{{ invoice.booking.customer.full_name }}</strong></p>
+                <p>📞 {{ invoice.booking.customer.phone }}</p>
+                <p>✉ {{ invoice.booking.customer.email }}</p>
+                <p>📍 {{ invoice.booking.customer.address }}</p>
+            </div>
+
+            <div class="invoice-box">
+                <h3>📅 Job Details</h3>
+                <p><strong>Service:</strong> {{ invoice.booking.service_type }}</p>
+                <p><strong>Date:</strong> {{ invoice.booking.booking_date }}</p>
+                <p><strong>Time:</strong> {{ invoice.booking.booking_time }}</p>
+                <p><strong>Address:</strong> {{ invoice.booking.address }}</p>
+                <p><strong>Suburb:</strong> {{ invoice.booking.suburb_postcode }}</p>
+            </div>
+        </div>
+
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="text-right">Quantity</th>
+                    <th class="text-right">Price</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>{{ invoice.booking.service_type }}</strong><br>
+                        <small>{{ invoice.description }}</small>
+                    </td>
+                    <td class="text-right">1</td>
+                    <td class="text-right">${{ invoice.amount }}</td>
+                    <td class="text-right">${{ invoice.amount }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="invoice-bottom">
+            <div>
+                <h3>Description</h3>
+                <div class="invoice-note-box">
+                    {{ invoice.description }}
+                </div>
+
+                {% if invoice.notes %}
+                    <h3>Notes</h3>
+                    <div class="invoice-note-box">
+                        {{ invoice.notes }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="invoice-total-box">
+                <div class="invoice-total-row">
+                    <span>Subtotal:</span>
+                    <strong>${{ invoice.amount }}</strong>
+                </div>
+
+                <div class="invoice-total-row">
+                    <span>Discount:</span>
+                    <strong>${{ invoice.discount_amount }}</strong>
+                </div>  
+
+                <div class="invoice-total-row">
+                    <span>GST 10%:</span>
+                    <strong>${{ invoice.gst_amount }}</strong>
+                </div>
+
+                <div class="invoice-total-row invoice-grand-total">
+                    <span>Total:</span>
+                    <strong>${{ invoice.total_amount }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="invoice-actions">
+            <a href="/dashboard/invoices/" class="invoice-btn btn-blue">← Back to Invoices</a>
+            <a href="/dashboard/invoices/{{ invoice.id }}/download/" class="invoice-btn btn-blue">⬇ Download PDF</a>
+
+            {% if invoice.status != "paid" %}
+                <a href="/dashboard/invoices/{{ invoice.id }}/pay/" class="invoice-btn btn-green">
+                    💳 Pay Now with Stripe
+                </a>
+            {% else %}
+                <span class="invoice-btn btn-green">Paid</span>
+            {% endif %}
+        </div>
+
+        <div class="thank-you">
+            <p><strong>Thank you for your business!</strong></p>
+            <p>We appreciate the opportunity to serve you.</p>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

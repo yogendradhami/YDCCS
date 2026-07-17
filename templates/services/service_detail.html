@@ -1,0 +1,374 @@
+<!-- ===================================================
+     YD Commercial Cleaning Services
+     File: service_detail.html
+     Purpose: SEO service page template
+=================================================== -->
+
+{% extends 'base.html' %}
+
+{% block title %}
+{{ service.title }} | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block meta_description %}
+{{ service.description }}
+{% endblock %}
+
+{% block og_title %}
+{{ service.title }} | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block og_description %}
+{{ service.description }}
+{% endblock %}
+
+{% block og_image %}{% endblock %}
+{% block twitter_image %}{% endblock %}
+
+{% if service_url %}
+<link rel="canonical" href="{{ service_url }}">
+{% endif %}
+<meta name="robots" content="index,follow">
+
+{% block content %}
+
+<section class="page-hero service-hero">
+    <div class="container service-hero-grid">
+        <div class="service-split" role="region" aria-label="Service detail">
+            <div class="split-image" aria-hidden="true">
+                <picture>
+                    <source srcset="{{ service.hero_image|default:'/static/images/logo.jpeg' }}" type="image/jpeg">
+                    <img src="{{ service.hero_image|default:'/static/images/logo.jpeg' }}" alt="{{ service.title }}" loading="lazy">
+                </picture>
+            </div>
+
+            <div class="split-content">
+                <span class="hero-badge">Professional Cleaning in Adelaide</span>
+                <h1>{{ service.heading }}</h1>
+                <p>{{ service.description }}</p>
+
+                <div class="service-hero-buttons">
+                    <a href="{% url 'contact' %}" class="btn btn-primary">Get a Free Quote</a>
+                    <a href="tel:0430049865" class="btn btn-outline">Call 0430 049 865</a>
+                </div>
+
+                <div class="service-hero-stats">
+                    <div>
+                        <strong>100%</strong>
+                        <span>Satisfaction Guaranteed</span>
+                    </div>
+                    <div>
+                        <strong>100+</strong>
+                        <span>Happy Adelaide Customers</span>
+                    </div>
+                    <div>
+                        <strong>2</strong>
+                        <span>Hour Response Time</span>
+                    </div>
+                    <div>
+                        <strong>Professional</strong>
+                        <span>Certified Team</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container service-page-grid">
+        <div class="service-content-card">
+            <div class="service-overview-block">
+                <h2>About This Service</h2>
+                <p>{{ service.overview }}</p>
+            </div>
+
+            <div class="service-section-block">
+                <h2>What's Included</h2>
+                <div class="service-benefits-grid">
+                    {% for item in service.included %}
+                        <div class="service-benefit-card">
+                            <span class="benefit-icon">✓</span>
+                            <p>{{ item }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="service-section-block">
+                <h2>Why Choose YD Commercial Cleaning?</h2>
+                <div class="service-why-grid">
+                    <div class="service-why-card">
+                        <h4>Professional Team</h4>
+                        <p>Trained and experienced cleaners dedicated to quality results.</p>
+                    </div>
+                    <div class="service-why-card">
+                        <h4>Reliable Service</h4>
+                        <p>On-time, every time with consistent professional results.</p>
+                    </div>
+                    <div class="service-why-card">
+                        <h4>Transparent Pricing</h4>
+                        <p>Competitive rates with no hidden fees or surprises.</p>
+                    </div>
+                    <div class="service-why-card">
+                        <h4>Local Experts</h4>
+                        <p>Based in Adelaide with deep knowledge of local needs.</p>
+                    </div>
+                    <div class="service-why-card">
+                        <h4>Fully Insured</h4>
+                        <p>Complete insurance coverage for your peace of mind.</p>
+                    </div>
+                    <div class="service-why-card">
+                        <h4>Quick Response</h4>
+                        <p>Fast response times and flexible scheduling available.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-section-block">
+                <h2>Service Packages & Pricing</h2>
+                <div class="service-pricing-grid">
+                    {% for package in service.packages %}
+                        <div class="service-pricing-card">
+                            <h4>{{ package.name }}</h4>
+                            <div class="package-price">{{ package.price }}</div>
+                            <p>{{ package.description }}</p>
+                            <a href="{% url 'contact' %}" class="btn-fill">Get Quote</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="service-quote-calculator">
+                <h3>Quick Service Overview</h3>
+                <div class="calculator-row">
+                    <span>Service Type</span>
+                    <strong>{{ service.title }}</strong>
+                </div>
+                <div class="calculator-row">
+                    <span>Starting Price</span>
+                    <strong>{{ service.packages.0.price }}</strong>
+                </div>
+                <p class="calculator-note">* Final price may vary based on property size and condition. Contact us for a personalized quote.</p>
+                <a href="{% url 'contact' %}" class="btn-fill">Get Full Quote</a>
+            </div>
+        </div>
+
+        <div class="service-sidebar-card">
+            <h3>Ready to Book?</h3>
+            <p><strong>Phone:</strong><br><a href="tel:0430049865">0430 049 865</a></p>
+            <p><strong>Email:</strong><br><a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a></p>
+            <p><strong>Service Area:</strong><br>Adelaide and surrounding suburbs</p>
+            <p><strong>Hours:</strong><br>Available 7 days a week</p>
+            <a href="tel:0430049865" class="btn-fill full-width">Call Now</a>
+            <a href="{% url 'contact' %}" class="btn-outline full-width" style="margin-top: 16px;">Request a Quote</a>
+        </div>
+    </div>
+</section>
+
+<section class="section landing-testimonials">
+    <div class="container">
+        <div class="section-title">
+            <h2>What Adelaide Homeowners Say</h2>
+            <p class="section-subtitle">Real feedback from customers who trust YD Cleaning.</p>
+        </div>
+
+        <div class="landing-testimonials-grid">
+            {% for review in google_reviews %}
+                <div class="landing-testimonial-card">
+                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                    <p class="testimonial-text">{{ review.review_text|truncatewords:35 }}</p>
+                    <strong class="testimonial-author">{{ review.reviewer_name }}</strong>
+                    <p class="testimonial-badge">Google Review</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section faq-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+        </div>
+
+        <div class="faq-box">
+            <h4>How much does {{ service.title }} cost?</h4>
+            <p>Prices start from our estimated package rates and are confirmed after a quick assessment.</p>
+        </div>
+
+        <div class="faq-box">
+            <h4>Do you bring your own cleaning supplies?</h4>
+            <p>Yes, our team brings professional cleaning equipment and safe products for every job.</p>
+        </div>
+
+        <div class="faq-box">
+            <h4>Are you insured and bonded?</h4>
+            <p>Yes, YD Commercial Cleaning Services is fully insured and bonded for your peace of mind.</p>
+        </div>
+
+        <div class="faq-box">
+            <h4>Which Adelaide suburbs do you service?</h4>
+            <p>We service Adelaide CBD, Unley, Norwood, Glenelg, Burnside and surrounding suburbs.</p>
+        </div>
+
+        <div class="faq-box">
+            <h4>What is the difference between standard and deep cleaning?</h4>
+            <p>Standard cleaning covers regular maintenance while deep cleaning includes detailed scrubbing of hidden areas and heavier build-up.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section related-services-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Related Adelaide Cleaning Services</h2>
+            <p>Explore more local service pages for Adelaide and nearby suburbs.</p>
+        </div>
+        <div class="related-services-grid">
+            <a href="/services/commercial-cleaning-adelaide/">Commercial Cleaning Adelaide</a>
+            <a href="/services/office-cleaning-adelaide/">Office Cleaning Adelaide</a>
+            <a href="/services/end-of-lease-cleaning-adelaide/">End of Lease Cleaning Adelaide</a>
+            <a href="/services/window-cleaning-adelaide/">Window Cleaning Adelaide</a>
+            <a href="/services/house-cleaning-adelaide/">House Cleaning Adelaide</a>
+        </div>
+    </div>
+</section>
+
+<section class="section service-cta-section">
+    <div class="container">
+        <div class="service-cta-box">
+            <h2>Ready for a Spotless Home?</h2>
+            <p>Schedule your {{ service.title|lower }} today. Free quote, no obligation, fast response.</p>
+            <div class="service-cta-actions">
+                <a href="{% url 'contact' %}" class="btn-fill">Get Your Free Quote</a>
+                <a href="tel:0430049865" class="btn-outline">Call 0430 049 865</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block default_why_choose_section %}{% endblock %}
+{% block default_faq_section %}{% endblock %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "{{ service.title|escape }}",
+          "item": "{{ service_url|escapejs }}"
+        }
+      ]
+    },
+    {
+      "@type": "Service",
+      "serviceType": "{{ service.title|escape }}",
+      "name": "{{ service.title|escape }}",
+      "description": "{{ service.description|escape }}",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escape }}",
+        "telephone": "{{ company_settings.phone|default:'0430 049 865' }}",
+        "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com' }}",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "{{ address_street|escape }}",
+          "addressLocality": "{{ address_locality|escape }}",
+          "addressRegion": "{{ address_region|escape }}",
+          "postalCode": "{{ address_postal_code|escape }}",
+          "addressCountry": "{{ address_country|escape }}"
+        },
+        "areaServed": {{ service_area_list|safe }},
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "opens": "08:00",
+            "closes": "12:00"
+          }
+        ],
+        "sameAs": {{ same_as_urls|safe }}
+      },
+      "areaServed": {{ service_area_list|safe }},
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "{{ service.title|escape }} Packages",
+        "itemListElement": [
+          {% for package in service.packages %}
+          {
+            "@type": "Offer",
+            "name": "{{ package.name|escape }}",
+            "description": "{{ package.description|escape }}"
+          }{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        ]
+      }{% if service_review_count %},
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ service_average_rating }}",
+        "reviewCount": "{{ service_review_count }}"
+      },
+      "review": [
+        {% for review in service_reviews %}
+        {
+          "@type": "Review",
+          "author": "{{ review.reviewer_name|escape }}",
+          "datePublished": "{{ review.review_date|date:'Y-m-d' }}",
+          "reviewBody": "{{ review.comment|escape }}",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "{{ review.rating }}",
+            "bestRating": "5"
+          }
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]{% endif %}
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much does {{ service.title }} cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Prices start from our estimated package rates and are confirmed after a quick assessment."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you bring your own cleaning supplies?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, our team brings professional cleaning equipment and safe products for every job."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are you insured and bonded?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, YD Commercial Cleaning Services is fully insured and bonded for your peace of mind."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which Adelaide suburbs do you service?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We service Adelaide CBD, Unley, Norwood, Glenelg, Burnside and surrounding suburbs."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+{% endblock %}

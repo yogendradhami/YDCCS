@@ -1,0 +1,110 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Review Analytics{% endblock %}
+
+{% block page_title %}Review Analytics{% endblock %}
+
+{% block page_subtitle %}
+Track customer reviews, review requests and rating performance.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Average Rating</span>
+        <h2>{{ average_rating }} ⭐</h2>
+        <p>Across all reviews</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Reviews</span>
+        <h2>{{ total_reviews }}</h2>
+        <p>Manual customer reviews</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Featured Reviews</span>
+        <h2>{{ featured_reviews }}</h2>
+        <p>Shown on website</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Review Conversion</span>
+        <h2>{{ review_conversion_rate }}%</h2>
+        <p>Reviews vs requests sent</p>
+    </div>
+
+</div>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>5 Star Reviews</span>
+        <h2>{{ five_star_reviews }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Review Requests Sent</span>
+        <h2>{{ review_requests_sent }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>4 Star Reviews</span>
+        <h2>{{ rating_breakdown.four }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Lower Ratings</span>
+        <h2>{{ rating_breakdown.three|add:rating_breakdown.two|add:rating_breakdown.one }}</h2>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Latest Reviews</h2>
+        <a href="/dashboard/reviews/">Manage Reviews</a>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="dashboard-table advanced-table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Suburb</th>
+                    <th>Rating</th>
+                    <th>Featured</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for review in latest_reviews %}
+                    <tr>
+                        <td>{{ review.customer_name }}</td>
+                        <td>{{ review.suburb }}</td>
+                        <td>{{ review.rating }} ⭐</td>
+                        <td>
+                            {% if review.featured %}
+                                <span class="status-badge success">Yes</span>
+                            {% else %}
+                                <span class="status-badge warning">No</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ review.created_at|date:"d M Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">No reviews found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% endblock %}

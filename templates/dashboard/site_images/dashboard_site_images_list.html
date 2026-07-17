@@ -1,0 +1,46 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Site Images | YD Dashboard{% endblock %}
+{% block page_title %}Site Images{% endblock %}
+{% block page_subtitle %}Upload and manage images used across the website.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/site-images/add/">+ Upload Site Image</a>
+    <a href="/dashboard/">Back to Dashboard</a>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Site Images</h2>
+    </div>
+
+    {% if images %}
+        <div class="dashboard-gallery-grid">
+            {% for img in images %}
+                <div class="dashboard-gallery-card">
+
+                    {% if img.image %}
+                        <img src="{{ img.image.url }}" alt="{{ img.title }}">
+                    {% endif %}
+
+                    <div class="dashboard-gallery-info">
+                        <h3>{{ img.title }}</h3>
+                        <p>Category: {{ img.get_category_display }}</p>
+
+                        <div class="dashboard-actions compact">
+                            <a href="/dashboard/site-images/{{ img.id }}/edit/" class="small-link-btn">Edit</a>
+                            <a href="/dashboard/site-images/{{ img.id }}/delete/" class="small-delete-btn">Delete</a>
+                        </div>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No site images uploaded yet.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

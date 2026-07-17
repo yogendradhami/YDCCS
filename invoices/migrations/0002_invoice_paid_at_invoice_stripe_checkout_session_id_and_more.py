@@ -6,11 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("invoices", "0001_initial"),
+=======
+        ('invoices', '0001_initial'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AddField(
+<<<<<<< HEAD
             model_name="invoice",
             name="paid_at",
             field=models.DateTimeField(blank=True, null=True),
@@ -23,6 +28,20 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="invoice",
             name="stripe_payment_intent_id",
+=======
+            model_name='invoice',
+            name='paid_at',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='invoice',
+            name='stripe_checkout_session_id',
+            field=models.CharField(blank=True, max_length=255),
+        ),
+        migrations.AddField(
+            model_name='invoice',
+            name='stripe_payment_intent_id',
+>>>>>>> 5815f15 (Initial project commit)
             field=models.CharField(blank=True, max_length=255),
         ),
     ]

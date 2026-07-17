@@ -7,11 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("dashboard", "0007_cleaningsupply"),
+=======
+        ('dashboard', '0007_cleaningsupply'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="PurchaseOrder",
             fields=[
                 (
@@ -51,6 +56,18 @@ class Migration(migrations.Migration):
                         to="dashboard.cleaningsupply",
                     ),
                 ),
+=======
+            name='PurchaseOrder',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('supplier_name', models.CharField(max_length=150)),
+                ('quantity', models.PositiveIntegerField()),
+                ('unit_cost', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
+                ('status', models.CharField(choices=[('draft', 'Draft'), ('ordered', 'Ordered'), ('received', 'Received'), ('cancelled', 'Cancelled')], default='draft', max_length=20)),
+                ('order_date', models.DateField(auto_now_add=True)),
+                ('notes', models.TextField(blank=True)),
+                ('supply', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dashboard.cleaningsupply')),
+>>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

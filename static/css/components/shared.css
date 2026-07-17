@@ -1,0 +1,137 @@
+/* Shared Components CSS
+   Extracted from shared/partials into components
+   Includes FAQ, Why Choose Us, and other reusable component styles
+*/
+
+/* FAQ Component */
+.faq-section {
+    padding: 80px 0;
+    background: #f9fafb;
+}
+
+.faq-items {
+    max-width: 800px;
+    margin: 50px auto 0;
+}
+
+.faq-item {
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.faq-item-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.faq-item-answer {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Why Choose Us Component */
+.why-choose-us-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.why-grid-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.why-item {
+    background: #f9fafb;
+    padding: 30px;
+    border-radius: 12px;
+    border-left: 4px solid #0d6efd;
+    transition: all 0.3s ease;
+}
+
+.why-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.why-item-icon {
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.why-item-title {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.why-item-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Social icons (header & footer) */
+.company-contact-right,
+.footer-social-icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.company-contact-right .social-link,
+.footer-social-icons .social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    color: #213547; /* icon color */
+    background: transparent;
+    transition: all 150ms ease-in-out;
+    text-decoration: none;
+    border: 1px solid rgba(33,53,71,0.06);
+}
+
+.company-contact-right .social-link svg,
+.footer-social-icons .social-link svg {
+    width: 18px;
+    height: 18px;
+}
+
+.company-contact-right .social-link:hover,
+.footer-social-icons .social-link:hover {
+    transform: translateY(-2px);
+    color: #0d6efd; /* highlight on hover */
+    background: rgba(13,110,253,0.06);
+    border-color: rgba(13,110,253,0.15);
+}
+
+.company-contact-right .social-link:focus,
+.footer-social-icons .social-link:focus {
+    outline: 3px solid rgba(13,110,253,0.12);
+    outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+    .company-contact-right,
+    .footer-social-icons {
+        gap: 8px;
+    }
+    .company-contact-right .social-link,
+    .footer-social-icons .social-link {
+        width: 32px;
+        height: 32px;
+    }
+}

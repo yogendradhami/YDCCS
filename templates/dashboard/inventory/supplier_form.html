@@ -1,0 +1,28 @@
+
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+    <div class="crm-panel-header">
+        <h1>{{ title }}</h1>
+
+        <a href="{% url 'supplier_list' %}" class="btn-outline">
+            Back to Suppliers
+        </a>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn-fill">
+            Save Supplier
+        </button>
+    </form>
+
+</div>
+
+{% endblock %}

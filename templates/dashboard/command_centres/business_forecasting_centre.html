@@ -1,0 +1,137 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<h1>Business Forecasting Centre</h1>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Current Revenue</span>
+        <h2>${{ current_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Current Expenses</span>
+        <h2>${{ current_expenses }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Current Profit</span>
+        <h2>${{ current_profit }}</h2>
+    </div>
+
+</div>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Projected Revenue</span>
+        <h2>${{ projected_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Projected Expenses</span>
+        <h2>${{ projected_expenses }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Projected Profit</span>
+        <h2>${{ projected_profit }}</h2>
+    </div>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+    <h2>Revenue Forecast</h2>
+
+    <canvas id="revenueChart"></canvas>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Expense Forecast</h2>
+
+    <canvas id="expenseChart"></canvas>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Profit Forecast</h2>
+
+    <canvas id="profitChart"></canvas>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+new Chart(
+    document.getElementById("revenueChart"),
+    {
+        type: "bar",
+        data: {
+            labels: [
+                "Current",
+                "Projected"
+            ],
+            datasets: [{
+                label: "Revenue",
+                data: [
+                    {{ revenue_chart.0 }},
+                    {{ revenue_chart.1 }}
+                ]
+            }]
+        }
+    }
+);
+
+new Chart(
+    document.getElementById("expenseChart"),
+    {
+        type: "bar",
+        data: {
+            labels: [
+                "Current",
+                "Projected"
+            ],
+            datasets: [{
+                label: "Expenses",
+                data: [
+                    {{ expense_chart.0 }},
+                    {{ expense_chart.1 }}
+                ]
+            }]
+        }
+    }
+);
+
+new Chart(
+    document.getElementById("profitChart"),
+    {
+        type: "bar",
+        data: {
+            labels: [
+                "Current",
+                "Projected"
+            ],
+            datasets: [{
+                label: "Profit",
+                data: [
+                    {{ profit_chart.0 }},
+                    {{ profit_chart.1 }}
+                ]
+            }]
+        }
+    }
+);
+
+</script>
+
+{% endblock %}

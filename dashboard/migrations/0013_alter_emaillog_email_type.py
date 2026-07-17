@@ -6,11 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("dashboard", "0012_alter_emaillog_email_type"),
+=======
+        ('dashboard', '0012_alter_emaillog_email_type'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AlterField(
+<<<<<<< HEAD
             model_name="emaillog",
             name="email_type",
             field=models.CharField(
@@ -25,5 +30,10 @@ class Migration(migrations.Migration):
                 default="system",
                 max_length=50,
             ),
+=======
+            model_name='emaillog',
+            name='email_type',
+            field=models.CharField(choices=[('invoice_reminder', 'Invoice Reminder'), ('booking_reminder', 'Booking Reminder'), ('quote_followup', 'Quote Follow-up'), ('contract_renewal', 'Contract Renewal'), ('vip_campaign', 'VIP Campaign'), ('system', 'System')], default='system', max_length=50),
+>>>>>>> 5815f15 (Initial project commit)
         ),
     ]

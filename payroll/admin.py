@@ -30,10 +30,20 @@ class PayrollRecordAdmin(admin.ModelAdmin):
     )
 
     # Search by employee name.
+<<<<<<< HEAD
     search_fields = ("employee__full_name",)
+=======
+    search_fields = (
+        "employee__full_name",
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
     # Make newest payroll records appear first.
     ordering = (
         "-period_end",
         "employee__full_name",
+<<<<<<< HEAD
     )
+=======
+    )
+>>>>>>> 5815f15 (Initial project commit)

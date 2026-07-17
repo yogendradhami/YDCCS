@@ -1,0 +1,64 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Customers | YD Dashboard{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block page_subtitle %}Manage your customer database without using Django Admin.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/customers/add/">+ Add Customer</a>
+    <a href="/dashboard/">Back to Dashboard</a>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Customer List</h2>
+    </div>
+
+    {% if customers %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Suburb</th>
+                        <th>Jobs</th>
+                        <th>Revenue</th>
+                        <th>Portal User</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for customer in customers %}
+                        <tr>
+                            <td><a href="{% url 'customer_profile_360' customer.id %}"> {{ customer.full_name }} </a></td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.suburb_postcode }}</td>
+                            <td>{{ customer.jobs_completed }}</td>
+                            <td>${{ customer.total_revenue }}</td>
+                            <td>
+                                {% if customer.user %}
+                                    {{ customer.user.username }}
+                                {% else %}
+                                    Not linked
+                                {% endif %}
+                            </td>
+                            <td><a href="/dashboard/customers/{{ customer.id }}/edit/" class="small-link-btn">Edit</a></td>
+                            <td><a href="/dashboard/customers/{{ customer.id }}/delete/" class="small-delete-btn">Delete</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No customers added yet.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

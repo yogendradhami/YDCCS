@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}End-of-Lease Cleaning Checklist | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Comprehensive end-of-lease cleaning checklist to maximize bond recovery. Inspection-ready tasks and professional tips.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
+<style>
+.guide-detail-content { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.guide-detail-content h2 { margin-top: 30px; margin-bottom: 15px; color: #1a3a52; font-size: 1.5rem; font-weight: 700; }
+.guide-detail-content h3 { margin-top: 20px; margin-bottom: 10px; color: #2c5aa0; font-size: 1.1rem; font-weight: 600; }
+.guide-detail-content ul { margin: 15px 0; padding-left: 25px; }
+.guide-detail-content li { margin: 8px 0; line-height: 1.6; color: #555; }
+.guide-actions { margin-bottom: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
+.guide-actions .btn { display: inline-block; text-decoration: none; font-weight: 600; }
+.btn-primary { background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }
+.btn-outline { border: 2px solid #007bff; color: #007bff; padding: 8px 18px; border-radius: 5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="guide-detail-hero">
+    <div class="container">
+        <div class="guide-detail-header">
+            <div class="guide-detail-header-left">
+                <h1>End-of-Lease Cleaning Checklist</h1>
+                <p class="guide-detail-subtitle">Professional End-of-Lease Cleaning Checklist From YD Commercial Cleaning Services, Adelaide</p>
+            </div>
+            <div class="guide-actions">
+                <a href="{% static 'pdf/guides/end-of-lease-checklist.pdf' %}" class="btn btn-primary" download>📥 Print / Save as PDF</a>
+                <a href="{% url 'guides' %}" class="btn btn-outline">← Back to Guides</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="guide-detail-content">
+    <div class="guide-checklist-box">
+<h2>Living & Bedrooms</h2>
+<h3>Walls & Paintwork</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Fill nail holes with spackling compound</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Touch up scuffs and marks</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe down walls (especially around light switches)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any stickers or tape residue</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Repaint if walls are marked (check lease agreement)</label></li>
+    </ul>
+
+    <h3>Floors</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Vacuum all carpets thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Steam clean or shampoo carpets</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Spot-treat stains (professional grade)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Strip, wax, and buff hard floors if needed</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize tile floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean baseboards</label></li>
+    </ul>
+
+    <h3>Windows & Doors</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean interior and exterior windows</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean window sills and frames</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any window coverings (if required)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean all door frames and doors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any damage marks or scuffs</label></li>
+    </ul>
+
+    <h3>Light Fixtures & Switches</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean or replace light fixtures</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe and clean all light switches</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Replace burnt-out bulbs</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Ensure all lights are working properly</label></li>
+    </ul>
+
+    <h3>Miscellaneous</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Dust ceiling fans and vents</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe door handles and hinges</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean or replace air filters</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Kitchen</h2>
+<ul>
+        <li><label class="checklist-item"><input type="checkbox"> Deep clean stovetop and oven (inside and out)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean range hood and filter</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean inside and outside of refrigerator</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Defrost and clean freezer</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean microwave inside and out</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean dishwasher inside and out</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Scrub sink and faucet (remove all stains)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe down all cabinet fronts and handles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean inside cabinets if required</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize floor thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove all items and personal belongings</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Bathrooms</h2>
+<ul>
+        <li><label class="checklist-item"><input type="checkbox"> Scrub toilet bowl inside and out</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean bathtub and shower thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove soap scum and mildew</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean and polish tile grout</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Scrub sink and faucet</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean mirror and remove water spots</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe all fixtures and handles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize floor</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean exhaust fan</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any items and personal belongings</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Entryway & Outdoor Areas</h2>
+<ul>
+        <li><label class="checklist-item"><input type="checkbox"> Sweep and mop entry area</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean front door and surrounds</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean mailbox area</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sweep patio or balcony</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any external items (garden beds, etc.)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Leave property empty and accessible</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Final Inspection Checklist</h2>
+<ul>
+        <li><label class="checklist-item"><input type="checkbox"> Property is empty of all personal items</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All windows are closed and locked</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All doors are closed and locked</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All lights are off</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All appliances are turned off</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Property is clean and ready for inspection</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Document property condition with photos</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Bond Recovery Tips</h2>
+<ul>
+        <li>✓ <strong>Professional Cleaning</strong>: Consider hiring professionals for best results. The cost is often less than losing bond money.</li>
+        <li>✓ <strong>Document Everything</strong>: Take photos/videos before, during, and after cleaning to prove condition.</li>
+        <li>✓ <strong>Check Your Lease</strong>: Review your lease agreement for specific cleaning requirements.</li>
+        <li>✓ <strong>Act Quickly</strong>: Clean as soon as possible after move-out for best results.</li>
+        <li>✓ <strong>Use Professional Products</strong>: Commercial-grade cleaners work better than household products.</li>
+    </ul>
+</div>
+<hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+
+    <h3>Need professional end-of-lease cleaning?</h3>
+    <p style="font-size: 1.05rem; margin: 20px 0;">Contact YD Commercial Cleaning Services</p>
+    <p style="color: #666;">
+        📞 <a href="tel:0430049865">0430 049 865</a> | 📧 <a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a><br>
+        Adelaide, South Australia | Professional Cleaning, Every Time
+    </p>
+</section>
+
+{% endblock %}

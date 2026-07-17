@@ -1,0 +1,170 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Equipment Inventory
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+    <div class="crm-panel-header">
+
+        <div>
+            <h1>Equipment Inventory</h1>
+            <p>
+                Manage cleaning equipment, service schedules and assignments.
+            </p>
+        </div>
+
+        <a href="{% url 'add_equipment' %}" class="btn-fill">
+            Add Equipment
+        </a>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h3>Service Alerts</h3>
+
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Equipment</th>
+                    <th>Service Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in equipment_items %}
+                    {% if item.next_service_date %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.next_service_date }}</td>
+             
+
+                            <td>
+                                {% if item.service_status == "overdue" %}
+                                    <span class="status-badge danger">Overdue</span>
+
+                                {% elif item.service_status == "today" %}
+                                    <span class="status-badge warning">Today is the last day for service</span>
+
+                                {% elif item.service_status == "upcoming" %}
+                                    <span class="status-badge warning">Upcoming</span>
+
+                                {% else %}
+                                    <span class="status-badge success">OK</span>
+                                {% endif %}
+                            </td>
+
+
+
+
+
+
+                        </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                        <td colspan="3">No equipment service alerts.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+
+
+
+
+
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table">
+
+            <thead>
+
+                <tr>
+                    <th>Name</th>
+                    <th>Serial Number</th>
+                    <th>Assigned Employee</th>
+                    <th>Condition</th>
+                    <th>Purchase Cost</th>
+                    <th>Service Date</th>
+                    <th>Actions</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for item in equipment_items %}
+
+                <tr>
+
+                    <td>{{ item.name }}</td>
+
+                    <td>{{ item.serial_number }}</td>
+
+                    <td>
+                        {{ item.assigned_employee|default:"Not Assigned" }}
+                    </td>
+
+                    <td>
+                        {{ item.get_condition_display }}
+                    </td>
+
+                    <td>
+                        ${{ item.purchase_cost }}
+                    </td>
+
+                    <td>
+                        {{ item.next_service_date }}
+                    </td>
+
+                    <td>
+
+                        <a
+                            href="{% url 'edit_equipment' item.id %}"
+                            class="small-link-btn"
+                        >
+                            Edit
+                        </a>
+
+                        <a
+                            href="{% url 'delete_equipment' item.id %}"
+                            class="small-link-btn danger"
+                        >
+                            Delete
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="7">
+                        No equipment found.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

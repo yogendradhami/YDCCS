@@ -1,0 +1,53 @@
+{% extends 'dashboard_base.html' %}
+
+{% block content %}
+
+<h2>Employee Leave Requests</h2>
+
+<table class="dashboard-table">
+
+<tr>
+<th>Employee</th>
+<th>Type</th>
+<th>Dates</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+
+{% for leave in requests %}
+
+<tr>
+
+<td>{{ leave.employee.full_name }}</td>
+
+<td>{{ leave.get_leave_type_display }}</td>
+
+<td>
+{{ leave.start_date }}
+-
+{{ leave.end_date }}
+</td>
+
+<td>{{ leave.get_status_display }}</td>
+
+<td>
+
+<a href="/dashboard/leave/{{ leave.id }}/approve/"
+class="btn-fill">
+Approve
+</a>
+
+<a href="/dashboard/leave/{{ leave.id }}/reject/"
+class="btn-outline">
+Reject
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

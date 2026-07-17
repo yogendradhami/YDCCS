@@ -11,6 +11,10 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+<<<<<<< HEAD
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ydcleaning.settings")
+=======
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ydcleaning.settings')
+>>>>>>> 5815f15 (Initial project commit)
 
 application = get_wsgi_application()

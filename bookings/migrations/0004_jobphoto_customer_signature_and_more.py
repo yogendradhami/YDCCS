@@ -6,11 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("bookings", "0003_jobphoto"),
+=======
+        ('bookings', '0003_jobphoto'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AddField(
+<<<<<<< HEAD
             model_name="jobphoto",
             name="customer_signature",
             field=models.ImageField(
@@ -32,6 +37,25 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="jobphoto",
             name="employee_signed_at",
+=======
+            model_name='jobphoto',
+            name='customer_signature',
+            field=models.ImageField(blank=True, null=True, upload_to='signatures/customers/'),
+        ),
+        migrations.AddField(
+            model_name='jobphoto',
+            name='customer_signed_at',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='jobphoto',
+            name='employee_signature',
+            field=models.ImageField(blank=True, null=True, upload_to='signatures/employees/'),
+        ),
+        migrations.AddField(
+            model_name='jobphoto',
+            name='employee_signed_at',
+>>>>>>> 5815f15 (Initial project commit)
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

@@ -1,0 +1,72 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Staff Schedule{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Today's Schedule - {{ today }}</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Suburb</th>
+                    <th>Assigned Employee</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for booking in bookings %}
+
+                <tr>
+
+                    <td>{{ booking.booking_time }}</td>
+
+                    <td>{{ booking.customer.full_name }}</td>
+
+                    <td>{{ booking.service_type }}</td>
+
+                    <td>{{ booking.suburb_postcode }}</td>
+
+                    <td>
+                        {% if booking.assigned_employee %}
+                            {{ booking.assigned_employee.full_name }}
+                        {% else %}
+                            Unassigned
+                        {% endif %}
+                    </td>
+
+                    <td>{{ booking.get_status_display }}</td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="6">
+                        No jobs scheduled today.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

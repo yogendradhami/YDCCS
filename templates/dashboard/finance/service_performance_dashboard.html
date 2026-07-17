@@ -1,0 +1,166 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Service Performance{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Revenue by Service</h2>
+    </div>
+
+    <div style="height:400px;">
+        <canvas id="serviceRevenueChart"></canvas>
+    
+    </div>
+
+</section>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Monthly Revenue Trend</h2>
+    </div>
+
+    <div style="height:400px;">
+        <canvas id="monthlyRevenueChart"></canvas>
+    </div>
+
+</section>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Service Performance</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Total Jobs</th>
+                    <th>Total Revenue</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in service_rows %}
+
+                <tr>
+                    <td>{{ row.service }}</td>
+                    <td>{{ row.jobs }}</td>
+                    <td>${{ row.revenue }}</td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<script>
+
+const ctx = document.getElementById(
+    "serviceRevenueChart"
+);
+
+new Chart(ctx, {
+
+    type: "bar",
+
+    data: {
+
+        labels: [
+            {% for item in service_labels %}
+                "{{ item }}",
+            {% endfor %}
+        ],
+
+        datasets: [{
+            label: "Revenue ($)",
+
+            data: [
+                {% for item in service_revenues %}
+                    {{ item }},
+                {% endfor %}
+            ]
+        }]
+    },
+
+    options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false,
+
+        plugins: {
+
+            legend: {
+                display: true
+            }
+
+        }
+
+    }
+
+});
+
+</script>
+
+<script>
+
+const revenueCtx = document.getElementById(
+    "monthlyRevenueChart"
+);
+
+new Chart(revenueCtx, {
+
+    type: "line",
+
+    data: {
+
+        labels: [
+            {% for item in revenue_labels %}
+                "{{ item }}",
+            {% endfor %}
+        ],
+
+        datasets: [{
+
+            label: "Monthly Revenue",
+
+            data: [
+                {% for item in revenue_values %}
+                    {{ item }},
+                {% endfor %}
+            ],
+
+            fill: false
+
+        }]
+
+    },
+
+    options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Office Cleanliness & Productivity | YD Commercial Cleaning{% endblock %}
+
+{% block content %}
+<section class="blog-detail-section">
+    <div class="container">
+        <div class="blog-detail-header">
+            <div class="blog-detail-category">Commercial</div>
+            <h1 class="blog-detail-title">How Office Cleanliness Affects Employee Productivity</h1>
+            <div class="blog-detail-meta">
+                <span>By James Chen</span>
+                <span>16 June 2026</span>
+                <span>6 min read</span>
+            </div>
+        </div>
+
+        <img class="blog-detail-image" src="{% static 'images/blog-post-2.jpg' %}" alt="Office cleanliness and productivity">
+
+        <div class="blog-content">
+            <p>A clean workspace reduces distractions and illness, improving focus and attendance. We share evidence-based tips to create cleaner workplaces.</p>
+
+            <p><a href="{% url 'blog' %}" class="btn btn-outline">← Back to Blog</a></p>
+        </div>
+    </div>
+</section>
+{% endblock %}

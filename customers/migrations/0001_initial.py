@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
+<<<<<<< HEAD
     dependencies = []
 
     operations = [
@@ -36,6 +37,27 @@ class Migration(migrations.Migration):
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
+=======
+    dependencies = [
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Customer',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('full_name', models.CharField(max_length=150)),
+                ('email', models.EmailField(blank=True, max_length=254)),
+                ('phone', models.CharField(max_length=30)),
+                ('address', models.CharField(blank=True, max_length=255)),
+                ('property_type', models.CharField(blank=True, max_length=100)),
+                ('suburb_postcode', models.CharField(blank=True, max_length=150)),
+                ('notes', models.TextField(blank=True)),
+                ('jobs_completed', models.PositiveIntegerField(default=0)),
+                ('total_revenue', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+>>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

@@ -1,0 +1,87 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Activity Log
+{% endblock %}
+
+{% block page_title %}
+Activity Log
+{% endblock %}
+
+{% block page_subtitle %}
+Track important actions across the CRM.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Recent Activity</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for activity in activities %}
+
+                    <tr>
+
+                        <td>
+                            {{ activity.created_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+                            {% if activity.user %}
+                                {{ activity.user.username }}
+                            {% else %}
+                                System
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ activity.get_action_type_display }}
+                        </td>
+
+                        <td>
+                            {{ activity.title }}
+                        </td>
+
+                        <td>
+                            {{ activity.description }}
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="5">
+                            No activity records found.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

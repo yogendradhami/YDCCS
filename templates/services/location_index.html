@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ page_title }}
+{% endblock %}
+
+{% block meta_description %}
+{{ page_description }}
+{% endblock %}
+
+{% block og_title %}
+{{ page_title }}
+{% endblock %}
+
+{% block og_description %}
+{{ page_description }}
+{% endblock %}
+
+{% block content %}
+
+<section class="page-hero service-hero location-hero">
+    <div class="container service-hero-grid">
+        <div>
+            <span class="hero-badge">{{ location_name }} Local Services</span>
+            <h1>{{ location_name }} Cleaning Areas Starting with {{ current_letter }}</h1>
+            <nav class="slp-breadcrumb" aria-label="Breadcrumb">
+                <ol>
+                    <li><a href="/local/index/adelaide/">Adelaide</a></li>
+                    <li>{{ current_letter }}</li>
+                </ol>
+            </nav>
+            <p>Explore cleaning services and suburbs in {{ location_name }} that begin with the letter {{ current_letter }}.</p>
+            <div class="service-hero-buttons">
+                <a href="{% url 'contact' %}" class="btn-fill">Request Free Quote</a>
+                <a href="tel:0430049865" class="btn-outline">Call 0430 049 865</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section location-index-nav-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Browse {{ location_name }} Areas by Letter</h2>
+            <p>Click any letter to view suburbs and cleaning services for that section.</p>
+        </div>
+
+        <div class="alphabet-nav">
+            {% for letter in letters %}
+                <a href="/local/index/adelaide/{{ letter|lower }}/" class="{% if letter == current_letter %}active{% endif %}">{{ letter }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section location-index-areas-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Areas Starting with {{ current_letter }}</h2>
+            <p>These Adelaide suburbs currently match the selected letter. Call us for customised local cleaning services.</p>
+        </div>
+
+        {% if matching_areas %}
+            <div class="suburbs-display">
+                {% for area in matching_areas %}
+                    <a href="/local/adelaide/{{ area.slug }}/" class="suburb-link">{{ area.name }}, {{ area.postcode }}</a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="service-areas-empty">
+                <p>There are no suburbs listed for {{ current_letter }} yet. Please choose another letter to continue exploring Adelaide areas.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="section services-list-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Popular Adelaide Cleaning Services</h2>
+            <p>Our most requested services for local Adelaide customers.</p>
+        </div>
+
+        <div class="services-by-location-grid">
+            {% for service in services|slice:":6" %}
+                <div class="service-location-card">
+                    <h3>{{ service.name }}</h3>
+                    <p>{{ service.description }}</p>
+                    <a href="{{ service.url }}" class="btn-outline btn-sm">Learn More</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section location-cta-section">
+    <div class="container">
+        <div class="location-cta-box">
+            <h2>Need Cleaning in {{ location_name }}?</h2>
+            <p>Call 0430 049 865 or request a free quote online for Adelaide cleaning services today.</p>
+            <div class="location-cta-actions">
+                <a href="{% url 'contact' %}" class="btn-fill">Get Your Free Quote</a>
+                <a href="tel:0430049865" class="btn-outline">Call 0430 049 865</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.alphabet-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.alphabet-nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid #667eea;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 700;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.alphabet-nav a.active,
+.alphabet-nav a:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.service-areas-grid,
+.services-by-location-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.suburbs-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 25px;
+    row-gap: 20px;
+}
+
+.suburb-link {
+    display: inline-block;
+    background: #f0f4ff;
+    color: #667eea;
+    padding: 10px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid #667eea;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.suburb-link:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 110, 234, 0.3);
+}
+
+.service-area-card,
+.service-location-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 24px rgba(102, 110, 234, 0.06);
+}
+
+.service-area-card h3,
+.service-location-card h3 {
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.btn-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.slp-breadcrumb {
+    margin: 15px 0 20px;
+}
+
+.slp-breadcrumb ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    font-size: 13px;
+}
+
+.slp-breadcrumb li {
+    display: inline-flex;
+    align-items: center;
+}
+
+.slp-breadcrumb li:not(:last-child)::after {
+    content: "»";
+    margin: 0 8px;
+    color: #999;
+}
+
+.slp-breadcrumb a {
+    color: #667eea;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.slp-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.slp-breadcrumb li:last-child {
+    color: #666;
+}
+
+.location-cta-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.location-cta-box {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.location-cta-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+    .alphabet-nav {
+        justify-content: center;
+    }
+    .location-cta-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+{% endblock %}

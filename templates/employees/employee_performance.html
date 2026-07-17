@@ -1,0 +1,287 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Employee Performance
+{% endblock %}
+
+{% block page_title %}
+Employee Performance
+{% endblock %}
+
+{% block page_subtitle %}
+Track employee jobs, hours, payroll, revenue, ranking and efficiency.
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================== -->
+<!-- KPI Summary Cards -->
+<!-- ===================================================== -->
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>🏆 Top Performer</span>
+
+        {% if top_performer %}
+            <h2>{{ top_performer.employee.full_name }}</h2>
+            <p>{{ top_performer.efficiency }}% Efficiency</p>
+        {% else %}
+            <h2>N/A</h2>
+            <p>No performance data yet</p>
+        {% endif %}
+    </div>
+
+    <div class="crm-card">
+        <span>💰 Highest Revenue</span>
+
+        {% if highest_revenue %}
+            <h2>${{ highest_revenue.revenue_generated }}</h2>
+            <p>{{ highest_revenue.employee.full_name }}</p>
+        {% else %}
+            <h2>$0</h2>
+            <p>No revenue data yet</p>
+        {% endif %}
+    </div>
+
+    <div class="crm-card">
+        <span>🧹 Most Jobs Completed</span>
+
+        {% if most_jobs_completed %}
+            <h2>{{ most_jobs_completed.jobs_completed }}</h2>
+            <p>{{ most_jobs_completed.employee.full_name }}</p>
+        {% else %}
+            <h2>0</h2>
+            <p>No job data yet</p>
+        {% endif %}
+    </div>
+
+    <div class="crm-card">
+        <span>⚡ Highest Efficiency</span>
+
+        {% if highest_efficiency %}
+            <h2>{{ highest_efficiency.efficiency }}%</h2>
+            <p>{{ highest_efficiency.employee.full_name }}</p>
+        {% else %}
+            <h2>0%</h2>
+            <p>No efficiency data yet</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- Performance Charts -->
+<!-- ===================================================== -->
+
+<section class="crm-two-column">
+
+    <div class="crm-panel chart-panel">
+        <div class="crm-panel-header">
+            <h2>Revenue by Employee</h2>
+        </div>
+
+        <canvas id="revenueChart"></canvas>
+    </div>
+
+    <div class="crm-panel chart-panel">
+        <div class="crm-panel-header">
+            <h2>Jobs Completed</h2>
+        </div>
+
+        <canvas id="jobsChart"></canvas>
+    </div>
+
+</section>
+
+<section class="crm-panel chart-panel">
+
+    <div class="crm-panel-header">
+        <h2>Employee Efficiency</h2>
+    </div>
+
+    <canvas id="efficiencyChart"></canvas>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- Employee Performance Dashboard Table -->
+<!-- ===================================================== -->
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Employee Performance Dashboard</h2>
+
+        <a href="/dashboard/employees/" class="small-link-btn">
+            View Employees
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Employee</th>
+                    <th>Assigned Jobs</th>
+                    <th>Completed Jobs</th>
+                    <th>Total Hours</th>
+                    <th>Revenue</th>
+                    <th>Payroll</th>
+                    <th>Revenue/Hour</th>
+                    <th>Efficiency</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in performance_rows %}
+
+                    <tr>
+                        <td>
+                            #{{ forloop.counter }}
+                        </td>
+
+                        <td>
+                            <strong>{{ row.employee.full_name }}</strong>
+                        </td>
+
+                        <td>{{ row.assigned_jobs }}</td>
+
+                        <td>{{ row.jobs_completed }}</td>
+
+                        <td>{{ row.total_hours }}</td>
+
+                        <td>${{ row.revenue_generated }}</td>
+
+                        <td>${{ row.payroll_total }}</td>
+
+                        <td>${{ row.revenue_per_hour }}</td>
+
+                        <td>
+                            {% if row.efficiency >= 250 %}
+                                <span class="status-badge success">
+                                    {{ row.efficiency }}%
+                                </span>
+                            {% elif row.efficiency >= 150 %}
+                                <span class="status-badge primary">
+                                    {{ row.efficiency }}%
+                                </span>
+                            {% elif row.efficiency >= 100 %}
+                                <span class="status-badge warning">
+                                    {{ row.efficiency }}%
+                                </span>
+                            {% else %}
+                                <span class="status-badge warning">
+                                    {{ row.efficiency }}%
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.efficiency >= 250 %}
+                                <span class="status-badge success">
+                                    Excellent
+                                </span>
+                            {% elif row.efficiency >= 150 %}
+                                <span class="status-badge primary">
+                                    Good
+                                </span>
+                            {% elif row.efficiency >= 100 %}
+                                <span class="status-badge warning">
+                                    Average
+                                </span>
+                            {% else %}
+                                <span class="status-badge warning">
+                                    Needs Review
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="10">
+                            No active employees found.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{{ employee_labels|json_script:"employee-labels" }}
+{{ revenue_data|json_script:"revenue-data" }}
+{{ jobs_data|json_script:"jobs-data" }}
+{{ efficiency_data|json_script:"efficiency-data" }}
+
+<script>
+
+const employeeLabels =
+JSON.parse(document.getElementById("employee-labels").textContent);
+
+const revenueData =
+JSON.parse(document.getElementById("revenue-data").textContent);
+
+const jobsData =
+JSON.parse(document.getElementById("jobs-data").textContent);
+
+const efficiencyData =
+JSON.parse(document.getElementById("efficiency-data").textContent);
+
+new Chart(
+    document.getElementById("revenueChart"),
+    {
+        type: "bar",
+        data: {
+            labels: employeeLabels,
+            datasets: [{
+                label: "Revenue",
+                data: revenueData
+            }]
+        }
+    }
+);
+
+new Chart(
+    document.getElementById("jobsChart"),
+    {
+        type: "bar",
+        data: {
+            labels: employeeLabels,
+            datasets: [{
+                label: "Jobs Completed",
+                data: jobsData
+            }]
+        }
+    }
+);
+
+new Chart(
+    document.getElementById("efficiencyChart"),
+    {
+        type: "bar",
+        data: {
+            labels: employeeLabels,
+            datasets: [{
+                label: "Efficiency %",
+                data: efficiencyData
+            }]
+        }
+    }
+);
+
+</script>
+
+{% endblock %}

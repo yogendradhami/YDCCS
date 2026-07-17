@@ -8,12 +8,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("dashboard", "0004_reviewrequestlog"),
+=======
+        ('dashboard', '0004_reviewrequestlog'),
+>>>>>>> 5815f15 (Initial project commit)
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="CampaignLog",
             fields=[
                 (
@@ -51,6 +56,19 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["-sent_at"],
+=======
+            name='CampaignLog',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('campaign_type', models.CharField(choices=[('vip', 'VIP Customer Campaign'), ('inactive', 'Inactive Customer Campaign'), ('review', 'Review Follow-up Campaign')], max_length=50)),
+                ('title', models.CharField(max_length=200)),
+                ('recipients_count', models.PositiveIntegerField(default=0)),
+                ('sent_at', models.DateTimeField(auto_now_add=True)),
+                ('sent_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-sent_at'],
+>>>>>>> 5815f15 (Initial project commit)
             },
         ),
     ]

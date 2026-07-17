@@ -1,0 +1,35 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}{{ page_title }} | YD Dashboard{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}Create or update website gallery items.{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="custom-alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn-fill">
+            {{ button_text }}
+        </button>
+
+        <a href="/dashboard/gallery/" class="btn-outline">
+            Back to Gallery
+        </a>
+    </form>
+
+</section>
+
+{% endblock %}

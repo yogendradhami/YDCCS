@@ -6,11 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("dashboard", "0008_purchaseorder"),
+=======
+        ('dashboard', '0008_purchaseorder'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="Supplier",
             fields=[
                 (
@@ -32,6 +37,21 @@ class Migration(migrations.Migration):
                 ("active", models.BooleanField(default=True)),
                 ("notes", models.TextField(blank=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
+=======
+            name='Supplier',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=200)),
+                ('contact_person', models.CharField(blank=True, max_length=150)),
+                ('email', models.EmailField(blank=True, max_length=254)),
+                ('phone', models.CharField(blank=True, max_length=50)),
+                ('address', models.TextField(blank=True)),
+                ('abn', models.CharField(blank=True, max_length=50)),
+                ('website', models.URLField(blank=True)),
+                ('active', models.BooleanField(default=True)),
+                ('notes', models.TextField(blank=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+>>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

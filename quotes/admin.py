@@ -7,7 +7,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
+<<<<<<< HEAD
 from .models import QuoteImage, QuoteRequest
+=======
+from .models import QuoteRequest, QuoteImage
+>>>>>>> 5815f15 (Initial project commit)
 
 
 class QuoteImageInline(admin.TabularInline):
@@ -18,7 +22,12 @@ class QuoteImageInline(admin.TabularInline):
     def image_preview(self, obj):
         if obj.image:
             return format_html(
+<<<<<<< HEAD
                 '<a href="{}" target="_blank">View Image</a>', obj.image.url
+=======
+                '<a href="{}" target="_blank">View Image</a>',
+                obj.image.url
+>>>>>>> 5815f15 (Initial project commit)
             )
         return "No image"
 
@@ -68,12 +77,18 @@ class QuoteRequestAdmin(admin.ModelAdmin):
         }
 
         return format_html(
+<<<<<<< HEAD
             (
                 '<span style="background:{};color:white;padding:5px 10px;'
                 'border-radius:20px;font-weight:bold;">{}</span>'
             ),
             colors.get(obj.status, "#6b7280"),
             obj.get_status_display(),
+=======
+            '<span style="background:{};color:white;padding:5px 10px;border-radius:20px;font-weight:bold;">{}</span>',
+            colors.get(obj.status, "#6b7280"),
+            obj.get_status_display()
+>>>>>>> 5815f15 (Initial project commit)
         )
 
     status_badge.short_description = "Status"
@@ -81,4 +96,8 @@ class QuoteRequestAdmin(admin.ModelAdmin):
 
 @admin.register(QuoteImage)
 class QuoteImageAdmin(admin.ModelAdmin):
+<<<<<<< HEAD
     list_display = ("quote", "image", "uploaded_at")
+=======
+    list_display = ("quote", "image", "uploaded_at")
+>>>>>>> 5815f15 (Initial project commit)

@@ -6,12 +6,20 @@ resend.api_key = settings.RESEND_API_KEY
 
 def send_customer_email(quote):
 
+<<<<<<< HEAD
     resend.Emails.send(
         {
             "from": "YD Commercial Cleaning <quotes@ydcleaning.com>",
             "to": [quote.email],
             "subject": "Quote Request Received",
             "html": f"""
+=======
+    resend.Emails.send({
+        "from": "YD Commercial Cleaning <quotes@ydcleaning.com>",
+        "to": [quote.email],
+        "subject": "Quote Request Received",
+        "html": f"""
+>>>>>>> 5815f15 (Initial project commit)
         <h2>Thank you for contacting YD Cleaning</h2>
 
         <p>Hi {quote.name},</p>
@@ -25,19 +33,32 @@ def send_customer_email(quote):
         Thank you for choosing
         <strong>YD Commercial Cleaning Services</strong>.
         </p>
+<<<<<<< HEAD
         """,
         }
     )
+=======
+        """
+    })
+>>>>>>> 5815f15 (Initial project commit)
 
 
 def send_admin_email(quote):
 
+<<<<<<< HEAD
     resend.Emails.send(
         {
             "from": "YD Commercial Cleaning <quotes@ydcleaning.com>",
             "to": ["yogendradhami6@gmail.com"],
             "subject": f"New Quote Request - {quote.name}",
             "html": f"""
+=======
+    resend.Emails.send({
+        "from": "YD Commercial Cleaning <quotes@ydcleaning.com>",
+        "to": ["yogendradhami6@gmail.com"],
+        "subject": f"New Quote Request - {quote.name}",
+        "html": f"""
+>>>>>>> 5815f15 (Initial project commit)
         <h2>New Website Lead</h2>
 
         <ul>
@@ -49,6 +70,11 @@ def send_admin_email(quote):
         </ul>
 
         <p>{quote.message}</p>
+<<<<<<< HEAD
         """,
         }
     )
+=======
+        """
+    })
+>>>>>>> 5815f15 (Initial project commit)

@@ -1,0 +1,136 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Service Management | Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3">Service Management</h1>
+            <p class="text-muted">Manage all cleaning services, images, and pricing from here.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'dashboard_add_service' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Service
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col-md-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if services %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Service Name</th>
+                                    <th>Slug</th>
+                                    <th>Image</th>
+                                    <th>Status</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in services %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ service.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <code>{{ service.slug }}</code>
+                                    </td>
+                                    <td>
+                                        {% if service.hero_image %}
+                                        <a href="{{ service.hero_image.url }}" target="_blank">
+                                            <img src="{{ service.hero_image.url }}" alt="{{ service.name }}" style="max-width: 60px; max-height: 60px; border-radius: 4px;">
+                                        </a>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No Image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if service.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if service.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ service.updated_at|date:"M d, Y" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'dashboard_edit_service' service.id %}" class="btn btn-outline-primary">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            <a href="#" class="btn btn-outline-danger" onclick="deleteService({{ service.id }}, '{{ service.name }}'); return false;">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">No services created yet.</p>
+                        <a href="{% url 'dashboard_add_service' %}" class="btn btn-primary mt-2">Create First Service</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteService(serviceId, serviceName) {
+    if (confirm(`Are you sure you want to delete "${serviceName}"? This cannot be undone.`)) {
+        fetch(`/dashboard/services/${serviceId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken')
+            }
+        }).then(() => {
+            window.location.reload();
+        }).catch(err => {
+            alert('Error deleting service');
+            console.error(err);
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

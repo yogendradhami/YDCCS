@@ -1,0 +1,64 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Contract Renewals{% endblock %}
+
+{% block content %}
+
+<div class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Contracts Expiring Within 30 Days</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table">
+
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>End Date</th>
+                    <th>Days Left</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for contract in contracts %}
+
+                <tr>
+
+                    <td>{{ contract.customer.full_name }}</td>
+
+                    <td>{{ contract.service_type }}</td>
+
+                    <td>{{ contract.end_date }}</td>
+
+                    <td>{{ contract.days_remaining }}</td>
+
+                    <td>
+
+                        <a
+                            href="/dashboard/contracts/{{ contract.id }}/renewal-email/"
+                            class="small-link-btn"
+                        >
+                            Send Renewal
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

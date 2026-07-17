@@ -1,0 +1,165 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<style>
+.responsive-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.responsive-table-wrap table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+}
+
+.responsive-table-wrap th,
+.responsive-table-wrap td {
+    white-space: nowrap;
+}
+</style>
+
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Top Performer</span>
+        <h2>
+            {% if top_performer %}
+                {{ top_performer.employee.full_name }}
+            {% else %}
+                N/A
+            {% endif %}
+        </h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Second Performer</span>
+        <h2>
+            {% if second_performer %}
+                {{ second_performer.employee.full_name }}
+            {% else %}
+                N/A
+            {% endif %}
+        </h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Third Performer</span>
+        <h2>
+            {% if third_performer %}
+                {{ third_performer.employee.full_name }}
+            {% else %}
+                N/A
+            {% endif %}
+        </h2>
+    </div>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h1>Employee Performance Centre</h1>
+    <a href="/dashboard/employee-performance/export-pdf/" class="btn-fill">
+    Export PDF
+    </a>
+    <a
+    href="/dashboard/employee-performance/email-report/"
+    class="btn-fill"
+    >
+        Email PDF Report
+    </a>
+    <input
+        type="text"
+        id="employeeSearchInput"
+        placeholder="Search employee..."
+        style="width:100%; max-width:100%; box-sizing:border-box; padding:12px; margin:15px 0; border:1px solid #ddd; border-radius:8px;"
+    >
+    <div class="responsive-table-wrap">
+    <table class="dashboard-table" id="employeePerformanceTable">
+
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Total Jobs</th>
+                <th>Completed Jobs</th>
+                <th>Revenue Generated</th>
+                <th>Payroll Cost</th>
+                <th>Profit Contribution</th>
+                <th>KPI Score</th>
+                <th>Attendance Score</th>
+                <th>Bonus Recommendation</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for row in employee_rows %}
+
+            <tr>
+                <td>
+                    <a href="/dashboard/employee-performance/{{ row.employee.id }}/">
+                        {{ row.employee.full_name }}
+                    </a>
+                </td>
+                <td>{{ row.total_jobs }}</td>
+                <td>{{ row.completed_jobs }}</td>
+                <td>${{ row.revenue_generated }}</td>
+                <td>${{ row.payroll_total }}</td>
+                <td>${{ row.profit_contribution }}</td>
+                <td>${{ row.profit_contribution }}</td>
+                <td>{{ row.kpi_score }}/100</td>
+                <td>{{ row.attendance_score }}%</td>
+                <td>
+                    ${{ row.bonus_recommendation }}
+                </td>
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="9">No employee data found.</td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+    </div>
+
+</div>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("employeeSearchInput");
+    const table = document.getElementById("employeePerformanceTable");
+
+    if (!searchInput || !table) {
+        return;
+    }
+
+    searchInput.addEventListener("keyup", function () {
+        const searchText = searchInput.value.toLowerCase();
+        const rows = table.querySelectorAll("tbody tr");
+
+        rows.forEach(function (row) {
+            const rowText = row.textContent.toLowerCase();
+
+            if (rowText.includes(searchText)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

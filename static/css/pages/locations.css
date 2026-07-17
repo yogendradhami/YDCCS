@@ -1,0 +1,477 @@
+/* Local Services/Suburbs Pages Styling - Modern Design */
+
+.location-hero {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: var(--white);
+    padding: 100px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.location-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.location-hero h1 {
+    font-size: 48px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    font-weight: 800;
+}
+
+.location-hero p {
+    font-size: 18px;
+    max-width: 700px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    color: rgba(255,255,255,0.95);
+}
+
+/* Location Info Section */
+.location-info-section {
+    padding: 100px 0;
+    background: var(--white);
+}
+
+.location-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+    margin-bottom: 60px;
+}
+
+.location-details {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.location-detail-item {
+    display: flex;
+    gap: 20px;
+}
+
+.location-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.location-content h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--dark);
+    font-weight: 700;
+}
+
+.location-content p {
+    font-size: 15px;
+    color: var(--gray);
+    margin-bottom: 0;
+}
+
+/* Services List */
+.location-services {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.service-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.service-item:hover {
+    background: var(--primary);
+}
+
+.service-item:hover span {
+    color: var(--white);
+}
+
+.service-check {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--secondary);
+    border-radius: 50%;
+    color: var(--white);
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.service-item span {
+    color: var(--dark);
+    font-weight: 600;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+/* Coverage Map */
+.coverage-map {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-radius: var(--radius-lg);
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    box-shadow: var(--shadow-md);
+}
+
+/* Suburbs/Areas Section */
+.suburbs-section {
+    padding: 100px 0;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.suburbs-title {
+    text-align: center;
+    font-size: 36px;
+    color: var(--dark);
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+.suburbs-subtitle {
+    text-align: center;
+    color: var(--gray);
+    margin-bottom: 60px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.suburbs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.suburb-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+    border-left: 4px solid var(--primary);
+}
+
+.suburb-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+    border-left-color: var(--secondary);
+}
+
+.suburb-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.suburb-info {
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 12px;
+}
+
+.suburb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.suburb-link:hover {
+    gap: 10px;
+    color: var(--primary-dark);
+}
+
+.suburb-link::after {
+    content: '→';
+}
+
+/* Alphabet Navigation */
+.alphabet-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 40px 0;
+}
+
+.alphabet-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--light-gray);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    color: var(--dark);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.alphabet-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.alphabet-btn.active {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+/* FAQ Section */
+.location-faq-section {
+    padding: 100px 0;
+    background: var(--white);
+}
+
+.faq-title {
+    text-align: center;
+    font-size: 36px;
+    color: var(--dark);
+    margin-bottom: 60px;
+    font-weight: 800;
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.faq-column h3 {
+    font-size: 20px;
+    color: var(--dark);
+    margin-bottom: 25px;
+    font-weight: 700;
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+}
+
+.faq-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.faq-item {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid transparent;
+    border-left: 4px solid var(--primary);
+}
+
+.faq-item:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.faq-item.open {
+    background: var(--white);
+    box-shadow: var(--shadow-lg);
+}
+
+.faq-question {
+    font-weight: 700;
+    color: var(--dark);
+    font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+.faq-toggle {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.faq-item.open .faq-toggle {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--light-gray);
+    color: var(--gray);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.faq-item.open .faq-answer {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CTA Section */
+.location-cta {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: var(--white);
+    padding: 80px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.location-cta::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.location-cta h2 {
+    font-size: 36px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+    font-weight: 800;
+}
+
+.location-cta p {
+    font-size: 16px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+    color: rgba(255,255,255,0.95);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .location-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .location-services {
+        grid-template-columns: 1fr;
+    }
+
+    .faq-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .location-hero h1 {
+        font-size: 32px;
+    }
+
+    .location-hero p {
+        font-size: 16px;
+    }
+
+    .suburbs-title {
+        font-size: 28px;
+    }
+
+    .suburbs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .suburbs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .alphabet-nav {
+        gap: 6px;
+        margin: 30px 0;
+    }
+
+    .alphabet-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 12px;
+    }
+
+    .faq-grid {
+        gap: 25px;
+    }
+
+    .location-cta h2 {
+        font-size: 28px;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cta-buttons .btn-fill,
+    .cta-buttons .btn-outline {
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .location-info-section,
+    .suburbs-section,
+    .location-faq-section,
+    .location-cta {
+        padding: 60px 0;
+    }
+}

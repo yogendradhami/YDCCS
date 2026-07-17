@@ -1,0 +1,146 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Customer Analytics
+{% endblock %}
+
+{% block page_title %}
+Customer Analytics
+{% endblock %}
+
+{% block page_subtitle %}
+Track customer growth, retention and revenue.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Customers</span>
+        <h2>{{ total_customers }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>New This Month</span>
+        <h2>{{ new_customers }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Repeat Customers</span>
+        <h2>{{ repeat_customers }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Retention Rate</span>
+        <h2>{{ retention_rate }}%</h2>
+    </div>
+
+</div>
+
+<section class="crm-two-column">
+
+    <div class="crm-panel">
+        <div class="crm-panel-header">
+            <h2>Revenue by Customer</h2>
+        </div>
+
+        <canvas id="customerRevenueChart"></canvas>
+    </div>
+
+    <div class="crm-panel">
+        <div class="crm-panel-header">
+            <h2>Bookings by Customer</h2>
+        </div>
+
+        <canvas id="customerBookingsChart"></canvas>
+    </div>
+
+</section>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Top Customers</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Property Type</th>
+                    <th>Jobs Completed</th>
+                    <th>Total Revenue</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for customer in top_customers %}
+                    <tr>
+                        <td>{{ customer.full_name }}</td>
+                        <td>{{ customer.email }}</td>
+                        <td>{{ customer.property_type }}</td>
+                        <td>{{ customer.jobs_completed }}</td>
+                        <td>${{ customer.total_revenue }}</td>
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{{ customer_labels|json_script:"customer-labels" }}
+{{ revenue_data|json_script:"customer-revenue" }}
+{{ booking_data|json_script:"customer-bookings" }}
+
+<script>
+
+const labels =
+JSON.parse(document.getElementById("customer-labels").textContent);
+
+const revenueData =
+JSON.parse(document.getElementById("customer-revenue").textContent);
+
+const bookingData =
+JSON.parse(document.getElementById("customer-bookings").textContent);
+
+new Chart(
+    document.getElementById("customerRevenueChart"),
+    {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Revenue",
+                data: revenueData
+            }]
+        }
+    }
+);
+
+new Chart(
+    document.getElementById("customerBookingsChart"),
+    {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Bookings",
+                data: bookingData
+            }]
+        }
+    }
+);
+
+</script>
+
+{% endblock %}

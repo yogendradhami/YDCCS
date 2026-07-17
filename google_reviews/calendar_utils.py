@@ -21,7 +21,15 @@ def get_google_calendar_service():
         client_secret=settings.GOOGLE_CLIENT_SECRET,
     )
 
+<<<<<<< HEAD
     return build("calendar", "v3", credentials=creds)
+=======
+    return build(
+        "calendar",
+        "v3",
+        credentials=creds
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
 
 def create_or_update_booking_event(booking):
@@ -30,7 +38,14 @@ def create_or_update_booking_event(booking):
     if not service:
         return None
 
+<<<<<<< HEAD
     start_datetime = datetime.combine(booking.booking_date, booking.booking_time)
+=======
+    start_datetime = datetime.combine(
+        booking.booking_date,
+        booking.booking_time
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
     end_datetime = start_datetime + timedelta(hours=2)
 
@@ -63,6 +78,7 @@ def create_or_update_booking_event(booking):
     }
 
     if booking.google_calendar_event_id:
+<<<<<<< HEAD
         event = (
             service.events()
             .update(
@@ -74,6 +90,18 @@ def create_or_update_booking_event(booking):
         )
     else:
         event = service.events().insert(calendarId="primary", body=event_body).execute()
+=======
+        event = service.events().update(
+            calendarId="primary",
+            eventId=booking.google_calendar_event_id,
+            body=event_body
+        ).execute()
+    else:
+        event = service.events().insert(
+            calendarId="primary",
+            body=event_body
+        ).execute()
+>>>>>>> 5815f15 (Initial project commit)
 
         booking.google_calendar_event_id = event.get("id")
         booking.save(update_fields=["google_calendar_event_id"])
@@ -91,10 +119,19 @@ def delete_booking_event(booking):
         return False
 
     service.events().delete(
+<<<<<<< HEAD
         calendarId="primary", eventId=booking.google_calendar_event_id
+=======
+        calendarId="primary",
+        eventId=booking.google_calendar_event_id
+>>>>>>> 5815f15 (Initial project commit)
     ).execute()
 
     booking.google_calendar_event_id = None
     booking.save(update_fields=["google_calendar_event_id"])
 
+<<<<<<< HEAD
     return True
+=======
+    return True
+>>>>>>> 5815f15 (Initial project commit)

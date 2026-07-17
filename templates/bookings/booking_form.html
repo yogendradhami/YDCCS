@@ -1,0 +1,110 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}{{ page_title }} | YD Commercial Cleaning Services Dashboard{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block page_subtitle %}
+Create or update cleaning job bookings for YD Commercial Cleaning Services.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="custom-alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        <div class="custom-alert error">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" class="crm-form">
+        {% csrf_token %}
+
+        <div class="auth-grid">
+
+            <div class="form-group">
+                <label>Customer</label>
+                {{ form.customer }}
+                <div class="text-danger">{{ form.customer.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Service Type</label>
+                {{ form.service_type }}
+                <div class="text-danger">{{ form.service_type.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Booking Date</label>
+                {{ form.booking_date }}
+                <div class="text-danger">{{ form.booking_date.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Booking Time</label>
+                {{ form.booking_time }}
+                <div class="text-danger">{{ form.booking_time.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Suburb/Postcode</label>
+                {{ form.suburb_postcode }}
+                <div class="text-danger">{{ form.suburb_postcode.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Quoted Price</label>
+                {{ form.quoted_price }}
+                <div class="text-danger">{{ form.quoted_price.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Assigned Employee</label>
+                {{ form.assigned_employee }}
+                <div class="text-danger">{{ form.assigned_employee.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                {{ form.status }}
+                <div class="text-danger">{{ form.status.errors }}</div>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label>Job Address</label>
+            {{ form.address }}
+            <div class="text-danger">{{ form.address.errors }}</div>
+        </div>
+
+        <div class="form-group">
+            <label>Notes</label>
+            {{ form.notes }}
+            <div class="text-danger">{{ form.notes.errors }}</div>
+        </div>
+
+        <button type="submit" class="btn-fill">
+            {{ button_text }}
+        </button>
+
+        <a href="/dashboard/bookings/" class="btn-outline">
+            Back to Bookings
+        </a>
+
+    </form>
+
+</section>
+
+{% endblock %}

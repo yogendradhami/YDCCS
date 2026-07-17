@@ -25,6 +25,7 @@ class InvoiceForm(forms.ModelForm):
         ]
 
         widgets = {
+<<<<<<< HEAD
             "booking": forms.Select(
                 attrs={
                     "class": "form-control",
@@ -69,3 +70,41 @@ class InvoiceForm(forms.ModelForm):
                 }
             ),
         }
+=======
+            "booking": forms.Select(attrs={
+                "class": "form-control",
+            }),
+
+            "issue_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+
+            "due_date": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+
+            "description": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Describe the cleaning work completed",
+            }),
+
+            "amount": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "placeholder": "Amount before GST",
+            }),
+
+            "status": forms.Select(attrs={
+                "class": "form-control",
+            }),
+
+            "notes": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": "Internal invoice notes",
+            }),
+        }
+>>>>>>> 5815f15 (Initial project commit)

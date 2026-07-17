@@ -1,0 +1,118 @@
+<footer class="premium-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h3 class="footer-title">YD Commercial Cleaning</h3>
+                <p class="footer-description">Professional cleaning services in Adelaide. Reliable, affordable and high-quality cleaning solutions. Professional Cleaning, Every Time.</p>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-heading">Follow Us</h4>
+                <div class="footer-social-icons">
+                    {% if company_settings and company_settings.facebook_url %}
+                        <a href="{{ company_settings.facebook_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M22 12.07C22 6.48 17.52 2 11.93 2S2 6.48 2 12.07C2 17.09 5.66 21.26 10.44 22v-7.03H8.08v-2.9h2.36V9.41c0-2.34 1.4-3.62 3.54-3.62 1.02 0 2.09.18 2.09.18v2.3h-1.18c-1.16 0-1.52.72-1.52 1.46v1.75h2.59l-.41 2.9h-2.18V22C18.34 21.26 22 17.09 22 12.07z"/></svg>
+                        </a>
+                    {% endif %}
+                    {% if company_settings and company_settings.instagram_url %}
+                        <a href="{{ company_settings.instagram_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+                        </a>
+                    {% endif %}
+                    {% if company_settings and company_settings.linkedin_url %}
+                        <a href="{{ company_settings.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6 1.1 6 0 4.88 0 3.5 0 2.12 1.1 1 2.48 1 3.86 1 4.98 2.12 4.98 3.5zM0 8.5h4.96V24H0V8.5zM8.5 8.5h4.75v2.07h.07c.66-1.25 2.28-2.56 4.7-2.56 5.03 0 5.96 3.31 5.96 7.62V24H18.1v-7.5c0-1.79-.03-4.09-2.5-4.09-2.5 0-2.88 1.95-2.88 3.97V24H8.5V8.5z"/></svg>
+                        </a>
+                    {% endif %}
+                    {% if company_settings and company_settings.tiktok_url %}
+                        <a href="{{ company_settings.tiktok_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="TikTok">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M16.5 3.5h2.5v3.2c.66.2 1.28.54 1.81 1V3.5h1.19c-.38 3.11-2.81 5.64-5.92 6.01V12c0 2.64-2.14 4.78-4.78 4.78S6.5 14.64 6.5 12 8.64 7.22 11.28 7.22V9.1c-1.44 0-2.62 1.18-2.62 2.62s1.18 2.62 2.62 2.62 2.62-1.18 2.62-2.62V3.5z"/></svg>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-heading">Services</h4>
+                <ul class="footer-list">
+                    <li><a href="/services/house-cleaning-adelaide/" class="footer-link">Residential</a></li>
+                    <li><a href="/services/commercial-cleaning-adelaide/" class="footer-link">Commercial</a></li>
+                    <li><a href="/services/office-cleaning-adelaide/" class="footer-link">Office Cleaning</a></li>
+                    <li><a href="/services/end-of-lease-cleaning-adelaide/" class="footer-link">Bond Cleaning</a></li>
+                    <li><a href="/pricing/" class="footer-link">Pricing</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-heading">Resources</h4>
+                <ul class="footer-list">
+                    <li><a href="/resources/" class="footer-link">Resources</a></li>
+                    <li><a href="/guides/" class="footer-link">Cleaning Guides</a></li>
+                    <li><a href="/blog/" class="footer-link">Blog</a></li>
+                    <li><a href="/case-studies/" class="footer-link">Case Studies</a></li>
+                    <li><a href="/faq/" class="footer-link">FAQ</a></li>
+                    <li><a href="/contact/" class="footer-link">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-heading">Special Services</h4>
+                <ul class="footer-list">
+                    <li><a href="/eco-friendly-cleaning/" class="footer-link">Eco-Friendly</a></li>
+                    <li><a href="/emergency-cleaning/" class="footer-link">Emergency</a></li>
+                    <li><a href="/services/commercial-cleaning-adelaide/" class="footer-link">Commercial</a></li>
+                    <li><a href="/insurance/" class="footer-link">Insurance & Guarantees</a></li>
+                    <li><a href="/referral-program/" class="footer-link">Referral Program</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-extra-grid">
+            <div>
+                <h5 class="footer-heading">Contact</h5>
+                <ul class="footer-contact-list">
+                    <li><span class="footer-contact-icon">📞</span> <a href="tel:+61430049865" class="footer-link">0430 049 865</a></li>
+                    <li><span class="footer-contact-icon">✉️</span> <a href="mailto:ydcommercialcleaning@gmail.com" class="footer-link">Email Us</a></li>
+                    <li><span class="footer-contact-icon">📍</span> Adelaide, SA</li>
+                    <li class="footer-meta">✓ 2 hour response</li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="footer-heading">Company</h5>
+                <ul class="footer-list">
+                    <li><a href="/about/" class="footer-link">About Us</a></li>
+                    <li><a href="/team/" class="footer-link">Our Team</a></li>
+                    <li><a href="/careers/" class="footer-link">Careers</a></li>
+                    <li><a href="/corporate/" class="footer-link">B2B Partnerships</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="footer-heading">Help</h5>
+                <ul class="footer-list">
+                    <li><a href="/faq/" class="footer-link">FAQ</a></li>
+                    <li><a href="/blog/" class="footer-link">Blog</a></li>
+                    <li><a href="{% url 'contact' %}" class="footer-link">Contact</a></li>
+                    <li><a href="/sitemap.xml" class="footer-link">Sitemap</a></li>
+                    <li><a href="/rss.xml" class="footer-link">RSS Feed</a></li>
+                    <li><a href="tel:+61430049865" class="footer-link">Call Us</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="footer-heading">Legal</h5>
+                <ul class="footer-list">
+                    <li><a href="/terms/" class="footer-link">Terms</a></li>
+                    <li><a href="/privacy/" class="footer-link">Privacy</a></li>
+                    <li><a href="/booking-terms/" class="footer-link">Booking Terms</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="footer-heading">Service Hours</h5>
+                <p class="footer-text">Available 7 days a week</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+            <p>© 2026 YD Commercial Cleaning Services. All rights reserved. Professional cleaning services in Adelaide.</p>
+        </div>
+    </div>
+</footer>

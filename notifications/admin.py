@@ -1,5 +1,8 @@
 from django.contrib import admin
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 from .models import Notification
 
 
@@ -23,4 +26,8 @@ class NotificationAdmin(admin.ModelAdmin):
         "title",
         "message",
         "user__username",
+<<<<<<< HEAD
     )
+=======
+    )
+>>>>>>> 5815f15 (Initial project commit)

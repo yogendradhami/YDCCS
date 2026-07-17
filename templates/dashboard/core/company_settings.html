@@ -1,0 +1,203 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Company Settings
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================== -->
+<!-- Company Settings Page -->
+<!-- ===================================================== -->
+
+<div class="dashboard-card">
+
+    <div style="margin-bottom:30px;">
+        <h1>Company Settings</h1>
+        <p>
+            Manage business information, branding,
+            social media and invoice settings.
+        </p>
+    </div>
+
+    <!-- Success Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success" style="margin-bottom:15px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <!-- ================================================= -->
+        <!-- Business Information -->
+        <!-- ================================================= -->
+
+        <div class="dashboard-card" style="margin-bottom:25px;">
+
+            <h2>Business Information</h2>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Business Name</label>
+                    {{ form.business_name }}
+                </div>
+
+                <div class="form-group">
+                    <label>ABN</label>
+                    {{ form.abn }}
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    {{ form.phone }}
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    {{ form.email }}
+                </div>
+
+                <div class="form-group">
+                    <label>Website</label>
+                    {{ form.website }}
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <label>Business Address</label>
+                {{ form.address }}
+            </div>
+
+        </div>
+
+        <!-- ================================================= -->
+        <!-- Branding -->
+        <!-- ================================================= -->
+
+        <div class="dashboard-card" style="margin-bottom:25px;">
+
+            <h2>Branding</h2>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>Company Logo</label>
+
+                    {% if settings.logo %}
+                        <div style="margin-bottom:10px;">
+                            <img
+                                src="{{ settings.logo.url }}"
+                                alt="Logo"
+                                style="max-height:80px;"
+                            >
+                        </div>
+                    {% endif %}
+
+                    {{ form.logo }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Favicon</label>
+
+                    {% if settings.favicon %}
+                        <div style="margin-bottom:10px;">
+                            <img
+                                src="{{ settings.favicon.url }}"
+                                alt="Favicon"
+                                style="max-height:50px;"
+                            >
+                        </div>
+                    {% endif %}
+
+                    {{ form.favicon }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================================================= -->
+        <!-- Social Media -->
+        <!-- ================================================= -->
+
+        <div class="dashboard-card" style="margin-bottom:25px;">
+
+            <h2>Social Media</h2>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Facebook URL</label>
+                    {{ form.facebook_url }}
+                </div>
+
+                <div class="form-group">
+                    <label>Instagram URL</label>
+                    {{ form.instagram_url }}
+                </div>
+
+                <div class="form-group">
+                    <label>LinkedIn URL</label>
+                    {{ form.linkedin_url }}
+                </div>
+
+                <div class="form-group">
+                    <label>TikTok URL</label>
+                    {{ form.tiktok_url }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================================================= -->
+        <!-- Invoice Settings -->
+        <!-- ================================================= -->
+
+        <div class="dashboard-card" style="margin-bottom:25px;">
+
+            <h2>Invoice Settings</h2>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Invoice Prefix</label>
+                    {{ form.invoice_prefix }}
+                </div>
+
+                <div class="form-group">
+                    <label>GST Percentage</label>
+                    {{ form.gst_percentage }}
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Terms (Days)</label>
+                    {{ form.payment_terms_days }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Save Button -->
+
+        <button type="submit" class="btn-fill">
+            Save Company Settings
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

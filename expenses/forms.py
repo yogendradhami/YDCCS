@@ -1,5 +1,8 @@
 from django import forms
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 from .models import Expense
 
 
@@ -23,4 +26,10 @@ class ExpenseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         for field in self.fields.values():
+<<<<<<< HEAD
             field.widget.attrs.update({"class": "form-control"})
+=======
+            field.widget.attrs.update({
+                "class": "form-control"
+            })
+>>>>>>> 5815f15 (Initial project commit)

@@ -1,0 +1,30 @@
+<!-- ===================================================== -->
+<!-- Google Reviews Section -->
+<!-- ===================================================== -->
+
+{% if reviews %}
+<section class="google-reviews-section">
+    <div class="container">
+
+        <div class="section-title">
+            <h2>{{ title|default:"What Our Customers Say" }}</h2>
+            {% if review_count %}
+                <p>⭐⭐⭐⭐⭐ Based on {{ review_count }} Google Reviews</p>
+            {% endif %}
+        </div>
+
+        <div class="review-grid">
+
+            {% for review in reviews %}
+            <div class="review-card">
+                <h3>{{ review.reviewer_name }}</h3>
+                <p>⭐⭐⭐⭐⭐</p>
+                <p>{{ review.comment|truncatewords:35 }}</p>
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</section>
+{% endif %}

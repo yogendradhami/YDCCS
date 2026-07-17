@@ -8,12 +8,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("dashboard", "0002_activitylog"),
+=======
+        ('dashboard', '0002_activitylog'),
+>>>>>>> 5815f15 (Initial project commit)
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="EmailLog",
             fields=[
                 (
@@ -55,6 +60,21 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["-sent_at"],
+=======
+            name='EmailLog',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('email_type', models.CharField(choices=[('invoice_reminder', 'Invoice Reminder'), ('booking_reminder', 'Booking Reminder'), ('quote_followup', 'Quote Follow-up'), ('system', 'System')], default='system', max_length=50)),
+                ('recipient_name', models.CharField(max_length=150)),
+                ('recipient_email', models.EmailField(max_length=254)),
+                ('subject', models.CharField(max_length=255)),
+                ('related_object', models.CharField(blank=True, max_length=150)),
+                ('sent_at', models.DateTimeField(auto_now_add=True)),
+                ('sent_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-sent_at'],
+>>>>>>> 5815f15 (Initial project commit)
             },
         ),
     ]

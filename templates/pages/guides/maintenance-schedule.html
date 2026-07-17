@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Weekly Maintenance Schedule | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Professional office maintenance schedule template. Daily, weekly, monthly, quarterly and annual cleaning tasks.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
+<style>
+.guide-detail-content { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.guide-detail-content h2 { margin-top: 30px; margin-bottom: 15px; color: #1a3a52; font-size: 1.5rem; font-weight: 700; }
+.guide-detail-content h3 { margin-top: 20px; margin-bottom: 10px; color: #2c5aa0; font-size: 1.1rem; font-weight: 600; }
+.guide-detail-content ul { margin: 15px 0; padding-left: 25px; }
+.guide-detail-content li { margin: 8px 0; line-height: 1.6; color: #555; }
+.guide-actions { margin-bottom: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
+.guide-actions .btn { display: inline-block; text-decoration: none; font-weight: 600; }
+.btn-primary { background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }
+.btn-outline { border: 2px solid #007bff; color: #007bff; padding: 8px 18px; border-radius: 5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="guide-detail-hero">
+    <div class="container">
+        <div class="guide-detail-header">
+            <div class="guide-detail-header-left">
+                <h1>Weekly Maintenance Schedule</h1>
+                <p class="guide-detail-subtitle">Professional Maintenance Schedule Checklist From YD Commercial Cleaning Services, Adelaide</p>
+            </div>
+            <div class="guide-actions">
+                <a href="{% static 'pdf/guides/maintenance-schedule.pdf' %}" class="btn btn-primary" download>📥 Print / Save as PDF</a>
+                <a href="{% url 'guides' %}" class="btn btn-outline">← Back to Guides</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="guide-detail-content">
+    <div class="guide-checklist-box">
+<h2>How to Use This Schedule</h2>
+<p>This comprehensive maintenance schedule is designed to keep your office in pristine condition. Assign tasks to team members or schedule professional cleaning services for consistent results. Print this guide and post it in your facility for easy reference.</p>
+</div>
+<div class="guide-checklist-box">
+<h2>Daily Maintenance (Every Day)</h2>
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <tr style="background: #f0f0f0;">
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Time</td>
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Area</td>
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Task</td>
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Duration</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Morning</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Entrances</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Empty bins, sweep, wipe doors</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">15 min</td>
+        </tr>
+        <tr style="background: #f9f9f9;">
+            <td style="border: 1px solid #ddd; padding: 10px;">Throughout Day</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Restrooms</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Check & refill supplies, quick clean</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">10 min</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Midday</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Kitchen/Break Room</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Wipe counters, clean sink, mop floor</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">15 min</td>
+        </tr>
+        <tr style="background: #f9f9f9;">
+            <td style="border: 1px solid #ddd; padding: 10px;">Evening</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Offices/Workspaces</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Empty bins, vacuum high-traffic areas, dust surfaces</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">20 min</td>
+        </tr>
+    </table>
+</div>
+<div class="guide-checklist-box">
+<h2>Weekly Deep Cleaning Schedule</h2>
+<h3>Monday: Restrooms & Break Room Deep Clean</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Deep scrub all toilets and sinks</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean tile grout and shower areas</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Sanitize all surfaces and mirrors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Deep clean refrigerator and appliances</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean and disinfect sink</label></li>
+    </ul>
+
+    <h3>Tuesday: Windows & Glass</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean all interior and exterior windows</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean window frames and sills</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean glass doors and partitions</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean mirrors and polish fixtures</label></li>
+    </ul>
+
+    <h3>Wednesday: Carpet & Floor Cleaning</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Deep vacuum all carpeted areas</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Spot-treat any visible stains</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Mop and sanitize hard floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean baseboards</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Wipe down door handles and light switches</label></li>
+    </ul>
+
+    <h3>Thursday: Offices & Workspaces</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Dust all surfaces and equipment</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean and organize desks</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Vacuum office carpets thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Wipe down filing cabinets and shelving</label></li>
+    </ul>
+
+    <h3>Friday: Common Areas & Hallways</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Sweep and mop all hallways</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean stairwells (if applicable)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Dust and sanitize common furniture</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Empty and replace all trash liners</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Refill all cleaning supplies</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Monthly Deep Clean Tasks</h2>
+<h3>First Week of Month</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean behind and under all furniture</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Dust ceiling fans and light fixtures</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean air vents and grilles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Wipe down and sanitize all walls</label></li>
+    </ul>
+
+    <h3>Second Week of Month</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Deep clean refrigerator and freezer</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean microwave interior thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Deep clean oven (if applicable)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Sanitize all appliances</label></li>
+    </ul>
+
+    <h3>Third Week of Month</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Deep clean carpets with professional equipment</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Treat stubborn stains with professional products</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Polish hard floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean and polish all glass partitions</label></li>
+    </ul>
+
+    <h3>Fourth Week of Month</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Sanitize computer keyboards and equipment</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Clean phone receivers and headsets</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Dust and wipe file cabinets and storage</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> ☐ Inspect facility for maintenance needs</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Quarterly Maintenance (Every 3 Months)</h2>
+<ul>
+        <li><label class="checklist-item"><input type="checkbox"> Carpet steam cleaning for all areas</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Window blind and curtain cleaning</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Deep clean behind all equipment</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Professional tile and grout cleaning</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sanitize HVAC vents and ducts</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Strip and wax hard floors (if applicable)</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Annual Deep Clean</h2>
+<p>Schedule a professional deep clean once per year for maximum impact:</p>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Complete facility deep cleaning</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Professional carpet cleaning and treatment</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Professional window cleaning (interior/exterior)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Professional tile and grout sealing</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Professional HVAC duct cleaning</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Complete disinfection and sanitization</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Facility inspection for improvements</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Task Assignment Template</h2>
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <tr style="background: #f0f0f0;">
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Task</td>
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Frequency</td>
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Assigned To</td>
+            <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold;">Complete</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Restrooms Deep Clean</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Weekly</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">______________</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">☐</td>
+        </tr>
+        <tr style="background: #f9f9f9;">
+            <td style="border: 1px solid #ddd; padding: 10px;">Windows & Glass</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Weekly</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">______________</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">☐</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Carpet & Floors</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Weekly</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">______________</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">☐</td>
+        </tr>
+        <tr style="background: #f9f9f9;">
+            <td style="border: 1px solid #ddd; padding: 10px;">Deep Carpet Clean</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Monthly</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">______________</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">☐</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Professional Service</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">Quarterly</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">YD Cleaning</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">☐</td>
+        </tr>
+    </table>
+</div>
+<div class="guide-checklist-box">
+<h2>Maintenance Success Tips</h2>
+<ul>
+        <li>✓ <strong>Consistency</strong>: Stick to the schedule for best results. Regular maintenance prevents deep buildup.</li>
+        <li>✓ <strong>Assign Responsibility</strong>: Make one person responsible for each task to ensure accountability.</li>
+        <li>✓ <strong>Use Checklists</strong>: Check off tasks as completed to track progress.</li>
+        <li>✓ <strong>Right Products</strong>: Use commercial-grade cleaning products for best results.</li>
+        <li>✓ <strong>Professional Help</strong>: Hire professionals for deep cleaning tasks. It's cost-effective and ensures quality.</li>
+        <li>✓ <strong>Adjust as Needed</strong>: Modify the schedule based on your facility's specific needs and traffic patterns.</li>
+    </ul>
+</div>
+<hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+
+    <h3>Let professionals handle your maintenance schedule</h3>
+    <p style="font-size: 1.05rem; margin: 20px 0;">Contact YD Commercial Cleaning Services</p>
+    <p style="color: #666;">
+        📞 <a href="tel:0430049865">0430 049 865</a> | 📧 <a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a><br>
+        Adelaide, South Australia | Professional Cleaning, Every Time
+    </p>
+</section>
+
+{% endblock %}

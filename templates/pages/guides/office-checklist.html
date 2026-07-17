@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Office Cleaning Checklist | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Professional office cleaning checklist. Daily, weekly and monthly tasks to keep your workplace spotless and productive.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
+<style>
+.guide-detail-content { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.guide-detail-content h2 { margin-top: 30px; margin-bottom: 15px; color: #1a3a52; font-size: 1.5rem; font-weight: 700; }
+.guide-detail-content h3 { margin-top: 20px; margin-bottom: 10px; color: #2c5aa0; font-size: 1.1rem; font-weight: 600; }
+.guide-detail-content ul { margin: 15px 0; padding-left: 25px; }
+.guide-detail-content li { margin: 8px 0; line-height: 1.6; color: #555; }
+.guide-actions { margin-bottom: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
+.guide-actions .btn { display: inline-block; text-decoration: none; font-weight: 600; }
+.btn-primary { background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }
+.btn-outline { border: 2px solid #007bff; color: #007bff; padding: 8px 18px; border-radius: 5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="guide-detail-hero">
+    <div class="container">
+        <div class="guide-detail-header">
+            <div class="guide-detail-header-left">
+                <h1>Office Cleaning Checklist</h1>
+                <p class="guide-detail-subtitle">Professional Office Cleaning Checklist From YD Commercial Cleaning Services, Adelaide</p>
+            </div>
+            <div class="guide-actions">
+                <a href="{% static 'pdf/guides/office-checklist.pdf' %}" class="btn btn-primary" download>📥 Print / Save as PDF</a>
+                <a href="{% url 'guides' %}" class="btn btn-outline">← Back to Guides</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="guide-detail-content">
+    <div class="guide-checklist-box">
+<h2>Daily Tasks</h2>
+<h3>Entrances & Reception Area</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Empty and replace trash bins</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sweep and mop floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean and disinfect door handles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe reception desk</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dust decorative items</label></li>
+    </ul>
+
+    <h3>Restrooms</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean and disinfect toilets, sinks, and faucets</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Refill soap and paper towel dispensers</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Empty and replace trash bins</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Check and refill toilet paper</label></li>
+    </ul>
+
+    <h3>Kitchen / Break Room</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean and disinfect countertops</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe microwave interior and exterior</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Empty and replace trash bins</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Mop and sweep floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe down sink and faucet</label></li>
+    </ul>
+
+    <h3>Offices & Workspaces</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Empty trash bins</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Vacuum carpets in high-traffic areas</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Spot-clean stains on carpets or upholstery</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dust surfaces and equipment</label></li>
+    </ul>
+
+    <h3>Common Areas</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Sweep and mop hallways</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dust baseboards and light fixtures</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean glass doors and partitions</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Disinfect high-touch surfaces (railings, switches)</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Weekly Tasks</h2>
+<h3>Deep Carpet & Floor Cleaning</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Deep vacuum all carpeted areas</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Spot-treat stained areas</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Strip, wax, and buff hard floors (if applicable)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean baseboards throughout office</label></li>
+    </ul>
+
+    <h3>Window & Glass Cleaning</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean interior and exterior windows</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean glass doors and partitions</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean window sills and frames</label></li>
+    </ul>
+
+    <h3>Wall & Ceiling Maintenance</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe light switches and outlet covers</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dust ceiling tiles and vents</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Spot-clean walls for marks and scuffs</label></li>
+    </ul>
+
+    <h3>Restroom Deep Clean</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Deep scrub toilets, sinks, and tubs</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean tile grout and corners</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sanitize mirrors and fixtures</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Monthly Tasks</h2>
+<ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean behind and under all furniture</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Deep clean refrigerator and appliances</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean air vents and grilles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sanitize keyboard and computer equipment</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Deep clean carpets with professional equipment</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean window blinds and curtains</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Inspect and clean light fixtures</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Professional Cleaning Tips</h2>
+<ul>
+        <li>✓ <strong>Declutter First</strong>: Remove personal items and clutter before cleaning to access all surfaces.</li>
+        <li>✓ <strong>Work Top to Bottom</strong>: Start from high surfaces (ceilings, shelves) and work down to floors.</li>
+        <li>✓ <strong>Use Right Cleaning Agents</strong>: Different surfaces require different products. Always follow manufacturer guidelines.</li>
+        <li>✓ <strong>Disinfect High-Touch Areas</strong>: Pay extra attention to door handles, light switches, and shared equipment.</li>
+        <li>✓ <strong>Maintain Equipment</strong>: Clean and maintain your cleaning tools regularly for best results.</li>
+        <li>✓ <strong>Schedule Consistently</strong>: Regular cleaning prevents buildup and maintains a professional appearance.</li>
+    </ul>
+</div>
+<hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+
+    <h3>Need professional help with your office cleaning?</h3>
+    <p style="font-size: 1.05rem; margin: 20px 0;">Contact YD Commercial Cleaning Services</p>
+    <p style="color: #666;">
+        📞 <a href="tel:0430049865">0430 049 865</a> | 📧 <a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a><br>
+        Adelaide, South Australia | Professional Cleaning, Every Time
+    </p>
+</section>
+
+{% endblock %}
+

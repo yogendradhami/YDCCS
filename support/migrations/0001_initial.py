@@ -9,11 +9,16 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+<<<<<<< HEAD
         ("customers", "0002_customer_user"),
+=======
+        ('customers', '0002_customer_user'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="SupportTicket",
             fields=[
                 (
@@ -66,6 +71,21 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["-created_at"],
+=======
+            name='SupportTicket',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('subject', models.CharField(max_length=255)),
+                ('message', models.TextField()),
+                ('priority', models.CharField(choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High'), ('urgent', 'Urgent')], default='medium', max_length=20)),
+                ('status', models.CharField(choices=[('open', 'Open'), ('in_progress', 'In Progress'), ('resolved', 'Resolved'), ('closed', 'Closed')], default='open', max_length=20)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='support_tickets', to='customers.customer')),
+            ],
+            options={
+                'ordering': ['-created_at'],
+>>>>>>> 5815f15 (Initial project commit)
             },
         ),
     ]

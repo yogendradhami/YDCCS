@@ -1,0 +1,81 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+    <div class="crm-panel-header">
+
+        <h1>Cleaning Supplies</h1>
+
+        <a href="{% url 'add_supply' %}"
+           class="btn-fill">
+            Add Supply
+        </a>
+
+    </div>
+
+    <table class="dashboard-table">
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stock</th>
+                <th>Minimum</th>
+                <th>Status</th>
+                <th>Supplier</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in supplies %}
+
+            <tr>
+
+                <td>{{ item.name }}</td>
+
+                <td>{{ item.current_stock }}</td>
+
+                <td>{{ item.minimum_stock }}</td>
+
+                <td>
+
+                    {% if item.current_stock <= item.minimum_stock %}
+
+                        <span class="status-badge danger">
+                            Low Stock
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-badge success">
+                            OK
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>{{ item.supplier_name }}</td>
+
+                <td>
+
+                    <a href="{% url 'edit_supply' item.id %}">
+                        Edit
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} | YD Commercial Cleaning{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/blog_post_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="blog-detail-hero" style="background-image: url('{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{% static 'images/placeholder-hero.jpg' %}{% endif %}');">
+    <div class="overlay">
+        <div class="container">
+            <div class="hero-meta">
+                {% if post.category %}<span class="badge category">{{ post.category }}</span>{% endif %}
+                <h1 class="hero-title">{{ post.title }}</h1>
+                <div class="hero-sub">By Admin • {{ post.published_at|date:"j F Y" }}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="blog-detail-content">
+    <div class="container grid">
+        <main class="content-area">
+            {% if post.excerpt %}
+                <p class="lead">{{ post.excerpt }}</p>
+            {% endif %}
+
+            <article class="post-body">{{ post.content|safe }}</article>
+
+            <div class="post-actions">
+                <a href="{% url 'blog' %}" class="btn btn-outline">← Back to Blog</a>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="card about-author">
+                <h4>About the Author</h4>
+                <p>YD Commercial Cleaning — Professional cleaning services across Adelaide.</p>
+            </div>
+
+            <div class="card related-posts">
+                <h4>Related Posts</h4>
+                <ul>
+                    {% for p in related_posts|default:posts|slice:":5" %}
+                        {% if p.slug != post.slug %}
+                            <li><a href="{% url 'blog_detail' p.slug %}">{{ p.title }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

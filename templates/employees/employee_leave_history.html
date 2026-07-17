@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Leave History | Employee Portal
+{% endblock %}
+
+{% block content %}
+
+<section class="employee-portal-hero">
+    <div class="container">
+        <div class="employee-hero-box">
+            <div>
+                <h1>Leave History</h1>
+                <p>Track your leave requests for YD Commercial Cleaning Services.</p>
+            </div>
+
+            <a href="/employee/leave/request/" class="employee-back-btn">
+                Apply Leave
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section employee-dashboard-section">
+    <div class="container">
+
+        <div class="employee-panel">
+
+            <div class="employee-panel-header">
+                <h2>My Leave Requests</h2>
+                <a href="/employee/dashboard/">Back to Dashboard</a>
+            </div>
+
+            {% if leave_requests %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+                        <thead>
+                            <tr>
+                                <th>Leave Type</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for leave in leave_requests %}
+                                <tr>
+                                    <td>{{ leave.get_leave_type_display }}</td>
+                                    <td>{{ leave.start_date }}</td>
+                                    <td>{{ leave.end_date }}</td>
+                                    <td>{{ leave.get_status_display }}</td>
+                                    <td>{{ leave.reason }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No leave requests yet.</h3>
+                    <p>Your submitted leave requests will appear here.</p>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

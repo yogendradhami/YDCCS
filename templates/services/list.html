@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{#
+Context expected: `services` - iterable of objects with at least:
+  - `title`
+  - `description`
+  - `image` (has `.url`) or `image_url` string
+  - optional `get_absolute_url` for a detail link
+#}
+
+{% block content %}
+<div class="services-page" style="max-width:1200px;margin:0 auto;padding:40px 16px;">
+  {% for service in services %}
+  <section class="service-section" style="display:flex;flex-wrap:wrap;align-items:center;padding:48px 0;border-bottom:1px solid #eee;">
+    {% comment %} alternate layout every other item {% endcomment %}
+    {% if forloop.counter|divisibleby:2 %}
+      <div class="service-image" style="flex:1;min-width:300px;padding:16px;order:1;">
+        <img src="{{ service.image.url|default:service.image_url }}" alt="{{ service.title }}" style="width:100%;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+      </div>
+      <div class="service-content" style="flex:1;min-width:300px;padding:16px;order:2;">
+        <h2 style="margin-top:0;margin-bottom:12px;font-size:1.6rem;">{{ service.title }}</h2>
+        <div style="color:#444;line-height:1.6;">{{ service.description|linebreaks }}</div>
+        {% if service.get_absolute_url %}
+          <p style="margin-top:12px;"><a href="{{ service.get_absolute_url }}" class="btn btn-primary">Learn more</a></p>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="service-content" style="flex:1;min-width:300px;padding:16px;order:1;">
+        <h2 style="margin-top:0;margin-bottom:12px;font-size:1.6rem;">{{ service.title }}</h2>
+        <div style="color:#444;line-height:1.6;">{{ service.description|linebreaks }}</div>
+        {% if service.get_absolute_url %}
+          <p style="margin-top:12px;"><a href="{{ service.get_absolute_url }}" class="btn btn-primary">Learn more</a></p>
+        {% endif %}
+      </div>
+      <div class="service-image" style="flex:1;min-width:300px;padding:16px;order:2;">
+        <img src="{{ service.image.url|default:service.image_url }}" alt="{{ service.title }}" style="width:100%;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+      </div>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

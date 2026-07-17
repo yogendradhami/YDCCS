@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Post-Construction Cleaning Checklist | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Professional post-construction cleaning guide. Four-phase cleanup process for new builds and renovations.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
+<style>
+.guide-detail-content { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.guide-detail-content h2 { margin-top: 30px; margin-bottom: 15px; color: #1a3a52; font-size: 1.5rem; font-weight: 700; }
+.guide-detail-content h3 { margin-top: 20px; margin-bottom: 10px; color: #2c5aa0; font-size: 1.1rem; font-weight: 600; }
+.guide-detail-content ul { margin: 15px 0; padding-left: 25px; }
+.guide-detail-content li { margin: 8px 0; line-height: 1.6; color: #555; }
+.guide-actions { margin-bottom: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
+.guide-actions .btn { display: inline-block; text-decoration: none; font-weight: 600; }
+.btn-primary { background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }
+.btn-outline { border: 2px solid #007bff; color: #007bff; padding: 8px 18px; border-radius: 5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="guide-detail-hero">
+    <div class="container">
+        <div class="guide-detail-header">
+            <div class="guide-detail-header-left">
+                <h1>Post-Construction Cleaning Guide</h1>
+                <p class="guide-detail-subtitle">Professional Post-Construction Cleaning Checklist From YD Commercial Cleaning Services, Adelaide</p>
+            </div>
+            <div class="guide-actions">
+                <a href="{% static 'pdf/guides/post-construction-checklist.pdf' %}" class="btn btn-primary" download>📥 Print / Save as PDF</a>
+                <a href="{% url 'guides' %}" class="btn btn-outline">← Back to Guides</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="guide-detail-content">
+    <p><strong>Important:</strong> Post-construction cleaning should be done after all construction work is complete, including carpet installation and final paint touch-ups. This is heavy-duty cleaning requiring professional equipment.</p>
+
+    <div class="guide-checklist-box">
+<h2>Phase 1: Rough Clean (After Construction)</h2>
+<h3>Debris Removal</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Remove all construction materials and debris</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sweep all floors thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove dust sheets and protective coverings</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dispose of all waste materials properly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any protective film from floors or fixtures</label></li>
+    </ul>
+
+    <h3>Dust Removal</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Dust all surfaces from top to bottom</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean ceiling, beams, and high surfaces</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe down all walls</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dust window sills and frames</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean all door frames and doors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe baseboards thoroughly</label></li>
+    </ul>
+
+    <h3>Floor Cleaning</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Vacuum all flooring areas (especially new carpet)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sweep hard floors thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove adhesive residue from flooring</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean grout lines if applicable</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Phase 2: Fixture & Fitting Installation</h2>
+<h3>Doors & Windows</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean all windows (interior and exterior)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove window protection film</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean window frames and sills</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean all doors and handles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove protective stickers from door handles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean glass doors thoroughly</label></li>
+    </ul>
+
+    <h3>Light Fixtures</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean all light fixtures and recessed lights</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove protective covers and stickers</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean light switches and outlet covers</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Replace any faulty bulbs</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Ensure all lights are functioning</label></li>
+    </ul>
+
+    <h3>Plumbing & HVAC</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Clean and polish sinks and faucets</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove protective coatings from fixtures</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean HVAC vents and grilles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Replace HVAC filters</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Test water temperature and function</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Phase 3: Professional Deep Clean</h2>
+<h3>Kitchen</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Deep clean and sanitize all cabinets</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean stovetop thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean inside oven</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean range hood and filters</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean refrigerator (inside and out)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean dishwasher</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Scrub sink and install strainer</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize floor</label></li>
+    </ul>
+
+    <h3>Bathrooms</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Deep clean bathtub and shower</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove protective tape from fixtures</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sanitize toilet</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean and polish sink and faucet</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean all tiled areas and grout</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean mirrors and towel racks</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize floor</label></li>
+    </ul>
+
+    <h3>Living Areas</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Vacuum all carpet thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Spot clean carpet stains</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Sweep and mop hard floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dust all shelves and surfaces</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe down all walls</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean baseboards throughout</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Phase 4: Final Inspection & Quality Check</h2>
+<ul>
+        <li><label class="checklist-item"><input type="checkbox"> All debris and dust removed</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All surfaces clean and sanitized</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All fixtures and fittings cleaned</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All protective coverings removed</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> All lights and systems tested</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Property is move-in ready</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Final walk-through completed</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Post-Construction Cleaning Tips</h2>
+<ul>
+        <li>✓ <strong>Hire Professionals</strong>: Post-construction cleaning is intensive. Professional cleaners have the right equipment and experience.</li>
+        <li>✓ <strong>Timing</strong>: Schedule cleaning after all construction is complete, but before final inspections and handover.</li>
+        <li>✓ <strong>Safety</strong>: Ensure the property is safe before cleaning begins (no exposed hazards, loose debris, etc.).</li>
+        <li>✓ <strong>Quality Products</strong>: Use commercial-grade cleaning products designed for post-construction cleaning.</li>
+        <li>✓ <strong>Documentation</strong>: Take photos/videos of the completed clean for your records.</li>
+    </ul>
+</div>
+<hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+
+    <h3>Need professional post-construction cleaning?</h3>
+    <p style="font-size: 1.05rem; margin: 20px 0;">Contact YD Commercial Cleaning Services</p>
+    <p style="color: #666;">
+        📞 <a href="tel:0430049865">0430 049 865</a> | 📧 <a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a><br>
+        Adelaide, South Australia | Professional Cleaning, Every Time
+    </p>
+</section>
+
+{% endblock %}

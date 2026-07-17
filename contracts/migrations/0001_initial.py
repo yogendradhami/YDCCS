@@ -9,12 +9,18 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+<<<<<<< HEAD
         ("customers", "0002_customer_user"),
         ("employees", "0002_employee_user"),
+=======
+        ('customers', '0002_customer_user'),
+        ('employees', '0002_employee_user'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="CleaningContract",
             fields=[
                 (
@@ -81,6 +87,25 @@ class Migration(migrations.Migration):
                         to="customers.customer",
                     ),
                 ),
+=======
+            name='CleaningContract',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('service_type', models.CharField(max_length=100)),
+                ('frequency', models.CharField(choices=[('weekly', 'Weekly'), ('fortnightly', 'Fortnightly'), ('monthly', 'Monthly')], max_length=30)),
+                ('start_date', models.DateField()),
+                ('end_date', models.DateField(blank=True, null=True)),
+                ('preferred_time', models.TimeField()),
+                ('address', models.CharField(max_length=255)),
+                ('suburb_postcode', models.CharField(max_length=150)),
+                ('price_per_visit', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
+                ('status', models.CharField(choices=[('active', 'Active'), ('paused', 'Paused'), ('completed', 'Completed'), ('cancelled', 'Cancelled')], default='active', max_length=30)),
+                ('notes', models.TextField(blank=True)),
+                ('bookings_generated_until', models.DateField(blank=True, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('assigned_employee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contracts', to='employees.employee')),
+                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='contracts', to='customers.customer')),
+>>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

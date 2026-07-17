@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Attendance Dashboard | Employee Portal
+{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Attendance Dashboard</h1>
+        <p>Check in and check out for your assigned cleaning jobs.</p>
+    </div>
+</section>
+
+<section class="section dashboard-section">
+    <div class="container">
+
+        <div class="dashboard-actions">
+            <a href="/employee/dashboard/" class="btn-outline">Back to Dashboard</a>
+            <a href="/employee/jobs/" class="btn-fill">My Jobs</a>
+            <a href="/employee/logout/" class="btn-outline">Logout</a>
+        </div>
+
+        <div class="dashboard-table-card">
+            <h2>Assigned Jobs</h2>
+
+            {% if jobs %}
+                {% for job in jobs %}
+                    <div class="job-summary-box">
+                        <h3>{{ job.service_type }}</h3>
+
+                        <p><strong>Date:</strong> {{ job.booking_date }}</p>
+                        <p><strong>Time:</strong> {{ job.booking_time }}</p>
+                        <p><strong>Customer:</strong> {{ job.customer.full_name }}</p>
+                        <p><strong>Address:</strong> {{ job.address }}</p>
+                        <p><strong>Status:</strong> {{ job.get_status_display }}</p>
+
+                        <div class="dashboard-actions">
+                            <form method="POST" action="{% url 'check_in' job.id %}" class="gps-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="latitude">
+                                <input type="hidden" name="longitude">
+
+                                <button type="submit" class="btn-fill">
+                                    Check In
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{% url 'check_out' job.id %}" class="gps-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="latitude">
+                                <input type="hidden" name="longitude">
+
+                                <button type="submit" class="btn-outline">
+                                    Check Out
+                                </button>
+                            </form>
+
+                            <a href="/employee/jobs/{{ job.id }}/" class="btn-outline">
+                                View Job
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-box">
+                    <h3>No assigned jobs.</h3>
+                    <p>Your assigned bookings will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-table-card">
+            <h2>Attendance History</h2>
+
+            {% if attendance_logs %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Booking</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Total Hours</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for log in attendance_logs %}
+                                <tr>
+                                    <td>#{{ log.booking.id }}</td>
+                                    <td>{{ log.booking.customer.full_name }}</td>
+                                    <td>{{ log.booking.service_type }}</td>
+                                    <td>{{ log.check_in_time|default:"-" }}</td>
+                                    <td>{{ log.check_out_time|default:"-" }}</td>
+                                    <td>{{ log.total_hours }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No attendance history yet.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+<script>
+document.querySelectorAll(".gps-form").forEach(function(form) {
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        if (!navigator.geolocation) {
+            alert("GPS is not supported on this device.");
+            form.submit();
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                form.querySelector('input[name="latitude"]').value = position.coords.latitude;
+                form.querySelector('input[name="longitude"]').value = position.coords.longitude;
+                form.submit();
+            },
+            function() {
+                alert("Unable to get GPS location. Please allow location access.");
+            }
+        );
+    });
+});
+</script>
+
+{% endblock %}

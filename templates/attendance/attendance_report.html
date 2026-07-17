@@ -1,0 +1,86 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Attendance Report | YD Dashboard{% endblock %}
+
+{% block page_title %}Employee Attendance Report{% endblock %}
+{% block page_subtitle %}Track employee check-ins, check-outs, GPS location and total hours worked.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/" class="btn-outline">Back to Dashboard</a>
+    <a href="/dashboard/employees/" class="btn-fill">Employees</a>
+    <a href="/dashboard/bookings/" class="btn-fill">Bookings</a>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Attendance Logs</h2>
+    </div>
+
+    {% if logs %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Booking Date</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Total Hours</th>
+                        <th>Check-In GPS</th>
+                        <th>Check-Out GPS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.employee.full_name }}</td>
+                            <td>{{ log.booking.customer.full_name }}</td>
+                            <td>{{ log.booking.service_type }}</td>
+                            <td>{{ log.booking.booking_date }}</td>
+                            <td>{{ log.check_in_time|default:"-" }}</td>
+                            <td>{{ log.check_out_time|default:"-" }}</td>
+                            <td>{{ log.total_hours }}</td>
+
+                            <td>
+                                {% if log.check_in_latitude and log.check_in_longitude %}
+                                    <a
+                                        href="https://www.google.com/maps?q={{ log.check_in_latitude }},{{ log.check_in_longitude }}"
+                                        target="_blank"
+                                        class="small-link-btn"
+                                    >
+                                        View Map
+                                    </a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if log.check_out_latitude and log.check_out_longitude %}
+                                    <a
+                                        href="https://www.google.com/maps?q={{ log.check_out_latitude }},{{ log.check_out_longitude }}"
+                                        target="_blank"
+                                        class="small-link-btn"
+                                    >
+                                        View Map
+                                    </a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No attendance records found.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

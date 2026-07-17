@@ -1,7 +1,15 @@
+<<<<<<< HEAD
 # Register your models here.
 from django.contrib import admin
 from django.utils.html import format_html
 
+=======
+from django.contrib import admin
+
+# Register your models here.
+from django.contrib import admin
+from django.utils.html import format_html
+>>>>>>> 5815f15 (Initial project commit)
 from .models import GalleryItem
 
 
@@ -32,24 +40,38 @@ class GalleryItemAdmin(admin.ModelAdmin):
     def before_preview(self, obj):
         if obj.before_image:
             return format_html(
+<<<<<<< HEAD
                 (
                     '<img src="{}" width="80" height="60" '
                     'style="object-fit:cover;border-radius:6px;" />'
                 ),
                 obj.before_image.url,
+=======
+                '<img src="{}" width="80" height="60" style="object-fit:cover;border-radius:6px;" />',
+                obj.before_image.url
+>>>>>>> 5815f15 (Initial project commit)
             )
         return "No image"
 
     def after_preview(self, obj):
         if obj.after_image:
             return format_html(
+<<<<<<< HEAD
                 (
                     '<img src="{}" width="80" height="60" '
                     'style="object-fit:cover;border-radius:6px;" />'
                 ),
                 obj.after_image.url,
+=======
+                '<img src="{}" width="80" height="60" style="object-fit:cover;border-radius:6px;" />',
+                obj.after_image.url
+>>>>>>> 5815f15 (Initial project commit)
             )
         return "No image"
 
     before_preview.short_description = "Before"
+<<<<<<< HEAD
     after_preview.short_description = "After"
+=======
+    after_preview.short_description = "After"
+>>>>>>> 5815f15 (Initial project commit)

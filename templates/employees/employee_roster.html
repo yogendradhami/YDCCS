@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}
+My Schedule | Employee Portal
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================== -->
+<!-- Employee Roster Hero -->
+<!-- ===================================================== -->
+
+<section class="employee-portal-hero">
+    <div class="container">
+        <div class="employee-hero-box">
+
+            <div>
+                <h1>My Schedule</h1>
+                <p>View today's shifts, upcoming shifts and completed roster history.</p>
+            </div>
+
+            <a href="/employee/dashboard/" class="employee-back-btn">
+                Dashboard
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<!-- ===================================================== -->
+<!-- Employee Roster Content -->
+<!-- ===================================================== -->
+
+<section class="section employee-dashboard-section">
+    <div class="container">
+
+        <!-- Quick action buttons -->
+        <div class="employee-action-row">
+
+            <a href="/employee/jobs/" class="btn-fill employee-spaced-btn">
+                My Jobs
+            </a>
+
+            <a href="/employee/attendance/" class="btn-outline employee-spaced-btn">
+                Attendance
+            </a>
+
+            <a href="/employee/leave/request/" class="btn-outline employee-spaced-btn">
+                Apply Leave
+            </a>
+
+            <a href="/employee/payslips/" class="btn-outline employee-spaced-btn">
+                My Payslips
+            </a>
+
+        </div>
+
+        <!-- Schedule summary cards -->
+        <div class="dashboard-grid employee-stats-grid">
+
+            <div class="dashboard-card">
+                <h3>{{ today_shifts|length }}</h3>
+                <p>Today's Shifts</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ upcoming_shifts|length }}</h3>
+                <p>Upcoming Shifts</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ completed_shifts }}</h3>
+                <p>Completed Shifts</p>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>{{ rosters|length }}</h3>
+                <p>Total Roster Records</p>
+            </div>
+
+        </div>
+
+        <!-- Today's shifts section -->
+        <div class="employee-panel">
+
+            <div class="employee-panel-header">
+                <h2>Today's Shifts</h2>
+            </div>
+
+            {% if today_shifts %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+
+                        <thead>
+                            <tr>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Service</th>
+                                <th>Customer</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>Job</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for roster in today_shifts %}
+                                <tr>
+                                    <td>{{ roster.start_time }}</td>
+                                    <td>{{ roster.end_time }}</td>
+                                    <td>{{ roster.booking.service_type }}</td>
+                                    <td>{{ roster.booking.customer.full_name }}</td>
+                                    <td>{{ roster.booking.address }}</td>
+
+                                    <td>
+                                        {% if roster.status == "scheduled" %}
+                                            <span class="status-badge primary">Scheduled</span>
+                                        {% elif roster.status == "completed" %}
+                                            <span class="status-badge success">Completed</span>
+                                        {% elif roster.status == "cancelled" %}
+                                            <span class="status-badge warning">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <a href="/employee/jobs/{{ roster.booking.id }}/" class="small-link-btn">
+                                            View Job
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No shifts today.</h3>
+                    <p>Your shifts for today will appear here.</p>
+                </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Upcoming shifts section -->
+        <div class="employee-panel">
+
+            <div class="employee-panel-header">
+                <h2>Upcoming Shifts</h2>
+            </div>
+
+            {% if upcoming_shifts %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Service</th>
+                                <th>Customer</th>
+                                <th>Suburb</th>
+                                <th>Status</th>
+                                <th>Job</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for roster in upcoming_shifts %}
+                                <tr>
+                                    <td>{{ roster.shift_date }}</td>
+                                    <td>{{ roster.start_time }}</td>
+                                    <td>{{ roster.end_time }}</td>
+                                    <td>{{ roster.booking.service_type }}</td>
+                                    <td>{{ roster.booking.customer.full_name }}</td>
+                                    <td>{{ roster.booking.suburb_postcode }}</td>
+
+                                    <td>
+                                        {% if roster.status == "scheduled" %}
+                                            <span class="status-badge primary">Scheduled</span>
+                                        {% elif roster.status == "completed" %}
+                                            <span class="status-badge success">Completed</span>
+                                        {% elif roster.status == "cancelled" %}
+                                            <span class="status-badge warning">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <a href="/employee/jobs/{{ roster.booking.id }}/" class="small-link-btn">
+                                            View Job
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No upcoming shifts.</h3>
+                    <p>Your future rostered shifts will appear here.</p>
+                </div>
+            {% endif %}
+
+        </div>
+
+        <!-- All roster records -->
+        <div class="employee-panel">
+
+            <div class="employee-panel-header">
+                <h2>All Roster Records</h2>
+            </div>
+
+            {% if rosters %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Booking</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for roster in rosters %}
+                                <tr>
+                                    <td>{{ roster.shift_date }}</td>
+                                    <td>{{ roster.start_time }}</td>
+                                    <td>{{ roster.end_time }}</td>
+                                    <td>{{ roster.booking.service_type }}</td>
+
+                                    <td>
+                                        {% if roster.status == "scheduled" %}
+                                            <span class="status-badge primary">Scheduled</span>
+                                        {% elif roster.status == "completed" %}
+                                            <span class="status-badge success">Completed</span>
+                                        {% elif roster.status == "cancelled" %}
+                                            <span class="status-badge warning">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No roster shifts yet.</h3>
+                    <p>Your schedule will appear here once admin creates a shift.</p>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

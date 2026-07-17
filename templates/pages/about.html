@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About YD Commercial Cleaning | Professional Cleaning Services{% endblock %}
+{% block meta_description %}Learn about YD Commercial Cleaning Services - Adelaide's trusted cleaning company. Our story, values, team, and commitment to excellence.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/about.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="about-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>About YD Commercial Cleaning</h1>
+        <p>Delivering professional, reliable cleaning solutions across Adelaide with a commitment to excellence and customer satisfaction</p>
+    </div>
+</section>
+
+<!-- Our Story Section -->
+<section class="about-story">
+    <div class="container">
+        <div class="story-content">
+            <div class="story-text">
+                <h2>Our Story</h2>
+                <p>YD Commercial Cleaning Services was founded with a simple mission: to provide professional, reliable cleaning services that exceed customer expectations.</p>
+                <p>Starting as a small local operation, we've grown into a trusted cleaning partner for hundreds of residential and commercial clients across Adelaide. Our success is built on our commitment to quality, reliability, and customer satisfaction.</p>
+                <p>Today, we're proud to be one of Adelaide's most trusted cleaning service providers, serving homes, offices, and commercial spaces with professional teams dedicated to excellence.</p>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Work With Us</a>
+            </div>
+            <div class="story-image">
+                <img src="{% static 'images/team-cleaning.jpg' %}" alt="YD Commercial Cleaning Services professional team at work" loading="lazy">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core Values Section -->
+<section class="about-values">
+    <div class="container">
+        <h2>Our Core Values</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">✓</div>
+                <h3>Excellence</h3>
+                <p>We're committed to delivering the highest quality cleaning standards on every job.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">✓</div>
+                <h3>Reliability</h3>
+                <p>We show up on time, every time, and deliver consistent professional service.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">✓</div>
+                <h3>Care</h3>
+                <p>We treat your property with the same care and respect we'd show our own homes.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">✓</div>
+                <h3>Efficiency</h3>
+                <p>We work efficiently to deliver excellent results in a timely manner.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="about-choose-us">
+    <div class="container">
+        <h2>Why Choose YD Commercial Cleaning?</h2>
+        <div class="choose-us-grid">
+            <div class="choose-card">
+                <div class="card-number">01</div>
+                <h3>Professional Teams</h3>
+                <p>Trained, experienced cleaning professionals dedicated to quality work and customer satisfaction.</p>
+            </div>
+            <div class="choose-card">
+                <div class="card-number">02</div>
+                <h3>Reliable Service</h3>
+                <p>Punctual, consistent service you can count on every single time we visit.</p>
+            </div>
+            <div class="choose-card">
+                <div class="card-number">03</div>
+                <h3>Affordable Pricing</h3>
+                <p>Competitive rates with transparent pricing and no hidden fees ever.</p>
+            </div>
+            <div class="choose-card">
+                <div class="card-number">04</div>
+                <h3>Local Experts</h3>
+                <p>Based in Adelaide, we understand the local community and its cleaning needs.</p>
+            </div>
+            <div class="choose-card">
+                <div class="card-number">05</div>
+                <h3>Flexible Solutions</h3>
+                <p>Custom cleaning packages tailored to your specific needs and budget.</p>
+            </div>
+            <div class="choose-card">
+                <div class="card-number">06</div>
+                <h3>Quick Response</h3>
+                <p>Fast response times and flexible scheduling to fit your lifestyle.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="about-testimonials">
+    <div class="container">
+        <h2>What Our Customers Say</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"I recently hired this cleaning company and honestly, I was pretty impressed. The team showed up on time, which already gave a good first impression. They were polite, easy to communicate with, and got straight to work without wasting any time. What I liked the most was the attention to detail."</p>
+                <strong>Dipesh Bag</strong>
+                <span>Google Reviews</span>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"YD Commercial Cleaning Services delivers outstanding and reliable cleaning every time. Their team is professional, punctual, and pays great attention to detail. The quality of their work truly stands out, leaving spaces spotless and fresh. Highly recommended!"</p>
+                <strong>Code With Me</strong>
+                <span>Google Reviews</span>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"I recently hired YD Commercial Cleaning Services for an end of lease clean, and I'm very satisfied with the results. The team was professional, punctual, and communicated clearly throughout the process. Great value for money and excellent service overall."</p>
+                <strong>Sushila Bista</strong>
+                <span>Google Reviews</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="about-faq">
+    <div class="container">
+        <h2>Common Questions About Us</h2>
+        <p class="faq-intro">Learn more about our services, team, and commitment to excellence.</p>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3>What cleaning services do you offer?</h3>
+                <p>We offer a wide range of cleaning services including residential cleaning, commercial cleaning, bond cleaning, spring cleaning, carpet cleaning, oven cleaning, and many more specialized services tailored to your needs.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Do you service all areas of Adelaide?</h3>
+                <p>Yes, we service the greater Adelaide area and surrounding suburbs. Contact us for specific locations and service availability in your area.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How do I book a cleaning service?</h3>
+                <p>You can book online through our website, call us directly, or use our quick quote form. Our team will follow up within 2 hours to confirm your booking.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What is your pricing structure?</h3>
+                <p>Our pricing is transparent and competitive. We provide custom quotes based on your specific needs. Visit our pricing page for more information about our packages.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Are you insured and bonded?</h3>
+                <p>Yes, we are fully insured and bonded. Your property and belongings are protected with comprehensive insurance coverage during every service.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What makes YD Commercial Cleaning different?</h3>
+                <p>We combine professional expertise with genuine care for your property. Our commitment to excellence, reliability, and customer satisfaction sets us apart in Adelaide's cleaning industry.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="about-cta">
+    <div class="container">
+        <h2>Ready to Experience Professional Cleaning?</h2>
+        <p>Contact us today to discuss your cleaning needs and get started with Adelaide's trusted cleaning service.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Contact Us Today</a>
+            <a href="{% url 'home' %}#quote" class="btn btn-secondary btn-lg">Get a Quote</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

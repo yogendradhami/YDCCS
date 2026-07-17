@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Payslips | Employee Portal
+{% endblock %}
+
+{% block content %}
+
+<section class="employee-portal-hero">
+    <div class="container">
+        <div class="employee-hero-box">
+            <div>
+                <h1>My Payslips</h1>
+                <p>View and download your payroll records.</p>
+            </div>
+
+            <a href="/employee/dashboard/" class="employee-back-btn">
+                Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section employee-dashboard-section">
+    <div class="container">
+
+        <div class="employee-action-row">
+            <a href="/employee/dashboard/" class="btn-outline employee-spaced-btn">
+                Dashboard
+            </a>
+
+            <a href="/employee/jobs/" class="btn-outline employee-spaced-btn">
+                My Jobs
+            </a>
+
+            <a href="/employee/attendance/" class="btn-outline employee-spaced-btn">
+                Attendance
+            </a>
+        </div>
+
+        <div class="employee-panel">
+            <div class="employee-panel-header">
+                <h2>Payslip History</h2>
+            </div>
+
+            {% if payroll_records %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+                        <thead>
+                            <tr>
+                                <th>Period Start</th>
+                                <th>Period End</th>
+                                <th>Hours</th>
+                                <th>Rate</th>
+                                <th>Gross Pay</th>
+                                <th>Status</th>
+                                <th>Download</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for payroll in payroll_records %}
+                                <tr>
+                                    <td>{{ payroll.period_start }}</td>
+                                    <td>{{ payroll.period_end }}</td>
+                                    <td>{{ payroll.total_hours }}</td>
+                                    <td>${{ payroll.hourly_rate }}</td>
+                                    <td>${{ payroll.gross_pay }}</td>
+
+                                    <td>
+                                        {% if payroll.status == "draft" %}
+                                            <span class="status-badge warning">
+                                                Draft
+                                            </span>
+                                        {% elif payroll.status == "approved" %}
+                                            <span class="status-badge success">
+                                                Approved
+                                            </span>
+                                        {% elif payroll.status == "paid" %}
+                                            <span class="status-badge primary">
+                                                Paid
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <a
+                                            href="{% url 'download_payslip_pdf' payroll.id %}"
+                                            class="small-link-btn"
+                                        >
+                                            PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No payslips yet.</h3>
+                    <p>Your payslips will appear here after payroll is generated.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

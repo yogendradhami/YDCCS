@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Documents Center
+{% endblock %}
+
+{% block content %}
+
+<section class="section">
+    <div class="container">
+
+        <h1>My Documents</h1>
+
+        <div class="customer-panel">
+
+            <h2>Invoices</h2>
+
+            <table class="dashboard-table">
+
+                <tr>
+                    <th>Invoice</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Download</th>
+                </tr>
+
+                {% for invoice in invoices %}
+                <tr>
+                    <td>{{ invoice.invoice_number }}</td>
+                    <td>{{ invoice.issue_date }}</td>
+                    <td>${{ invoice.total_amount }}</td>
+
+                    <td>
+                        <a href="/dashboard/invoices/{{ invoice.id }}/download/">
+                            Download PDF
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+        <div class="customer-panel">
+
+            <h2>Cleaning Reports</h2>
+
+            <table class="dashboard-table">
+
+                <tr>
+                    <th>Service</th>
+                    <th>Date</th>
+                    <th>Report</th>
+                </tr>
+
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.service_type }}</td>
+                    <td>{{ booking.booking_date }}</td>
+
+                    <td>
+                        <a href="/reports/booking/{{ booking.id }}/download/">
+                            Download Report
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+        <div class="customer-panel">
+
+            <h2>Contracts</h2>
+
+            <table class="dashboard-table">
+
+                <tr>
+                    <th>Contract</th>
+                    <th>Status</th>
+                    <th>Start</th>
+                    <th>End</th>
+                </tr>
+
+                {% for contract in contracts %}
+                <tr>
+                    <td>{{ contract.contract_name }}</td>
+                    <td>{{ contract.get_status_display }}</td>
+                    <td>{{ contract.start_date }}</td>
+                    <td>{{ contract.end_date }}</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

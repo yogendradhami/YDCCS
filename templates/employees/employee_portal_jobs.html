@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}
+My Jobs | Employee Portal
+{% endblock %}
+
+{% block content %}
+
+<section class="employee-portal-hero">
+    <div class="container">
+        <div class="employee-hero-box">
+            <div>
+                <h1>My Jobs</h1>
+                <p>All cleaning jobs assigned to {{ employee.full_name }}.</p>
+            </div>
+
+            <a href="/employee/dashboard/" class="employee-back-btn">
+                Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section employee-dashboard-section">
+    <div class="container">
+
+        <div class="employee-action-grid compact">
+            <a href="/employee/attendance/" class="employee-action-card">
+                <strong>Attendance</strong>
+                <span>Check in / out</span>
+            </a>
+
+            <a href="/employee/leave/request/" class="employee-action-card highlight">
+                <strong>Apply Leave</strong>
+                <span>Request leave</span>
+            </a>
+
+            <a href="/employee/leave/" class="employee-action-card">
+                <strong>Leave History</strong>
+                <span>View status</span>
+            </a>
+
+            <a href="/employee/roster/" class="employee-action-card">
+                <strong>My Schedule</strong>
+                <span>Roster shifts</span>
+            </a>
+
+            <a href="/employee/logout/" class="employee-action-card danger">
+                <strong>Logout</strong>
+                <span>Exit portal</span>
+            </a>
+        </div>
+
+        <div class="employee-panel">
+            <div class="employee-panel-header">
+                <h2>Assigned Jobs</h2>
+            </div>
+
+            {% if jobs %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>View</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for job in jobs %}
+                                <tr>
+                                    <td>{{ job.service_type }}</td>
+                                    <td>{{ job.booking_date }}</td>
+                                    <td>{{ job.booking_time }}</td>
+                                    <td>{{ job.customer.full_name }}</td>
+                                    <td>{{ job.address }}</td>
+                                    <td>{{ job.get_status_display }}</td>
+                                    <td>
+                                        <a href="/employee/jobs/{{ job.id }}/" class="small-link-btn">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No jobs assigned yet.</h3>
+                    <p>Your assigned bookings will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

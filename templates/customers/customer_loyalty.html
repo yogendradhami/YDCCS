@@ -1,0 +1,115 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Customer Loyalty{% endblock %}
+
+{% block page_title %}Customer Loyalty{% endblock %}
+
+{% block page_subtitle %}
+Identify VIP, repeat and new customers.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Customers</span>
+        <h2>{{ total_customers }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>VIP Customers</span>
+        <h2>{{ vip_count }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Repeat Customers</span>
+        <h2>{{ repeat_count }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>New Customers</span>
+        <h2>{{ new_count }}</h2>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Customer Loyalty Ranking</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Jobs Completed</th>
+                    <th>Total Revenue</th>
+                    <th>Loyalty Level</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in loyalty_rows %}
+
+                <tr>
+
+                    <td>
+                        {{ row.customer.full_name }}
+                    </td>
+
+                    <td>
+                        {{ row.customer.email }}
+                    </td>
+
+                    <td>
+                        {{ row.customer.jobs_completed }}
+                    </td>
+
+                    <td>
+                        ${{ row.customer.total_revenue }}
+                    </td>
+
+                    <td>
+
+                        {% if row.level == "VIP" %}
+
+                            <span class="status-badge success">
+                                VIP
+                            </span>
+
+                        {% elif row.level == "Repeat" %}
+
+                            <span class="status-badge primary">
+                                Repeat
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge warning">
+                                New
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

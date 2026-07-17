@@ -1,0 +1,108 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Adelaide Cleaning Services | YD Commercial Cleaning Services{% endblock %}
+
+{% block meta_description %}{{ page_description }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/services.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="service-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="hero-badge">Trusted Adelaide Cleaning</span>
+        <h1>Professional Cleaning Services for Homes, Offices and Commercial Properties.</h1>
+        <p>YD Commercial Cleaning provides reliable, insured and expert cleaning teams for regular cleans, end of lease jobs, builders cleans, window cleaning, carpet steam cleaning and more across Adelaide.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact' %}" class="btn btn-outline">Get a Free Quote</a>
+            <a href="{% url 'resources' %}" class="btn btn-outline">Visit Resources</a>
+        </div>
+    </div>
+</section>
+
+<section class="service-overview">
+    <div class="container">
+        <h2>All Adelaide Cleaning Services</h2>
+        <p class="overview-text">Choose the right cleaning service for your home, office or commercial property. Every service is designed to deliver a spotless result with fast turnaround times and trusted local teams.</p>
+    </div>
+</section>
+
+<section class="service-list-section">
+    <div class="container">
+        {% for service in services %}
+        {% comment %} alternate layout and use per-service image if available: static/images/services/<base>.jpg {% endcomment %}
+        {% with base=service.slug|cut:'-adelaide' %}
+            {% include 'services/_service_row.html' with service=service index=forloop.counter %}
+        {% endwith %}
+        {% endfor %}
+    </div>
+</section>
+
+{% if google_reviews %}
+<section class="service-why">
+    <div class="container">
+        <div class="section-title">
+            <h2>What Adelaide Customers Say</h2>
+            <p>Real feedback from local clients who trust YD Commercial Cleaning.</p>
+        </div>
+        <div class="why-grid">
+            {% for review in google_reviews %}
+            <div class="why-item">
+                <p>{{ review.review_text|truncatechars:180 }}</p>
+                <h3>{{ review.reviewer_name }}</h3>
+                <p class="why-summary">⭐⭐⭐⭐⭐ Google Review</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="service-why">
+    <div class="container">
+        <div class="section-title">
+            <h2>Why Choose YD Commercial Cleaning</h2>
+            <p>Experience professional cleaning with friendly service and Adelaide-wide coverage.</p>
+        </div>
+        <div class="why-grid">
+            <div class="why-item">
+                <div class="why-icon">✅</div>
+                <h3>Fully Insured Teams</h3>
+                <p>Our cleaners are insured and trained to handle both residential and commercial properties safely.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">⏱️</div>
+                <h3>Fast Local Service</h3>
+                <p>We respond quickly to Adelaide enquiries and can often schedule services within 24 hours.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">🧼</div>
+                <h3>Trusted Cleaning Standards</h3>
+                <p>Every service includes thorough sanitisation, quality checks and a satisfaction guarantee.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">💬</div>
+                <h3>Simple Booking</h3>
+                <p>Book online, request a quote or call our Adelaide team directly for a fast, friendly response.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="service-cta">
+    <div class="container">
+        <h2>Need Help Choosing a Cleaning Service?</h2>
+        <p>Our Adelaide team can recommend the best service for your property and budget.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us</a>
+            <a href="{% url 'resources' %}" class="btn btn-outline">Browse Resources</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+

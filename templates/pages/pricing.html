@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pricing | YD Commercial Cleaning Services{% endblock %}
+{% block meta_description %}View our transparent, competitive pricing for professional cleaning services in Adelaide. Get a custom quote today.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/pricing.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="pricing-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Simple, Transparent Pricing</h1>
+        <p>Professional cleaning services with competitive rates and no hidden fees</p>
+    </div>
+</section>
+
+<!-- Pricing Intro -->
+<section class="pricing-intro">
+    <div class="container">
+        <h2>Choose the Perfect Plan for Your Needs</h2>
+        <p class="intro-text">We offer flexible cleaning packages tailored to your specific requirements. Whether you need a one-time deep clean or regular maintenance, we have a solution that fits your budget and schedule.</p>
+    </div>
+</section>
+
+<!-- Pricing Cards -->
+<section class="pricing-packages">
+    <div class="container">
+        <div class="pricing-grid">
+            <!-- Residential Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Residential Cleaning</h3>
+                    <span class="package-type">For Homes</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$180</span>
+                    <span class="period">per visit</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Living area cleaning</li>
+                        <li>Kitchen and bathroom</li>
+                        <li>Bedroom maintenance</li>
+                        <li>Flexible scheduling</li>
+                        <li>Weekly/fortnightly options</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+
+            <!-- Commercial Cleaning -->
+            <div class="pricing-card featured">
+                <div class="card-header">
+                    <h3>Commercial Cleaning</h3>
+                    <span class="package-type">For Offices</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$220</span>
+                    <span class="period">per visit</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Office space cleaning</li>
+                        <li>Meeting rooms</li>
+                        <li>Kitchen and bathrooms</li>
+                        <li>After-hours service</li>
+                        <li>Customized schedules</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+                <span class="featured-badge">Most Popular</span>
+            </div>
+
+            <!-- Bond Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Bond Cleaning</h3>
+                    <span class="package-type">End of Lease</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$330</span>
+                    <span class="period">per property</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Full property deep clean</li>
+                        <li>Carpet and floor care</li>
+                        <li>Kitchen deep clean</li>
+                        <li>Satisfaction guarantee</li>
+                        <li>Inspection report</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+
+            <!-- Spring Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Spring Cleaning</h3>
+                    <span class="package-type">Seasonal Deep Clean</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$320</span>
+                    <span class="period">per property</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Complete room-by-room clean</li>
+                        <li>Window and glass cleaning</li>
+                        <li>Carpet refresh</li>
+                        <li>High-level dusting</li>
+                        <li>One-time service</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+
+            <!-- Deep Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Deep Cleaning</h3>
+                    <span class="package-type">Intensive Clean</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$280</span>
+                    <span class="period">per property</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>High-level dusting</li>
+                        <li>Kitchen and bathroom deep clean</li>
+                        <li>Carpet and upholstery</li>
+                        <li>Edge and corner cleaning</li>
+                        <li>Detailed service</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+
+            <!-- Oven Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Oven Cleaning</h3>
+                    <span class="package-type">Specialist Service</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$120</span>
+                    <span class="period">per oven</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Interior deep clean</li>
+                        <li>Racks and trays</li>
+                        <li>Stovetop cleaning</li>
+                        <li>Appliance polishing</li>
+                        <li>Professional finish</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+
+            <!-- Carpet Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Carpet Cleaning</h3>
+                    <span class="package-type">Steam Cleaning</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$160</span>
+                    <span class="period">per room</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Hot water extraction</li>
+                        <li>Stain treatment</li>
+                        <li>Carpet grooming</li>
+                        <li>Fast drying</li>
+                        <li>Odour removal</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+
+            <!-- Bathroom Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Bathroom Cleaning</h3>
+                    <span class="package-type">Specialty Clean</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$110</span>
+                    <span class="period">per bathroom</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Shower and bath clean</li>
+                        <li>Toilet sanitisation</li>
+                        <li>Tile and grout</li>
+                        <li>Mirror polish</li>
+                        <li>Detailed cleaning</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+
+            <!-- Window Cleaning -->
+            <div class="pricing-card">
+                <div class="card-header">
+                    <h3>Window Cleaning</h3>
+                    <span class="package-type">Interior & Exterior</span>
+                </div>
+                <div class="card-price">
+                    <span class="currency">From</span>
+                    <span class="amount">$140</span>
+                    <span class="period">per service</span>
+                </div>
+                <div class="card-features">
+                    <ul>
+                        <li>Interior glass cleaning</li>
+                        <li>Exterior cleaning</li>
+                        <li>Frame and sill wiping</li>
+                        <li>Streak-free finish</li>
+                        <li>Professional service</li>
+                    </ul>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Our Pricing -->
+<section class="pricing-why">
+    <div class="container">
+        <h2>Why Choose Our Pricing?</h2>
+        <div class="why-grid">
+            <div class="why-card">
+                <div class="why-icon">💰</div>
+                <h3>Competitive Rates</h3>
+                <p>Get professional quality at affordable prices with no hidden charges.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon">🎯</div>
+                <h3>Custom Quotes</h3>
+                <p>Every property is unique. We provide tailored quotes for your specific needs.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon">📋</div>
+                <h3>Transparent Pricing</h3>
+                <p>Clear pricing structure with full breakdown of services included.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon">✓</div>
+                <h3>Value for Money</h3>
+                <p>Professional quality service that delivers lasting results and customer satisfaction.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="pricing-cta">
+    <div class="container">
+        <h2>Ready to Get Started?</h2>
+        <p>Contact us today for a free, no-obligation quote. We'll work with you to find the perfect cleaning solution for your needs and budget.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Get Your Quote</a>
+            <a href="/" class="btn btn-secondary btn-lg">Back to Home</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

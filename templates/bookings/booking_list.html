@@ -1,0 +1,71 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Bookings | YD Dashboard{% endblock %}
+{% block page_title %}Bookings{% endblock %}
+{% block page_subtitle %}Manage cleaning bookings without using Django Admin.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/bookings/add/">+ Add Booking</a>
+    <a href="/dashboard/calendar/">Calendar</a>
+    <a href="/dashboard/">Back to Dashboard</a>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>All Bookings</h2>
+    </div>
+
+    {% if bookings %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Suburb</th>
+                        <th>Employee</th>
+                        <th>Status</th>
+                        <th>Price</th>
+                        <th>Report</th>
+                        <th>Invoice</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.customer.full_name }}</td>
+                            <td>{{ booking.service_type }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                            <td>{{ booking.booking_time }}</td>
+                            <td>{{ booking.suburb_postcode }}</td>
+                            <td>
+                                {% if booking.assigned_employee %}
+                                    {{ booking.assigned_employee.full_name }}
+                                {% else %}
+                                    Not assigned
+                                {% endif %}
+                            </td>
+                            <td>{{ booking.get_status_display }}</td>
+                            <td>${{ booking.quoted_price }}</td>
+                            <td><a href="/reports/booking/{{ booking.id }}/" class="small-link-btn">Report</a></td>
+                            <td> <a href="/dashboard/bookings/{{ booking.id }}/create-invoice/" class="small-link-btn" > Create Invoice </a> </td>
+                            <td><a href="/dashboard/bookings/{{ booking.id }}/edit/" class="small-link-btn">Edit</a></td>
+                            <td><a href="/dashboard/bookings/{{ booking.id }}/delete/" class="small-delete-btn">Delete</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No bookings found.</p>
+    {% endif %}
+</section>
+
+{% endblock %}
