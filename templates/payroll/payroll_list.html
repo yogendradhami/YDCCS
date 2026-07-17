@@ -1,0 +1,353 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Payroll
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================== -->
+<!-- Payroll Dashboard -->
+<!-- ===================================================== -->
+
+<div class="dashboard-card">
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Employees</span>
+        <h2>{{ total_employees }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Hours</span>
+        <h2>{{ total_hours }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Payroll</span>
+        <h2>${{ total_payroll }}</h2>
+    </div>
+
+</div>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Draft Payrolls</span>
+        <h2>{{ draft_count }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Approved Payrolls</span>
+        <h2>{{ approved_count }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Paid Payrolls</span>
+        <h2>{{ paid_count }}</h2>
+    </div>
+
+</div>
+
+    <!-- ================================================= -->
+    <!-- Page Header -->
+    <!-- ================================================= -->
+
+    <div class="crm-panel-header">
+
+        <div>
+            <h1>Payroll Records</h1>
+
+            <p>
+                Employee payroll generated from attendance records.
+            </p>
+        </div>
+
+        <!-- Generate Payroll Button -->
+        <a
+            href="{% url 'generate_payroll' %}"
+            class="btn-fill"
+        >
+            Generate Payroll
+        </a>
+
+    </div>
+
+    <!-- ================================================= -->
+    <!-- Messages -->
+    <!-- ================================================= -->
+
+    {% if messages %}
+        {% for message in messages %}
+
+            <div class="custom-alert {{ message.tags }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+    {% endif %}
+
+    <!-- ================================================= -->
+    <!-- Payroll Table -->
+    <!-- ================================================= -->
+
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+
+        <input
+            type="text"
+            id="payrollSearch"
+            placeholder="Search employee..."
+            class="form-control"
+            style="max-width:300px;"
+        >
+
+        <select
+            id="statusFilter"
+            class="form-control"
+            style="max-width:220px;"
+        >
+            <option value="">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="approved">Approved</option>
+            <option value="paid">Paid</option>
+        </select>
+
+    </div>
+
+
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Period Start</th>
+
+                    <th>Period End</th>
+
+                    <th>Total Hours</th>
+
+                    <th>Hourly Rate</th>
+
+                    <th>Gross Pay</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for payroll in payroll_records %}
+
+
+                    <tr
+                        class="payroll-row"
+                        data-name="{{ payroll.employee.full_name|lower }}"
+                        data-status="{{ payroll.status|lower }}"
+                    >
+
+                    <tr>
+
+                        <!-- Employee Name -->
+                        <td>
+                            {{ payroll.employee.full_name }}
+                        </td>
+
+                        <!-- Payroll Period -->
+                        <td>
+                            {{ payroll.period_start }}
+                        </td>
+
+                        <td>
+                            {{ payroll.period_end }}
+                        </td>
+
+                        <!-- Hours -->
+                        <td>
+                            {{ payroll.total_hours }}
+                        </td>
+
+                        <!-- Rate -->
+                        <td>
+                            ${{ payroll.hourly_rate }}
+                        </td>
+
+                        <!-- Gross Pay -->
+                        <td>
+                            <strong>
+                                ${{ payroll.gross_pay }}
+                            </strong>
+                        </td>
+
+                        <!-- ================================= -->
+                        <!-- Payroll Status -->
+                        <!-- ================================= -->
+
+                        <td>
+
+                            {% if payroll.status == "draft" %}
+
+                                <span class="status-badge warning">
+                                    Draft
+                                </span>
+
+                            {% elif payroll.status == "approved" %}
+
+                                <span class="status-badge success">
+                                    Approved
+                                </span>
+
+                            {% elif payroll.status == "paid" %}
+
+                                <span class="status-badge primary">
+                                    Paid
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge">
+                                    Unknown
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ================================= -->
+                        <!-- Actions -->
+                        <!-- ================================= -->
+
+                        <td>
+
+                            <!-- Draft Payroll -->
+                            {% if payroll.status == "draft" %}
+
+                                <a
+                                    href="{% url 'approve_payroll' payroll.id %}"
+                                    class="btn-fill"
+                                >
+                                    Approve
+                                </a>
+
+                            <!-- Approved Payroll -->
+                            {% elif payroll.status == "approved" %}
+
+                                <a
+                                    href="{% url 'mark_payroll_paid' payroll.id %}"
+                                    class="btn-fill"
+                                >
+                                    Mark Paid
+                                </a>
+
+                            <!-- Paid Payroll -->
+                            {% elif payroll.status == "paid" %}
+
+                                <span class="status-badge success">
+                                    Completed
+                                </span>
+
+                            {% endif %}
+
+                            <!-- ================================= -->
+                            <!-- Download PDF Payslip -->
+                            <!-- ================================= -->
+
+                            <a
+                                href="{% url 'download_payslip_pdf' payroll.id %}"
+                                class="btn-outline"
+                                style="margin-left:8px;"
+                            >
+                                PDF
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="8">
+
+                            No payroll records found.
+
+                            Click Generate Payroll to create payroll records.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const searchInput =
+    document.getElementById("payrollSearch");
+
+const statusFilter =
+    document.getElementById("statusFilter");
+
+function filterPayrollRows() {
+
+    const search =
+        searchInput.value.toLowerCase();
+
+    const status =
+        statusFilter.value.toLowerCase();
+
+    document
+        .querySelectorAll(".payroll-row")
+        .forEach(row => {
+
+            const employee =
+                row.dataset.name;
+
+            const rowStatus =
+                row.dataset.status;
+
+            const matchesSearch =
+                employee.includes(search);
+
+            const matchesStatus =
+                !status || rowStatus === status;
+
+            row.style.display =
+                matchesSearch && matchesStatus
+                ? ""
+                : "none";
+        });
+}
+
+searchInput.addEventListener(
+    "keyup",
+    filterPayrollRows
+);
+
+statusFilter.addEventListener(
+    "change",
+    filterPayrollRows
+);
+
+</script>
+
+{% endblock %}

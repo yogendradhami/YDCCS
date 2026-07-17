@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Common questions and answers about our professional cleaning services in Adelaide. Find quick answers to your cleaning service queries.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/faq.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="faq-hero">
+    <div class="container">
+        <h1>Common Questions Answered</h1>
+        <p>Find quick answers to frequently asked questions about our services, pricing, and booking process. Can't find what you're looking for? Contact us directly or use our chatbot for immediate assistance.</p>
+        
+        <div class="faq-search">
+            <input type="text" id="faqSearch" placeholder="Search FAQ..." aria-label="Search frequently asked questions">
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Categories Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="faq-categories">
+            
+            <!-- Services Category -->
+            <div class="faq-category">
+                <h2>Services & Pricing</h2>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What cleaning services do you offer?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We offer a comprehensive range of professional cleaning services including residential cleaning, commercial office cleaning, bond/end-of-lease cleaning, deep cleaning, carpet cleaning, window cleaning, post-construction cleanup, and specialized services. Each service is tailored to your specific needs and property requirements.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What is your pricing structure?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Our pricing is transparent and competitive, based on factors like property size, service type, and specific requirements. We provide custom quotes after an initial assessment. Most services start from competitive base rates with adjustments for complexity. Visit our <a href="{% url 'pricing' %}">pricing page</a> for package details or contact us for a personalized quote.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Do you offer any package discounts or bulk service deals?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! We offer discounts for regular maintenance contracts, multiple properties, and ongoing service arrangements. Commercial clients often qualify for special pricing on bulk cleaning services. Contact our team to discuss custom package options that fit your budget.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Booking & Availability -->
+            <div class="faq-category">
+                <h2>Booking & Availability</h2>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>How do I book a cleaning service?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Booking is easy! You can request a free quote through our <a href="{% url 'contact' %}">contact form</a>, call us at 0430 049 865, or use our online booking system. Provide details about your property and cleaning needs, and our team will confirm availability and send a customized quote within 2 hours.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Do you service all areas of Adelaide?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, we service Adelaide CBD and surrounding suburbs including Prospect, Mawson Lakes, Salisbury, Glenelg, Norwood, Unley, Burnside, Modbury, and many more. If you're unsure whether we service your area, contact us directly and we'll confirm availability.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>How can I contact you?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>You can contact us through our online <a href="{% url 'contact' %}">contact form</a>, email, or phone. Call us on 0430 049 865 for immediate support, or send a message through the website and we&rsquo;ll respond within 2 hours during business hours.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Can you do same-day or emergency cleaning?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We often can! Our typical response time is 2 hours, and we frequently accommodate same-day and emergency cleaning requests based on team availability. Call us immediately at 0430 049 865 for urgent requirements and we'll do our best to assist.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What are your service hours?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We're available 7 days a week to accommodate your schedule. Morning, afternoon, evening, and weekend services can be arranged. Contact us to schedule a time that works best for your property and business needs.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Quality & Safety -->
+            <div class="faq-category">
+                <h2>Quality & Safety</h2>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Are you insured and bonded?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, YD Commercial Cleaning is fully insured and bonded. Your property and belongings are protected with comprehensive insurance coverage during every service. We maintain all necessary licenses and certifications required in Adelaide.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What products do you use for cleaning?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We use professional-grade, environmentally-friendly cleaning products that are safe for families, pets, and the environment. All products are approved for commercial and residential use. If you have specific product requirements or allergies, please let us know and we'll accommodate your needs.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What makes YD Commercial Cleaning different?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>YD Commercial Cleaning stands out through our commitment to quality, reliability, and tailored service. We use trained, insured cleaners, offer transparent pricing, and back every job with a satisfaction guarantee. Our team focuses on consistent, professional results and excellent customer service.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Are your cleaners trained and vetted?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Absolutely. All our cleaning team members are thoroughly vetted, trained, and certified in professional cleaning standards. We maintain strict quality control and conduct regular training to ensure consistent, exceptional results on every job.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What is your satisfaction guarantee?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We guarantee 100% satisfaction on every cleaning service. If you're not completely happy with the results, contact us within 24 hours and we'll make it right at no additional cost. Your satisfaction is our priority.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Service Details -->
+            <div class="faq-category">
+                <h2>Service Details</h2>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>How long does a typical cleaning take?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Duration varies based on property size and service type. Residential homes typically take 2-4 hours, while office spaces and commercial properties depend on square footage. We'll provide a time estimate during the booking process and always work efficiently to complete services as scheduled.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Do I need to be home during the cleaning?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Not necessarily. Many clients prefer to be out during cleaning for convenience. We can access your property with agreed access arrangements. For security purposes, we require proper access authorization and work with your schedule and preferences.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What if something gets damaged during cleaning?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Our insurance covers accidental damage during cleaning services. Our trained team takes utmost care with your belongings and property. In the unlikely event of damage, we handle it immediately and work with insurance to resolve the issue promptly.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Can you customize the cleaning to my specific needs?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Absolutely! Every cleaning service is customized based on your specific requirements. Whether you need focus on particular areas, special attention to details, or exclusions from certain tasks, we'll tailor the service to meet your exact needs.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Special Services -->
+            <div class="faq-category">
+                <h2>Special Services</h2>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>What is bond cleaning and how does it work?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Bond cleaning (end-of-lease cleaning) is a comprehensive deep clean required when vacating a rental property. We follow landlord inspection standards and removal requirements to ensure you recover your full bond. Our service includes detailed cleaning of all areas, appliances, carpets, and surfaces according to real estate standards.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>How does post-construction cleaning work?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Our post-construction cleaning removes dust, debris, paint splatter, and construction residue. We perform a multi-phase cleanup: initial debris removal, dust suppression, detailed surface cleaning, and final inspection. Most projects are completed within 48 hours.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>Do you offer regular maintenance contracts?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! We offer customizable maintenance contracts for weekly, fortnightly, or monthly cleaning. Regular contracts provide consistent cleanliness, better pricing, and scheduling priority. Contact us to create a maintenance plan for your property.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Community Questions Section -->
+<section class="community-questions-section">
+    <div class="container">
+        <h2>Submit Your Question</h2>
+        <p>Can't find the answer you're looking for? Submit your question and our team will respond within 24 hours.</p>
+        
+        <form class="question-form" method="POST" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Your Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="question">Your Question *</label>
+                <textarea id="question" name="question" rows="5" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Submit Question</button>
+        </form>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="faq-cta">
+    <div class="container">
+        <h2>Still Have Questions?</h2>
+        <p>Our friendly team is ready to help. Get in touch directly for personalized assistance.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Contact Us</a>
+            <a href="tel:0430049865" class="btn btn-outline btn-lg">Call 0430 049 865</a>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const faqItems = document.querySelectorAll('.faq-item');
+
+    faqItems.forEach(item => {
+        const button = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+
+        if (!button || !answer) return;
+
+        answer.style.maxHeight = '0';
+        answer.style.overflow = 'hidden';
+
+        button.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const category = this.closest('.faq-category');
+
+            if (category) {
+                const otherItems = category.querySelectorAll('.faq-item');
+                otherItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('expanded');
+                        const otherButton = otherItem.querySelector('.faq-question');
+                        if (otherButton) otherButton.setAttribute('aria-expanded', 'false');
+                        const otherAnswer = otherItem.querySelector('.faq-answer');
+                        if (otherAnswer) otherAnswer.style.maxHeight = '0';
+                    }
+                });
+            }
+
+            item.classList.toggle('expanded', !isExpanded);
+            this.setAttribute('aria-expanded', String(!isExpanded));
+
+            if (isExpanded) {
+                answer.style.maxHeight = '0';
+            } else {
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+            }
+        });
+    });
+
+    const searchInput = document.getElementById('faqSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            faqItems.forEach(item => {
+                const questionText = item.querySelector('.faq-question span').textContent.toLowerCase();
+                const answerText = item.querySelector('.faq-answer').textContent.toLowerCase();
+                const isMatch = questionText.includes(searchTerm) || answerText.includes(searchTerm);
+                item.style.display = isMatch ? 'block' : 'none';
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

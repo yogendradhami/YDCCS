@@ -12,6 +12,7 @@
 from io import BytesIO
 
 import stripe
+<<<<<<< HEAD
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -24,13 +25,35 @@ from reportlab.pdfgen import canvas
 
 from .forms import InvoiceForm
 from .models import Invoice
+=======
+
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import FileResponse
+from django.urls import reverse
+from django.utils import timezone
+
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
+from .models import Invoice
+from .forms import InvoiceForm
+>>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
 def invoice_list(request):
     invoices = Invoice.objects.all().order_by("-created_at")
 
+<<<<<<< HEAD
     return render(request, "invoice_list.html", {"invoices": invoices})
+=======
+    return render(request, "invoices/invoice_list.html", {
+        "invoices": invoices
+    })
+>>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
@@ -48,13 +71,20 @@ def create_invoice(request):
     else:
         form = InvoiceForm()
 
+<<<<<<< HEAD
     return render(request, "invoice_form.html", {"form": form})
+=======
+    return render(request, "invoices/invoice_form.html", {
+        "form": form
+    })
+>>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
 def invoice_detail(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
 
+<<<<<<< HEAD
     return render(
         request,
         "invoice_detail.html",
@@ -63,6 +93,12 @@ def invoice_detail(request, invoice_id):
             "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
         },
     )
+=======
+    return render(request, "invoices/invoice_detail.html", {
+        "invoice": invoice,
+        "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
+    })
+>>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
@@ -83,7 +119,14 @@ def create_stripe_checkout_session(request, invoice_id):
         + "?session_id={CHECKOUT_SESSION_ID}"
     )
 
+<<<<<<< HEAD
     cancel_url = domain + reverse("invoice_detail", kwargs={"invoice_id": invoice.id})
+=======
+    cancel_url = (
+        domain
+        + reverse("invoice_detail", kwargs={"invoice_id": invoice.id})
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
     amount_in_cents = int(invoice.total_amount * 100)
 
@@ -153,7 +196,10 @@ def stripe_payment_cancel(request, invoice_id):
 
     return redirect("invoice_detail", invoice_id=invoice.id)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 @login_required
 def download_invoice_pdf(request, invoice_id):
     import os
@@ -168,7 +214,16 @@ def download_invoice_pdf(request, invoice_id):
     width, height = A4
 
     # Logo
+<<<<<<< HEAD
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.jpeg")
+=======
+    logo_path = os.path.join(
+        settings.BASE_DIR,
+        "static",
+        "images",
+        "logo.jpeg"
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
     if os.path.exists(logo_path):
         pdf.drawImage(
@@ -178,7 +233,11 @@ def download_invoice_pdf(request, invoice_id):
             width=85,
             height=85,
             preserveAspectRatio=True,
+<<<<<<< HEAD
             mask="auto",
+=======
+            mask="auto"
+>>>>>>> 5815f15 (Initial project commit)
         )
 
     # Company details
@@ -203,9 +262,13 @@ def download_invoice_pdf(request, invoice_id):
     else:
         pdf.drawRightString(width - 45, height - 133, "Due Date: Not set")
 
+<<<<<<< HEAD
     pdf.drawRightString(
         width - 45, height - 151, f"Status: {invoice.get_status_display()}"
     )
+=======
+    pdf.drawRightString(width - 45, height - 151, f"Status: {invoice.get_status_display()}")
+>>>>>>> 5815f15 (Initial project commit)
 
     # Divider
     pdf.line(45, height - 170, width - 45, height - 170)
@@ -317,10 +380,21 @@ def download_invoice_pdf(request, invoice_id):
 
     pdf.setFont("Helvetica", 9)
     pdf.drawCentredString(
+<<<<<<< HEAD
         width / 2, 65, "Thank you for choosing YD Commercial Cleaning Services."
     )
     pdf.drawCentredString(
         width / 2, 50, "Professional Cleaning. Reliable Service. Spotless Results."
+=======
+        width / 2,
+        65,
+        "Thank you for choosing YD Commercial Cleaning Services."
+    )
+    pdf.drawCentredString(
+        width / 2,
+        50,
+        "Professional Cleaning. Reliable Service. Spotless Results."
+>>>>>>> 5815f15 (Initial project commit)
     )
 
     pdf.showPage()
@@ -329,5 +403,12 @@ def download_invoice_pdf(request, invoice_id):
     buffer.seek(0)
 
     return FileResponse(
+<<<<<<< HEAD
         buffer, as_attachment=True, filename=f"{invoice.invoice_number}.pdf"
     )
+=======
+        buffer,
+        as_attachment=True,
+        filename=f"{invoice.invoice_number}.pdf"
+    )
+>>>>>>> 5815f15 (Initial project commit)

@@ -1,5 +1,8 @@
 from django import forms
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 from .models import CleaningContract
 
 
@@ -24,6 +27,7 @@ class CleaningContractForm(forms.ModelForm):
 
         widgets = {
             "customer": forms.Select(attrs={"class": "form-control"}),
+<<<<<<< HEAD
             "service_type": forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -49,3 +53,20 @@ class CleaningContractForm(forms.ModelForm):
             "status": forms.Select(attrs={"class": "form-control"}),
             "notes": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
         }
+=======
+            "service_type": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Office Cleaning / Commercial Cleaning"
+            }),
+            "frequency": forms.Select(attrs={"class": "form-control"}),
+            "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "end_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "preferred_time": forms.TimeInput(attrs={"class": "form-control", "type": "time"}),
+            "address": forms.TextInput(attrs={"class": "form-control"}),
+            "suburb_postcode": forms.TextInput(attrs={"class": "form-control"}),
+            "assigned_employee": forms.Select(attrs={"class": "form-control"}),
+            "price_per_visit": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "status": forms.Select(attrs={"class": "form-control"}),
+            "notes": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+        }
+>>>>>>> 5815f15 (Initial project commit)

@@ -1,0 +1,36 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<h1>{{ customer.full_name }}</h1>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Revenue</span>
+        <h2>${{ customer.total_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Bookings</span>
+        <h2>{{ customer.bookings.count }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Outstanding Invoices</span>
+        <h2>{{ outstanding_invoices }}</h2>
+    </div>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h2>Customer Information</h2>
+
+    <p>Email: {{ customer.email }}</p>
+
+    <p>Phone: {{ customer.phone }}</p>
+
+</div>
+
+{% endblock %}

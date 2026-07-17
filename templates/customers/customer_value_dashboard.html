@@ -1,0 +1,90 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Customer Value Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Total Customer Revenue</span>
+        <h2>${{ total_customer_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Average Customer Value</span>
+        <h2>${{ average_customer_value|floatformat:2 }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Top Customer</span>
+        <h2>
+            {% if top_customer %}
+                {{ top_customer.full_name }}
+            {% else %}
+                None
+            {% endif %}
+        </h2>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Customer Lifetime Value</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Jobs Completed</th>
+                    <th>Total Revenue</th>
+                    <th>Value Tier</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for customer in customers %}
+
+                <tr>
+
+                    <td>{{ customer.full_name }}</td>
+
+                    <td>{{ customer.email }}</td>
+
+                    <td>{{ customer.jobs_completed }}</td>
+
+                    <td>${{ customer.total_revenue }}</td>
+
+                    <td>
+
+                        {% if customer.total_revenue >= 1000 %}
+                            VIP
+                        {% elif customer.total_revenue >= 500 %}
+                            Gold
+                        {% else %}
+                            Standard
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

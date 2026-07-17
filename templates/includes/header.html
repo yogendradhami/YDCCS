@@ -1,0 +1,237 @@
+{% load static %}
+{% if company_settings %}
+<div class="company-contact-strip">
+    <div class="company-contact-left">
+        {% if company_settings.phone %}
+            <a href="tel:{{ company_settings.phone|urlencode }}">📞 {{ company_settings.phone }}</a>
+        {% endif %}
+        {% if company_settings.email %}
+            <a href="mailto:{{ company_settings.email }}">✉️ {{ company_settings.email }}</a>
+        {% endif %}
+    </div>
+    {% if company_settings.facebook_url or company_settings.instagram_url or company_settings.linkedin_url or company_settings.tiktok_url %}
+    <div class="company-contact-right">
+        <span>Follow us:</span>
+        {% if company_settings.facebook_url %}
+            <a href="{{ company_settings.facebook_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M22 12.07C22 6.48 17.52 2 11.93 2S2 6.48 2 12.07C2 17.09 5.66 21.26 10.44 22v-7.03H8.08v-2.9h2.36V9.41c0-2.34 1.4-3.62 3.54-3.62 1.02 0 2.09.18 2.09.18v2.3h-1.18c-1.16 0-1.52.72-1.52 1.46v1.75h2.59l-.41 2.9h-2.18V22C18.34 21.26 22 17.09 22 12.07z"/></svg>
+            </a>
+        {% endif %}
+        {% if company_settings.instagram_url %}
+            <a href="{{ company_settings.instagram_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+            </a>
+        {% endif %}
+        {% if company_settings.linkedin_url %}
+            <a href="{{ company_settings.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6 1.1 6 0 4.88 0 3.5 0 2.12 1.1 1 2.48 1 3.86 1 4.98 2.12 4.98 3.5zM0 8.5h4.96V24H0V8.5zM8.5 8.5h4.75v2.07h.07c.66-1.25 2.28-2.56 4.7-2.56 5.03 0 5.96 3.31 5.96 7.62V24H18.1v-7.5c0-1.79-.03-4.09-2.5-4.09-2.5 0-2.88 1.95-2.88 3.97V24H8.5V8.5z"/></svg>
+            </a>
+        {% endif %}
+        {% if company_settings.tiktok_url %}
+            <a href="{{ company_settings.tiktok_url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="TikTok">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M16.5 3.5h2.5v3.2c.66.2 1.28.54 1.81 1V3.5h1.19c-.38 3.11-2.81 5.64-5.92 6.01V12c0 2.64-2.14 4.78-4.78 4.78S6.5 14.64 6.5 12 8.64 7.22 11.28 7.22V9.1c-1.44 0-2.62 1.18-2.62 2.62s1.18 2.62 2.62 2.62 2.62-1.18 2.62-2.62V3.5z"/></svg>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<header class="promo-bar">
+    <span>
+        ⚡ 🎉 Limited Time Offer: Get 20% off your first cleaning service! Use code: CLEAN20
+    </span>
+</header>
+
+<nav class="yd-header">
+    <a href="/" class="yd-logo group" aria-label="{{ company_settings.business_name|default:'YD Commercial Cleaning' }}">
+        {% comment %}Use a picture element to prefer an optimized WebP static asset when available, fall back to uploaded media. Alt left empty because company name is provided as adjacent text to avoid redundant alt copying by screen readers.{% endcomment %}
+        <picture>
+            <!-- Only include small responsive variants here to avoid pulling the large full-size image for the header/logo -->
+            <source srcset="{% static 'images/company/logoo-48.webp' %} 48w, {% static 'images/company/logoo-84.webp' %} 84w" type="image/webp">
+            <img src="{% static 'images/company/logoo-48.webp' %}" srcset="{% static 'images/company/logoo-48.webp' %} 48w, {% static 'images/company/logoo-84.webp' %} 84w" sizes="48px" alt="" width="48" height="48" loading="eager">
+        </picture>
+
+        <div class="yd-logo-text">
+            <span class="yd-logo-title">
+                {% if company_settings and company_settings.business_name %}
+                    {{ company_settings.business_name }}
+                {% else %}
+                    YD Commercial Cleaning
+                {% endif %}
+            </span>
+           
+        </div>
+    </a>
+
+    <button class="yd-menu-btn" id="publicMenuButton" type="button" aria-label="Toggle main menu">☰</button>
+
+    <div class="yd-menu" id="publicMenu">
+        <a href="/">Home</a>
+
+        <div class="yd-mega-parent">
+            <a href="/services/">Services <span class="nav-arrow">▾</span></a>
+            <div class="yd-mega-menu">
+                <a href="/services/house-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🏠</div>
+                    <h4>Residential Cleaning</h4>
+                    <p>Professional house cleaning and deep cleans.</p>
+                </a>
+                <a href="/services/commercial-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🏢</div>
+                    <h4>Commercial Cleaning</h4>
+                    <p>Office and workspace cleaning solutions.</p>
+                </a>
+                <a href="/services/office-cleaning/" class="yd-mega-card">
+                    <div>🧹</div>
+                    <h4>Office Cleaning</h4>
+                    <p>Professional office and workspace cleaning.</p>
+                </a>
+                <a href="/services/spring-cleaning/" class="yd-mega-card">
+                    <div>🌸</div>
+                    <h4>Spring Cleaning</h4>
+                    <p>Complete seasonal deep clean service.</p>
+                </a>
+                <a href="/services/oven-cleaning/" class="yd-mega-card">
+                    <div>🍳</div>
+                    <h4>Oven Cleaning</h4>
+                    <p>Professional oven and appliance cleaning.</p>
+                </a>
+                <a href="/services/bathroom-cleaning/" class="yd-mega-card">
+                    <div>🚿</div>
+                    <h4>Standard Bathroom Cleaning</h4>
+                    <p>Deep bathroom cleaning and maintenance.</p>
+                </a>
+                <a href="/services/bond-cleaning/" class="yd-mega-card">
+                    <div>🔑</div>
+                    <h4>Bond Cleaning</h4>
+                    <p>End of lease cleaning for bond recovery.</p>
+                </a>
+                <a href="/services/exit-cleaning/" class="yd-mega-card">
+                    <div>🚪</div>
+                    <h4>Exit Cleaning</h4>
+                    <p>Complete property exit cleaning service.</p>
+                </a>
+                <a href="/services/carpet-cleaning/" class="yd-mega-card">
+                    <div>🏘️</div>
+                    <h4>Carpet Cleaning</h4>
+                    <p>Professional carpet and upholstery cleaning.</p>
+                </a>
+                <a href="/services/window-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🪟</div>
+                    <h4>Window Cleaning</h4>
+                    <p>Interior and exterior glass cleaning.</p>
+                </a>
+                <a href="/services/post-construction-cleaning-adelaide/" class="yd-mega-card">
+                    <div>🚧</div>
+                    <h4>Post Construction</h4>
+                    <p>After renovation and construction cleanup.</p>
+                </a>
+                <div class="yd-mega-footer">
+                    <strong>Not sure which service you need?</strong>
+                    <span>Chat with our team to find the perfect cleaning solution.</span>
+                    <a href="{% url 'contact' %}">Get Consultation</a>
+                </div>
+            </div>
+        </div>
+
+        <a href="/about/">About</a>
+        <a href="/pricing/">Pricing</a>
+        <a href="/team/">Team</a>
+        <a href="/gallery/">Gallery</a>
+        <a href="{% url 'contact' %}">Contact</a>
+
+        <div class="yd-dropdown-parent">
+            <a href="{% url 'resources' %}">Resources <span class="nav-arrow">▾</span></a>
+            <div class="yd-dropdown-menu">
+                <a href="/local/">Local Services</a>
+                <a href="/blog/">Blog</a>
+                <a href="/guides/">Guides</a>
+                <a href="/case-studies/">Case Studies</a>
+                <a href="/faq/">FAQ</a>
+            </div>
+        </div>
+
+        <div class="yd-dropdown-parent">
+            <a href="#">Portals <span class="nav-arrow">▾</span></a>
+            <div class="yd-dropdown-menu">
+                {% if request.user.is_authenticated and request.user.customer_profile %}
+                    <a href="/portal/dashboard/">Customer Dashboard</a>
+                {% else %}
+                    <a href="/portal/login/">Customer Portal</a>
+                {% endif %}
+                {% if request.user.is_authenticated and request.user.employee_profile %}
+                    <a href="/employee/dashboard/">Employee Dashboard</a>
+                {% else %}
+                    <a href="/employee/login/">Employee Portal</a>
+                {% endif %}
+                {% if request.user.is_staff %}
+                    <a href="/dashboard/">Admin Dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="yd-header-actions">
+        <button class="yd-search-btn" id="publicSearchButton" type="button" aria-label="Open site search">🔍</button>
+
+        {% if request.user.is_authenticated %}
+            {% if "/portal/" in request.path or "/employee/" in request.path %}
+                <div class="portal-notification-box">
+                    <button class="notification-bell" id="notificationBell" type="button">
+                        🔔
+                        {% if global_unread_notifications > 0 %}
+                            <span id="notificationCount">{{ global_unread_notifications }}</span>
+                        {% else %}
+                            <span id="notificationCount" style="display:none;">0</span>
+                        {% endif %}
+                    </button>
+                    <div class="notification-dropdown">
+                        <h4>Notifications</h4>
+                        {% for note in global_notifications %}
+                            <a href="{{ note.link|default:'#' }}" class="{% if not note.is_read %}unread{% endif %}">
+                                <strong>{{ note.title }}</strong>
+                                <small>{{ note.message }}</small>
+                                <em>{{ note.created_at|date:"d M, g:i A" }}</em>
+                            </a>
+                        {% empty %}
+                            <p>No notifications yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <a href="{% url 'home' %}#quote" class="yd-book-btn">Book Now</a>
+        <a href="{% url 'home' %}#quote" class="yd-quote-btn">Get Quote</a>
+    </div>
+</nav>
+
+<div class="site-search-box" id="siteSearchBox">
+    <input type="text" id="siteSearchInput" placeholder="Search YD Cleaning website...">
+    <div class="site-search-results" id="siteSearchResults">
+        <a href="/">Home</a>
+        <a href="/about/">About Us</a>
+        <a href="/pricing/">Pricing</a>
+        <a href="/team/">Team</a>
+        <a href="/services/">All Services</a>
+        <a href="/services/house-cleaning-adelaide/">House Cleaning</a>
+        <a href="/services/commercial-cleaning-adelaide/">Commercial Cleaning</a>
+        <a href="/services/office-cleaning/">Office Cleaning</a>
+        <a href="/services/spring-cleaning/">Spring Cleaning</a>
+        <a href="/services/oven-cleaning/">Oven Cleaning</a>
+        <a href="/services/bathroom-cleaning/">Bathroom Cleaning</a>
+        <a href="/services/bond-cleaning/">Bond Cleaning</a>
+        <a href="/services/exit-cleaning/">Exit Cleaning</a>
+        <a href="/services/carpet-cleaning/">Carpet Cleaning</a>
+        <a href="/services/window-cleaning-adelaide/">Window Cleaning</a>
+        <a href="/services/post-construction-cleaning-adelaide/">Post Construction Cleaning</a>
+        <a href="/services/end-of-lease-cleaning-adelaide/">End of Lease Cleaning</a>
+        <a href="/gallery/">Gallery</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        <a href="/blog/">Blog</a>
+        <a href="/resources/">Resources</a>
+        <a href="/portal/login/">Customer Portal</a>
+        <a href="/employee/login/">Employee Portal</a>
+    </div>
+</div>

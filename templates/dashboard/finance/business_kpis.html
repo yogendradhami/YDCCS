@@ -1,0 +1,126 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Business KPIs{% endblock %}
+
+{% block page_title %}
+Business KPI Dashboard
+{% endblock %}
+
+{% block page_subtitle %}
+Daily executive overview for YD Commercial Cleaning Services.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Business Health Score</span>
+        <h2>{{ health_score }}/100</h2>
+        <p>{{ health_status }}</p>
+    </div>
+
+    <div class="crm-card">
+        <span>Today's Revenue</span>
+        <h2>${{ today_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>This Month Revenue</span>
+        <h2>${{ month_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Estimated Monthly Profit</span>
+        <h2>${{ estimated_profit_month }}</h2>
+        <p>{{ profit_margin }}% margin</p>
+    </div>
+
+</div>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Outstanding Invoices</span>
+        <h2>${{ outstanding_invoices }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Payroll This Month</span>
+        <h2>${{ payroll_month }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Completed Jobs This Month</span>
+        <h2>{{ completed_jobs_month }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Upcoming Jobs</span>
+        <h2>{{ upcoming_jobs }}</h2>
+    </div>
+
+</div>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Active Customers</span>
+        <h2>{{ active_customers }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>New Customers This Month</span>
+        <h2>{{ new_customers_month }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Employees</span>
+        <h2>{{ total_employees }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>VIP Customers</span>
+        <h2>{{ vip_customers }}</h2>
+    </div>
+
+</div>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Average Review Rating</span>
+        <h2>{{ average_rating }} ⭐</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Total Reviews</span>
+        <h2>{{ reviews_received }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Campaigns Sent</span>
+        <h2>{{ campaigns_sent }}</h2>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Business Health Explanation</h2>
+    </div>
+
+    <p>
+        The business health score is based on revenue, profit margin,
+        customer growth, review rating and invoice collection.
+    </p>
+
+    <p>
+        This dashboard gives a daily overview of how YD Commercial Cleaning Services
+        is performing across finance, operations, customers, staff and marketing.
+    </p>
+
+</section>
+
+{% endblock %}

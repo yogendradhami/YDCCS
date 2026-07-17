@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Window & Glass Cleaning Guide | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Professional window and glass cleaning techniques for streak-free results. Complete tools list and step-by-step method.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
+<style>
+.guide-detail-content { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+.guide-detail-content h2 { margin-top: 30px; margin-bottom: 15px; color: #1a3a52; font-size: 1.5rem; font-weight: 700; }
+.guide-detail-content h3 { margin-top: 20px; margin-bottom: 10px; color: #2c5aa0; font-size: 1.1rem; font-weight: 600; }
+.guide-detail-content ul { margin: 15px 0; padding-left: 25px; }
+.guide-detail-content li { margin: 8px 0; line-height: 1.6; color: #555; }
+.guide-actions { margin-bottom: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
+.guide-actions .btn { display: inline-block; text-decoration: none; font-weight: 600; }
+.btn-primary { background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }
+.btn-outline { border: 2px solid #007bff; color: #007bff; padding: 8px 18px; border-radius: 5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="guide-detail-hero">
+    <div class="container">
+        <div class="guide-detail-header">
+            <div class="guide-detail-header-left">
+                <h1>Window & Glass Cleaning Guide</h1>
+                <p class="guide-detail-subtitle">Professional Window & Glass Cleaning Checklist From YD Commercial Cleaning Services, Adelaide</p>
+            </div>
+            <div class="guide-actions">
+                <a href="{% static 'pdf/guides/window-glass-guide.pdf' %}" class="btn btn-primary" download>📥 Print / Save as PDF</a>
+                <a href="{% url 'guides' %}" class="btn btn-outline">← Back to Guides</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="guide-detail-content">
+    <div class="guide-checklist-box">
+<h2>Tools & Supplies You'll Need</h2>
+<h3>Essential Tools</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Window squeegee (12-24 inches)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Microfiber cloths or lint-free towels</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Bucket for cleaning solution</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Soft-bristle brush or sponge</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Squeegee handle extension (for high windows)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Newspaper or coffee filters</label></li>
+    </ul>
+
+    <h3>Cleaning Solutions</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Commercial window cleaner</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> White vinegar (natural alternative)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Distilled water (prevents streaking)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Soap and water solution</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Alcohol-based solution (for stubborn grime)</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Step-by-Step Cleaning Process</h2>
+<h3>1. Prepare & Remove Obstacles</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any items blocking window access</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Close windows to protect interior</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Place protective covering on ledges and floors</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Gather all cleaning supplies</label></li>
+    </ul>
+
+    <h3>2. Dust & Dry Brush</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Use dry brush to remove dust and loose particles</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Brush frames, sills, and track areas</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Pay attention to corners and crevices</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove cobwebs and debris</label></li>
+    </ul>
+
+    <h3>3. Apply Cleaning Solution</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Mix cleaning solution in bucket (or use spray bottle)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dip soft brush or sponge in solution</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Apply solution to window, starting from top</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Let solution sit for 1-2 minutes on stubborn stains</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Work from top to bottom to avoid re-cleaning</label></li>
+    </ul>
+
+    <h3>4. Scrub Gently</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Use soft-bristle brush to gently scrub glass</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Focus on stubborn spots and dried residue</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Scrub frames and sills thoroughly</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use circular motions for best results</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Be careful not to scratch the glass</label></li>
+    </ul>
+
+    <h3>5. Squeegee Off Excess Liquid</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Dip squeegee blade in clean water first</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Starting at top, pull squeegee down in one smooth motion</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe blade with clean cloth after each pass</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Overlap each pass slightly (about 1-2 inches)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use vertical strokes for large windows</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use horizontal strokes for horizontal windows</label></li>
+    </ul>
+
+    <h3>6. Dry & Polish</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Immediately dry remaining water with microfiber cloth</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use newspaper or coffee filters for streak-free finish</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Polish in circular motions</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Check for streaks against light</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Touch up any remaining moisture</label></li>
+    </ul>
+
+    <h3>7. Clean Frames & Sills</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Wipe window frames with clean, damp cloth</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Clean window sills and ledges</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Remove any solution residue</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dry frames and sills thoroughly</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Special Glass Types</h2>
+<h3>Tinted or Treated Glass</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Use mild cleaning solutions only</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Avoid abrasive materials or harsh chemicals</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Check manufacturer recommendations first</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use distilled water for rinsing</label></li>
+    </ul>
+
+    <h3>Tempered Glass</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Handle with care (can break if stressed)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use gentle pressure when cleaning</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Avoid extreme temperature changes</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Never use sharp tools on the surface</label></li>
+    </ul>
+
+    <h3>Skylights & High Windows</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Always use proper safety equipment (harness, ladder)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Consider hiring professionals for high-up windows</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use extension poles for safer reach</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Never lean or stretch excessively</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Problems & Solutions</h2>
+<h3>Streaks</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Use distilled water instead of tap water</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Ensure squeegee blade is clean</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Dry immediately with lint-free cloth</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Avoid cleaning in direct sunlight</label></li>
+    </ul>
+
+    <h3>Water Spots</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Use vinegar solution to remove mineral deposits</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use distilled water for final rinse</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Polish dry immediately</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Consider water softener for regular cleaning</label></li>
+    </ul>
+
+    <h3>Stuck-On Residue</h3>
+    <ul>
+        <li><label class="checklist-item"><input type="checkbox"> Apply solution and let sit for longer (5-10 minutes)</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Use plastic scraper (not metal) for stubborn spots</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Apply rubbing alcohol for dried paint or glue</label></li>
+        <li><label class="checklist-item"><input type="checkbox"> Repeat application if necessary</label></li>
+    </ul>
+</div>
+<div class="guide-checklist-box">
+<h2>Professional Tips for Streak-Free Windows</h2>
+<ul>
+        <li>✓ <strong>Timing</strong>: Clean on a cloudy day or when sun isn't directly on windows. Direct sun causes solution to dry too quickly, causing streaks.</li>
+        <li>✓ <strong>Newspaper vs Cloth</strong>: Crumpled newspaper is excellent for streak-free drying. Coffee filters also work well.</li>
+        <li>✓ <strong>Water Temperature</strong>: Warm water works better than cold for dissolving soap and dirt.</li>
+        <li>✓ <strong>Squeegee Technique</strong>: The key is keeping the blade clean. Wipe the blade after every pass.</li>
+        <li>✓ <strong>Order Matters</strong>: Clean outside first, then inside. This prevents dirty water from dripping on clean areas.</li>
+    </ul>
+</div>
+<hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+
+    <h3>Need professional window cleaning?</h3>
+    <p style="font-size: 1.05rem; margin: 20px 0;">Contact YD Commercial Cleaning Services</p>
+    <p style="color: #666;">
+        📞 <a href="tel:0430049865">0430 049 865</a> | 📧 <a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a><br>
+        Adelaide, South Australia | Professional Cleaning, Every Time
+    </p>
+</section>
+
+{% endblock %}

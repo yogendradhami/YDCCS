@@ -1,5 +1,8 @@
 from django.db import models
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 from employees.models import Employee
 
 
@@ -18,17 +21,37 @@ class LeaveRequest(models.Model):
     ]
 
     employee = models.ForeignKey(
+<<<<<<< HEAD
         Employee, on_delete=models.CASCADE, related_name="leave_requests"
     )
 
     leave_type = models.CharField(max_length=30, choices=LEAVE_TYPES)
+=======
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="leave_requests"
+    )
+
+    leave_type = models.CharField(
+        max_length=30,
+        choices=LEAVE_TYPES
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
     start_date = models.DateField()
     end_date = models.DateField()
 
     reason = models.TextField(blank=True)
 
+<<<<<<< HEAD
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+=======
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
     admin_notes = models.TextField(blank=True)
 
@@ -39,4 +62,8 @@ class LeaveRequest(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+<<<<<<< HEAD
         return f"{self.employee.full_name} - {self.get_leave_type_display()}"
+=======
+        return f"{self.employee.full_name} - {self.get_leave_type_display()}"
+>>>>>>> 5815f15 (Initial project commit)

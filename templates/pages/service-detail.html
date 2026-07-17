@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ service_data.service_name }} in Adelaide | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}{{ service_data.description }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/services.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="service-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>{{ service_data.service_name }} in Adelaide</h1>
+        <p>{{ service_data.overview }}</p>
+    </div>
+</section>
+
+<!-- Service Overview -->
+<section class="service-overview">
+    <div class="container">
+        <h2>{{ service_data.service_name }}</h2>
+        <p class="overview-text">{{ service_data.description }}</p>
+    </div>
+</section>
+
+<!-- What's Included -->
+<section class="service-included">
+    <div class="container">
+        <h2>What's Included</h2>
+        <div class="included-grid">
+            {% for item in service_data.included %}
+            <div class="included-item">
+                <span class="check-icon">✓</span>
+                <p>{{ item }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Service Packages -->
+<section class="service-packages">
+    <div class="container">
+        <h2>Our Packages</h2>
+        <div class="packages-grid">
+            {% for package in service_data.packages %}
+            <div class="package-card">
+                <h3>{{ package.name }}</h3>
+                <div class="package-price">{{ package.price }}</div>
+                <p class="package-description">{{ package.description }}</p>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Get Quote</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="service-why">
+    <div class="container">
+        <h2>Why Choose YD Commercial Cleaning?</h2>
+        <div class="why-grid">
+            <div class="why-item">
+                <div class="why-icon">✓</div>
+                <h3>Professional Teams</h3>
+                <p>Experienced, trained professionals dedicated to quality results.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">✓</div>
+                <h3>Reliable Service</h3>
+                <p>On-time, every time with consistent professional results.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">✓</div>
+                <h3>Transparent Pricing</h3>
+                <p>Competitive rates with no hidden fees or surprises.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">✓</div>
+                <h3>Local Experts</h3>
+                <p>Based in Adelaide with deep knowledge of local needs.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">✓</div>
+                <h3>Fully Insured</h3>
+                <p>Complete insurance coverage for your peace of mind.</p>
+            </div>
+            <div class="why-item">
+                <div class="why-icon">✓</div>
+                <h3>Quick Response</h3>
+                <p>Fast turnaround times and flexible scheduling available.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Service Areas -->
+<section class="service-areas">
+    <div class="container">
+        <h2>Service Areas</h2>
+        <p class="areas-intro">We service the greater Adelaide area and surrounding suburbs including:</p>
+        <div class="areas-grid">
+            <div class="area-item">Adelaide</div>
+            <div class="area-item">North Adelaide</div>
+            <div class="area-item">Prospect</div>
+            <div class="area-item">Mawson Lakes</div>
+            <div class="area-item">Salisbury</div>
+            <div class="area-item">Glenelg</div>
+            <div class="area-item">Norwood</div>
+            <div class="area-item">Unley</div>
+            <div class="area-item">Burnside</div>
+            <div class="area-item">Modbury</div>
+        </div>
+        <p class="areas-note">...and many more suburbs. Contact us for service availability in your area.</p>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="service-cta">
+    <div class="container">
+        <h2>Ready to Book Your Service?</h2>
+        <p>Contact us today for a free quote. Our team will follow up within 2 hours to confirm your booking and answer any questions.</p>
+        <div class="cta-buttons">
+                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Get Your Quote</a>
+                        <a href="{% url 'home' %}#quote" class="btn btn-secondary btn-lg">Quick Quote</a>
+        </div>
+    </div>
+</section>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "{{ site_url }}"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "{{ service_data.service_name }}",
+                    "item": "{{ request.build_absolute_uri }}"
+                }
+            ]
+        },
+        {
+            "@type": "Service",
+            "serviceType": "{{ service_data.service_name }}",
+            "name": "{{ service_data.service_name }}",
+            "description": "{{ service_data.description|escapejs }}",
+            "provider": {
+                "@type": "LocalBusiness",
+                "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escape }}",
+                "telephone": "{{ company_settings.phone|default:'0430 049 865' }}",
+                "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com' }}",
+                "url": "{{ site_url }}"
+            }
+        }
+    ]
+}
+</script>
+
+{% endblock %}

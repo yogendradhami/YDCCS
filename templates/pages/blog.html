@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Blog - Cleaning Tips & Professional Advice | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Read our professional cleaning tips, industry insights, and helpful guides. Learn how to maintain clean and healthy spaces.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/blog.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="blog-hero">
+    <div class="container">
+        <h1>Cleaning Tips & Professional Advice</h1>
+        <p>Expert insights and practical tips from our professional cleaning team to help you maintain spotless, healthy homes and offices.</p>
+    </div>
+</section>
+
+<!-- Blog Grid Section -->
+<section class="blog-section">
+    <div class="container">
+        
+        <!-- Blog Categories & Search -->
+        <div class="blog-controls">
+            <input type="text" id="blogSearch" placeholder="Search blog posts..." class="blog-search" aria-label="Search blog posts">
+            
+            <div class="blog-categories">
+                <button class="category-filter active" data-category="all">All</button>
+                <button class="category-filter" data-category="residential">Residential</button>
+                <button class="category-filter" data-category="commercial">Commercial</button>
+                <button class="category-filter" data-category="tips">Tips & Guides</button>
+                <button class="category-filter" data-category="seasonal">Seasonal</button>
+            </div>
+        </div>
+
+        {% if posts and posts|length > 0 %}
+
+        <!-- Featured Blog Post (first post) -->
+        {% with featured=posts.0 %}
+        <div class="featured-blog-post">
+            <div class="featured-image">
+                {% if featured.featured_image %}
+                    <img src="{{ featured.featured_image.url }}" alt="{{ featured.title }}" loading="lazy">
+                {% else %}
+                    <img src="{% static 'images/blog-featured.jpg' %}" alt="{{ featured.title }}" loading="lazy">
+                {% endif %}
+            </div>
+            <div class="featured-content">
+                <span class="featured-badge">Featured</span>
+                <h2>{{ featured.title }}</h2>
+                <p>{{ featured.excerpt }}</p>
+                <div class="blog-meta">
+                    <span class="author">By Admin</span>
+                    <span class="date">{{ featured.published_at|date:"j F Y" }}</span>
+                </div>
+                <a href="{% url 'blog_detail' featured.slug %}" class="btn btn-primary">Read Full Post →</a>
+            </div>
+        </div>
+        {% endwith %}
+
+        <!-- Blog Grid -->
+        <div class="blog-grid">
+            {% for post in posts|slice:"1:9" %}
+            <article class="blog-card" data-category="{{ post.category|default:'tips' }}">
+                <div class="blog-image">
+                    {% if post.featured_image %}
+                        <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" loading="lazy">
+                    {% else %}
+                        <img src="{% static 'images/blog-post-1.jpg' %}" alt="{{ post.title }}" loading="lazy">
+                    {% endif %}
+                </div>
+                <div class="blog-content">
+                    <div class="blog-category-tag">{{ post.category|default:'Tips' }}</div>
+                    <h3>{{ post.title }}</h3>
+                    <p>{{ post.excerpt }}</p>
+                    <div class="blog-meta">
+                        <span class="author">By Admin</span>
+                        <span class="date">{{ post.published_at|date:"j F Y" }}</span>
+                        <span class="read-time">{{ post.content|striptags|truncatewords:20|length }} min read</span>
+                    </div>
+                    <a href="{% url 'blog_detail' post.slug %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        {% else %}
+
+        <!-- Featured Blog Post -->
+        <div class="featured-blog-post">
+            <div class="featured-image">
+                <img src="{% static 'images/blog-featured.jpg' %}" alt="Featured blog post about professional cleaning" loading="lazy">
+            </div>
+            <div class="featured-content">
+                <span class="featured-badge">Featured</span>
+                <h2>Professional Cleaning Best Practices for Adelaide Homes and Offices</h2>
+                <p>Learn industry-leading cleaning techniques and best practices that keep your Adelaide property spotless and healthy year-round.</p>
+                <div class="blog-meta">
+                    <span class="author">By Sarah Mitchell</span>
+                    <span class="date">12 July 2026</span>
+                </div>
+                <a href="{% url 'blog_detail' 'professional-cleaning-best-practices' %}" class="btn btn-primary">Read Full Post →</a>
+            </div>
+        </div>
+
+        <!-- Blog Grid -->
+        <div class="blog-grid">
+            
+            <!-- Blog Post 1 -->
+            <article class="blog-card" data-category="residential">
+                <div class="blog-image">
+                    <img src="{% static 'images/blog-post-1.jpg' %}" alt="Blog post about residential cleaning" loading="lazy">
+                </div>
+                <div class="blog-content">
+                    <div class="blog-category-tag">Residential</div>
+                    <h3>Deep Cleaning vs. Regular Cleaning: When You Need Each</h3>
+                    <p>Learn the differences between deep cleaning and regular maintenance, and understand how often you should schedule each service.</p>
+                    <div class="blog-meta">
+                        <span class="author">By Michael Thompson</span>
+                        <span class="date">29 June 2026</span>
+                        <span class="read-time">5 min read</span>
+                    </div>
+                    <a href="{% url 'blog_detail' 'deep-cleaning-vs-regular-cleaning' %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+
+            <!-- Blog Post 2 -->
+            <article class="blog-card" data-category="commercial">
+                <div class="blog-image">
+                    <img src="{% static 'images/blog-post-2.jpg' %}" alt="Blog post about office cleaning" loading="lazy">
+                </div>
+                <div class="blog-content">
+                    <div class="blog-category-tag">Commercial</div>
+                    <h3>How Office Cleanliness Affects Employee Productivity</h3>
+                    <p>Discover the connection between workplace cleanliness and employee performance, morale, and long-term business success.</p>
+                    <div class="blog-meta">
+                        <span class="author">By James Chen</span>
+                        <span class="date">16 June 2026</span>
+                        <span class="read-time">6 min read</span>
+                    </div>
+                    <a href="{% url 'blog_detail' 'office-cleanliness-productivity' %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+
+            <!-- Blog Post 3 -->
+            <article class="blog-card" data-category="tips">
+                <div class="blog-image">
+                    <img src="{% static 'images/blog-post-3.jpg' %}" alt="Blog post about spring cleaning" loading="lazy">
+                </div>
+                <div class="blog-content">
+                    <div class="blog-category-tag">Tips & Guides</div>
+                    <h3>Spring Cleaning Checklist: Room-by-Room Guide</h3>
+                    <p>Complete spring cleaning checklist for every room in your home. Refresh your space for the season with this detailed guide.</p>
+                    <div class="blog-meta">
+                        <span class="author">By Emma Rodriguez</span>
+                        <span class="date">10 June 2026</span>
+                        <span class="read-time">7 min read</span>
+                    </div>
+                    <a href="{% url 'blog_detail' 'spring-cleaning-checklist' %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+
+            <!-- Blog Post 4 -->
+            <article class="blog-card" data-category="seasonal">
+                <div class="blog-image">
+                    <img src="{% static 'images/blog-post-4.jpg' %}" alt="Blog post about summer cleaning" loading="lazy">
+                </div>
+                <div class="blog-content">
+                    <div class="blog-category-tag">Seasonal</div>
+                    <h3>Summer Cleaning Tips for Adelaide's Hot Climate</h3>
+                    <p>Practical cleaning strategies for Adelaide's summer weather. Keep your home fresh and hygienic during the hot months.</p>
+                    <div class="blog-meta">
+                        <span class="author">By Sarah Mitchell</span>
+                        <span class="date">31 May 2026</span>
+                        <span class="read-time">5 min read</span>
+                    </div>
+                    <a href="{% url 'blog_detail' 'summer-cleaning-adelaide' %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+
+            <!-- Blog Post 5 -->
+            <article class="blog-card" data-category="tips">
+                <div class="blog-image">
+                    <img src="{% static 'images/blog-post-5.jpg' %}" alt="Blog post about eco-friendly cleaning" loading="lazy">
+                </div>
+                <div class="blog-content">
+                    <div class="blog-category-tag">Tips & Guides</div>
+                    <h3>Eco-Friendly Cleaning Solutions Safe for Your Family</h3>
+                    <p>Discover professional-grade eco-friendly cleaning products and methods that are effective and safe for families and pets.</p>
+                    <div class="blog-meta">
+                        <span class="author">By David Peterson</span>
+                        <span class="date">12 April 2026</span>
+                        <span class="read-time">6 min read</span>
+                    </div>
+                    <a href="{% url 'blog_detail' 'eco-friendly-cleaning-solutions' %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+
+            <!-- Blog Post 6 -->
+            <article class="blog-card" data-category="residential">
+                <div class="blog-image">
+                    <img src="{% static 'images/blog-post-6.jpg' %}" alt="Blog post about bond cleaning" loading="lazy">
+                </div>
+                <div class="blog-content">
+                    <div class="blog-category-tag">Residential</div>
+                    <h3>End-of-Lease Cleaning: Your Guide to Getting Your Bond Back</h3>
+                    <p>Complete guide to bond cleaning in Adelaide. Learn what landlords inspect and how professional cleaning ensures full deposit recovery.</p>
+                    <div class="blog-meta">
+                        <span class="author">By Emma Rodriguez</span>
+                        <span class="date">8 March 2026</span>
+                        <span class="read-time">8 min read</span>
+                    </div>
+                    <a href="{% url 'blog_detail' 'end-of-lease-cleaning-guide' %}" class="read-more">Read More →</a>
+                </div>
+            </article>
+
+        </div>
+
+        <!-- Load More -->
+        <div class="load-more-container">
+            <button class="btn btn-outline btn-lg" id="loadMoreBtn">Load More Posts</button>
+        </div>
+
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="blog-newsletter">
+    <div class="container">
+        <h2>Get Cleaning Tips Delivered</h2>
+        <p>Subscribe to our newsletter for weekly cleaning tips, industry insights, and exclusive offers.</p>
+        
+        <form class="newsletter-form" method="POST" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Your email address" required>
+                <button type="submit" class="btn btn-primary">Subscribe</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="blog-cta">
+    <div class="container">
+        <h2>Ready to Apply These Tips?</h2>
+        <p>While our tips help, nothing beats professional cleaning. Let our experienced team handle the hard work for you.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Get Your Free Quote</a>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Blog Category Filter
+    const filterButtons = document.querySelectorAll('.category-filter');
+    const blogCards = document.querySelectorAll('.blog-card');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const category = this.getAttribute('data-category');
+            
+            blogCards.forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Blog Search
+    const searchInput = document.getElementById('blogSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            blogCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const content = card.querySelector('p').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || content.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{%endif%}
+
+{% endblock %}

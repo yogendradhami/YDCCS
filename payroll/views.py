@@ -5,6 +5,7 @@
 # paid workflow and payslip PDF download.
 # ==========================================================
 
+<<<<<<< HEAD
 from datetime import timedelta
 from decimal import Decimal
 
@@ -21,21 +22,55 @@ from dashboard.models import ActivityLog
 from employees.models import Employee
 
 from .models import PayrollRecord
+=======
+from decimal import Decimal
+from datetime import timedelta
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from django.http import HttpResponse
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+
+from attendance.models import AttendanceLog
+from employees.models import Employee
+
+from .models import PayrollRecord
+from dashboard.models import ActivityLog
+>>>>>>> 5815f15 (Initial project commit)
 
 # ==========================================================
 # Activity Log Helper
 # ==========================================================
 
+<<<<<<< HEAD
 
 def create_activity_log(user, action_type, title, description=""):
     ActivityLog.objects.create(
         user=user, action_type=action_type, title=title, description=description
+=======
+def create_activity_log(
+    user,
+    action_type,
+    title,
+    description=""
+):
+    ActivityLog.objects.create(
+        user=user,
+        action_type=action_type,
+        title=title,
+        description=description
+>>>>>>> 5815f15 (Initial project commit)
     )
 
 
 @login_required
 def payroll_list(request):
 
+<<<<<<< HEAD
     payroll_records = PayrollRecord.objects.select_related("employee").order_by(
         "-period_end"
     )
@@ -64,6 +99,52 @@ def payroll_list(request):
             "approved_count": approved_count,
             "paid_count": paid_count,
         },
+=======
+    payroll_records = PayrollRecord.objects.select_related(
+        "employee"
+    ).order_by("-period_end")
+
+    total_payroll = sum(
+        record.gross_pay
+        for record in payroll_records
+    )
+
+    total_hours = sum(
+        record.total_hours
+        for record in payroll_records
+    )
+
+    total_employees = payroll_records.values(
+        "employee"
+    ).distinct().count()
+
+    draft_count = payroll_records.filter(
+        status="draft"
+    ).count()
+
+    approved_count = payroll_records.filter(
+        status="approved"
+    ).count()
+
+    paid_count = payroll_records.filter(
+        status="paid"
+    ).count()
+
+    return render(
+        request,
+        "payroll/payroll_list.html",
+        {
+            "payroll_records": payroll_records,
+
+            "total_payroll": total_payroll,
+            "total_hours": total_hours,
+            "total_employees": total_employees,
+
+            "draft_count": draft_count,
+            "approved_count": approved_count,
+            "paid_count": paid_count,
+        }
+>>>>>>> 5815f15 (Initial project commit)
     )
 
 
@@ -108,7 +189,11 @@ def generate_payroll(request):
                 "hourly_rate": hourly_rate,
                 "gross_pay": gross_pay,
                 "status": "draft",
+<<<<<<< HEAD
             },
+=======
+            }
+>>>>>>> 5815f15 (Initial project commit)
         )
 
         if created:
@@ -124,12 +209,20 @@ def generate_payroll(request):
         request.user,
         "payroll",
         "Payroll Generated",
+<<<<<<< HEAD
         f"Created {created_count} payroll records and updated {updated_count} records.",
+=======
+        f"Created {created_count} payroll records and updated {updated_count} records."
+>>>>>>> 5815f15 (Initial project commit)
     )
 
     messages.success(
         request,
+<<<<<<< HEAD
         f"✅ Payroll generated. Created: {created_count}, Updated: {updated_count}.",
+=======
+        f"✅ Payroll generated. Created: {created_count}, Updated: {updated_count}."
+>>>>>>> 5815f15 (Initial project commit)
     )
 
     return redirect("payroll_list")
@@ -143,7 +236,11 @@ def approve_payroll(request, payroll_id):
     payroll.status = "approved"
     payroll.save()
 
+<<<<<<< HEAD
     # ==================================================
+=======
+        # ==================================================
+>>>>>>> 5815f15 (Initial project commit)
     # Activity Log
     # ==================================================
 
@@ -151,7 +248,11 @@ def approve_payroll(request, payroll_id):
         request.user,
         "payroll",
         "Payroll Approved",
+<<<<<<< HEAD
         f"{payroll.employee.full_name} payroll approved for period ending {payroll.period_end}",
+=======
+        f"{payroll.employee.full_name} payroll approved for period ending {payroll.period_end}"
+>>>>>>> 5815f15 (Initial project commit)
     )
 
     messages.success(request, "✅ Payroll approved successfully.")
@@ -167,7 +268,11 @@ def mark_payroll_paid(request, payroll_id):
     payroll.status = "paid"
     payroll.save()
 
+<<<<<<< HEAD
     # ==================================================
+=======
+        # ==================================================
+>>>>>>> 5815f15 (Initial project commit)
     # Activity Log
     # ==================================================
 
@@ -175,7 +280,11 @@ def mark_payroll_paid(request, payroll_id):
         request.user,
         "payroll",
         "Payroll Approved",
+<<<<<<< HEAD
         f"{payroll.employee.full_name} payroll approved for period ending {payroll.period_end}",
+=======
+        f"{payroll.employee.full_name} payroll approved for period ending {payroll.period_end}"
+>>>>>>> 5815f15 (Initial project commit)
     )
 
     messages.success(request, "✅ Payroll marked as paid.")
@@ -187,7 +296,12 @@ def mark_payroll_paid(request, payroll_id):
 def download_payslip_pdf(request, payroll_id):
     # Download one payroll record as a simple PDF payslip.
     payroll = get_object_or_404(
+<<<<<<< HEAD
         PayrollRecord.objects.select_related("employee"), id=payroll_id
+=======
+        PayrollRecord.objects.select_related("employee"),
+        id=payroll_id
+>>>>>>> 5815f15 (Initial project commit)
     )
 
     response = HttpResponse(content_type="application/pdf")
@@ -250,18 +364,30 @@ def download_payslip_pdf(request, payroll_id):
 
     # Footer note
     pdf.setFont("Helvetica-Oblique", 9)
+<<<<<<< HEAD
     pdf.drawString(50, y, "This payslip was generated by YD Commercial Cleaning CRM.")
+=======
+    pdf.drawString(
+        50,
+        y,
+        "This payslip was generated by YD Commercial Cleaning CRM."
+    )
+>>>>>>> 5815f15 (Initial project commit)
 
     pdf.showPage()
     pdf.save()
 
     return response
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 # ==========================================================
 # Employee Payslips
 # ==========================================================
 
+<<<<<<< HEAD
 
 @login_required
 def employee_payslips(request):
@@ -270,14 +396,37 @@ def employee_payslips(request):
 
     # Only show payslips belonging to this employee.
     payroll_records = PayrollRecord.objects.filter(employee=employee).order_by(
+=======
+@login_required
+def employee_payslips(request):
+    # Get the logged-in employee profile.
+    employee = get_object_or_404(
+        Employee,
+        user=request.user
+    )
+
+    # Only show payslips belonging to this employee.
+    payroll_records = PayrollRecord.objects.filter(
+        employee=employee
+    ).order_by(
+>>>>>>> 5815f15 (Initial project commit)
         "-period_end"
     )
 
     return render(
         request,
+<<<<<<< HEAD
         "employee_payslips.html",
         {
             "employee": employee,
             "payroll_records": payroll_records,
         },
     )
+=======
+        "employees/employee_payslips.html",
+        {
+            "employee": employee,
+            "payroll_records": payroll_records,
+        }
+    )
+>>>>>>> 5815f15 (Initial project commit)

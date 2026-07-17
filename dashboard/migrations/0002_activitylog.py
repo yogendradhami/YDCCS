@@ -8,12 +8,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("dashboard", "0001_initial"),
+=======
+        ('dashboard', '0001_initial'),
+>>>>>>> 5815f15 (Initial project commit)
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="ActivityLog",
             fields=[
                 (
@@ -58,6 +63,19 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["-created_at"],
+=======
+            name='ActivityLog',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('action_type', models.CharField(choices=[('booking', 'Booking'), ('invoice', 'Invoice'), ('customer', 'Customer'), ('employee', 'Employee'), ('payroll', 'Payroll'), ('leave', 'Leave'), ('roster', 'Roster'), ('settings', 'Settings'), ('system', 'System')], default='system', max_length=30)),
+                ('title', models.CharField(max_length=200)),
+                ('description', models.TextField(blank=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-created_at'],
+>>>>>>> 5815f15 (Initial project commit)
             },
         ),
     ]

@@ -1,0 +1,182 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Recurring Contracts | YD Dashboard{% endblock %}
+{% block page_title %}Recurring Cleaning Contracts{% endblock %}
+{% block page_subtitle %}Manage weekly, fortnightly and monthly cleaning agreements.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/contracts/add/">+ Add Contract</a>
+    <a href="/dashboard/bookings/">Bookings</a>
+    
+    <a href="/dashboard/">Back to Dashboard</a>
+</section>
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>30 Day Renewals</span>
+        <h2>{{ contracts_expiring_30 }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>14 Day Renewals</span>
+        <h2>{{ contracts_expiring_14 }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>7 Day Renewals</span>
+        <h2>{{ contracts_expiring_7 }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Expired Contracts</span>
+        <h2>{{ expired_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Active Contracts</span>
+        <h2>{{ active_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Expiring Soon</span>
+        <h2>{{ expiring_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Renewals Due</span>
+        <h2>{{ expiring_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Completed</span>
+        <h2>{{ completed_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Cancelled</span>
+        <h2>{{ cancelled_contracts }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Estimated Visit Revenue</span>
+        <h2>${{ monthly_contract_value }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Weekly Revenue</span>
+        <h2>${{ weekly_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Monthly Revenue</span>
+        <h2>${{ monthly_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Annual Revenue</span>
+        <h2>${{ annual_revenue }}</h2>
+    </div>
+
+
+
+</div>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>All Contracts</h2>
+    </div>
+
+    {% if contracts %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Frequency</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Time</th>
+                        <th>Price/Visit</th>
+                        <th>Status</th>
+                        <th>Days Left</th>
+                        <th>View</th>
+                        <th>Generate</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for contract in contracts %}
+                        <tr>
+                            <td>{{ contract.customer.full_name }}</td>
+                            <td>{{ contract.service_type }}</td>
+                            <td>{{ contract.get_frequency_display }}</td>
+                            <td>{{ contract.start_date }}</td>
+
+
+                            <td>
+                                {% if contract.end_date %}
+                                    {{ contract.end_date }}
+
+                                    {% if contract.status == "active" %}
+                                        <span style="color:#dc2626;font-weight:700;">
+                                            Check expiry
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    Ongoing
+                                {% endif %}
+                            </td>
+
+                            <td>{{ contract.preferred_time }}</td>
+                            <td>${{ contract.price_per_visit }}</td>
+                            <td>{{ contract.get_status_display }}</td>
+                            <td>
+
+                                {% if contract.days_remaining == None %}
+
+                                    Ongoing
+
+                                {% elif contract.days_remaining < 0 %}
+
+                                    <span style="color:red;font-weight:700;">
+                                        Expired
+                                    </span>
+
+                                {% elif contract.days_remaining <= 30 %}
+
+                                    <span style="color:#dc2626;font-weight:700;">
+                                        {{ contract.days_remaining }} Days
+                                    </span>
+
+                                {% else %}
+
+                                    {{ contract.days_remaining }} Days
+
+                                {% endif %}
+
+                            </td>
+                            <td>
+                                <a href="/dashboard/contracts/{{ contract.id }}/" class="small-link-btn">View</a>
+                            </td>
+                            <td> 
+                                <a href="/dashboard/contracts/{{ contract.id }}/generate-bookings/" class="small-link-btn"> Generate </a> 
+                            </td>
+                            <td>
+                                <a href="/dashboard/contracts/{{ contract.id }}/edit/" class="small-link-btn">Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No recurring contracts created yet.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

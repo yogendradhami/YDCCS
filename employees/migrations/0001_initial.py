@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
+<<<<<<< HEAD
     dependencies = []
 
     operations = [
@@ -60,6 +61,28 @@ class Migration(migrations.Migration):
                 ("active", models.BooleanField(default=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
+=======
+    dependencies = [
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Employee',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('full_name', models.CharField(max_length=150)),
+                ('phone', models.CharField(max_length=30)),
+                ('email', models.EmailField(blank=True, max_length=254)),
+                ('address', models.CharField(blank=True, max_length=255)),
+                ('role', models.CharField(choices=[('cleaner', 'Cleaner'), ('supervisor', 'Supervisor'), ('manager', 'Manager'), ('admin', 'Admin')], default='cleaner', max_length=30)),
+                ('availability', models.CharField(choices=[('available', 'Available'), ('unavailable', 'Unavailable'), ('on_leave', 'On Leave')], default='available', max_length=30)),
+                ('hourly_rate', models.DecimalField(decimal_places=2, default=0, max_digits=8)),
+                ('jobs_completed', models.PositiveIntegerField(default=0)),
+                ('notes', models.TextField(blank=True)),
+                ('active', models.BooleanField(default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+>>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

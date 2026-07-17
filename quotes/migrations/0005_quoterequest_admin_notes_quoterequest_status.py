@@ -6,11 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("quotes", "0004_alter_quoterequest_property_type_and_more"),
+=======
+        ('quotes', '0004_alter_quoterequest_property_type_and_more'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AddField(
+<<<<<<< HEAD
             model_name="quoterequest",
             name="admin_notes",
             field=models.TextField(blank=True),
@@ -30,5 +35,15 @@ class Migration(migrations.Migration):
                 default="new",
                 max_length=20,
             ),
+=======
+            model_name='quoterequest',
+            name='admin_notes',
+            field=models.TextField(blank=True),
+        ),
+        migrations.AddField(
+            model_name='quoterequest',
+            name='status',
+            field=models.CharField(choices=[('new', 'New'), ('contacted', 'Contacted'), ('quoted', 'Quoted'), ('booked', 'Booked'), ('completed', 'Completed'), ('lost', 'Lost')], default='new', max_length=20),
+>>>>>>> 5815f15 (Initial project commit)
         ),
     ]

@@ -1,0 +1,98 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Profit & Loss{% endblock %}
+
+{% block page_title %}
+Profit & Loss Dashboard
+{% endblock %}
+
+{% block page_subtitle %}
+Financial summary for YD Commercial Cleaning Services based on paid invoices.
+{% endblock %}
+
+{% block content %}
+
+<div class="crm-summary-grid">
+
+    <div class="crm-card">
+        <span>Paid Revenue</span>
+        <h2>${{ paid_revenue }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Payroll Cost</span>
+        <h2>${{ payroll_cost }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Bonus Cost</span>
+        <h2>${{ bonus_cost }}</h2>
+    </div>
+
+    <div class="crm-card">
+        <span>Expense</span>
+        <h2>${{ expense_cost }}</h2>
+    </div>  
+
+    <div class="crm-card">
+        <span>Estimated Profit</span>
+        <h2>${{ estimated_profit }}</h2>
+    </div>
+
+</div>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Profit Summary</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>Paid Invoice Revenue</td>
+                    <td>${{ paid_revenue }}</td>
+                </tr>
+
+                <tr>
+                    <td>Payroll Cost</td>
+                    <td>${{ payroll_cost }}</td>
+                </tr>
+
+                <tr>
+                    <td>Estimated Employee Bonus Cost</td>
+                    <td>${{ bonus_cost }}</td>
+                </tr>
+                <tr>
+                    <td>Business Expenses</td>
+                    <td>${{ expense_cost }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Estimated Profit</strong></td>
+                    <td><strong>${{ estimated_profit }}</strong></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Profit Margin</strong></td>
+                    <td><strong>{{ profit_margin }}%</strong></td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

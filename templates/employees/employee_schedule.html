@@ -1,0 +1,90 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Employee Schedule{% endblock %}
+
+{% block page_title %}Employee Weekly Schedule{% endblock %}
+
+{% block page_subtitle %}
+Weekly staff schedule for YD Commercial Cleaning Services.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>
+            {{ week_start|date:"d M Y" }} - {{ week_end|date:"d M Y" }}
+        </h2>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="/dashboard/employee-schedule/?start={{ previous_week|date:'Y-m-d' }}" class="small-link-btn">
+                Previous
+            </a>
+
+            <a href="/dashboard/employee-schedule/" class="small-link-btn">
+                This Week
+            </a>
+
+            <a href="/dashboard/employee-schedule/?start={{ next_week|date:'Y-m-d' }}" class="small-link-btn">
+                Next
+            </a>
+
+            <a href="/dashboard/calendar/" class="small-link-btn">
+                Job Calendar
+            </a>
+        </div>
+    </div>
+</section>
+
+{% for row in schedule_rows %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>{{ row.employee.full_name }}</h2>
+        <span>{{ row.total_jobs }} jobs this week</span>
+    </div>
+
+    {% if row.total_jobs > 0 %}
+
+        {% for day in row.days %}
+
+            {% if day.jobs or day.approved_leave %}
+                <div class="crm-list-item">
+
+                    <strong>{{ day.date|date:"l, d M" }}</strong>
+
+                    {% if day.approved_leave %}
+                        <span class="status-badge warning">
+                            ⚠ On Leave — {{ day.approved_leave.get_leave_type_display }}
+                        </span>
+                    {% endif %}
+
+                    {% for job in day.jobs %}
+                        <span>
+                            {{ job.booking_time|time:"H:i" }}
+                            —
+                            {{ job.service_type }}
+                            —
+                            {{ job.customer.full_name }}
+                        </span>
+                    {% endfor %}
+
+                </div>
+            {% endif %}
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty-box">
+            <p>No jobs assigned this week.</p>
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endfor %}
+
+{% endblock %}

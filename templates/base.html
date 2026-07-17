@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -20,11 +21,147 @@
     <!-- Dynamic favicon from Dashboard → Settings -->
     {% if company_settings and company_settings.favicon %}
         <link rel="icon" href="{{ company_settings.favicon.url }}">
+=======
+{% load static seo_tags %}
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>
+        {% block title %}
+            {{ page_title|default:company_settings.business_name|default:'YD Commercial Cleaning Services' }}
+        {% endblock %}
+    </title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}{{ page_description|default:default_seo_description }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}{{ page_keywords|default:default_seo_keywords }}{% endblock %}">
+    <meta name="robots" content="{% block robots_meta %}index, follow{% endblock %}">
+    <meta name="theme-color" content="#0072CE">
+    <meta name="google-site-verification" content="">
+
+    <link rel="canonical" href="{% canonical_url %}">
+
+    <meta property="og:locale" content="en_AU">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}{{ page_title|default:company_settings.business_name|default:'YD Commercial Cleaning Services' }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ page_description|default:default_seo_description }}{% endblock %}">
+    <meta property="og:url" content="{% canonical_url %}">
+    <meta property="og:site_name" content="{{ company_settings.business_name|default:'YD Commercial Cleaning Services' }}">
+    <meta property="og:image" content="{% block og_image %}{{ page_image|default:open_graph_image }}{% endblock %}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ page_title|default:company_settings.business_name|default:'YD Commercial Cleaning Services' }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ page_description|default:default_seo_description }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ page_image|default:twitter_image }}{% endblock %}">
+    <meta name="twitter:site" content="@YDCommercialClean">
+    <meta name="twitter:creator" content="@YDCommercialClean">
+
+    <link rel="icon" href="{% if company_settings and company_settings.favicon %}{{ company_settings.favicon.url }}{% else %}{% static 'images/logo.jpeg' %}{% endif %}" type="image/png">
+    <link rel="apple-touch-icon" href="{% if company_settings and company_settings.favicon %}{{ company_settings.favicon.url }}{% else %}{% static 'images/logo.jpeg' %}{% endif %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
+    <link rel="preload" href="{% static 'css/core/style.css' %}?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <!-- Main website CSS (non-blocking load) -->
+    <noscript><link rel="stylesheet" href="{% static 'css/core/style.css' %}?v=2"></noscript>
+    <!-- Load the minified global stylesheet asynchronously to avoid render-blocking. -->
+    <link rel="preload" href="{% static 'css/global/style.min.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{% static 'css/global/style.min.css' %}"></noscript>
+    <!-- Critical CSS: inline minimal styles for header/hero to reduce render blocking and CLS -->
+    <style>
+    /* Critical header/branding layout */
+    .promo-bar{background:#f6f9fc;color:#111;padding:6px 12px;font-size:13px;text-align:center}
+    .yd-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-bottom:1px solid #eee}
+    .yd-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+    .yd-logo img{display:block;width:48px;height:48px;object-fit:contain}
+    .yd-logo-text{display:block}
+    .yd-menu{display:none}
+    .yd-header-actions{display:flex;align-items:center;gap:8px}
+    @media(min-width:768px){.yd-menu{display:flex;gap:12px}}
+    /* Keep critical type visible */
+    .yd-logo-title{font-weight:700;font-size:16px;line-height:1}
+    /* Critical hero section - minimal essential styles to reduce render delay */
+    .hero-section{background:linear-gradient(135deg,#2563eb 0%,#1e40af 50%,#0f172a 100%);color:#fff;padding:140px 0;position:relative;overflow:hidden}
+    .hero-section h1{font-size:56px;line-height:1.1;margin-bottom:20px;font-weight:900}
+    .hero-section p{font-size:20px;margin-bottom:40px;color:rgba(255,255,255,.95);max-width:700px;margin-left:auto;margin-right:auto}
+    .hero-buttons{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+    .hero-badge{font-weight:600;font-size:14px;color:#0f172a;text-transform:uppercase;letter-spacing:1px;display:inline-block;margin-bottom:15px}
+    .hero-grid{display:grid;grid-template-columns:1fr;gap:60px;align-items:center}
+    @media(min-width:768px){.hero-grid{grid-template-columns:1fr 1fr}}
+    </style>
+    {% block extra_css %}{% endblock %}
+
+    {% if company_settings %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "{{ company_settings.business_name|escape }}",
+          "url": "{{ site_url }}",
+          "logo": "{{ open_graph_image }}",
+          "sameAs": {{ same_as_urls|safe }},
+          "contactPoint": [
+            {
+              "@type": "ContactPoint",
+              "telephone": "{{ company_settings.phone }}",
+              "contactType": "customer service",
+              "areaServed": ["Adelaide", "South Australia"],
+              "availableLanguage": ["English"]
+            }
+          ],
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ address_street|escape }}",
+            "addressLocality": "{{ address_locality|escape }}",
+            "addressRegion": "{{ address_region|escape }}",
+            "postalCode": "{{ address_postal_code|escape }}",
+            "addressCountry": "{{ address_country|escape }}"
+          }
+        },
+        {
+          "@type": "LocalBusiness",
+          "name": "{{ company_settings.business_name|escape }}",
+          "image": "{{ open_graph_image }}",
+          "telephone": "{{ company_settings.phone }}",
+          "email": "{{ company_settings.email }}",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ address_street|escape }}",
+            "addressLocality": "{{ address_locality|escape }}",
+            "addressRegion": "{{ address_region|escape }}",
+            "postalCode": "{{ address_postal_code|escape }}",
+            "addressCountry": "{{ address_country|escape }}"
+          },
+          "areaServed": {{ service_area_list|safe }},
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+              "opens": "08:00",
+              "closes": "12:00"
+            }
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "url": "{{ site_url }}",
+          "name": "{{ company_settings.business_name|escape }}",
+          "description": "{{ default_seo_description|escape }}"
+        }
+      ]
+    }
+    </script>
+>>>>>>> 5815f15 (Initial project commit)
     {% endif %}
 </head>
 
 <body>
 
+<<<<<<< HEAD
 <!-- Promotional top bar -->
 <header class="promo-bar">
     <span>
@@ -268,6 +405,11 @@
         <a href="/dashboard/settings/">Company Settings</a>
     </div>
 </div>
+=======
+{% include 'includes/header.html' %}
+
+<main id="main-content" role="main">
+>>>>>>> 5815f15 (Initial project commit)
 
 <!-- Page content -->
 <!-- Global Messages -->
@@ -291,6 +433,7 @@
 {% block content %}
 {% endblock %}
 
+<<<<<<< HEAD
 <!-- Floating chat button -->
 <a href="#" class="chat-btn">💬</a>
 
@@ -443,3 +586,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+=======
+{% block default_why_choose_section %}
+    {% include 'shared/partials/why_choose_us.html' %}
+{% endblock %}
+
+{% block default_faq_section %}
+    {% include 'shared/partials/faq.html' %}
+{% endblock %}
+
+{% include 'includes/footer.html' %}
+</main>
+
+<!-- Floating chat button -->
+<a href="#" class="chat-btn" aria-label="Open chat support">💬</a>
+
+<!-- Global site JavaScript -->
+<script defer src="{% static 'js/global/site.js' %}"></script>
+
+</body>
+</html>
+>>>>>>> 5815f15 (Initial project commit)

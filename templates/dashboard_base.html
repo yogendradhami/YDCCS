@@ -1,5 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -57,6 +58,22 @@
             padding-left: 24px;
         }
     </style>
+=======
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}YD Dashboard{% endblock %}</title>
+
+    <!-- Dashboard styles -->
+    <link rel="stylesheet" href="{% static 'css/dashboard/style.css' %}">
+    {% block extra_css %}{% endblock %}
+
+    <!-- Dashboard scripts -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="{% static 'js/dashboard.js' %}"></script>
+>>>>>>> 5815f15 (Initial project commit)
 </head>
 
 <body class="crm-body">
@@ -66,6 +83,7 @@
 
 <div class="crm-layout">
 
+<<<<<<< HEAD
     <aside class="crm-sidebar" id="crmSidebar">
 
         <div class="crm-logo">
@@ -622,6 +640,13 @@
                     {% endfor %}
                 </div>
             {% endif %}
+=======
+    {% include 'dashboard/partials/sidebar.html' %}
+
+    <main class="crm-main">
+
+        {% include 'dashboard/partials/topbar.html' %}
+>>>>>>> 5815f15 (Initial project commit)
 
         {% block content %}
         {% endblock %}
@@ -630,6 +655,7 @@
 
 </div>
 
+<<<<<<< HEAD
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -645,5 +671,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 </body>
 </html>

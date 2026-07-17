@@ -1,0 +1,27 @@
+{# Partial: service row - expects `service` and `index` (1-based) in context #}
+{% load static %}
+{% with base=service.slug|cut:'-adelaide' %}
+<article class="service-row {% if index|divisibleby:2 %}reverse{% endif %}" role="article" aria-labelledby="service-{{ index }}">
+    <div class="service-content" id="service-{{ index }}">
+        <h3>{{ service.service_name }}</h3>
+        <p>{{ service.description }}</p>
+        <a href="{{ service.url }}" class="btn btn-primary" aria-label="View {{ service.service_name }} details">View Service</a>
+    </div>
+
+    <figure class="service-image" aria-hidden="true">
+        {% if service.hero_image %}
+            {# Display uploaded image from media folder #}
+            <picture>
+                <source srcset="{{ service.hero_image }} 1x, {{ service.hero_image }} 2x" type="image/jpeg">
+                <img src="{{ service.hero_image }}" alt="{{ service.service_name }} image" loading="lazy">
+            </picture>
+        {% else %}
+            {# Fallback to static placeholder images #}
+            <picture>
+                <source srcset="{% static 'images/services/' %}{{ base }}.webp 1x, {% static 'images/services/' %}{{ base }}@2x.webp 2x" type="image/webp">
+                <img srcset="{% static 'images/services/' %}{{ base }}.jpg 1x, {% static 'images/services/' %}{{ base }}@2x.jpg 2x" src="{% static 'images/services/' %}{{ base }}.jpg" alt="{{ service.service_name }} image" loading="lazy" onerror="this.onerror=null;this.src='{% static 'images/services/placeholder.svg' %}';">
+            </picture>
+        {% endif %}
+    </figure>
+</article>
+{% endwith %}

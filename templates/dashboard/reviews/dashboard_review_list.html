@@ -1,0 +1,59 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Reviews | YD Dashboard{% endblock %}
+{% block page_title %}Reviews{% endblock %}
+{% block page_subtitle %}Manage customer reviews and testimonials.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/reviews/add/">+ Add Review</a>
+    <a href="/reviews/">View Public Reviews</a>
+    <a href="/dashboard/">Back to Dashboard</a>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Customer Reviews</h2>
+    </div>
+
+    {% if reviews %}
+        <div class="table-wrapper">
+            <table class="dashboard-table advanced-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Rating</th>
+                        <th>Review</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for review in reviews %}
+                        <tr>
+                            <td>{{ review.name }}</td>
+                            <td>{{ review.rating }}</td>
+                            <td>{{ review.comment }}</td>
+                            <td>
+                                <a href="/dashboard/reviews/{{ review.id }}/edit/" class="small-link-btn">
+                                    Edit
+                                </a>
+                            </td>
+                            <td>
+                                <a href="/dashboard/reviews/{{ review.id }}/delete/" class="small-delete-btn">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No reviews added yet.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

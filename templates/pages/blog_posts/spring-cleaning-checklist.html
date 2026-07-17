@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Spring Cleaning Checklist | YD Commercial Cleaning{% endblock %}
+
+{% block content %}
+<section class="blog-detail-section">
+    <div class="container">
+        <div class="blog-detail-header">
+            <div class="blog-detail-category">Tips & Guides</div>
+            <h1 class="blog-detail-title">Spring Cleaning Checklist: Room-by-Room Guide</h1>
+            <div class="blog-detail-meta">
+                <span>By Emma Rodriguez</span>
+                <span>10 June 2026</span>
+                <span>7 min read</span>
+            </div>
+        </div>
+
+        <img class="blog-detail-image" src="{% static 'images/blog-post-3.jpg' %}" alt="Spring cleaning checklist">
+
+        <div class="blog-content">
+            <p>This room-by-room checklist will help you plan an efficient spring clean. Focus on decluttering, deep-cleaning fabrics, and refreshing ventilation.</p>
+
+            <p><a href="{% url 'blog' %}" class="btn btn-outline">← Back to Blog</a></p>
+        </div>
+    </div>
+</section>
+{% endblock %}

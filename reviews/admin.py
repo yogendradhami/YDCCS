@@ -1,6 +1,11 @@
 from django.contrib import admin
+<<<<<<< HEAD
 
 from .models import Review, ReviewRequest
+=======
+from .models import Review
+from .models import ReviewRequest
+>>>>>>> 5815f15 (Initial project commit)
 
 
 @admin.register(Review)
@@ -25,7 +30,10 @@ class ReviewAdmin(admin.ModelAdmin):
         "review_text",
     )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 @admin.register(ReviewRequest)
 class ReviewRequestAdmin(admin.ModelAdmin):
 
@@ -35,4 +43,8 @@ class ReviewRequestAdmin(admin.ModelAdmin):
         "request_sent",
         "review_received",
         "created_at",
+<<<<<<< HEAD
     )
+=======
+    )
+>>>>>>> 5815f15 (Initial project commit)

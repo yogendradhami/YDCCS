@@ -1,0 +1,64 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Cleaning Resources | YD Commercial Cleaning Services{% endblock %}
+
+{% block meta_description %}Explore free cleaning guides, blog tips, case studies and FAQs from YD Commercial Cleaning Services in Adelaide.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/services.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="service-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="hero-badge">Free Cleaning Resources</span>
+        <h1>Everything you need to clean smarter, faster and more professionally.</h1>
+        <p>Access our Adelaide cleaning guides, expert tips, case studies and FAQs in one place. See how YD Commercial Cleaning helps homes and businesses stay spotless.</p>
+        <div class="cta-buttons">
+            <a href="/guides/" class="btn btn-primary">View Guides</a>
+            <a href="/blog/" class="btn btn-outline">Read Blog</a>
+        </div>
+    </div>
+</section>
+
+<section class="service-list-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Resource Hub</h2>
+            <p>Find practical cleaning guides, maintenance advice and insights from our Adelaide team.</p>
+        </div>
+        <div class="service-list-grid">
+            {% for item in resources_list %}
+            <a href="{{ item.url }}" class="service-card">
+                <span class="service-icon">{{ item.icon }}</span>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.description }}</p>
+                <span class="service-link">Open</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="service-overview">
+    <div class="container">
+        <h2>Resources for every cleaning need</h2>
+        <p class="overview-text">Whether you're planning a bond clean, preparing for a renovation or keeping your office hygienic, our resource hub helps you choose the right service and get the best results.</p>
+    </div>
+</section>
+
+<section class="service-cta">
+    <div class="container">
+        <h2>Need personal advice?</h2>
+        <p>Our Adelaide cleaning experts are ready to recommend the right service, quote and schedule for your property.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact' %}" class="btn btn-primary">Contact Our Team</a>
+            <a href="{% url 'services_home' %}" class="btn btn-outline">Browse Services</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

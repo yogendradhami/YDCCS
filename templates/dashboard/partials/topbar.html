@@ -1,0 +1,49 @@
+<header class="crm-topbar">
+    <div>
+        <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+        <p>{% block page_subtitle %}Manage your cleaning business operations.{% endblock %}</p>
+    </div>
+
+    <div class="crm-top-actions">
+        <div class="crm-notification-box">
+            <button class="notification-bell" id="notificationBell" type="button">
+                🔔
+
+                {% if global_unread_notifications > 0 %}
+                    <span id="notificationCount">{{ global_unread_notifications }}</span>
+                {% else %}
+                    <span id="notificationCount" style="display:none;">0</span>
+                {% endif %}
+            </button>
+
+            <div class="notification-dropdown">
+                <h4>Notifications</h4>
+
+                {% for note in global_notifications %}
+                    <a href="{{ note.link|default:'#' }}" class="{% if not note.is_read %}unread{% endif %}">
+                        <strong>{{ note.title }}</strong>
+                        <small>{{ note.message }}</small>
+                        <em>{{ note.created_at|date:"d M, g:i A" }}</em>
+                    </a>
+                {% empty %}
+                    <p>No notifications yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="crm-user-box">
+            <span>Logged in as</span>
+            <strong>{{ request.user.username }}</strong>
+        </div>
+    </div>
+</header>
+
+    {% if messages %}
+        <div class="crm-messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}

@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
+<<<<<<< HEAD
     dependencies = []
 
     operations = [
@@ -40,6 +41,22 @@ class Migration(migrations.Migration):
                 ("review_text", models.TextField()),
                 ("featured", models.BooleanField(default=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
+=======
+    dependencies = [
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Review',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('customer_name', models.CharField(max_length=100)),
+                ('suburb', models.CharField(blank=True, max_length=100)),
+                ('rating', models.IntegerField(choices=[(5, '5 Stars'), (4, '4 Stars'), (3, '3 Stars'), (2, '2 Stars'), (1, '1 Star')], default=5)),
+                ('review_text', models.TextField()),
+                ('featured', models.BooleanField(default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+>>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

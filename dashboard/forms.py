@@ -7,6 +7,7 @@
 
 from django import forms
 
+<<<<<<< HEAD
 from .models import (
     CleaningSupply,
     CompanySettings,
@@ -16,6 +17,27 @@ from .models import (
     Supplier,
     Vehicle,
 )
+=======
+from .models import CompanySettings
+from .models import Equipment
+from .models import CleaningSupply
+from .models import PurchaseOrder
+from .models import Supplier
+from .models import Vehicle
+from .models import MaintenanceHistory
+from .models import SiteImage
+
+
+class SiteImageForm(forms.ModelForm):
+    class Meta:
+        model = SiteImage
+        fields = ["title", "category", "image"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "category": forms.Select(attrs={"class": "form-control"}),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+        }
+>>>>>>> 5815f15 (Initial project commit)
 
 
 class CompanySettingsForm(forms.ModelForm):
@@ -48,6 +70,7 @@ class CompanySettingsForm(forms.ModelForm):
 
         widgets = {
             # Business information fields
+<<<<<<< HEAD
             "business_name": forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -142,6 +165,88 @@ class CompanySettingsForm(forms.ModelForm):
         }
 
 
+=======
+            "business_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "YD Commercial Cleaning Services",
+            }),
+
+            "abn": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter ABN",
+            }),
+
+            "phone": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "0430 049 865",
+            }),
+
+            "email": forms.EmailInput(attrs={
+                "class": "form-control",
+                "placeholder": "business@email.com",
+            }),
+
+            "website": forms.URLInput(attrs={
+                "class": "form-control",
+                "placeholder": "https://www.ydcleaning.com",
+            }),
+
+            "address": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": "Business address",
+            }),
+
+            # Branding upload fields
+            "logo": forms.ClearableFileInput(attrs={
+                "class": "form-control",
+            }),
+
+            "favicon": forms.ClearableFileInput(attrs={
+                "class": "form-control",
+            }),
+
+            # Social media fields
+            "facebook_url": forms.URLInput(attrs={
+                "class": "form-control",
+                "placeholder": "Facebook URL",
+            }),
+
+            "instagram_url": forms.URLInput(attrs={
+                "class": "form-control",
+                "placeholder": "Instagram URL",
+            }),
+
+            "linkedin_url": forms.URLInput(attrs={
+                "class": "form-control",
+                "placeholder": "LinkedIn URL",
+            }),
+
+            "tiktok_url": forms.URLInput(attrs={
+                "class": "form-control",
+                "placeholder": "TikTok URL",
+            }),
+
+            # Invoice settings fields
+            "invoice_prefix": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "YD",
+            }),
+
+            "gst_percentage": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+            }),
+
+            "payment_terms_days": forms.NumberInput(attrs={
+                "class": "form-control",
+            }),
+        }
+
+
+
+
+>>>>>>> 5815f15 (Initial project commit)
 class EquipmentForm(forms.ModelForm):
     class Meta:
         model = Equipment
@@ -150,6 +255,7 @@ class EquipmentForm(forms.ModelForm):
 
         widgets = {
             "purchase_date": forms.DateInput(
+<<<<<<< HEAD
                 attrs={"type": "date", "class": "form-control"}
             ),
             "next_service_date": forms.DateInput(
@@ -158,6 +264,28 @@ class EquipmentForm(forms.ModelForm):
             "notes": forms.Textarea(attrs={"rows": 4, "class": "form-control"}),
         }
 
+=======
+                attrs={
+                    "type": "date",
+                    "class": "form-control"
+                }
+            ),
+
+            "next_service_date": forms.DateInput(
+                attrs={
+                    "type": "date",
+                    "class": "form-control"
+                }
+            ),
+
+            "notes": forms.Textarea(
+                attrs={
+                    "rows": 4,
+                    "class": "form-control"
+                }
+            ),
+        }
+>>>>>>> 5815f15 (Initial project commit)
 
 class CleaningSupplyForm(forms.ModelForm):
 
@@ -182,21 +310,36 @@ class PurchaseOrderForm(forms.ModelForm):
         model = PurchaseOrder
         fields = "__all__"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 class SupplierForm(forms.ModelForm):
     class Meta:
         model = Supplier
         fields = "__all__"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5815f15 (Initial project commit)
 class VehicleForm(forms.ModelForm):
     class Meta:
         model = Vehicle
         fields = "__all__"
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 5815f15 (Initial project commit)
 class MaintenanceHistoryForm(forms.ModelForm):
 
     class Meta:
         model = MaintenanceHistory
+<<<<<<< HEAD
         fields = "__all__"
+=======
+        fields = "__all__"
+>>>>>>> 5815f15 (Initial project commit)

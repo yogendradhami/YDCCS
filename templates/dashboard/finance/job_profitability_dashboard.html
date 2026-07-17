@@ -1,0 +1,59 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Job Profitability{% endblock %}
+
+{% block content %}
+
+<h1>Job Profitability Dashboard</h1>
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Job Profitability</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Date</th>
+                    <th>Quoted Price</th>
+                    <th>Invoice Total</th>
+                    <th>Estimated Profit</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in job_rows %}
+
+                <tr>
+                    <td>{{ row.booking.customer.full_name }}</td>
+                    <td>{{ row.booking.service_type }}</td>
+                    <td>{{ row.booking.booking_date }}</td>
+                    <td>${{ row.quoted_price }}</td>
+                    <td>${{ row.invoice_total }}</td>
+                    <td>${{ row.estimated_profit }}</td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="6">No job data found.</td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

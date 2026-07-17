@@ -29,11 +29,29 @@ class EmployeeProfileForm(forms.ModelForm):
         ]
 
         widgets = {
+<<<<<<< HEAD
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
             "address": forms.TextInput(attrs={"class": "form-control"}),
             "availability": forms.Select(attrs={"class": "form-control"}),
+=======
+            "full_name": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+            "email": forms.EmailInput(
+                attrs={"class": "form-control"}
+            ),
+            "phone": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+            "address": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+            "availability": forms.Select(
+                attrs={"class": "form-control"}
+            ),
+>>>>>>> 5815f15 (Initial project commit)
             "notes": forms.Textarea(
                 attrs={
                     "class": "form-control",
@@ -49,6 +67,7 @@ class EmployeePasswordForm(PasswordChangeForm):
     """
 
     old_password = forms.CharField(
+<<<<<<< HEAD
         widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
 
@@ -59,3 +78,21 @@ class EmployeePasswordForm(PasswordChangeForm):
     new_password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
+=======
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control"}
+        )
+    )
+
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control"}
+        )
+    )
+
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control"}
+        )
+    )
+>>>>>>> 5815f15 (Initial project commit)

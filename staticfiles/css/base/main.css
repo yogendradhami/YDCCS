@@ -1,0 +1,102 @@
+/* Base Styles - Modern Design System
+   Color Palette:
+   - Primary: #1e40af (Rich Blue)
+   - Secondary: #0891b2 (Cyan)
+   - Accent: #f59e0b (Amber)
+   - Dark: #0f172a (Slate)
+   - Light: #f8fafc (Off White)
+*/
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', Trebuchet MS, sans-serif;
+    color: #1e293b;
+    background: #f8fafc;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    color: #0f172a;
+}
+
+h1 {
+    font-size: 52px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+h4 {
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+p {
+    margin-bottom: 15px;
+    color: #475569;
+}
+
+a {
+    color: #1e40af;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: #0891b2;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-light {
+    color: #64748b;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.py-60 {
+    padding: 60px 0;
+}
+
+.py-80 {
+    padding: 80px 0;
+}
+
+/* Import legacy styles for backward compatibility */
+@import url(../global/style.css);

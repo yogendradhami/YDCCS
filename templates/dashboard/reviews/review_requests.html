@@ -1,0 +1,162 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Review Requests
+{% endblock %}
+
+{% block page_title %}
+Review Requests
+{% endblock %}
+
+{% block page_subtitle %}
+Send Google review requests to completed jobs.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <h2>Completed Jobs</h2>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Service</th>
+                    <th>Date</th>
+                    <th>Last Sent</th>
+                    <th>Count</th>
+                    <th>Action</th>
+                    <th>Add Review</th>
+
+
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for booking in completed_bookings %}
+
+                    <tr>
+
+                        <td>
+                            {{ booking.customer.full_name }}
+                        </td>
+
+                        <td>
+                            {{ booking.customer.email }}
+                        </td>
+
+                        <td>
+                            {{ booking.service_type }}
+                        </td>
+
+                        <td>
+                            {{ booking.booking_date }}
+                        </td>
+
+                        {% comment %} <td>
+
+                            <form
+                                method="POST"
+                                action="{% url 'send_review_request' booking.id %}"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="small-link-btn"
+                                >
+                                    Send Request
+                                </button>
+
+                            </form>
+
+                        </td> {% endcomment %}
+
+
+                        <td>
+                            {% if booking.review_request_log %}
+                                <span class="status-badge success">
+                                    Sent
+                                </span>
+                            {% else %}
+                                <span class="status-badge warning">
+                                    Not Sent
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if booking.review_request_log %}
+                                {{ booking.review_request_log.last_sent_at|date:"d M Y H:i" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if booking.review_request_log %}
+                                {{ booking.review_request_log.sent_count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <form method="POST"
+                                action="{% url 'send_review_request' booking.id %}">
+                                {% csrf_token %}
+
+                                {% if booking.review_request_log %}
+                                    <button type="submit"
+                                            class="small-link-btn">
+                                        Send Again
+                                    </button>
+                                {% else %}
+                                    <button type="submit"
+                                            class="small-link-btn">
+                                        Send Request
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </td>
+
+                        <td>
+                            <a
+                                href="/dashboard/reviews/add/?customer_name={{ booking.customer.full_name }}&suburb={{ booking.suburb_postcode }}"
+                                class="small-link-btn"
+                            >
+                                Add Review
+                            </a>
+                        </td>
+
+
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="9">
+                            No completed bookings found.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

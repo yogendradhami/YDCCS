@@ -6,11 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("quotes", "0001_initial"),
+=======
+        ('quotes', '0001_initial'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AddField(
+<<<<<<< HEAD
             model_name="quoterequest",
             name="suburb",
             field=models.CharField(blank=True, max_length=100),
@@ -30,5 +35,15 @@ class Migration(migrations.Migration):
                 ],
                 max_length=100,
             ),
+=======
+            model_name='quoterequest',
+            name='suburb',
+            field=models.CharField(blank=True, max_length=100),
+        ),
+        migrations.AlterField(
+            model_name='quoterequest',
+            name='service',
+            field=models.CharField(choices=[('Commercial Cleaning', 'Commercial Cleaning'), ('Office Cleaning', 'Office Cleaning'), ('House Cleaning', 'House Cleaning'), ('End of Lease Cleaning', 'End of Lease Cleaning'), ('Window Cleaning', 'Window Cleaning'), ('Deep Cleaning', 'Deep Cleaning'), ('Post Construction Cleaning', 'Post Construction Cleaning')], max_length=100),
+>>>>>>> 5815f15 (Initial project commit)
         ),
     ]

@@ -1,0 +1,434 @@
+/* Team Page Styles */
+
+.team-hero {
+    position: relative;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-blue), var(--accent-amber));
+    color: white;
+    text-align: center;
+    overflow: hidden;
+}
+
+.team-hero .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.team-hero .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    padding: 40px 20px;
+    animation: slideInDown 0.8s ease-out;
+}
+
+.team-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.team-hero p {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    margin: 0;
+}
+
+/* Intro Section */
+.team-intro {
+    padding: 60px 20px;
+    background: white;
+    text-align: center;
+}
+
+.team-intro .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.team-intro h2 {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+}
+
+.intro-text {
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    line-height: 1.8;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Team Members Grid */
+.team-members {
+    padding: 80px 20px;
+    background: #f8fafc;
+}
+
+.team-members .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 40px;
+}
+
+.team-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.team-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(37, 99, 235, 0.15);
+}
+
+.member-image {
+    position: relative;
+    overflow: hidden;
+    height: 280px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+}
+
+.member-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.team-card:hover .member-image img {
+    transform: scale(1.05);
+}
+
+.member-info {
+    padding: 30px 25px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.member-info h3 {
+    font-size: 1.3rem;
+    color: var(--primary-blue);
+    margin: 0 0 8px;
+}
+
+.member-info .role {
+    font-size: 0.9rem;
+    color: var(--secondary-green);
+    font-weight: 600;
+    margin: 0 0 12px;
+}
+
+.member-info .bio {
+    font-size: 0.95rem;
+    color: var(--text-gray);
+    line-height: 1.6;
+    margin: 0;
+    flex-grow: 1;
+}
+
+/* Team Values */
+.team-values {
+    padding: 80px 20px;
+    background: white;
+}
+
+.team-values .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.team-values h2 {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 60px;
+    text-align: center;
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 40px;
+}
+
+.value-item {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    padding: 40px 30px;
+    border-radius: 12px;
+    border-left: 5px solid var(--primary-blue);
+    transition: all 0.3s ease;
+}
+
+.value-item:hover {
+    transform: translateX(10px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.12);
+}
+
+.value-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    opacity: 0.3;
+    margin-bottom: 10px;
+}
+
+.value-item h3 {
+    font-size: 1.2rem;
+    color: var(--primary-blue);
+    margin-bottom: 12px;
+}
+
+.value-item p {
+    font-size: 0.95rem;
+    color: var(--text-gray);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Team Culture */
+.team-culture {
+    padding: 80px 20px;
+    background: #f8fafc;
+}
+
+.team-culture .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.team-culture h2 {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.culture-intro {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    margin-bottom: 50px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.culture-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 40px;
+}
+
+.culture-feature {
+    text-align: center;
+    padding: 30px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.culture-feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.culture-feature h4 {
+    font-size: 1.1rem;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+}
+
+.culture-feature p {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Careers Section */
+.team-careers {
+    padding: 80px 20px;
+    background: linear-gradient(135deg, var(--primary-blue-light), #e0f2fe);
+}
+
+.team-careers .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.team-careers h2 {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.team-careers > .container > p:first-of-type {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    margin-bottom: 50px;
+}
+
+.career-benefits {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.career-benefits h3 {
+    font-size: 1.3rem;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+}
+
+.career-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.career-benefits li {
+    padding-left: 30px;
+    position: relative;
+    font-size: 1rem;
+    color: var(--text-gray);
+    line-height: 1.6;
+}
+
+.career-benefits li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--secondary-green);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.careers-cta {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.careers-cta p {
+    color: var(--text-gray);
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.team-careers .btn {
+    margin-top: 20px;
+}
+
+/* CTA Section */
+.team-cta {
+    padding: 80px 20px;
+    background: linear-gradient(135deg, var(--secondary-green), var(--secondary-green-light));
+    color: white;
+    text-align: center;
+}
+
+.team-cta .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.team-cta h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.team-cta p {
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+    opacity: 0.95;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cta-buttons .btn {
+    min-width: 160px;
+    padding: 14px 30px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .team-hero h1 {
+        font-size: 2rem;
+    }
+
+    .team-intro h2,
+    .team-values h2,
+    .team-culture h2,
+    .team-careers h2,
+    .team-cta h2 {
+        font-size: 2rem;
+    }
+
+    .team-grid,
+    .values-grid,
+    .culture-features {
+        grid-template-columns: 1fr;
+    }
+
+    .career-benefits ul {
+        grid-template-columns: 1fr;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cta-buttons .btn {
+        width: 100%;
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

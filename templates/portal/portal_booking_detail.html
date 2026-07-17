@@ -1,0 +1,217 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Payroll
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================== -->
+<!-- Payroll Dashboard -->
+<!-- ===================================================== -->
+
+<div class="dashboard-card">
+
+    <!-- Page Header -->
+    <div class="crm-panel-header">
+
+        <div>
+            <h1>Payroll Records</h1>
+
+            <p>
+                Employee payroll generated from attendance records.
+            </p>
+        </div>
+
+        <a
+            href="{% url 'generate_payroll' %}"
+            class="btn-fill"
+        >
+            Generate Payroll
+        </a>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- Django Messages -->
+    <!-- ===================================================== -->
+
+    {% if messages %}
+        {% for message in messages %}
+
+            <div class="custom-alert {{ message.tags }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+    {% endif %}
+
+    <!-- ===================================================== -->
+    <!-- Payroll Table -->
+    <!-- ===================================================== -->
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Period Start</th>
+
+                    <th>Period End</th>
+
+                    <th>Total Hours</th>
+
+                    <th>Hourly Rate</th>
+
+                    <th>Gross Pay</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for payroll in payroll_records %}
+
+                    <tr>
+
+                        <!-- Employee -->
+                        <td>
+                            {{ payroll.employee.full_name }}
+                        </td>
+
+                        <!-- Start Date -->
+                        <td>
+                            {{ payroll.period_start }}
+                        </td>
+
+                        <!-- End Date -->
+                        <td>
+                            {{ payroll.period_end }}
+                        </td>
+
+                        <!-- Hours -->
+                        <td>
+                            {{ payroll.total_hours }}
+                        </td>
+
+                        <!-- Hourly Rate -->
+                        <td>
+                            ${{ payroll.hourly_rate }}
+                        </td>
+
+                        <!-- Gross Pay -->
+                        <td>
+                            ${{ payroll.gross_pay }}
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+
+                            {% if payroll.status == "draft" %}
+
+                                <span class="status-badge warning">
+                                    Draft
+                                </span>
+
+                            {% elif payroll.status == "approved" %}
+
+                                <span class="status-badge success">
+                                    Approved
+                                </span>
+
+                            {% elif payroll.status == "paid" %}
+
+                                <span class="status-badge primary">
+                                    Paid
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge">
+                                    Unknown
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ================================================= -->
+                        <!-- Actions Column -->
+                        <!-- ================================================= -->
+
+                        <td>
+
+                            <!-- Draft -> Approve -->
+                            {% if payroll.status == "draft" %}
+
+                                <a
+                                    href="{% url 'approve_payroll' payroll.id %}"
+                                    class="btn-fill"
+                                >
+                                    Approve
+                                </a>
+
+                            <!-- Approved -> Mark Paid -->
+                            {% elif payroll.status == "approved" %}
+
+                                <a
+                                    href="{% url 'mark_payroll_paid' payroll.id %}"
+                                    class="btn-fill"
+                                >
+                                    Mark Paid
+                                </a>
+
+                            <!-- Paid -->
+                            {% elif payroll.status == "paid" %}
+
+                                <span class="status-badge success">
+                                    Completed
+                                </span>
+
+                            {% else %}
+
+                                <span>
+                                    N/A
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="8">
+
+                            No payroll records found.
+
+                            Click Generate Payroll to create payroll records.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

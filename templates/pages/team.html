@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Our Team | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Meet the professional team at YD Commercial Cleaning. Trained, experienced professionals dedicated to excellence in every clean.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/team.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="team-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Meet Our Team</h1>
+        <p>Professional, experienced cleaners dedicated to delivering excellence on every job</p>
+    </div>
+</section>
+
+<!-- Team Intro -->
+<section class="team-intro">
+    <div class="container">
+        <h2>Our Cleaning Professionals</h2>
+        <p class="intro-text">At YD Commercial Cleaning, our team is our greatest asset. We employ trained, experienced cleaning professionals who are passionate about delivering high-quality results. Each team member is background-checked, fully insured, and committed to customer satisfaction.</p>
+    </div>
+</section>
+
+<!-- Team Members -->
+<section class="team-members">
+    <div class="container">
+        <div class="team-grid">
+            <!-- Team Member 1 -->
+            <div class="team-card">
+                <div class="member-image">
+                    <img src="{% static 'images/team-member-1.jpg' %}" alt="Team Member - Professional Cleaner" loading="lazy">
+                </div>
+                <div class="member-info">
+                    <h3>Professional Cleaners</h3>
+                    <p class="role">Adelaide Cleaning Specialists</p>
+                    <p class="bio">Our team brings years of expertise in residential and commercial cleaning, ensuring every space is left spotless and fresh.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 2 -->
+            <div class="team-card">
+                <div class="member-image">
+                    <img src="{% static 'images/team-member-2.jpg' %}" alt="Team Member - Service Coordinator" loading="lazy">
+                </div>
+                <div class="member-info">
+                    <h3>Service Coordinators</h3>
+                    <p class="role">Booking & Customer Support</p>
+                    <p class="bio">Our coordinators ensure seamless scheduling, clear communication, and exceptional customer service from start to finish.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 3 -->
+            <div class="team-card">
+                <div class="member-image">
+                    <img src="{% static 'images/team-member-3.jpg' %}" alt="Team Member - Quality Inspector" loading="lazy">
+                </div>
+                <div class="member-info">
+                    <h3>Quality Inspectors</h3>
+                    <p class="role">Service Excellence Assurance</p>
+                    <p class="bio">Our quality team conducts thorough inspections to guarantee every job meets our exacting standards and your expectations.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 4 -->
+            <div class="team-card">
+                <div class="member-image">
+                    <img src="{% static 'images/team-member-4.jpg' %}" alt="Team Member - Customer Liaison" loading="lazy">
+                </div>
+                <div class="member-info">
+                    <h3>Customer Liaisons</h3>
+                    <p class="role">Your Support & Feedback</p>
+                    <p class="bio">Available to address your needs, answer questions, and ensure you're completely satisfied with our cleaning services.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 5 -->
+            <div class="team-card">
+                <div class="member-image">
+                    <img src="{% static 'images/team-member-5.jpg' %}" alt="Team Member - Specialist Cleaner" loading="lazy">
+                </div>
+                <div class="member-info">
+                    <h3>Specialist Cleaners</h3>
+                    <p class="role">Deep & Bond Cleaning Experts</p>
+                    <p class="bio">Trained in specialized techniques for bond cleaning, deep cleaning, and commercial property care to highest standards.</p>
+                </div>
+            </div>
+
+            <!-- Team Member 6 -->
+            <div class="team-card">
+                <div class="member-image">
+                    <img src="{% static 'images/team-member-6.jpg' %}" alt="Team Member - Operations Manager" loading="lazy">
+                </div>
+                <div class="member-info">
+                    <h3>Operations Manager</h3>
+                    <p class="role">Service Excellence & Team Leadership</p>
+                    <p class="bio">Overseeing all cleaning operations to ensure consistent quality, reliability, and professional standards across all services.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Values -->
+<section class="team-values">
+    <div class="container">
+        <h2>What Sets Our Team Apart</h2>
+        <div class="values-grid">
+            <div class="value-item">
+                <div class="value-number">01</div>
+                <h3>Experience & Training</h3>
+                <p>Every team member receives comprehensive training in cleaning techniques, safety protocols, and customer service excellence.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-number">02</div>
+                <h3>Reliability & Punctuality</h3>
+                <p>Our team is known for showing up on time, every time, and delivering consistent professional results.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-number">03</div>
+                <h3>Background Checked</h3>
+                <p>All team members are thoroughly background-checked and vetted to ensure safety and trustworthiness.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-number">04</div>
+                <h3>Fully Insured</h3>
+                <p>Our entire team is fully insured and bonded, giving you peace of mind with every cleaning service.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-number">05</div>
+                <h3>Eco-Friendly Approach</h3>
+                <p>We prioritize environmentally responsible cleaning methods and products wherever possible.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-number">06</div>
+                <h3>Customer Focused</h3>
+                <p>Our team is dedicated to exceeding customer expectations and building long-term relationships through exceptional service.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Culture -->
+<section class="team-culture">
+    <div class="container">
+        <h2>Our Team Culture</h2>
+        <p class="culture-intro">We believe that a happy, motivated team delivers better results. That's why we invest in our people with:</p>
+        <div class="culture-features">
+            <div class="culture-feature">
+                <span class="feature-icon">🎓</span>
+                <h4>Continuous Training</h4>
+                <p>Regular training programs to develop skills and stay updated with the latest cleaning techniques.</p>
+            </div>
+            <div class="culture-feature">
+                <span class="feature-icon">💼</span>
+                <h4>Professional Environment</h4>
+                <p>A supportive workplace that values teamwork, professionalism, and mutual respect.</p>
+            </div>
+            <div class="culture-feature">
+                <span class="feature-icon">🏆</span>
+                <h4>Recognition Program</h4>
+                <p>We celebrate outstanding performance and reward our top performers regularly.</p>
+            </div>
+            <div class="culture-feature">
+                <span class="feature-icon">🤝</span>
+                <h4>Team Collaboration</h4>
+                <p>Strong team dynamics where everyone works together to deliver exceptional customer service.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Careers Section -->
+<section class="team-careers">
+    <div class="container">
+        <h2>Join Our Growing Team</h2>
+        <p>Are you passionate about professional cleaning and customer service? We're always looking for talented, reliable individuals to join our team.</p>
+        <div class="career-benefits">
+            <h3>Benefits of Working with YD Commercial Cleaning:</h3>
+            <ul>
+                <li>Competitive wages and regular pay increases</li>
+                <li>Flexible scheduling and work-life balance</li>
+                <li>Comprehensive training and career development</li>
+                <li>Supportive, friendly team environment</li>
+                <li>Opportunities for advancement and leadership roles</li>
+                <li>Full insurance coverage while working</li>
+            </ul>
+        </div>
+        <p class="careers-cta">If you're interested in joining our team, contact us today!</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Inquire About Opportunities</a>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="team-cta">
+    <div class="container">
+        <h2>Experience Our Team's Excellence</h2>
+        <p>Our professional team is ready to deliver outstanding cleaning results for your home or business. Book your cleaning today and see the YD Commercial Cleaning difference.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Book a Cleaning</a>
+            <a href="/pricing/" class="btn btn-secondary btn-lg">View Pricing</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

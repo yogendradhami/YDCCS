@@ -6,11 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ("quotes", "0003_remove_quoterequest_service_and_more"),
+=======
+        ('quotes', '0003_remove_quoterequest_service_and_more'),
+>>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AlterField(
+<<<<<<< HEAD
             model_name="quoterequest",
             name="property_type",
             field=models.CharField(
@@ -29,6 +34,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="quoterequest",
             name="suburb_postcode",
+=======
+            model_name='quoterequest',
+            name='property_type',
+            field=models.CharField(choices=[('', '– Select property type –'), ('House', 'House'), ('Apartment', 'Apartment'), ('Office', 'Office'), ('Commercial Property', 'Commercial Property'), ('End of Lease Property', 'End of Lease Property'), ('Other', 'Other')], max_length=100),
+        ),
+        migrations.AlterField(
+            model_name='quoterequest',
+            name='suburb_postcode',
+>>>>>>> 5815f15 (Initial project commit)
             field=models.CharField(max_length=150),
         ),
     ]

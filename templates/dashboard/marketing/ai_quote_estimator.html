@@ -1,0 +1,93 @@
+{% extends "dashboard_base.html" %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+    <h1>AI Quote Estimator</h1>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <label>Bedrooms</label>
+        <input
+            type="number"
+            name="bedrooms"
+            min="0"
+            required
+        >
+
+        <label>Bathrooms</label>
+        <input
+            type="number"
+            name="bathrooms"
+            min="0"
+            required
+        >
+
+        <label>Property Type</label>
+
+        <select name="property_type">
+
+            <option value="unit">
+                Unit
+            </option>
+
+            <option value="house">
+                House
+            </option>
+
+            <option value="commercial">
+                Commercial
+            </option>
+
+        </select>
+
+        <button type="submit">
+            Estimate Quote
+        </button>
+
+    </form>
+
+    {% if estimated_price %}
+
+        <div
+            style="
+                margin-top:20px;
+                padding:20px;
+                background:#f5f5f5;
+                border-radius:10px;
+            "
+        >
+
+            {% if estimated_price %}
+
+            <div class="dashboard-card">
+
+                <h2>
+                    Estimated Quote:
+                    ${{ estimated_price }}
+                </h2>
+
+
+                <p>
+                    Confidence:
+                    {{ confidence_level }}
+                </p>
+
+                <p>
+                    Based on your real invoice history.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

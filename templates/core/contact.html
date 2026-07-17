@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Contact YD Commercial Cleaning Services
+{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Contact YD Commercial Cleaning Services</h1>
+        <p>Professional cleaning services across Adelaide and surrounding suburbs.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container contact-grid">
+
+        <div class="contact-card">
+            <h2>Business Details</h2>
+
+            <p><strong>Business Name:</strong><br>YD Commercial Cleaning Services</p>
+            <p><strong>Owner:</strong><br>Yogendra Dhami</p>
+            <p><strong>ABN:</strong><br>95 916 203 175</p>
+            <p><strong>Phone:</strong><br><a href="tel:0430049865">0430 049 865</a></p>
+            <p><strong>Email:</strong><br><a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a></p>
+            <p><strong>Address:</strong><br>2/10 Da Costa Avenue, Prospect SA 5082, Australia</p>
+            <p><strong>Business Hours:</strong><br>Monday – Sunday: 8:00 AM – 12:00 PM</p>
+
+            <a href="{% url 'home' %}#quote" class="btn-fill">Request Free Quote</a>
+        </div>
+
+        <div class="contact-card social-card">
+            <h2>Connect With Us</h2>
+            <p class="social-intro">
+                Follow YD Commercial Cleaning Services online for updates, cleaning transformations and customer reviews.
+            </p>
+
+            <div class="social-icon-row">
+                <a class="social-icon google" href="https://share.google/Smnvzo3lXHXygIPBI" target="_blank" aria-label="Google Business Profile">
+                    <i class="fa-brands fa-google"></i>
+                </a>
+
+                <a class="social-icon facebook" href="https://www.facebook.com/YD.cleaningservice" target="_blank" aria-label="Facebook">
+                    <i class="fa-brands fa-facebook-f"></i>
+                </a>
+
+                <a class="social-icon instagram" href="https://www.instagram.com/ydcommercialcleaning" target="_blank" aria-label="Instagram">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+
+                <a class="social-icon tiktok" href="https://www.tiktok.com/@yd_cleaning3" target="_blank" aria-label="TikTok">
+                    <i class="fa-brands fa-tiktok"></i>
+                </a>
+
+                <a class="social-icon linkedin" href="https://www.linkedin.com/in/yogendra-dhami-91b46640b" target="_blank" aria-label="LinkedIn">
+                    <i class="fa-brands fa-linkedin-in"></i>
+                </a>
+            </div>
+
+            <div class="map-box">
+                <iframe
+                    src="https://www.google.com/maps?q=2/10%20Da%20Costa%20Avenue%20Prospect%20SA%205082%20Australia&output=embed"
+                    width="100%"
+                    height="320"
+                    style="border:0;"
+                    loading="lazy">
+                </iframe>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

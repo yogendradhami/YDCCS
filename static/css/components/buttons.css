@@ -1,0 +1,210 @@
+/* Components CSS - Buttons & Cards
+   Modern, beautiful button and card styling
+*/
+
+/* === BUTTONS === */
+
+.btn-fill {
+    background: var(--primary);
+    color: var(--white) !important;
+    padding: 14px 28px;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    font-size: 15px;
+}
+
+.btn-fill:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-fill:active {
+    transform: translateY(0);
+}
+
+.btn-outline {
+    border: 2px solid var(--primary);
+    color: var(--primary) !important;
+    padding: 12px 24px;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    display: inline-block;
+    background: var(--white);
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: var(--white) !important;
+}
+
+.btn-light-outline {
+    border: 2px solid var(--white);
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: var(--transition);
+    background: transparent;
+    cursor: pointer;
+}
+
+.btn-light-outline:hover {
+    background: var(--white);
+    color: var(--primary);
+    border-color: var(--white);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: var(--white) !important;
+    padding: 12px 24px;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary:hover {
+    background: #059669;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Badge */
+.hero-badge {
+    background: var(--accent-light);
+    color: var(--dark);
+    padding: 8px 16px;
+    border-radius: 50px;
+    display: inline-block;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+/* Cards */
+.service-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+    border-top: 4px solid var(--primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: var(--transition);
+}
+
+.service-card:hover {
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-8px);
+}
+
+.service-card:hover::before {
+    left: 100%;
+}
+
+.service-card-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: inline-block;
+}
+
+.service-card-content {
+    margin-top: 16px;
+}
+
+.service-card h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--dark);
+}
+
+.service-card p {
+    color: var(--gray);
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.service-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    font-size: 14px;
+}
+
+.service-link::after {
+    content: '→';
+    transition: var(--transition);
+}
+
+.service-link:hover {
+    color: var(--primary-dark);
+    gap: 12px;
+}
+
+/* Feature Card */
+.feature-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    text-align: center;
+}
+
+.feature-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+}
+
+.feature-card-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+}
+
+.feature-card h4 {
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.feature-card p {
+    font-size: 14px;
+    color: var(--gray);
+}

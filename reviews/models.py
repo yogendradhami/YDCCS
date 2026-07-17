@@ -22,6 +22,7 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.customer_name} - {self.rating} Stars"
+<<<<<<< HEAD
 
 
 class ReviewRequest(models.Model):
@@ -40,3 +41,34 @@ class ReviewRequest(models.Model):
 
     def __str__(self):
         return self.customer_name
+=======
+    
+
+class ReviewRequest(models.Model):
+
+    booking = models.ForeignKey(
+        "bookings.Booking",
+        on_delete=models.CASCADE
+    )
+
+    customer_name = models.CharField(
+        max_length=150
+    )
+
+    customer_email = models.EmailField()
+
+    request_sent = models.BooleanField(
+        default=False
+    )
+
+    review_received = models.BooleanField(
+        default=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.customer_name
+>>>>>>> 5815f15 (Initial project commit)

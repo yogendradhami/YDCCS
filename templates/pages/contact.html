@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact YD Commercial Cleaning Services | Adelaide{% endblock %}
+
+{% block meta_description %}
+Contact YD Commercial Cleaning for Adelaide cleaning services. Book a free quote, call our local team or send a message.
+{% endblock %}
+
+{% block og_title %}
+Contact YD Commercial Cleaning Services
+{% endblock %}
+
+{% block og_description %}
+Get in touch with our Adelaide cleaning experts. Free quotes available for residential, commercial, and office cleaning.
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="page-hero-section">
+    <div class="container">
+        <h1>Contact YD Commercial Cleaning</h1>
+        <p>Get in touch with our Adelaide cleaning experts for a free quote or to discuss your cleaning needs.</p>
+    </div>
+</section>
+
+<!-- Contact Information Section -->
+<section class="contact-info-section">
+    <div class="container">
+        <div class="contact-grid">
+            <!-- Contact Details -->
+            <div class="contact-column">
+                <h2>Get In Touch</h2>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <div class="contact-content">
+                        <h3>Phone</h3>
+                        <p><a href="tel:+61430049865" class="contact-link">0430 049 865</a></p>
+                        <small>Available 7 days a week</small>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">✉️</div>
+                    <div class="contact-content">
+                        <h3>Email</h3>
+                        <p><a href="mailto:ydcommercialcleaning@gmail.com" class="contact-link">ydcommercialcleaning@gmail.com</a></p>
+                        <small>2-hour response time</small>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <div class="contact-content">
+                        <h3>Service Area</h3>
+                        <p>Adelaide & South Australia</p>
+                        <small>Coverage areas include all major suburbs</small>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">🕒</div>
+                    <div class="contact-content">
+                        <h3>Operating Hours</h3>
+                        <p>Monday - Sunday: 8:00 AM - 12:00 PM</p>
+                        <small>Same day service available</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-column">
+                <h2>Send us a Message</h2>
+                
+                <form class="contact-form" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="name">Your Name *</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            class="form-control" 
+                            placeholder="John Doe"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            class="form-control" 
+                            placeholder="john@example.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            id="phone" 
+                            name="phone" 
+                            class="form-control" 
+                            placeholder="0430 049 865"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="service">Service Type *</label>
+                        <select id="service" name="service" class="form-control" required>
+                            <option value="">Select a service...</option>
+                            <option value="residential">Residential Cleaning</option>
+                            <option value="commercial">Commercial Cleaning</option>
+                            <option value="office">Office Cleaning</option>
+                            <option value="end-of-lease">End-of-Lease Cleaning</option>
+                            <option value="window">Window Cleaning</option>
+                            <option value="post-construction">Post-Construction Cleaning</option>
+                            <option value="other">Other Service</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea 
+                            id="message" 
+                            name="message" 
+                            class="form-control" 
+                            rows="5"
+                            placeholder="Tell us about your cleaning needs..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="subscribe" value="yes">
+                            <span>Subscribe to our newsletter for cleaning tips</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-fill btn-large">Send Message</button>
+                </form>
+
+                {% if messages %}
+                <div class="form-messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map/Location Section -->
+<section class="contact-map-section">
+    <div class="container">
+        <h2>Our Service Area</h2>
+        <p>We proudly serve Adelaide and surrounding suburbs with professional cleaning solutions.</p>
+        
+        <div class="service-areas-grid">
+            <div class="area-item">
+                <h4>Inner Suburbs</h4>
+                <ul>
+                    <li>Adelaide CBD</li>
+                    <li>Norwood</li>
+                    <li>Unley</li>
+                    <li>West Adelaide</li>
+                </ul>
+            </div>
+            
+            <div class="area-item">
+                <h4>Eastern Suburbs</h4>
+                <ul>
+                    <li>Malvern</li>
+                    <li>Rostrevor</li>
+                    <li>Myrtle Bank</li>
+                    <li>Astrophe</li>
+                </ul>
+            </div>
+            
+            <div class="area-item">
+                <h4>Northern Suburbs</h4>
+                <ul>
+                    <li>Rosemont</li>
+                    <li>Rosewater</li>
+                    <li>Pooraka</li>
+                    <li>Netley</li>
+                </ul>
+            </div>
+            
+            <div class="area-item">
+                <h4>Southern Suburbs</h4>
+                <ul>
+                    <li>Goodwood</li>
+                    <li>Mitcham</li>
+                    <li>Flagstaff Hill</li>
+                    <li>Reynella</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="area-disclaimer">
+            Don't see your suburb listed? <a href="#" class="text-link">Contact us</a> to check service availability.
+        </p>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="contact-cta-section">
+    <div class="container">
+        <h2>Ready to Get Started?</h2>
+        <p>Call us today for a free quote or to schedule your cleaning service.</p>
+        
+        <div class="cta-buttons">
+            <a href="tel:+61430049865" class="btn-fill btn-large">Call 0430 049 865</a>
+            <a href="#" class="btn-outline btn-large">Request a Quote</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Leave Requests | Employee Portal
+{% endblock %}
+
+{% block content %}
+
+<section class="employee-portal-hero">
+    <div class="container">
+        <div class="employee-hero-box">
+            <div>
+                <h1>Leave Requests</h1>
+                <p>View your leave history and request new leave.</p>
+            </div>
+
+            <a href="/employee/dashboard/" class="employee-back-btn">
+                Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section employee-dashboard-section">
+    <div class="container">
+
+        <div class="employee-action-row">
+            <a href="/employee/leave/request/" class="btn-fill employee-spaced-btn">
+                Apply Leave
+            </a>
+
+            <a href="/employee/roster/" class="btn-outline employee-spaced-btn">
+                My Schedule
+            </a>
+
+            <a href="/employee/dashboard/" class="btn-outline employee-spaced-btn">
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="employee-panel">
+            <div class="employee-panel-header">
+                <h2>My Leave History</h2>
+            </div>
+
+            {% if requests %}
+                <div class="table-wrapper">
+                    <table class="dashboard-table advanced-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for leave in requests %}
+                                <tr>
+                                    <td>{{ leave.get_leave_type_display }}</td>
+                                    <td>{{ leave.start_date }}</td>
+                                    <td>{{ leave.end_date }}</td>
+                                    <td>{{ leave.reason|truncatechars:60 }}</td>
+                                    <td>{{ leave.get_status_display }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-box">
+                    <h3>No leave requests yet.</h3>
+                    <p>Click Apply Leave to submit your first request.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

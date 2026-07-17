@@ -1,0 +1,48 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Blog Posts | YD Dashboard{% endblock %}
+{% block page_title %}Blog Posts{% endblock %}
+{% block page_subtitle %}Create and manage blog posts from the dashboard.{% endblock %}
+
+{% block content %}
+
+<section class="crm-quick-actions">
+    <a href="/dashboard/blog/add/">+ Add Blog Post</a>
+    <a href="/dashboard/">Back to Dashboard</a>
+</section>
+
+<section class="crm-panel">
+    <div class="crm-panel-header">
+        <h2>Blog Posts</h2>
+    </div>
+
+    {% if posts %}
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Published</th>
+                    <th>Published At</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                    <tr>
+                        <td>{{ post.title }}</td>
+                        <td>{{ post.published }}</td>
+                        <td>{{ post.published_at }}</td>
+                        <td class="actions">
+                            <a href="/dashboard/blog/{{ post.id }}/edit/">Edit</a>
+                            <a href="/dashboard/blog/{{ post.id }}/delete/" class="danger">Delete</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No blog posts yet.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

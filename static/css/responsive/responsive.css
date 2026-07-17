@@ -1,0 +1,129 @@
+/* Responsive CSS Overrides
+   Mobile-first responsive breakpoints for all pages and components
+   This consolidates media queries and responsive adjustments
+*/
+
+@media (max-width: 768px) {
+    .hero-grid,
+    .quote-grid,
+    .why-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .hero-section h1 {
+        font-size: 32px;
+    }
+
+    .service-list-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .testimonial-grid,
+    .why-grid-items {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar {
+        padding: 15px 4%;
+    }
+
+    .menu {
+        display: none;
+    }
+
+    /* Mobile navigation: hidden by default, revealed via .active class from JS */
+    .yd-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 999;
+        max-height: calc(100vh - 64px); /* keep menu within viewport */
+        overflow-y: auto; /* enable scrolling when menu is long */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* When JS toggles the menu, the .active class should reveal it */
+    .yd-menu.active {
+        display: flex;
+    }
+
+    /* Ensure dropdowns / mega menus expand inline on mobile instead of overlapping */
+    .yd-mega-menu,
+    .yd-dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: transparent;
+        min-width: 0;
+        margin: 0;
+        padding: 0 0 0 12px;
+        display: none; /* hidden by default, expanded when parent is focused / toggled */
+    }
+
+    /* Show dropdown contents as regular block items when the parent is inside the mobile menu */
+    .yd-mega-parent > a,
+    .yd-dropdown-parent > a {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+    }
+
+    .yd-mega-parent .yd-mega-menu,
+    .yd-dropdown-parent .yd-dropdown-menu {
+        display: block;
+    }
+}
+    /* Keep header controls (search, book buttons) in the same row as logo/menu */
+    .yd-header {
+        flex-wrap: nowrap;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .yd-logo {
+        flex: 0 0 auto;
+    }
+
+    .yd-menu {
+        flex: 1 1 auto;
+    }
+
+    .yd-header-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+@media (max-width: 480px) {
+    .hero-section {
+        padding: 60px 0;
+    }
+
+    .hero-section h1 {
+        font-size: 24px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+    }
+
+    .hero-buttons a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .container {
+        width: 95%;
+    }
+
+    .faq-items {
+        max-width: 100%;
+    }
+}
