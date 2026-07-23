@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,16 +8,6 @@ from employees.models import Employee
 from .forms import EmployeeLeaveRequestForm, LeaveRequestForm
 from .models import LeaveRequest
 
-=======
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.utils import timezone
-
-from employees.models import Employee
-from .models import LeaveRequest
-from .forms import LeaveRequestForm, EmployeeLeaveRequestForm
->>>>>>> 5815f15 (Initial project commit)
 
 def get_logged_in_employee(request):
     try:
@@ -33,10 +22,9 @@ def leave_list(request):
 
     leave_requests = LeaveRequest.objects.select_related("employee").all()
 
-<<<<<<< HEAD
     return render(
         request,
-        "leave_list.html",
+        "leave_management/leave_list.html",
         {
             "leave_requests": leave_requests,
             "pending_count": leave_requests.filter(status="pending").count(),
@@ -47,19 +35,6 @@ def leave_list(request):
             ).count(),
         },
     )
-=======
-    return render(request, "leave_management/leave_list.html", {
-        "leave_requests": leave_requests,
-        "pending_count": leave_requests.filter(status="pending").count(),
-        "approved_count": leave_requests.filter(status="approved").count(),
-        "rejected_count": leave_requests.filter(status="rejected").count(),
-        "currently_on_leave": leave_requests.filter(
-            status="approved",
-            start_date__lte=today,
-            end_date__gte=today
-        ).count(),
-    })
->>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
@@ -74,30 +49,21 @@ def add_leave_request(request):
     else:
         form = LeaveRequestForm()
 
-<<<<<<< HEAD
     return render(
         request,
-        "leave_form.html",
+        "leave_management/leave_form.html",
         {
             "form": form,
             "page_title": "Add Leave Request",
             "button_text": "Save Leave Request",
         },
     )
-=======
-    return render(request, "leave_management/leave_form.html", {
-        "form": form,
-        "page_title": "Add Leave Request",
-        "button_text": "Save Leave Request",
-    })
->>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
 def employee_leave_history(request):
     employee = get_logged_in_employee(request)
 
-<<<<<<< HEAD
     leave_requests = (
         LeaveRequest.objects.filter(employee=employee).order_by("-created_at")
         if employee
@@ -106,23 +72,13 @@ def employee_leave_history(request):
 
     return render(
         request,
-        "employee_leave_history.html",
+        "employees/employee_leave_history.html",
         {
             "employee": employee,
             "leave_requests": leave_requests,
         },
     )
 
-=======
-    leave_requests = LeaveRequest.objects.filter(
-        employee=employee
-    ).order_by("-created_at") if employee else []
-
-    return render(request, "employees/employee_leave_history.html", {
-        "employee": employee,
-        "leave_requests": leave_requests,
-    })
->>>>>>> 5815f15 (Initial project commit)
 
 @login_required
 def employee_apply_leave(request):
@@ -143,43 +99,25 @@ def employee_apply_leave(request):
 
             messages.success(
                 request,
-<<<<<<< HEAD
                 "✅ Leave request submitted successfully. It is now waiting for approval.",
-=======
-                "✅ Leave request submitted successfully. It is now waiting for approval."
->>>>>>> 5815f15 (Initial project commit)
             )
 
             return redirect("/employee/leave/")
         else:
-<<<<<<< HEAD
             messages.error(request, "❌ Please check the leave form and try again.")
-=======
-            messages.error(
-                request,
-                "❌ Please check the leave form and try again."
-            )
->>>>>>> 5815f15 (Initial project commit)
 
     else:
         form = EmployeeLeaveRequestForm()
 
-<<<<<<< HEAD
     return render(
         request,
-        "leave_request_form.html",
+        "leave_management/leave_request_form.html",
         {
             "form": form,
             "employee": employee,
         },
     )
 
-=======
-    return render(request, "leave_management/leave_request_form.html", {
-        "form": form,
-        "employee": employee,
-    })
->>>>>>> 5815f15 (Initial project commit)
 
 @login_required
 def approve_leave_request(request, leave_id):
@@ -202,8 +140,4 @@ def reject_leave_request(request, leave_id):
         leave_request.save()
         messages.success(request, "❌ Leave request rejected.")
 
-<<<<<<< HEAD
     return redirect("leave_list")
-=======
-    return redirect("leave_list")
->>>>>>> 5815f15 (Initial project commit)

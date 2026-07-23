@@ -1,12 +1,6 @@
-<<<<<<< HEAD
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
-=======
-from django.core.management.base import BaseCommand
-from django.core.mail import send_mail
-from django.conf import settings
->>>>>>> 5815f15 (Initial project commit)
 from django.utils import timezone
 
 from contracts.models import CleaningContract
@@ -21,12 +15,7 @@ class Command(BaseCommand):
         today = timezone.localdate()
 
         contracts = CleaningContract.objects.filter(
-<<<<<<< HEAD
             status="active", end_date__isnull=False
-=======
-            status="active",
-            end_date__isnull=False
->>>>>>> 5815f15 (Initial project commit)
         )
 
         sent_count = 0
@@ -73,11 +62,7 @@ Thank you.
                 message,
                 settings.DEFAULT_FROM_EMAIL,
                 [customer.email],
-<<<<<<< HEAD
                 fail_silently=False,
-=======
-                fail_silently=False
->>>>>>> 5815f15 (Initial project commit)
             )
 
             EmailLog.objects.create(
@@ -85,11 +70,7 @@ Thank you.
                 recipient_name=customer.full_name,
                 recipient_email=customer.email,
                 subject=subject,
-<<<<<<< HEAD
                 related_object=f"Contract #{contract.id}",
-=======
-                related_object=f"Contract #{contract.id}"
->>>>>>> 5815f15 (Initial project commit)
             )
 
             if reminder_type == "30":
@@ -105,12 +86,4 @@ Thank you.
 
             sent_count += 1
 
-<<<<<<< HEAD
         self.stdout.write(self.style.SUCCESS(f"{sent_count} renewal emails sent."))
-=======
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"{sent_count} renewal emails sent."
-            )
-        )
->>>>>>> 5815f15 (Initial project commit)

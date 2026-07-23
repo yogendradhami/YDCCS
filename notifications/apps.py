@@ -6,8 +6,4 @@ class NotificationsConfig(AppConfig):
     name = "notifications"
 
     def ready(self):
-<<<<<<< HEAD
         import notifications.signals  # noqa: F401
-=======
-        import notifications.signals
->>>>>>> 5815f15 (Initial project commit)

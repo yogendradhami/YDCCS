@@ -4,123 +4,125 @@
 # Purpose: Handles homepage, contact, services, SEO files
 # ====================================================
 
-<<<<<<< HEAD
-from django.contrib import messages
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
+import os
+import string
+from django.conf import settings
 
-from gallery.models import GalleryItem
-from quotes.email_service import (
-    send_admin_quote_email,
-    send_customer_quote_email,
-)
-from quotes.forms import QuoteRequestForm
-from quotes.models import QuoteImage
-from reviews.models import Review
-=======
-from django.shortcuts import render, redirect
-from django.urls import reverse
 from django.contrib import messages
-from django.http import HttpResponse
-from django.utils.feedgenerator import Rss201rev2Feed
+from django.http import Http404, HttpResponse
+from django.shortcuts import redirect, render
+from django.template import TemplateDoesNotExist
 from django.utils.text import slugify
 
+from .suburbs_data import ADELAIDE_SUBURBS
+from .seo_data import SERVICE_DEFINITIONS
+from blog.models import BlogPost
+from gallery.models import GalleryItem
+from quotes.email_service import (
+    send_admin_quote_email,
+    send_customer_quote_email,
+)
 from quotes.forms import QuoteRequestForm
 from quotes.models import QuoteImage
-from quotes.email_service import (
-    send_customer_quote_email,
-    send_admin_quote_email,
-)
-from gallery.models import GalleryItem
 from reviews.models import Review
-from google_reviews.models import GoogleReview
 from services.models import Service
-from blog.models import BlogPost
-from .seo_data import LOCATION_ALIASES
-from .suburbs_data import ADELAIDE_SUBURBS
+from google_reviews.review_utils import get_google_reviews_api
 
 
-def get_location_from_slug(service_slug):
-    for location_slug, location_name in LOCATION_ALIASES.items():
-        if service_slug.endswith(f"-{location_slug}"):
-            return location_slug, location_name
-    return "adelaide", "Adelaide"
+def _slugify_area(area):
+    return slugify(f"{area['name']} {area['postcode']}")
 
 
-def get_base_slug(service_slug, location_slug):
-    if service_slug.endswith(f"-{location_slug}"):
-        return service_slug[: -len(location_slug) - 1]
-    return service_slug
+def _get_adelaide_services():
+    return [
+        {
+            "slug": "commercial-cleaning-adelaide",
+            "name": "Commercial Cleaning",
+            "service_name": "Commercial Cleaning",
+            "description": "Reliable commercial cleaning for offices, shops, warehouses and business premises across Adelaide.",
+            "url": "/services/commercial-cleaning-adelaide/",
+            "included": ["Office cleaning", "Retail cleaning", "Warehouse cleaning"],
+        },
+        {
+            "slug": "office-cleaning-adelaide",
+            "name": "Office Cleaning",
+            "service_name": "Office Cleaning",
+            "description": "Keep your workplace clean, fresh and professional with regular office cleaning services tailored to your business needs.",
+            "url": "/services/office-cleaning-adelaide/",
+            "included": ["Reception areas", "Shared workspaces", "Desks and meeting rooms"],
+        },
+        {
+            "slug": "end-of-lease-cleaning-adelaide",
+            "name": "End of Lease Cleaning",
+            "service_name": "End of Lease Cleaning",
+            "description": "Detailed end-of-lease cleaning for tenants, landlords and property managers across Adelaide.",
+            "url": "/services/end-of-lease-cleaning-adelaide/",
+            "included": ["Bond cleaning", "Kitchen deep clean", "Carpet steam cleaning"],
+        },
+        {
+            "slug": "house-cleaning-adelaide",
+            "name": "House Cleaning",
+            "service_name": "House Cleaning",
+            "description": "Affordable and reliable house cleaning for Adelaide homes, including regular cleans, one-off cleans and deep cleaning.",
+            "url": "/services/house-cleaning-adelaide/",
+            "included": ["Living rooms", "Bedrooms", "Bathrooms"],
+        },
+        {
+            "slug": "window-cleaning-adelaide",
+            "name": "Window Cleaning",
+            "service_name": "Window Cleaning",
+            "description": "Interior and exterior window cleaning for homes, offices and commercial spaces across Adelaide.",
+            "url": "/services/window-cleaning-adelaide/",
+            "included": ["Interior glass", "Exterior glass", "Frame and sill cleaning"],
+        },
+    ]
 
 
-def get_active_service_by_slug(base_slug):
-    return Service.objects.filter(slug=base_slug, is_active=True).first()
+def _get_letter_areas(letter):
+    return [
+        {"name": area["name"], "postcode": area["postcode"], "slug": _slugify_area(area)}
+        for area in ADELAIDE_SUBURBS.get(letter.lower(), [])
+    ]
 
 
-def build_service_dict_from_model(service_obj, location_name="Adelaide"):
-    if not service_obj:
-        return None
-
-    service_slug = f"{service_obj.slug}-{location_name.lower().replace(' ', '-') }"
-    return {
-        "name": service_obj.name,
-        "description": service_obj.description,
-        "overview": service_obj.overview,
-        "url": reverse('service_page_services', kwargs={'service_slug': service_slug}),
-        "slug": service_slug,
-        "service_name": service_obj.name,
-        "icon": "🧼",
-        "popular_package": service_obj.packages[0] if service_obj.packages else None,
-        "hero_image": service_obj.hero_image.url if service_obj.hero_image else None,
-        "included": service_obj.included,
-        "packages": service_obj.packages,
-    }
-
-
-def get_service_listing(location_name="Adelaide", description_location=None):
-    if description_location is None:
-        description_location = location_name
-
-    active_services = Service.objects.filter(is_active=True).order_by("name")
-    return [build_service_dict_from_model(service, location_name) for service in active_services]
-
-
-def service_page_redirect(request, service_slug):
-    location_slug, location_name = get_location_from_slug(service_slug)
-    base_slug = get_base_slug(service_slug, location_slug)
-
-    service_obj = get_active_service_by_slug(base_slug)
-    if not service_obj:
-        return redirect("home")
-
-    return redirect(
-        "service_page_services",
-        service_slug=service_slug,
-        permanent=True,
-    )
->>>>>>> 5815f15 (Initial project commit)
+def _get_suburb_by_slug(area_slug):
+    for areas in ADELAIDE_SUBURBS.values():
+        for area in areas:
+            if _slugify_area(area) == area_slug:
+                return area
+    return None
 
 
 # ====================================================
 # Homepage View
 # ====================================================
 def home(request):
-<<<<<<< HEAD
-    gallery_items = GalleryItem.objects.filter(featured=True).order_by("-created_at")[
-        :6
-    ]
-    reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
-=======
     gallery_items = GalleryItem.objects.filter(featured=True).order_by("-created_at")[:6]
-    reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
-    # Google reviews synced from Google Business Profile
-    google_reviews = GoogleReview.objects.order_by(
-        "-review_date"
-    )[:6]
-    google_review_count = GoogleReview.objects.count()
+    featured_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
 
+    google_reviews = get_google_reviews_api()
+    if not google_reviews:
+        google_reviews = [
+            {
+                "reviewer_name": review.customer_name,
+                "comment": review.review_text,
+                "rating": review.stars(),
+                "suburb": review.suburb,
+                "created_at": review.created_at,
+            }
+            for review in featured_reviews
+        ]
 
->>>>>>> 5815f15 (Initial project commit)
+    rating_values = []
+    for review in google_reviews:
+        rating = review.get("rating")
+        if isinstance(rating, str):
+            rating_values.append(rating.count("★") or rating.count("⭐"))
+        elif isinstance(rating, int):
+            rating_values.append(rating)
+
+    average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
+    google_review_count = len(google_reviews)
 
     if request.method == "POST":
         form = QuoteRequestForm(request.POST, request.FILES)
@@ -164,14 +166,7 @@ def home(request):
             uploaded_images = request.FILES.getlist("property_images")
 
             for image in uploaded_images:
-<<<<<<< HEAD
                 QuoteImage.objects.create(quote=quote, image=image)
-=======
-                QuoteImage.objects.create(
-                    quote=quote,
-                    image=image
-                )
->>>>>>> 5815f15 (Initial project commit)
 
             try:
                 send_customer_quote_email(quote)
@@ -181,11 +176,7 @@ def home(request):
 
             messages.success(
                 request,
-<<<<<<< HEAD
                 f"✅ Thank you! Your quote request has been submitted successfully. Estimated price: ${quote.estimated_price}. Our team will confirm the final price shortly.",
-=======
-                f"✅ Thank you! Your quote request has been submitted successfully. Estimated price: ${quote.estimated_price}. Our team will confirm the final price shortly."
->>>>>>> 5815f15 (Initial project commit)
             )
 
             return redirect("/#quote")
@@ -197,208 +188,398 @@ def home(request):
 
     return render(
         request,
-<<<<<<< HEAD
         "home.html",
-=======
-        "core/home.html",
->>>>>>> 5815f15 (Initial project commit)
         {
             "form": form,
             "gallery_items": gallery_items,
-            "reviews": reviews,
-<<<<<<< HEAD
-        },
-    )
-
-=======
-            "page_title": "YD Commercial Cleaning Services Adelaide",
-            "page_description": "Professional commercial and residential cleaning services across Adelaide and South Australia. Fast quotes, reliable teams and fully insured cleaners.",
-            "page_keywords": "Adelaide cleaning service, commercial cleaning Adelaide, office cleaning Adelaide, end of lease cleaning Adelaide, window cleaning Adelaide, house cleaning Adelaide",
-            # Google Reviews
+            "reviews": featured_reviews,
             "google_reviews": google_reviews,
+            "average_rating": average_rating,
             "google_review_count": google_review_count,
         },
     )
 
-# ====================================================
-# Services Listing Page View
-# ====================================================
-
-def services_page(request):
-    default_location = "Adelaide"
-    services = []
-    icon_map = {
-        "commercial-cleaning": "🏢",
-        "office-cleaning": "🧹",
-        "end-of-lease-cleaning": "🔑",
-        "bond-cleaning": "🔒",
-        "house-cleaning": "🏠",
-        "regular-house-cleaning": "🏡",
-        "window-cleaning": "🪟",
-        "carpet-steam-cleaning": "🧼",
-        "builders-cleaning": "🚧",
-        "post-construction-cleaning": "🧱",
-        "pressure-washing": "💦",
-        "bathroom-cleaning": "🚿",
-        "kitchen-cleaning": "🍳",
-        "deep-cleaning": "🧽",
-        "move-in-cleaning": "📦",
-        "move-out-cleaning": "🚚",
-        "spring-cleaning": "🌸",
-    }
-
-    service_queryset = Service.objects.filter(is_active=True).order_by("name")
-    for service_obj in service_queryset:
-        base_slug = service_obj.slug
-        service_slug = f"{base_slug}-{default_location.lower()}"
-        services.append({
-            "name": service_obj.name,
-            "description": service_obj.description,
-            "overview": service_obj.overview,
-            "url": reverse('service_page_services', kwargs={'service_slug': service_slug}),
-            "slug": service_slug,
-            "service_name": service_obj.name,
-            "icon": icon_map.get(base_slug, "🧼"),
-            "popular_package": service_obj.packages[0] if service_obj.packages else None,
-            "hero_image": service_obj.hero_image.url if service_obj.hero_image else None,
-        })
-
-    google_reviews = GoogleReview.objects.order_by("-review_date")[:4]
-
-    return render(request, "services/services_list.html", {
-        "services": services,
-        "page_title": "Adelaide Cleaning Services | YD Commercial Cleaning Services",
-        "page_description": "Explore our Adelaide cleaning services, including residential, commercial, bond and office cleaning. Find the right service for your needs.",
-        "page_keywords": "Adelaide cleaning services, residential cleaning Adelaide, commercial cleaning Adelaide, bond cleaning Adelaide, office cleaning Adelaide, window cleaning Adelaide",
-        "page_image": "/static/images/logo.jpeg",
-        "google_reviews": google_reviews,
-    })
-
-
-def custom_page_not_found(request, exception=None):
-    return render(request, "404.html", {
-        "page_title": "Page Not Found | YD Commercial Cleaning Services",
-        "page_description": "The requested page doesn’t exist. Explore our Adelaide cleaning services or get in touch for quick support.",
-        "page_keywords": "404 Adelaide cleaning, page not found, YD Commercial Cleaning services",
-        "page_image": "/static/images/logo.jpeg",
-    }, status=404)
->>>>>>> 5815f15 (Initial project commit)
 
 # ====================================================
 # Contact Page View
 # ====================================================
 
-<<<<<<< HEAD
 
 def contact(request):
     return render(request, "contact.html")
 
 
-=======
-def contact(request):
-    return render(request, "pages/contact.html", {
-        "page_title": "Contact YD Commercial Cleaning Services",
-        "page_description": "Contact YD Commercial Cleaning Services for Adelaide commercial, office and home cleaning. Book a free quote, call our local team or send a message.",
-        "page_keywords": "contact Adelaide cleaning, YD Commercial Cleaning contact, Adelaide cleaning quote, local cleaning service enquiries",
-    })
+# ====================================================
+# Services List Page View
+# ====================================================
 
 
-def login_hub(request):
-    return render(request, "core/login_hub.html")
+def services_list(request):
+    services = [
+        {
+            "slug": "commercial-cleaning-adelaide",
+            "service_name": "Commercial Cleaning",
+            "description": "Reliable commercial cleaning for offices, shops, warehouses and business premises across Adelaide.",
+            "url": "/services/commercial-cleaning-adelaide/",
+        },
+        {
+            "slug": "office-cleaning-adelaide",
+            "service_name": "Office Cleaning",
+            "description": "Keep your workplace clean, fresh and professional with regular office cleaning services tailored to your business needs.",
+            "url": "/services/office-cleaning-adelaide/",
+        },
+        {
+            "slug": "end-of-lease-cleaning-adelaide",
+            "service_name": "End of Lease Cleaning",
+            "description": "Detailed end-of-lease cleaning for tenants, landlords and property managers across Adelaide.",
+            "url": "/services/end-of-lease-cleaning-adelaide/",
+        },
+        {
+            "slug": "house-cleaning-adelaide",
+            "service_name": "House Cleaning",
+            "description": "Affordable and reliable house cleaning for Adelaide homes, including regular cleans, one-off cleans and deep cleaning.",
+            "url": "/services/house-cleaning-adelaide/",
+        },
+        {
+            "slug": "window-cleaning-adelaide",
+            "service_name": "Window Cleaning",
+            "description": "Interior and exterior window cleaning for homes, offices and commercial spaces across Adelaide.",
+            "url": "/services/window-cleaning-adelaide/",
+        },
+    ]
+    
+    db_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
+    google_reviews = []
+    for r in db_reviews:
+        google_reviews.append({
+            "reviewer_name": r.customer_name,
+            "review_text": r.review_text,
+        })
+        
+    context = {
+        "services": services,
+        "google_reviews": google_reviews,
+        "page_description": "Professional cleaning services for homes, offices and commercial properties across Adelaide.",
+    }
+    return render(request, "services/services_list.html", context)
 
->>>>>>> 5815f15 (Initial project commit)
+
+def resources(request):
+    resources_list = [
+        {
+            "title": "Local Services",
+            "description": "Find Adelaide suburbs, service areas and local cleaning options.",
+            "url": "/local/",
+            "icon": "🧭",
+        },
+        {
+            "title": "Cleaning Guides",
+            "description": "Free PDF guides, checklists and expert cleaning tips.",
+            "url": "/guides/",
+            "icon": "📘",
+        },
+        {
+            "title": "Blog & Tips",
+            "description": "Practical cleaning advice, seasonal tips and professional insights.",
+            "url": "/blog/",
+            "icon": "📝",
+        },
+        {
+            "title": "Case Studies",
+            "description": "Real Adelaide results from our commercial and residential cleaning work.",
+            "url": "/case-studies/",
+            "icon": "📊",
+        },
+        {
+            "title": "Testimonials",
+            "description": "Read trusted client reviews and evidence of our premium Adelaide cleaning service.",
+            "url": "/testimonials/",
+            "icon": "🌟",
+        },
+        {
+            "title": "FAQ",
+            "description": "Answers to common questions about booking, pricing and services.",
+            "url": "/faq/",
+            "icon": "❓",
+        },
+        {
+            "title": "Insurance & Guarantees",
+            "description": "Learn about our coverage, guarantees and risk-free service promise.",
+            "url": "/insurance/",
+            "icon": "🛡️",
+        },
+        {
+            "title": "Corporate Partnerships",
+            "description": "Cleaning solutions for businesses, property managers and commercial partners.",
+            "url": "/corporate/",
+            "icon": "🤝",
+        },
+        {
+            "title": "Eco-Friendly Cleaning",
+            "description": "Sustainable cleaning practices that are safe for people and the planet.",
+            "url": "/eco-friendly-cleaning/",
+            "icon": "🌿",
+        },
+        {
+            "title": "Emergency Cleaning",
+            "description": "Fast response cleaning for urgent jobs, events and unexpected messes.",
+            "url": "/emergency-cleaning/",
+            "icon": "🚨",
+        },
+    ]
+    return render(request, "pages/resources.html", {"resources_list": resources_list})
+
+
+def testimonials(request):
+    from google_reviews.review_utils import get_google_reviews_api
+    
+    # Fetch live Google reviews from API
+    google_reviews = get_google_reviews_api()
+    
+    # Fall back to featured DB reviews if no API reviews
+    featured_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:6]
+    if not google_reviews:
+        google_reviews = [
+            {
+                "reviewer_name": review.customer_name,
+                "comment": review.review_text,
+                "rating": review.stars(),
+            }
+            for review in featured_reviews
+        ]
+    
+    testimonials = [
+        {
+            "reviewer_name": review.customer_name,
+            "review_text": review.review_text,
+            "rating": review.stars(),
+            "suburb": review.suburb,
+        }
+        for review in featured_reviews
+    ]
+
+    google_review_count = len(google_reviews)
+
+    return render(
+        request,
+        "pages/testimonials.html",
+        {
+            "testimonials": testimonials,
+            "google_reviews": google_reviews,
+            "google_review_count": google_review_count,
+        },
+    )
+
+
+def guides(request):
+    return render(request, "pages/guides.html")
+
+
+def guide_detail(request, guide_slug):
+    template_name = f"pages/guides/{guide_slug}.html"
+    try:
+        return render(request, template_name)
+    except TemplateDoesNotExist:
+        raise Http404("Guide not found")
+
+
+def case_studies(request):
+    return render(request, "pages/case-studies.html")
+
+
+def faq(request):
+    return render(request, "pages/faq.html")
+
+
+def blog(request):
+    posts = BlogPost.objects.filter(published=True).order_by("-published_at")
+    return render(request, "pages/blog.html", {"posts": posts})
+
+
+def about(request):
+    return render(request, "pages/about.html")
+
+
+def pricing(request):
+    return render(request, "pages/pricing.html")
+
+
+def team(request):
+    return render(request, "pages/team.html")
+
+
+def corporate(request):
+    return render(request, "pages/corporate.html")
+
+
+def insurance(request):
+    return render(request, "pages/insurance.html")
+
+
+def referral_program(request):
+    return render(request, "pages/referral_program.html")
+
+
+def eco_friendly_cleaning(request):
+    return render(request, "pages/eco_friendly_cleaning.html")
+
+
+def emergency_cleaning(request):
+    return render(request, "pages/emergency_cleaning.html")
+
+
+def rss_xml(request):
+    posts = BlogPost.objects.filter(published=True).order_by("-published_at")[:20]
+    feed_items = []
+    for post in posts:
+        url = request.build_absolute_uri(f"/blog/{post.slug}/")
+        feed_items.append(
+            f"""
+            <item>
+                <title>{post.title}</title>
+                <link>{url}</link>
+                <description>{post.excerpt}</description>
+                <pubDate>{post.published_at.strftime('%a, %d %b %Y %H:%M:%S %z') if post.published_at else ''}</pubDate>
+                <guid>{url}</guid>
+            </item>
+            """
+        )
+
+    rss_content = f"""<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+    <rss version=\"2.0\">
+        <channel>
+            <title>YD Commercial Cleaning Blog</title>
+            <link>{request.build_absolute_uri('/blog/')}</link>
+            <description>Latest blog posts and cleaning advice from YD Commercial Cleaning.</description>
+            {''.join(feed_items)}
+        </channel>
+    </rss>
+    """
+
+    return HttpResponse(rss_content, content_type="application/rss+xml")
+
+
+def local_services(request):
+    return redirect("local_area_index_default")
+
+
+def local_area_index(request, letter="a"):
+    location_name = "Adelaide"
+    current_letter = letter.upper()
+    letters = [chr(code) for code in range(ord("A"), ord("Z") + 1)]
+    matching_areas = _get_letter_areas(letter)
+
+    services = _get_adelaide_services()
+    page_title = f"Adelaide Local Services - {current_letter}"
+    page_description = f"Explore cleaning services and suburbs in Adelaide that start with {current_letter}."
+
+    context = {
+        "location_name": location_name,
+        "page_title": page_title,
+        "page_description": page_description,
+        "letters": letters,
+        "current_letter": current_letter,
+        "matching_areas": matching_areas,
+        "services": services,
+    }
+    return render(request, "services/location_index.html", context)
+
+
+def local_suburb_detail(request, area_slug):
+    location_name = "Adelaide"
+    suburb = _get_suburb_by_slug(area_slug)
+    if not suburb:
+        return redirect("local_services")
+
+    services = _get_adelaide_services()
+    db_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
+    google_reviews = [
+        {"reviewer_name": r.customer_name, "review_text": r.review_text}
+        for r in db_reviews
+    ]
+
+    page_title = f"{suburb['name']} Cleaning Services"
+    page_description = f"Professional cleaning services for {suburb['name']}, {location_name}."
+
+    context = {
+        "location_name": location_name,
+        "suburb_name": suburb["name"],
+        "page_title": page_title,
+        "page_description": page_description,
+        "services": services,
+        "google_reviews": google_reviews,
+    }
+    return render(request, "services/suburb_detail.html", context)
+
+
 # ====================================================
 # SEO Service Page View
 # ====================================================
 
-<<<<<<< HEAD
 
-def service_page(request, service_slug):
-    services = {
-        "commercial-cleaning-adelaide": {
-            "title": "Commercial Cleaning Adelaide",
-            "heading": "Professional Commercial Cleaning Services in Adelaide",
-            "description": "Reliable commercial cleaning for offices, shops, warehouses and business premises across Adelaide.",
-        },
-        "office-cleaning-adelaide": {
-            "title": "Office Cleaning Adelaide",
-            "heading": "Reliable Office Cleaning Services in Adelaide",
-            "description": "Keep your workplace clean, fresh and professional with regular office cleaning services tailored to your business needs.",
-        },
-        "end-of-lease-cleaning-adelaide": {
-            "title": "End of Lease Cleaning Adelaide",
-            "heading": "End of Lease Cleaning Services in Adelaide",
-            "description": "Detailed end-of-lease cleaning for tenants, landlords and property managers across Adelaide.",
-        },
-        "house-cleaning-adelaide": {
-            "title": "House Cleaning Adelaide",
-            "heading": "Professional House Cleaning Services in Adelaide",
-            "description": "Affordable and reliable house cleaning for Adelaide homes, including regular cleans, one-off cleans and deep cleaning.",
-        },
-        "window-cleaning-adelaide": {
-            "title": "Window Cleaning Adelaide",
-            "heading": "Professional Window Cleaning Services in Adelaide",
-            "description": "Interior and exterior window cleaning for homes, offices and commercial spaces across Adelaide.",
-        },
+def _normalize_service_slug(service_slug):
+    if service_slug.endswith("-adelaide"):
+        return service_slug[: -len("-adelaide")]
+    return service_slug
+
+
+def _service_context_from_model(service_obj):
+    return {
+        "title": service_obj.name,
+        "heading": service_obj.name,
+        "description": service_obj.description,
+        "overview": service_obj.overview,
+        "included": service_obj.included or [],
+        "packages": service_obj.packages or [],
+        "hero_image": service_obj.hero_image.url if service_obj.hero_image else "/static/images/logo.jpeg",
     }
 
-    service = services.get(service_slug)
+
+def _service_context_from_definition(service_slug, location_name="Adelaide"):
+    definition = SERVICE_DEFINITIONS.get(service_slug)
+    if not definition:
+        return None
+    # Prefer SVG, then WEBP, then JPG static files if they exist under static/images/services
+    static_dir = os.path.join(settings.BASE_DIR, "static", "images", "services")
+    candidates = [
+        f"{service_slug}.svg",
+        f"{service_slug}.webp",
+        f"{service_slug}.jpg",
+    ]
+
+    chosen = None
+    for fname in candidates:
+        if os.path.exists(os.path.join(static_dir, fname)):
+            chosen = fname
+            break
+
+    hero_path = f"/static/images/services/{chosen}" if chosen else "/static/images/logo.jpeg"
+
+    return {
+        "title": definition["service_name"],
+        "heading": definition["service_name"],
+        "description": definition["description"].format(location=location_name),
+        "overview": definition["overview"].format(location=location_name),
+        "included": definition["included"],
+        "packages": definition["packages"],
+        "hero_image": hero_path,
+    }
+
+
+def service_page(request, service_slug):
+    normalized_slug = _normalize_service_slug(service_slug)
+    service_obj = Service.objects.filter(slug__iexact=normalized_slug).first()
+
+    if service_obj:
+        service = _service_context_from_model(service_obj)
+    else:
+        service = _service_context_from_definition(normalized_slug)
 
     if not service:
         return redirect("home")
 
-    return render(request, "service_detail.html", {"service": service})
-=======
-def service_page(request, service_slug):
-    location_slug, location_name = get_location_from_slug(service_slug)
-    base_slug = get_base_slug(service_slug, location_slug)
-
-    service_obj = get_active_service_by_slug(base_slug)
-    if not service_obj:
-        return redirect("home")
-
-    service_title = f"{service_obj.name} {location_name}"
-    service_description = service_obj.description
-    service_overview = service_obj.overview
-    page_keywords = f"{service_obj.name} {location_name}, Adelaide {service_obj.name.lower()}, local cleaning service, {location_name} cleaning"
-    page_title = f"{service_obj.name} {location_name} | Adelaide Cleaning"
-
-    service = {
-        "title": service_title,
-        "heading": f"Professional {service_obj.name} in {location_name}",
-        "description": service_description,
-        "overview": service_overview,
-        "included": service_obj.included,
-        "packages": service_obj.packages,
-        "hero_image": service_obj.hero_image.url if service_obj.hero_image else "/static/images/logo.jpeg",
-        "slug": service_slug,
-        "location": location_name,
-        "keywords": page_keywords,
-    }
-
-    service_reviews = GoogleReview.objects.order_by("-review_date")[:5]
-    service_review_count = service_reviews.count()
-    service_average_rating = None
-    if service_review_count:
-        service_average_rating = round(
-            sum(review.rating for review in service_reviews) / service_review_count,
-            1,
-        )
-
     service_url = request.build_absolute_uri()
-
-    return render(request, "services/service_detail.html", {
-        "service": service,
-        "page_title": page_title,
-        "page_description": service_description,
-        "page_keywords": page_keywords,
-        "page_image": "/static/images/logo.jpeg",
-        "service_reviews": service_reviews,
-        "service_review_count": service_review_count,
-        "service_average_rating": service_average_rating,
-        "service_url": service_url,
-    })
->>>>>>> 5815f15 (Initial project commit)
+    return render(request, "services/service_detail.html", {"service": service, "service_url": service_url})
 
 
 # ====================================================
@@ -406,341 +587,73 @@ def service_page(request, service_slug):
 # Tells search engines what they can crawl
 # ====================================================
 
-<<<<<<< HEAD
 
 def robots_txt(request):
     content = """User-agent: *
 Allow: /
 
 Sitemap: https://www.ydcleaning.com/sitemap.xml
-=======
-def robots_txt(request):
-    site_url = request.build_absolute_uri("/").rstrip("/")
-    content = f"""User-agent: *
-Allow: /
-
-Sitemap: {site_url}/sitemap.xml
->>>>>>> 5815f15 (Initial project commit)
 """
     return HttpResponse(content, content_type="text/plain")
 
 
-<<<<<<< HEAD
+
 # ====================================================
-# sitemap.xml
-# Lists important website pages for Google indexing
+# Careers page & application handler
 # ====================================================
+from django.contrib.auth import get_user_model
+from dashboard.models import CareerApplication
+from notifications.models import Notification
+from .forms import CareerApplicationForm
 
 
-def sitemap_xml(request):
-    content = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+def careers(request):
+    """Render careers page and accept applications."""
+    if request.method == "POST":
+        form = CareerApplicationForm(request.POST, request.FILES)
+        if form.is_valid():
+            application = form.save()
 
-    <url>
-        <loc>https://www.ydcleaning.com/</loc>
-        <priority>1.0</priority>
-    </url>
+            # notify first admin user if present
+            User = get_user_model()
+            admin_user = User.objects.filter(is_superuser=True).first()
+            if admin_user:
+                try:
+                    Notification.objects.create(
+                        user=admin_user,
+                        title=f"New career application: {application.full_name}",
+                        message=f"Applicant {application.full_name} submitted an application.",
+                        notification_type="system",
+                        link="/dashboard/careers/",
+                    )
+                except Exception:
+                    pass
 
-    <url>
-        <loc>https://www.ydcleaning.com/contact/</loc>
-        <priority>0.8</priority>
-    </url>
+            from django.contrib import messages
 
-    <url>
-        <loc>https://www.ydcleaning.com/gallery/</loc>
-        <priority>0.7</priority>
-    </url>
+            messages.success(request, "✅ Thank you — your application has been received.")
+            return redirect("/careers/#applied")
+    else:
+        form = CareerApplicationForm()
 
-    <url>
-        <loc>https://www.ydcleaning.com/reviews/</loc>
-        <priority>0.7</priority>
-    </url>
-
-    <url>
-        <loc>https://www.ydcleaning.com/commercial-cleaning-adelaide/</loc>
-        <priority>0.9</priority>
-    </url>
-
-    <url>
-        <loc>https://www.ydcleaning.com/office-cleaning-adelaide/</loc>
-        <priority>0.9</priority>
-    </url>
-
-    <url>
-        <loc>https://www.ydcleaning.com/end-of-lease-cleaning-adelaide/</loc>
-        <priority>0.9</priority>
-    </url>
-
-    <url>
-        <loc>https://www.ydcleaning.com/house-cleaning-adelaide/</loc>
-        <priority>0.9</priority>
-    </url>
-
-    <url>
-        <loc>https://www.ydcleaning.com/window-cleaning-adelaide/</loc>
-        <priority>0.9</priority>
-    </url>
-
-</urlset>
-"""
-    return HttpResponse(content, content_type="application/xml")
-=======
-def location_landing_page(request):
-    """
-    Landing page showing all services by location (similar to Jim's SA page).
-    Displays:
-    - Services overview for Adelaide
-    - Service list with links
-    - Location highlights
-    - Why Choose Us content
-    - Related blog articles
-    """
-    location_name = "Adelaide"
-    location_slug = "adelaide"
-
-    # Build comprehensive service list for this location
-    services = get_service_listing(location_name)
-
-    # Build service categories
-    service_categories = {}
-    for service in services:
-        category = service["service_name"].split()[0]  # First word as category
-        if category not in service_categories:
-            service_categories[category] = []
-        service_categories[category].append(service)
-
-    # Get featured areas/suburbs
-    featured_locations = [
-        {"name": "Prospect", "slug": "prospect"},
-        {"name": "Mawson Lakes", "slug": "mawson-lakes"},
-        {"name": "Salisbury", "slug": "salisbury"},
-        {"name": "North Adelaide", "slug": "north-adelaide"},
-        {"name": "Glenelg", "slug": "glenelg"},
-        {"name": "Norwood", "slug": "norwood"},
-        {"name": "Unley", "slug": "unley"},
-        {"name": "Burnside", "slug": "burnside"},
-        {"name": "Modbury", "slug": "modbury"},
-    ]
-
-    google_reviews = GoogleReview.objects.order_by("-review_date")[:6]
-
-    return render(request, "services/location_landing.html", {
-        "location_name": location_name,
-        "location_slug": location_slug,
-        "services": services,
-        "service_categories": service_categories,
-        "featured_locations": featured_locations,
-        "page_title": f"Cleaning Services {location_name} | Adelaide Local Services | YD Commercial Cleaning",
-        "page_description": f"Discover all YD Commercial Cleaning services in {location_name} and suburbs.",
-        "page_keywords": f"cleaning services {location_name}, Adelaide cleaning, residential cleaning, commercial cleaning",
-        "page_image": "/static/images/logo.jpeg",
-        "google_reviews": google_reviews,
-    })
+    return render(request, "pages/careers.html", {"form": form})
 
 
-def location_index_page(request, letter="a"):
-    location_name = "Adelaide"
-    location_slug = "adelaide"
-    current_letter = letter.lower()[:1]
-    if current_letter not in "abcdefghijklmnopqrstuvwxyz":
-        current_letter = "a"
-
-    alphabet_letters = [chr(code) for code in range(ord("A"), ord("Z") + 1)]
-
-    suburb_entries = ADELAIDE_SUBURBS.get(current_letter, [])
-
-    matching_areas = [
-        {
-            "name": suburb["name"],
-            "postcode": suburb.get("postcode", ""),
-            "slug": slugify(suburb["name"]),
-        }
-        for suburb in suburb_entries
-    ]
-
-    services = get_service_listing(location_name)
-
-    return render(request, "services/location_index.html", {
-        "location_name": location_name,
-        "location_slug": location_slug,
-        "current_letter": current_letter.upper(),
-        "letters": alphabet_letters,
-        "matching_areas": matching_areas,
-        "services": services,
-        "page_title": f"{location_name} Cleaning Areas Starting with {current_letter.upper()} | YD Commercial Cleaning",
-        "page_description": f"Explore Adelaide cleaning services and suburbs starting with {current_letter.upper()}. Find the right local cleaning area and service today.",
-        "page_keywords": f"{location_name} cleaning {current_letter.upper()}, Adelaide cleaning areas, local cleaning suburbs",
-        "page_image": "/static/images/logo.jpeg",
-    })
+def terms(request):
+    return render(request, "pages/terms.html")
 
 
-def suburb_detail_page(request, suburb_slug):
-    """Detail page for a specific Adelaide suburb."""
-    location_name = "Adelaide"
-    location_slug = "adelaide"
-
-    suburb_name = suburb_slug.replace('-', ' ').title()
-
-    services = get_service_listing(location_name, description_location=suburb_name)
-
-    google_reviews = GoogleReview.objects.order_by("-review_date")[:4]
-
-    return render(request, "services/suburb_detail.html", {
-        "suburb_name": suburb_name,
-        "suburb_slug": suburb_slug,
-        "location_name": location_name,
-        "location_slug": location_slug,
-        "services": services,
-        "google_reviews": google_reviews,
-        "page_title": f"Cleaning Services in {suburb_name}, {location_name} | YD Commercial Cleaning",
-        "page_description": f"Professional cleaning services for {suburb_name} and surrounding areas. Residential, commercial, office and specialist cleaning available.",
-        "page_keywords": f"{suburb_name} cleaning, cleaning services {suburb_name}, {suburb_name} Adelaide cleaning",
-        "page_image": "/static/images/logo.jpeg",
-    })
+def privacy(request):
+    return render(request, "pages/privacy.html")
 
 
-def rss_feed(request):
-    feed = Rss201rev2Feed(
-        title="YD Commercial Cleaning Reviews",
-        link=request.build_absolute_uri("/"),
-        description="Latest Adelaide customer reviews and service updates from YD Commercial Cleaning Services.",
-        language="en-AU",
+def legal(request):
+    return render(request, "pages/legal.html")
+
+
+def booking_terms(request):
+
+    return render(
+        request,
+        "pages/booking_terms.html"
     )
-
-    reviews = Review.objects.filter(featured=True).order_by("-created_at")[:20]
-    for review in reviews:
-        feed.add_item(
-            title=f"{review.customer_name} ⭐{review.rating} Review",
-            link=request.build_absolute_uri("/reviews/"),
-            description=review.review_text,
-            unique_id=f"review-{review.id}",
-            pubdate=review.created_at,
-        )
-
-    return HttpResponse(feed.writeString("utf-8"), content_type="application/rss+xml")
-
-
-# ====================================================
-# New Page Views
-# ====================================================
-
-def about(request):
-    """About page showing company information and story."""
-    return render(request, "pages/about.html", {})
-
-
-def pricing(request):
-    """Pricing page showing service packages and rates."""
-    return render(request, "pages/pricing.html", {})
-
-
-def team(request):
-    """Team page showcasing company team members."""
-    return render(request, "pages/team.html", {})
-
-
-def faq(request):
-    """Frequently Asked Questions page."""
-    return render(request, "pages/faq.html", {})
-
-
-def blog(request):
-    """Blog listing page."""
-    posts = BlogPost.objects.filter(published=True).order_by('-published_at')
-    return render(request, "pages/blog.html", {"posts": posts})
-
-
-def guides(request):
-    """Free cleaning guides and resources page."""
-    return render(request, "pages/guides.html", {})
-
-
-def resources(request):
-    """Resources hub page linking guides, blog, case studies and FAQs."""
-    resources_list = [
-        {
-            "title": "Cleaning Guides",
-            "description": "Download our professional cleaning checklists, maintenance guides and printable resources.",
-            "url": "/guides/",
-            "icon": "📘",
-        },
-        {
-            "title": "Blog Articles",
-            "description": "Read cleaning tips, maintenance advice and expert service recommendations.",
-            "url": "/blog/",
-            "icon": "📝",
-        },
-        {
-            "title": "Case Studies",
-            "description": "See real Adelaide cleaning projects and before-and-after service results.",
-            "url": "/case-studies/",
-            "icon": "📂",
-        },
-        {
-            "title": "FAQs",
-            "description": "Find quick answers about cleaning services, pricing and booking options.",
-            "url": "/faq/",
-            "icon": "❓",
-        },
-        {
-            "title": "Local Services",
-            "description": "Explore our Adelaide cleaning services and choose the right solution for your property.",
-            "url": "/services/",
-            "icon": "📍",
-        },
-        {
-            "title": "Request a Quote",
-            "description": "Get a free, no-obligation cleaning quote from our Adelaide team today.",
-            "url": "/contact/",
-            "icon": "📞",
-        },
-    ]
-    return render(request, "pages/resources.html", {
-        "page_title": "Cleaning Resources | YD Commercial Cleaning Services",
-        "page_description": "Explore free cleaning resources, guides, blog posts, case studies and FAQs from YD Commercial Cleaning Services.",
-        "page_keywords": "cleaning resources Adelaide, cleaning guides, blog, case studies, FAQ, YD Commercial Cleaning",
-        "page_image": "/static/images/logo.jpeg",
-        "resources_list": resources_list,
-    })
-
-
-def case_studies(request):
-    """Case studies showcasing real project results."""
-    return render(request, "pages/case-studies.html", {})
-
-
-def guide_detail(request, guide_slug):
-    """Render a single guide detail page (shows checklist and download link).
-
-    Expects template at `pages/guides/<guide_slug>.html`.
-    """
-    from django.template import TemplateDoesNotExist
-    from django.http import Http404
-
-    template_name = f"pages/guides/{guide_slug}.html"
-    try:
-        return render(request, template_name, {})
-    except TemplateDoesNotExist:
-        raise Http404("Guide not found")
-
-
-def blog_detail(request, blog_slug):
-    """Render a single blog post page.
-
-    Prefer BlogPost model instance when available, otherwise fall back to static template.
-    """
-    from django.template import TemplateDoesNotExist
-
-    post = BlogPost.objects.filter(slug=blog_slug, published=True).first()
-    if post:
-        # pass a list of recent posts for the sidebar (exclude current)
-        recent_posts = BlogPost.objects.filter(published=True).order_by('-published_at')[:8]
-        return render(request, "pages/blog_post_detail.html", {"post": post, "posts": recent_posts})
-
-    # Fallback - attempt static template
-    template_name = f"pages/blog_posts/{blog_slug}.html"
-    try:
-        return render(request, template_name, {})
-    except TemplateDoesNotExist:
-        raise Http404("Blog post not found")
->>>>>>> 5815f15 (Initial project commit)

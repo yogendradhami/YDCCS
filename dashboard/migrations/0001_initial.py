@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     initial = True
 
-<<<<<<< HEAD
     dependencies = []
 
     operations = [
@@ -54,33 +53,6 @@ class Migration(migrations.Migration):
                 ("payment_terms_days", models.PositiveIntegerField(default=7)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-=======
-    dependencies = [
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='CompanySettings',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('business_name', models.CharField(default='YD Commercial Cleaning Services', max_length=255)),
-                ('abn', models.CharField(blank=True, max_length=50)),
-                ('phone', models.CharField(blank=True, max_length=50)),
-                ('email', models.EmailField(blank=True, max_length=254)),
-                ('website', models.URLField(blank=True)),
-                ('address', models.TextField(blank=True)),
-                ('logo', models.ImageField(blank=True, null=True, upload_to='company/')),
-                ('favicon', models.ImageField(blank=True, null=True, upload_to='company/')),
-                ('facebook_url', models.URLField(blank=True)),
-                ('instagram_url', models.URLField(blank=True)),
-                ('linkedin_url', models.URLField(blank=True)),
-                ('tiktok_url', models.URLField(blank=True)),
-                ('invoice_prefix', models.CharField(default='YD', max_length=20)),
-                ('gst_percentage', models.DecimalField(decimal_places=2, default=10.0, max_digits=5)),
-                ('payment_terms_days', models.PositiveIntegerField(default=7)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

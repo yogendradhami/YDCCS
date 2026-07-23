@@ -1,8 +1,5 @@
 from django.contrib import admin
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 from .models import SupportTicket
 
 
@@ -25,8 +22,4 @@ class SupportTicketAdmin(admin.ModelAdmin):
     search_fields = (
         "subject",
         "customer__full_name",
-<<<<<<< HEAD
     )
-=======
-    )
->>>>>>> 5815f15 (Initial project commit)

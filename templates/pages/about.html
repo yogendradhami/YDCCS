@@ -104,29 +104,40 @@
     </div>
 </section>
 
-<!-- Testimonials Section -->
+<!-- Testimonials Carousel Section -->
 <section class="about-testimonials">
     <div class="container">
         <h2>What Our Customers Say</h2>
-        <div class="testimonials-grid">
-            <div class="testimonial-card">
-                <div class="stars">★★★★★</div>
-                <p>"I recently hired this cleaning company and honestly, I was pretty impressed. The team showed up on time, which already gave a good first impression. They were polite, easy to communicate with, and got straight to work without wasting any time. What I liked the most was the attention to detail."</p>
-                <strong>Dipesh Bag</strong>
-                <span>Google Reviews</span>
+        <div class="testimonials-carousel-wrapper">
+            <div class="testimonials-carousel">
+                <div class="carousel-track">
+                    <div class="testimonial-card carousel-slide">
+                        <div class="stars">★★★★★</div>
+                        <p>"I recently hired this cleaning company and honestly, I was pretty impressed. The team showed up on time, which already gave a good first impression. They were polite, easy to communicate with, and got straight to work without wasting any time. What I liked the most was the attention to detail."</p>
+                        <strong>Dipesh Bag</strong>
+                        <span>Google Reviews</span>
+                    </div>
+                    <div class="testimonial-card carousel-slide">
+                        <div class="stars">★★★★★</div>
+                        <p>"YD Commercial Cleaning Services delivers outstanding and reliable cleaning every time. Their team is professional, punctual, and pays great attention to detail. The quality of their work truly stands out, leaving spaces spotless and fresh. Highly recommended!"</p>
+                        <strong>Code With Me</strong>
+                        <span>Google Reviews</span>
+                    </div>
+                    <div class="testimonial-card carousel-slide">
+                        <div class="stars">★★★★★</div>
+                        <p>"I recently hired YD Commercial Cleaning Services for an end of lease clean, and I'm very satisfied with the results. The team was professional, punctual, and communicated clearly throughout the process. Great value for money and excellent service overall."</p>
+                        <strong>Sushila Bista</strong>
+                        <span>Google Reviews</span>
+                    </div>
+                </div>
             </div>
-            <div class="testimonial-card">
-                <div class="stars">★★★★★</div>
-                <p>"YD Commercial Cleaning Services delivers outstanding and reliable cleaning every time. Their team is professional, punctual, and pays great attention to detail. The quality of their work truly stands out, leaving spaces spotless and fresh. Highly recommended!"</p>
-                <strong>Code With Me</strong>
-                <span>Google Reviews</span>
-            </div>
-            <div class="testimonial-card">
-                <div class="stars">★★★★★</div>
-                <p>"I recently hired YD Commercial Cleaning Services for an end of lease clean, and I'm very satisfied with the results. The team was professional, punctual, and communicated clearly throughout the process. Great value for money and excellent service overall."</p>
-                <strong>Sushila Bista</strong>
-                <span>Google Reviews</span>
-            </div>
+            <button class="carousel-btn carousel-prev" aria-label="Previous testimonial">&#10094;</button>
+            <button class="carousel-btn carousel-next" aria-label="Next testimonial">&#10095;</button>
+        </div>
+        <div class="carousel-dots">
+            <button class="dot active" data-slide="0" aria-label="Testimonial 1"></button>
+            <button class="dot" data-slide="1" aria-label="Testimonial 2"></button>
+            <button class="dot" data-slide="2" aria-label="Testimonial 3"></button>
         </div>
     </div>
 </section>
@@ -174,7 +185,52 @@
             <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Contact Us Today</a>
             <a href="{% url 'home' %}#quote" class="btn btn-secondary btn-lg">Get a Quote</a>
         </div>
-    </div>
 </section>
 
 {% endblock %}
+
+<script>
+// Testimonial Carousel Script
+document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.querySelector('.carousel-track');
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    const dots = document.querySelectorAll('.dot');
+    
+    let currentIndex = 0;
+    const totalSlides = document.querySelectorAll('.carousel-slide').length;
+    
+    function updateCarousel() {
+        const offset = -currentIndex * 100;
+        carousel.style.transform = `translateX(${offset}%)`;
+        
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentIndex);
+        });
+    }
+    
+    function goToSlide(index) {
+        currentIndex = (index + totalSlides) % totalSlides;
+        updateCarousel();
+    }
+    
+    function nextSlide() {
+        goToSlide(currentIndex + 1);
+    }
+    
+    function prevSlide() {
+        goToSlide(currentIndex - 1);
+    }
+    
+    // Event listeners
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+    
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => goToSlide(index));
+    });
+    
+    // Auto-rotate every 8 seconds
+    setInterval(nextSlide, 8000);
+});
+</script>

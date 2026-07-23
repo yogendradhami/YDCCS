@@ -7,7 +7,10 @@
 {% block content %}
 
 <section class="crm-quick-actions">
-    <a href="/dashboard/contracts/{{ contract.id }}/generate-bookings/">Generate Next 90 Days</a>
+    <form method="post" action="{% url 'generate_contract_bookings' contract.id %}">
+        {% csrf_token %}
+        <button type="submit">Generate Next 90 Days</button>
+    </form>
     <a href="/dashboard/contracts/{{ contract.id }}/edit/">Edit Contract</a>
     <a href="/dashboard/contracts/{{ contract.id }}/delete/">Delete Contract</a>
     <a href="/dashboard/contracts/">Back to Contracts</a>

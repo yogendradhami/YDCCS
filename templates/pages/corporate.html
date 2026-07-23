@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Corporate Cleaning & B2B Partnerships | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Partner with YD Commercial Cleaning for reliable corporate cleaning, property management support, and tailored business cleaning services in Adelaide.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/corporate.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="corporate-hero">
+    <div class="container">
+        <h1>Corporate Cleaning & B2B Partnerships</h1>
+        <p>Flexible cleaning solutions for offices, strata managers, retailers, and commercial properties across Adelaide.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary" role="button">Discuss Corporate Cleaning</a>
+    </div>
+</section>
+
+<section class="corporate-benefits">
+    <div class="container">
+        <h2>Why Businesses Choose YD Commercial Cleaning</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <h3>Reliable Scheduling</h3>
+                <p>Regular cleaning programs designed around your business hours and occupancy needs.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Trusted Teams</h3>
+                <p>Professional, insured cleaners trained for commercial facilities and worksite standards.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Flexible Contracts</h3>
+                <p>Ongoing cleaning, one-off deep cleans, and project-based services with clear pricing.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Quality Assurance</h3>
+                <p>Supervised cleaning checks and follow-up support to keep your space looking its best.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="corporate-services">
+    <div class="container">
+        <h2>Our Corporate Cleaning Services</h2>
+        <ul class="service-list">
+            <li>Office and reception cleaning</li>
+            <li>Retail and hospitality cleaning</li>
+            <li>Industrial and warehouse cleaning</li>
+            <li>Strata and property manager support</li>
+            <li>Post-event and vacancy cleans</li>
+            <li>Flexible site maintenance programs</li>
+        </ul>
+    </div>
+</section>
+
+<section class="corporate-cta">
+    <div class="container">
+        <h2>Ready to partner with us?</h2>
+        <p>Contact our corporate team for a tailored cleaning proposal and fast Adelaide service.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary" role="button">Request a Business Quote</a>
+    </div>
+</section>
+{% endblock %}

@@ -4456,7 +4456,10 @@ table {
 
     .yd-menu-btn {
         display: inline-flex;
-        margin-left: auto;
+        order: 2;
+        margin-left: 0;
+        z-index: 6000;
+        flex: 0 0 auto;
     }
 
     .yd-menu {
@@ -4466,16 +4469,27 @@ table {
         align-items: stretch;
         gap: 4px;
         order: 3;
+        min-width: 0;
     }
 
     .yd-menu.active {
-        display: flex;
+        display: flex !important;
     }
 
     .yd-header-actions {
-        width: 100%;
-        margin-left: 0;
-        justify-content: space-between;
+        width: auto;
+        order: 3;
+        margin-left: auto;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .yd-search-btn {
+        width: auto;
+        min-width: 42px;
     }
 
     .yd-book-btn,
@@ -4538,8 +4552,9 @@ table {
     }
 
     .yd-search-btn {
-        width: 100%;
+        width: auto;
         justify-content: center;
+        min-width: 42px;
     }
 
     .yd-menu > a,

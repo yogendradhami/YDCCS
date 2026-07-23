@@ -1,6 +1,28 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block meta_description %}{{ post.excerpt|default:post.title }}{% endblock %}
+{% block og_image %}{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{{ open_graph_image }}{% endif %}{% endblock %}
+{% block twitter_image %}{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{{ twitter_image }}{% endif %}{% endblock %}
+
+{% block extra_head %}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "{{ post.title|escape }}",
+            "description": "{{ post.excerpt|escape }}",
+            "datePublished": "{{ post.published_at|date:'c' }}",
+            "author": {
+                "@type": "Person",
+                "name": "{{ post.author|getattr:'username'|default:'YD Commercial Cleaning'|escape }}"
+            },
+            "image": {% if post.featured_image %}"{{ post.featured_image.url }}"{% else %}"{{ open_graph_image }}"{% endif %},
+            "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ request.build_absolute_uri }}"}
+        }
+        </script>
+{% endblock %}
+
 {% block title %}{{ post.title }} | YD Commercial Cleaning{% endblock %}
 
 {% block extra_css %}

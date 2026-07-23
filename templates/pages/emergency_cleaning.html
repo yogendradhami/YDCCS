@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Emergency Cleaning | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Need fast emergency cleaning in Adelaide? Our rapid-response team handles urgent commercial cleaning after incidents, events, or unexpected messes.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/emergency.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="emergency-hero">
+    <div class="container">
+        <h1>Emergency Cleaning Services</h1>
+        <p>Reliable same-day or next-day commercial cleaning for spills, events, property turnovers, and urgent hygiene needs.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Request Emergency Cleaning</a>
+    </div>
+</section>
+
+<section class="emergency-services">
+    <div class="container">
+        <h2>Rapid Response for Urgent Needs</h2>
+        <ul class="emergency-list">
+            <li>Post-event cleanup for corporate and retail spaces.</li>
+            <li>Accident and spill management.</li>
+            <li>Cleaning after tenant move-outs or maintenance works.</li>
+        </ul>
+        <p>Our team moves quickly while maintaining professional standards, so your business can reopen or continue operating with confidence.</p>
+    </div>
+</section>
+
+<section class="emergency-benefits">
+    <div class="container">
+        <h2>Why Choose Our Emergency Cleaning?</h2>
+        <div class="benefit-grid">
+            <div class="benefit-card">
+                <h3>Fast Response</h3>
+                <p>We can mobilise quickly to address urgent cleaning and sanitisation needs.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Trusted Professionals</h3>
+                <p>Experienced cleaning teams handle emergencies safely and efficiently.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Complete Coverage</h3>
+                <p>From debris removal to sanitisation, we restore commercial spaces fast.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="emergency-cta">
+    <div class="container">
+        <h2>Need urgent cleaning now?</h2>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us Immediately</a>
+    </div>
+</section>
+{% endblock %}

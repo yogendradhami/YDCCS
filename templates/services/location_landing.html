@@ -182,7 +182,7 @@
             <p>We provide cleaning services throughout {{ location_name }} including the following suburbs and areas:</p>
             <div class="alphabet-nav">
                 {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"|make_list %}
-                    <a href="/local/index/adelaide/{{ letter|lower }}/">{{ letter }}</a>
+                    <a href="{% url 'local_area_index' letter=letter|lower %}">{{ letter }}</a>
                 {% endfor %}
             </div>
             <div class="service-areas-grid">

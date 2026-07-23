@@ -3,10 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupNotifications();
     setupAdvancedTables();
     setupDashboardCharts();
-<<<<<<< HEAD
-=======
     setupSidebarDropdowns();
->>>>>>> 5815f15 (Initial project commit)
 });
 
 function setupMobileSidebar() {
@@ -308,9 +305,6 @@ function setupDashboardCharts() {
             options: options
         });
     }
-<<<<<<< HEAD
-}
-=======
 }
 function setupSidebarDropdowns() {
     const dropdownButtons = document.querySelectorAll(".sidebar-dropdown-btn");
@@ -327,4 +321,3 @@ function setupSidebarDropdowns() {
         });
     });
 }
->>>>>>> 5815f15 (Initial project commit)

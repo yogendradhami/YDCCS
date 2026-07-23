@@ -5,16 +5,13 @@
 # - Activity log for tracking important CRM actions
 # ==========================================================
 
-<<<<<<< HEAD
 from django.contrib.auth.models import User
 from django.db import models
-=======
-from django.db import models
-from django.contrib.auth.models import User
-import os
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
->>>>>>> 5815f15 (Initial project commit)
+
+
+def site_image_upload_path(instance, filename):
+    """Generate upload path for site images."""
+    return f"site_images/{instance.name}/{filename}"
 
 
 class CompanySettings(models.Model):
@@ -28,7 +25,6 @@ class CompanySettings(models.Model):
     # ======================================================
 
     business_name = models.CharField(
-<<<<<<< HEAD
         max_length=255, default="YD Commercial Cleaning Services"
     )
 
@@ -41,55 +37,14 @@ class CompanySettings(models.Model):
     website = models.URLField(blank=True)
 
     address = models.TextField(blank=True)
-=======
-        max_length=255,
-        default="YD Commercial Cleaning Services"
-    )
-
-    abn = models.CharField(
-        max_length=50,
-        blank=True
-    )
-
-    phone = models.CharField(
-        max_length=50,
-        blank=True
-    )
-
-    email = models.EmailField(
-        blank=True
-    )
-
-    website = models.URLField(
-        blank=True
-    )
-
-    address = models.TextField(
-        blank=True
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     # ======================================================
     # Branding
     # ======================================================
 
-<<<<<<< HEAD
     logo = models.ImageField(upload_to="company/", blank=True, null=True)
 
     favicon = models.ImageField(upload_to="company/", blank=True, null=True)
-=======
-    logo = models.ImageField(
-        upload_to="company/",
-        blank=True,
-        null=True
-    )
-
-    favicon = models.ImageField(
-        upload_to="company/",
-        blank=True,
-        null=True
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     # ======================================================
     # Social Media
@@ -104,94 +59,24 @@ class CompanySettings(models.Model):
     # Invoice Settings
     # ======================================================
 
-<<<<<<< HEAD
     invoice_prefix = models.CharField(max_length=20, default="YD")
 
     gst_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=10.00)
 
     payment_terms_days = models.PositiveIntegerField(default=7)
-=======
-    invoice_prefix = models.CharField(
-        max_length=20,
-        default="YD"
-    )
-
-    gst_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=10.00
-    )
-
-    payment_terms_days = models.PositiveIntegerField(
-        default=7
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     # ======================================================
     # Timestamps
     # ======================================================
 
-<<<<<<< HEAD
     created_at = models.DateTimeField(auto_now_add=True)
 
     updated_at = models.DateTimeField(auto_now=True)
-=======
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     def __str__(self):
         return self.business_name
 
 
-<<<<<<< HEAD
-=======
-# ==========================================================
-# Site Images - upload site-wide images from dashboard
-# Files are stored under <project_root>/static/uploads/<category>/
-# ==========================================================
-
-# Use a FileSystemStorage pointed at the project's static folder so uploads
-# end up inside `static/uploads/...` as requested.
-static_fs = FileSystemStorage(location=os.path.join(settings.BASE_DIR, "static"), base_url=settings.STATIC_URL)
-
-
-def site_image_upload_path(instance, filename):
-    return os.path.join("uploads", instance.category, filename)
-
-
-class SiteImage(models.Model):
-    CATEGORY_CHOICES = [
-        ("hero", "Hero / Homepage"),
-        ("blog", "Blog Post"),
-        ("service", "Service Page"),
-        ("company", "Company / Logo"),
-        ("team", "Team / Staff"),
-        ("other", "Other"),
-    ]
-
-    title = models.CharField(max_length=200)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="other")
-
-    image = models.ImageField(
-        upload_to=site_image_upload_path,
-        storage=static_fs,
-        blank=False,
-        null=False,
-    )
-
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.category} — {self.title}"
-
-
->>>>>>> 5815f15 (Initial project commit)
 class ActivityLog(models.Model):
     """
     Tracks important CRM actions.
@@ -216,7 +101,6 @@ class ActivityLog(models.Model):
     ]
 
     # User who performed the action.
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Category of action.
@@ -232,59 +116,18 @@ class ActivityLog(models.Model):
 
     # Time action happened.
     created_at = models.DateTimeField(auto_now_add=True)
-=======
-    user = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    # Category of action.
-    action_type = models.CharField(
-        max_length=30,
-        choices=ACTION_TYPES,
-        default="system"
-    )
-
-    # Short title shown in activity table.
-    title = models.CharField(
-        max_length=200
-    )
-
-    # Longer explanation of the action.
-    description = models.TextField(
-        blank=True
-    )
-
-    # Time action happened.
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self):
         return self.title
-<<<<<<< HEAD
 
-    # ==========================================================
-
-
-=======
-    
-    # ==========================================================
->>>>>>> 5815f15 (Initial project commit)
 # Email Log
 # Tracks emails sent from the CRM Email Center.
 # ==========================================================
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 class EmailLog(models.Model):
     EMAIL_TYPES = [
         ("invoice_reminder", "Invoice Reminder"),
@@ -295,24 +138,9 @@ class EmailLog(models.Model):
         ("system", "System"),
     ]
 
-<<<<<<< HEAD
     sent_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     email_type = models.CharField(max_length=50, choices=EMAIL_TYPES, default="system")
-=======
-    sent_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    email_type = models.CharField(
-        max_length=50,
-        choices=EMAIL_TYPES,
-        default="system"
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     recipient_name = models.CharField(max_length=150)
     recipient_email = models.EmailField()
@@ -326,20 +154,11 @@ class EmailLog(models.Model):
 
     def __str__(self):
         return f"{self.subject} → {self.recipient_email}"
-<<<<<<< HEAD
 
-    # ==========================================================
-
-
-=======
-    
-    # ==========================================================
->>>>>>> 5815f15 (Initial project commit)
 # Review Request Log
 # Tracks Google review request emails sent to customers.
 # ==========================================================
 
-<<<<<<< HEAD
 
 class ReviewRequestLog(models.Model):
     booking = models.OneToOneField(
@@ -360,42 +179,6 @@ class ReviewRequestLog(models.Model):
         return f"Review request for booking #{self.booking.id}"
 
 
-=======
-class ReviewRequestLog(models.Model):
-    booking = models.OneToOneField(
-        "bookings.Booking",
-        on_delete=models.CASCADE,
-        related_name="review_request_log"
-    )
-
-    sent_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    sent_count = models.PositiveIntegerField(
-        default=0
-    )
-
-    last_sent_at = models.DateTimeField(
-        null=True,
-        blank=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
-
-    def __str__(self):
-        return f"Review request for booking #{self.booking.id}"
-    
->>>>>>> 5815f15 (Initial project commit)
 class CampaignLog(models.Model):
     CAMPAIGN_TYPES = [
         ("vip", "VIP Customer Campaign"),
@@ -403,23 +186,9 @@ class CampaignLog(models.Model):
         ("review", "Review Follow-up Campaign"),
     ]
 
-<<<<<<< HEAD
     sent_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     campaign_type = models.CharField(max_length=50, choices=CAMPAIGN_TYPES)
-=======
-    sent_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    campaign_type = models.CharField(
-        max_length=50,
-        choices=CAMPAIGN_TYPES
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     title = models.CharField(max_length=200)
     recipients_count = models.PositiveIntegerField(default=0)
@@ -432,18 +201,12 @@ class CampaignLog(models.Model):
     def __str__(self):
         return f"{self.title} - {self.recipients_count} recipients"
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 # ==========================================================
 # Equipment Inventory
 # ==========================================================
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 class Equipment(models.Model):
 
     CONDITION_CHOICES = [
@@ -456,7 +219,6 @@ class Equipment(models.Model):
 
     name = models.CharField(max_length=200)
 
-<<<<<<< HEAD
     serial_number = models.CharField(max_length=100, blank=True)
 
     purchase_date = models.DateField(null=True, blank=True)
@@ -480,65 +242,26 @@ class Equipment(models.Model):
     def __str__(self):
         return self.name
 
-    # ==========================================================
 
-
-# Cleaning Supplies Inventory
+# ==========================================================
+# Careers / Applications
 # ==========================================================
 
 
-=======
-    serial_number = models.CharField(
-        max_length=100,
-        blank=True
-    )
+class CareerApplication(models.Model):
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50, blank=True)
+    cover_letter = models.TextField(blank=True)
+    resume = models.FileField(upload_to="careers/resumes/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    purchase_date = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    purchase_cost = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
-    assigned_employee = models.ForeignKey(
-        "employees.Employee",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    condition = models.CharField(
-        max_length=20,
-        choices=CONDITION_CHOICES,
-        default="good"
-    )
-
-    next_service_date = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    notes = models.TextField(
-        blank=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return self.name
-    
+        return f"{self.full_name} <{self.email}>"
 
-    # ==========================================================
-# Cleaning Supplies Inventory
-# ==========================================================
-
->>>>>>> 5815f15 (Initial project commit)
 class CleaningSupply(models.Model):
 
     UNIT_CHOICES = [
@@ -552,42 +275,16 @@ class CleaningSupply(models.Model):
 
     name = models.CharField(max_length=200)
 
-<<<<<<< HEAD
     category = models.CharField(max_length=100, blank=True)
-=======
-    category = models.CharField(
-        max_length=100,
-        blank=True
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     current_stock = models.PositiveIntegerField(default=0)
     minimum_stock = models.PositiveIntegerField(default=5)
 
-<<<<<<< HEAD
     unit = models.CharField(max_length=30, choices=UNIT_CHOICES, default="piece")
 
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     supplier_name = models.CharField(max_length=150, blank=True)
-=======
-    unit = models.CharField(
-        max_length=30,
-        choices=UNIT_CHOICES,
-        default="piece"
-    )
-
-    unit_cost = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
-    supplier_name = models.CharField(
-        max_length=150,
-        blank=True
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     notes = models.TextField(blank=True)
 
@@ -601,20 +298,13 @@ class CleaningSupply(models.Model):
 
     def __str__(self):
         return self.name
-<<<<<<< HEAD
 
 
-=======
-    
->>>>>>> 5815f15 (Initial project commit)
 # ==========================================================
 # Purchase Orders
 # ==========================================================
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 class PurchaseOrder(models.Model):
 
     STATUS_CHOICES = [
@@ -624,7 +314,6 @@ class PurchaseOrder(models.Model):
         ("cancelled", "Cancelled"),
     ]
 
-<<<<<<< HEAD
     supply = models.ForeignKey("dashboard.CleaningSupply", on_delete=models.CASCADE)
 
     supplier_name = models.CharField(max_length=150)
@@ -634,30 +323,6 @@ class PurchaseOrder(models.Model):
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
-=======
-    supply = models.ForeignKey(
-        "dashboard.CleaningSupply",
-        on_delete=models.CASCADE
-    )
-
-    supplier_name = models.CharField(
-        max_length=150
-    )
-
-    quantity = models.PositiveIntegerField()
-
-    unit_cost = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="draft"
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     order_date = models.DateField(auto_now_add=True)
 
@@ -668,11 +333,7 @@ class PurchaseOrder(models.Model):
 
     def __str__(self):
         return f"PO #{self.id}"
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 5815f15 (Initial project commit)
 
 class Supplier(models.Model):
     name = models.CharField(max_length=200)
@@ -688,11 +349,7 @@ class Supplier(models.Model):
 
     def __str__(self):
         return self.name
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 5815f15 (Initial project commit)
 
 class Vehicle(models.Model):
 
@@ -704,7 +361,6 @@ class Vehicle(models.Model):
 
     vehicle_name = models.CharField(max_length=150)
 
-<<<<<<< HEAD
     registration_number = models.CharField(max_length=50, unique=True)
 
     make = models.CharField(max_length=100, blank=True)
@@ -739,78 +395,11 @@ class MaintenanceHistory(models.Model):
 
     # Duplicate block removed (fields/methods already defined above)
 
-=======
-    registration_number = models.CharField(
-        max_length=50,
-        unique=True
-    )
-
-    make = models.CharField(
-        max_length=100,
-        blank=True
-    )
-
-    model = models.CharField(
-        max_length=100,
-        blank=True
-    )
-
-    year = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
-
-    assigned_employee = models.ForeignKey(
-        "employees.Employee",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    insurance_expiry = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    registration_expiry = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    service_due_date = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    odometer = models.PositiveIntegerField(
-        default=0
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="active"
-    )
-
-    notes = models.TextField(blank=True)
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    def __str__(self):
-        return f"{self.vehicle_name} ({self.registration_number})"
-    
-
-class MaintenanceHistory(models.Model):
-
->>>>>>> 5815f15 (Initial project commit)
     ASSET_TYPE_CHOICES = [
         ("vehicle", "Vehicle"),
         ("equipment", "Equipment"),
     ]
 
-<<<<<<< HEAD
     asset_type = models.CharField(max_length=20, choices=ASSET_TYPE_CHOICES)
 
     asset_name = models.CharField(max_length=200)
@@ -831,90 +420,38 @@ class MaintenanceHistory(models.Model):
 
     def __str__(self):
         return f"{self.asset_name} - {self.maintenance_date}"
-=======
-    asset_type = models.CharField(
-        max_length=20,
-        choices=ASSET_TYPE_CHOICES
+
+
+class SiteImage(models.Model):
+    """Store images used across the site (hero banners, backgrounds, etc.)"""
+
+    title = models.CharField(max_length=200)
+    category = models.CharField(
+        max_length=50,
+        choices=[
+            ("hero", "Hero / Homepage"),
+            ("blog", "Blog Post"),
+            ("service", "Service Page"),
+            ("company", "Company / Logo"),
+            ("team", "Team / Staff"),
+            ("other", "Other"),
+        ],
+        default="other",
     )
 
-    asset_name = models.CharField(
-        max_length=200
-    )
+    image = models.ImageField(upload_to=site_image_upload_path)
+    description = models.TextField(blank=True)
+    alt_text = models.CharField(max_length=255, blank=True)
 
-    maintenance_date = models.DateField()
-
-    next_service_date = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    cost = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
-    performed_by = models.CharField(
-        max_length=200,
-        blank=True
-    )
-
-    description = models.TextField()
-
-    notes = models.TextField(
-        blank=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    @property
+    def name(self):
+        return self.title
+    # Keep `uploaded_at` to match existing migration (0014_siteimage.py)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    @property
+    def created_at(self):
+        return self.uploaded_at
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.asset_name} - {self.maintenance_date}"
-
-
-    ASSET_TYPE_CHOICES = [
-        ("vehicle", "Vehicle"),
-        ("equipment", "Equipment"),
-    ]
-
-    asset_type = models.CharField(
-        max_length=20,
-        choices=ASSET_TYPE_CHOICES
-    )
-
-    asset_name = models.CharField(
-        max_length=200
-    )
-
-    maintenance_date = models.DateField()
-
-    next_service_date = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    cost = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
-    performed_by = models.CharField(
-        max_length=200,
-        blank=True
-    )
-
-    description = models.TextField()
-
-    notes = models.TextField(
-        blank=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    def __str__(self):
-        return f"{self.asset_name} - {self.maintenance_date}"
->>>>>>> 5815f15 (Initial project commit)
+        return self.name

@@ -9,8 +9,4 @@ class GoogleAccountAdmin(admin.ModelAdmin):
         "email",
         "connected_at",
         "updated_at",
-<<<<<<< HEAD
     )
-=======
-    )
->>>>>>> 5815f15 (Initial project commit)

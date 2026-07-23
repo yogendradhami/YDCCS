@@ -16,7 +16,7 @@ Context expected: `services` - iterable of objects with at least:
     {% comment %} alternate layout every other item {% endcomment %}
     {% if forloop.counter|divisibleby:2 %}
       <div class="service-image" style="flex:1;min-width:300px;padding:16px;order:1;">
-        <img src="{{ service.image.url|default:service.image_url }}" alt="{{ service.title }}" style="width:100%;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+        <img src="{{ service.image.url|default:service.image_url }}" alt="{{ service.title }}" style="width:100%;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);" width="800" height="500">
       </div>
       <div class="service-content" style="flex:1;min-width:300px;padding:16px;order:2;">
         <h2 style="margin-top:0;margin-bottom:12px;font-size:1.6rem;">{{ service.title }}</h2>
@@ -34,7 +34,7 @@ Context expected: `services` - iterable of objects with at least:
         {% endif %}
       </div>
       <div class="service-image" style="flex:1;min-width:300px;padding:16px;order:2;">
-        <img src="{{ service.image.url|default:service.image_url }}" alt="{{ service.title }}" style="width:100%;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+        <img src="{{ service.image.url|default:service.image_url }}" alt="{{ service.title }}" style="width:100%;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);" width="800" height="500">
       </div>
     {% endif %}
   </section>

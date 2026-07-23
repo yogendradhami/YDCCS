@@ -523,9 +523,12 @@
                 </div>
             </div>
 
-            <a href="/dashboard/logout/" class="sidebar-link">
-                <span>Logout</span>
-            </a>
+            <form method="post" action="{% url 'dashboard_logout' %}" style="display: block; width: 100%;">
+                {% csrf_token %}
+                <button type="submit" class="sidebar-link" style="background: none; border: none; cursor: pointer; width: 100%; text-align: left; padding: 0;">
+                    <span>Logout</span>
+                </button>
+            </form>
 
         </nav>
 

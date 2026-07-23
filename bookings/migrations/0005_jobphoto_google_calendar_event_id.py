@@ -6,22 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("bookings", "0004_jobphoto_customer_signature_and_more"),
-=======
-        ('bookings', '0004_jobphoto_customer_signature_and_more'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AddField(
-<<<<<<< HEAD
             model_name="jobphoto",
             name="google_calendar_event_id",
-=======
-            model_name='jobphoto',
-            name='google_calendar_event_id',
->>>>>>> 5815f15 (Initial project commit)
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

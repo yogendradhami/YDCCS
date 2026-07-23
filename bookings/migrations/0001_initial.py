@@ -9,16 +9,11 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-<<<<<<< HEAD
         ("customers", "0001_initial"),
-=======
-        ('customers', '0001_initial'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="Booking",
             fields=[
                 (
@@ -82,22 +77,6 @@ class Migration(migrations.Migration):
                         to="customers.customer",
                     ),
                 ),
-=======
-            name='Booking',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('service_type', models.CharField(choices=[('Commercial Cleaning', 'Commercial Cleaning'), ('Office Cleaning', 'Office Cleaning'), ('House Cleaning', 'House Cleaning'), ('End of Lease Cleaning', 'End of Lease Cleaning'), ('Window Cleaning', 'Window Cleaning'), ('Deep Cleaning', 'Deep Cleaning'), ('Post Construction Cleaning', 'Post Construction Cleaning')], max_length=100)),
-                ('booking_date', models.DateField()),
-                ('booking_time', models.TimeField()),
-                ('address', models.CharField(max_length=255)),
-                ('suburb_postcode', models.CharField(max_length=150)),
-                ('quoted_price', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('assigned_cleaner', models.CharField(blank=True, max_length=100)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('confirmed', 'Confirmed'), ('assigned', 'Assigned'), ('in_progress', 'In Progress'), ('completed', 'Completed'), ('cancelled', 'Cancelled')], default='pending', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='customers.customer')),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

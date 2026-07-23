@@ -1,0 +1,35 @@
+{% extends 'dashboard_base.html' %}
+
+{% block content %}
+<h1>Career Applications</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Applicant</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Submitted</th>
+            <th>Resume</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for app in applications %}
+        <tr>
+            <td>{{ app.full_name }}</td>
+            <td>{{ app.email }}</td>
+            <td>{{ app.phone }}</td>
+            <td>{{ app.created_at }}</td>
+            <td>
+                {% if app.resume %}
+                    <a href="{{ app.resume.url }}" target="_blank">Download</a>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No applications yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

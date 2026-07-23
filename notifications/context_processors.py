@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-<<<<<<< HEAD
 from django.db.models import F
 from django.utils import timezone
 
@@ -24,33 +23,6 @@ def notification_context(request):
     if request.user.is_authenticated:
         notifications = request.user.notifications.all()[:10]
         unread_count = request.user.notifications.filter(is_read=False).count()
-=======
-from django.utils import timezone
-
-from invoices.models import Invoice
-from bookings.models import Booking
-from quotes.models import QuoteRequest
-from django.db.models import F
-from django.utils import timezone
-from employees.models import Employee
-from support.models import SupportTicket
-from leave_management.models import LeaveRequest
-from dashboard.models import (
-    Equipment,
-    CleaningSupply,
-    Supplier,
-    Vehicle,
-    PurchaseOrder,
-    MaintenanceHistory,
-
-)
-def notification_context(request):
-    if request.user.is_authenticated:
-        notifications = request.user.notifications.all()[:10]
-        unread_count = request.user.notifications.filter(
-            is_read=False
-        ).count()
->>>>>>> 5815f15 (Initial project commit)
 
         # ==================================================
         # Reminder Center Count
@@ -59,7 +31,6 @@ def notification_context(request):
         today = timezone.now().date()
         overdue_quote_date = today - timedelta(days=2)
 
-<<<<<<< HEAD
         overdue_invoices_count = (
             Invoice.objects.exclude(status="paid").filter(due_date__lt=today).count()
         )
@@ -79,30 +50,6 @@ def notification_context(request):
 
         reminder_count = (
             overdue_invoices_count + unassigned_jobs_count + pending_quotes_count
-=======
-        overdue_invoices_count = Invoice.objects.exclude(
-            status="paid"
-        ).filter(
-            due_date__lt=today
-        ).count()
-
-        unassigned_jobs_count = Booking.objects.filter(
-            assigned_employee__isnull=True,
-            booking_date__gte=today
-        ).exclude(
-            status="cancelled"
-        ).count()
-
-        pending_quotes_count = QuoteRequest.objects.filter(
-            status__in=["new", "contacted", "quoted"],
-            created_at__date__lte=overdue_quote_date
-        ).count()
-
-        reminder_count = (
-            overdue_invoices_count
-            + unassigned_jobs_count
-            + pending_quotes_count
->>>>>>> 5815f15 (Initial project commit)
         )
 
         # ==================================================
@@ -111,7 +58,6 @@ def notification_context(request):
 
         notification_counts = {
             "reminders": reminder_count,
-<<<<<<< HEAD
             "quote": request.user.notifications.filter(
                 notification_type="quote", is_read=False
             ).count(),
@@ -129,6 +75,9 @@ def notification_context(request):
             ).count(),
             "gallery": request.user.notifications.filter(
                 notification_type="gallery", is_read=False
+            ).count(),
+            "system": request.user.notifications.filter(
+                notification_type="system", is_read=False
             ).count(),
             "review": request.user.notifications.filter(
                 notification_type="review", is_read=False
@@ -154,26 +103,6 @@ def notification_context(request):
             "support": SupportTicket.objects.filter(status="open").count(),
         }
 
-=======
-            "quote": request.user.notifications.filter(notification_type="quote", is_read=False).count(),
-            "booking": request.user.notifications.filter(notification_type="booking", is_read=False).count(),
-            "invoice": request.user.notifications.filter(notification_type="invoice", is_read=False).count(),
-            "customer": request.user.notifications.filter(notification_type="customer", is_read=False).count(),
-            "employee": request.user.notifications.filter(notification_type="employee", is_read=False).count(),
-            "gallery": request.user.notifications.filter(notification_type="gallery", is_read=False).count(),
-            "review": request.user.notifications.filter(notification_type="review", is_read=False).count(),
-            "report": request.user.notifications.filter(notification_type="report", is_read=False).count(),
-            "contract": request.user.notifications.filter(notification_type="contract", is_read=False).count(),
-            "attendance": request.user.notifications.filter(notification_type="attendance", is_read=False).count(),
-            "payroll": request.user.notifications.filter(notification_type="payroll", is_read=False).count(),
-            "leave": request.user.notifications.filter(notification_type="leave", is_read=False).count(),
-            "roster": request.user.notifications.filter(notification_type="roster", is_read=False).count(),
-            "support": SupportTicket.objects.filter( status="open" ).count(),
-        
-        }
-
-
->>>>>>> 5815f15 (Initial project commit)
         notification_counts["equipment"] = Equipment.objects.filter(
             next_service_date__lt=timezone.localdate()
         ).count()
@@ -192,33 +121,12 @@ def notification_context(request):
             + notification_counts["purchase_orders"]
         )
 
-<<<<<<< HEAD
         notification_counts["suppliers"] = Supplier.objects.filter(active=False).count()
 
         notification_counts["vehicles"] = (
             Vehicle.objects.filter(insurance_expiry__lt=today).count()
             + Vehicle.objects.filter(registration_expiry__lt=today).count()
             + Vehicle.objects.filter(service_due_date__lt=today).count()
-=======
-        
-
-        notification_counts["suppliers"] = Supplier.objects.filter(
-            active=False
-        ).count()
-
-        notification_counts["vehicles"] = (
-            Vehicle.objects.filter(
-                insurance_expiry__lt=today
-            ).count()
-
-            + Vehicle.objects.filter(
-                registration_expiry__lt=today
-            ).count()
-
-            + Vehicle.objects.filter(
-                service_due_date__lt=today
-            ).count()
->>>>>>> 5815f15 (Initial project commit)
         )
 
         notification_counts["forecasting"] = (
@@ -232,12 +140,7 @@ def notification_context(request):
         ).count()
 
         notification_counts["quote_followups"] = QuoteRequest.objects.filter(
-<<<<<<< HEAD
             status="quoted", created_at__lte=timezone.now() - timedelta(days=2)
-=======
-            status="quoted",
-            created_at__lte=timezone.now() - timedelta(days=2)
->>>>>>> 5815f15 (Initial project commit)
         ).count()
 
         notification_counts["employee_performance"] = Employee.objects.filter(
@@ -257,8 +160,4 @@ def notification_context(request):
         "global_notifications": notifications,
         "global_unread_notifications": unread_count,
         "notification_counts": notification_counts,
-<<<<<<< HEAD
     }
-=======
-    }
->>>>>>> 5815f15 (Initial project commit)

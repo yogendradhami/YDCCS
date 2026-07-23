@@ -7,18 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("bookings", "0001_initial"),
         ("employees", "0001_initial"),
-=======
-        ('bookings', '0001_initial'),
-        ('employees', '0001_initial'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.RemoveField(
-<<<<<<< HEAD
             model_name="booking",
             name="assigned_cleaner",
         ),
@@ -32,14 +26,5 @@ class Migration(migrations.Migration):
                 related_name="assigned_bookings",
                 to="employees.employee",
             ),
-=======
-            model_name='booking',
-            name='assigned_cleaner',
-        ),
-        migrations.AddField(
-            model_name='booking',
-            name='assigned_employee',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_bookings', to='employees.employee'),
->>>>>>> 5815f15 (Initial project commit)
         ),
     ]

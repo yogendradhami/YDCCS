@@ -1,8 +1,5 @@
 from django.contrib import admin
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 from .models import AttendanceLog
 
 
@@ -21,10 +18,4 @@ class AttendanceLogAdmin(admin.ModelAdmin):
         "check_out_time",
     )
 
-<<<<<<< HEAD
     search_fields = ("employee__full_name",)
-=======
-    search_fields = (
-        "employee__full_name",
-    )
->>>>>>> 5815f15 (Initial project commit)

@@ -9,16 +9,11 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-<<<<<<< HEAD
         ("employees", "0003_alter_employee_hourly_rate"),
-=======
-        ('employees', '0003_alter_employee_hourly_rate'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="PayrollRecord",
             fields=[
                 (
@@ -56,21 +51,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["-week_end"],
-=======
-            name='PayrollRecord',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('week_start', models.DateField()),
-                ('week_end', models.DateField()),
-                ('total_hours', models.DecimalField(decimal_places=2, default=0, max_digits=8)),
-                ('hourly_rate', models.DecimalField(decimal_places=2, default=35, max_digits=10)),
-                ('gross_pay', models.DecimalField(decimal_places=2, default=0, max_digits=12)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('employee', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payroll_records', to='employees.employee')),
-            ],
-            options={
-                'ordering': ['-week_end'],
->>>>>>> 5815f15 (Initial project commit)
             },
         ),
     ]

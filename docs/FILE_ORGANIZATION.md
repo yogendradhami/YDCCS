@@ -21,7 +21,7 @@
 
 ### Django Project Structure
 ```
-/config/                      # Main Django project settings
+/ydcleaning/                  # Main Django project package
 ├── settings.py               # Django configuration
 ├── urls.py                   # URL routing
 ├── wsgi.py                   # WSGI application entry

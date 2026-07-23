@@ -1,5 +1,4 @@
 from django.contrib import admin
-<<<<<<< HEAD
 
 from .models import (
     ActivityLog,
@@ -9,6 +8,7 @@ from .models import (
     EmailLog,
     Equipment,
     MaintenanceHistory,
+    CareerApplication,
     PurchaseOrder,
     ReviewRequestLog,
     Supplier,
@@ -16,26 +16,6 @@ from .models import (
 )
 
 admin.site.register(Vehicle)
-=======
-from .models import Vehicle
-admin.site.register(Vehicle)
-
-from .models import (
-    CompanySettings,
-    ActivityLog,
-    EmailLog,
-    ReviewRequestLog,
-    CampaignLog,
-    Equipment,
-    CleaningSupply,
-    PurchaseOrder,
-    Supplier,
-    MaintenanceHistory
-
-)
-
-from .models import SiteImage
->>>>>>> 5815f15 (Initial project commit)
 
 admin.site.register(CompanySettings)
 admin.site.register(ActivityLog)
@@ -47,7 +27,4 @@ admin.site.register(CleaningSupply)
 admin.site.register(PurchaseOrder)
 admin.site.register(Supplier)
 admin.site.register(MaintenanceHistory)
-<<<<<<< HEAD
-=======
-admin.site.register(SiteImage)
->>>>>>> 5815f15 (Initial project commit)
+admin.site.register(CareerApplication)

@@ -9,7 +9,6 @@
 from django.urls import path
 
 from .views import (
-<<<<<<< HEAD
     create_invoice,
     create_stripe_checkout_session,
     download_invoice_pdf,
@@ -19,23 +18,10 @@ from .views import (
     stripe_payment_success,
 )
 
-=======
-    invoice_list,
-    create_invoice,
-    invoice_detail,
-    download_invoice_pdf,
-    create_stripe_checkout_session,
-    stripe_payment_success,
-    stripe_payment_cancel,
-)
-
-
->>>>>>> 5815f15 (Initial project commit)
 urlpatterns = [
     path("dashboard/invoices/", invoice_list, name="invoice_list"),
     path("dashboard/invoices/create/", create_invoice, name="create_invoice"),
     path("dashboard/invoices/<int:invoice_id>/", invoice_detail, name="invoice_detail"),
-<<<<<<< HEAD
     path(
         "dashboard/invoices/<int:invoice_id>/download/",
         download_invoice_pdf,
@@ -56,12 +42,24 @@ urlpatterns = [
         stripe_payment_cancel,
         name="stripe_payment_cancel",
     ),
+    path(
+        "portal/invoices/<int:invoice_id>/pay/",
+        create_stripe_checkout_session,
+        name="portal_create_stripe_checkout_session",
+    ),
+    path(
+        "portal/invoices/<int:invoice_id>/payment-success/",
+        stripe_payment_success,
+        name="portal_stripe_payment_success",
+    ),
+    path(
+        "portal/invoices/<int:invoice_id>/payment-cancel/",
+        stripe_payment_cancel,
+        name="portal_stripe_payment_cancel",
+    ),
+    path(
+        "portal/invoices/<int:invoice_id>/download/",
+        download_invoice_pdf,
+        name="portal_download_invoice_pdf",
+    ),
 ]
-=======
-    path("dashboard/invoices/<int:invoice_id>/download/", download_invoice_pdf, name="download_invoice_pdf"),
-
-    path("dashboard/invoices/<int:invoice_id>/pay/", create_stripe_checkout_session, name="create_stripe_checkout_session"),
-    path("dashboard/invoices/<int:invoice_id>/payment-success/", stripe_payment_success, name="stripe_payment_success"),
-    path("dashboard/invoices/<int:invoice_id>/payment-cancel/", stripe_payment_cancel, name="stripe_payment_cancel"),
-]
->>>>>>> 5815f15 (Initial project commit)

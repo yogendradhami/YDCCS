@@ -84,6 +84,12 @@ class SEOMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
+
+        # Never allow a shared browser/proxy cache to store personalised
+        # dashboard, portal, or employee responses.
+        if request.user.is_authenticated:
+            response["Cache-Control"] = "private, no-store"
+            return response
         content_type = response.get("Content-Type", "")
 
         if request.path.startswith("/admin/") or request.path.startswith("/dashboard/") or request.path.startswith("/portal/") or request.path.startswith("/employee/"):
@@ -111,7 +117,8 @@ class CacheHeaderMiddleware:
         elif request.path.startswith('/media/'):
             response['Cache-Control'] = 'public, max-age=2592000'
         
-        # HTML pages: no-cache but revalidate
+        # Public HTML can be revalidated by caches.  Private HTML returned
+        # above is explicitly excluded from shared caches.
         elif request.path.startswith('/') and not request.path.startswith('/admin/'):
             response['Cache-Control'] = 'public, max-age=3600, must-revalidate'
         

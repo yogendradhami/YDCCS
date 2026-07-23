@@ -7,18 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("bookings", "0002_remove_booking_assigned_cleaner_and_more"),
         ("employees", "0002_employee_user"),
-=======
-        ('bookings', '0002_remove_booking_assigned_cleaner_and_more'),
-        ('employees', '0002_employee_user'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="JobPhoto",
             fields=[
                 (
@@ -58,17 +52,6 @@ class Migration(migrations.Migration):
                         to="employees.employee",
                     ),
                 ),
-=======
-            name='JobPhoto',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('photo_type', models.CharField(choices=[('before', 'Before'), ('after', 'After')], max_length=20)),
-                ('image', models.ImageField(upload_to='job_photos/')),
-                ('notes', models.TextField(blank=True)),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='job_photos', to='bookings.booking')),
-                ('employee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='uploaded_job_photos', to='employees.employee')),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

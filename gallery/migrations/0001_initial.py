@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     initial = True
 
-<<<<<<< HEAD
     dependencies = []
 
     operations = [
@@ -48,24 +47,6 @@ class Migration(migrations.Migration):
                 ("description", models.TextField(blank=True)),
                 ("featured", models.BooleanField(default=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
-=======
-    dependencies = [
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='GalleryItem',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=150)),
-                ('service_type', models.CharField(choices=[('Commercial Cleaning', 'Commercial Cleaning'), ('Office Cleaning', 'Office Cleaning'), ('House Cleaning', 'House Cleaning'), ('End of Lease Cleaning', 'End of Lease Cleaning'), ('Window Cleaning', 'Window Cleaning'), ('Deep Cleaning', 'Deep Cleaning'), ('Post Construction Cleaning', 'Post Construction Cleaning')], max_length=100)),
-                ('suburb', models.CharField(blank=True, max_length=100)),
-                ('before_image', models.ImageField(upload_to='gallery/before/')),
-                ('after_image', models.ImageField(upload_to='gallery/after/')),
-                ('description', models.TextField(blank=True)),
-                ('featured', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

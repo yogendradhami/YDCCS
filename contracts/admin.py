@@ -1,8 +1,5 @@
 from django.contrib import admin
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 from .models import CleaningContract
 
 
@@ -30,8 +27,4 @@ class CleaningContractAdmin(admin.ModelAdmin):
         "service_type",
         "address",
         "suburb_postcode",
-<<<<<<< HEAD
     )
-=======
-    )
->>>>>>> 5815f15 (Initial project commit)

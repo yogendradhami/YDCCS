@@ -6,16 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("dashboard", "0010_vehicle"),
-=======
-        ('dashboard', '0010_vehicle'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="MaintenanceHistory",
             fields=[
                 (
@@ -45,20 +40,6 @@ class Migration(migrations.Migration):
                 ("description", models.TextField()),
                 ("notes", models.TextField(blank=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
-=======
-            name='MaintenanceHistory',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('asset_type', models.CharField(choices=[('vehicle', 'Vehicle'), ('equipment', 'Equipment')], max_length=20)),
-                ('asset_name', models.CharField(max_length=200)),
-                ('maintenance_date', models.DateField()),
-                ('next_service_date', models.DateField(blank=True, null=True)),
-                ('cost', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('performed_by', models.CharField(blank=True, max_length=200)),
-                ('description', models.TextField()),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

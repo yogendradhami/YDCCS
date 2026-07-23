@@ -1,17 +1,9 @@
 from django.core.exceptions import PermissionDenied
+from functools import wraps
 
 def admin_required(view_func):
+    @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-
-        print(
-            "USER:",
-            request.user.username,
-            "STAFF:",
-            request.user.is_staff,
-            "SUPER:",
-            request.user.is_superuser,
-        )
-
         if not request.user.is_authenticated:
             raise PermissionDenied
 

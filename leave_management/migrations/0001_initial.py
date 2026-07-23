@@ -9,16 +9,11 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-<<<<<<< HEAD
         ("employees", "0003_alter_employee_hourly_rate"),
-=======
-        ('employees', '0003_alter_employee_hourly_rate'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="LeaveRequest",
             fields=[
                 (
@@ -67,19 +62,6 @@ class Migration(migrations.Migration):
                         to="employees.employee",
                     ),
                 ),
-=======
-            name='LeaveRequest',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('leave_type', models.CharField(choices=[('annual', 'Annual Leave'), ('sick', 'Sick Leave'), ('personal', 'Personal Leave'), ('unpaid', 'Unpaid Leave')], max_length=20)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
-                ('reason', models.TextField()),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending', max_length=20)),
-                ('admin_notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('employee', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='leave_requests', to='employees.employee')),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

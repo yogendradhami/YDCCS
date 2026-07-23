@@ -9,16 +9,11 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-<<<<<<< HEAD
         ("bookings", "0005_jobphoto_google_calendar_event_id"),
-=======
-        ('bookings', '0005_jobphoto_google_calendar_event_id'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="CleaningReport",
             fields=[
                 (
@@ -46,15 +41,6 @@ class Migration(migrations.Migration):
                         to="bookings.booking",
                     ),
                 ),
-=======
-            name='CleaningReport',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('pdf_file', models.FileField(blank=True, null=True, upload_to='cleaning_reports/')),
-                ('emailed_to_customer', models.BooleanField(default=False)),
-                ('generated_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='cleaning_report', to='bookings.booking')),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

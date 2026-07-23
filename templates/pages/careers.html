@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Careers - Join Our Team{% endblock %}
+
+{% block content %}
+<section class="team-careers">
+    <div class="container">
+        <h2>Join Our Growing Team</h2>
+        <p>Are you passionate about professional cleaning and customer service? We're always looking for talented, reliable individuals to join our team.</p>
+        <div class="career-benefits">
+            <h3>Benefits of Working with YD Commercial Cleaning:</h3>
+            <ul>
+                <li>Competitive wages and regular pay increases</li>
+                <li>Flexible scheduling and work-life balance</li>
+                <li>Comprehensive training and career development</li>
+                <li>Supportive, friendly team environment</li>
+                <li>Opportunities for advancement and leadership roles</li>
+                <li>Full insurance coverage while working</li>
+            </ul>
+        </div>
+
+        <h3>Apply Now</h3>
+        <p>Fill out the form below to submit your application.</p>
+
+        <form method="post" enctype="multipart/form-data" class="career-form">
+            {% csrf_token %}
+            <div class="form-row">
+                {{ form.full_name.label_tag }}
+                {{ form.full_name }}
+            </div>
+            <div class="form-row">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+            </div>
+            <div class="form-row">
+                {{ form.phone.label_tag }}
+                {{ form.phone }}
+            </div>
+            <div class="form-row">
+                {{ form.cover_letter.label_tag }}
+                {{ form.cover_letter }}
+            </div>
+            <div class="form-row">
+                {{ form.resume.label_tag }}
+                {{ form.resume }}
+            </div>
+            <div class="form-row">
+                <button type="submit" class="btn btn-primary">Submit Application</button>
+            </div>
+        </form>
+
+    </div>
+</section>
+{% endblock %}

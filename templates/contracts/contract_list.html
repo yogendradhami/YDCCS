@@ -164,7 +164,10 @@
                                 <a href="/dashboard/contracts/{{ contract.id }}/" class="small-link-btn">View</a>
                             </td>
                             <td> 
-                                <a href="/dashboard/contracts/{{ contract.id }}/generate-bookings/" class="small-link-btn"> Generate </a> 
+                                <form method="post" action="{% url 'generate_contract_bookings' contract.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="small-link-btn">Generate</button>
+                                </form>
                             </td>
                             <td>
                                 <a href="/dashboard/contracts/{{ contract.id }}/edit/" class="small-link-btn">Edit</a>

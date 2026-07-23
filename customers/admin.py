@@ -7,10 +7,7 @@
 # ====================================================
 
 from django.contrib import admin
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 from .models import Customer
 
 
@@ -38,8 +35,4 @@ class CustomerAdmin(admin.ModelAdmin):
     list_filter = (
         "property_type",
         "created_at",
-<<<<<<< HEAD
     )
-=======
-    )
->>>>>>> 5815f15 (Initial project commit)

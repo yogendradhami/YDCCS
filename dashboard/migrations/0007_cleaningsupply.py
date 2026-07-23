@@ -6,16 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("dashboard", "0006_equipment"),
-=======
-        ('dashboard', '0006_equipment'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="CleaningSupply",
             fields=[
                 (
@@ -53,20 +48,6 @@ class Migration(migrations.Migration):
                 ("supplier_name", models.CharField(blank=True, max_length=150)),
                 ("notes", models.TextField(blank=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
-=======
-            name='CleaningSupply',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('category', models.CharField(blank=True, max_length=100)),
-                ('current_stock', models.PositiveIntegerField(default=0)),
-                ('minimum_stock', models.PositiveIntegerField(default=5)),
-                ('unit', models.CharField(choices=[('bottle', 'Bottle'), ('litre', 'Litre'), ('box', 'Box'), ('pack', 'Pack'), ('piece', 'Piece'), ('roll', 'Roll')], default='piece', max_length=30)),
-                ('unit_cost', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('supplier_name', models.CharField(blank=True, max_length=150)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

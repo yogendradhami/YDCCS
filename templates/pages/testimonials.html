@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Testimonials | YD Commercial Cleaning Services{% endblock %}
+
+{% block meta_description %}Discover why Adelaide homeowners and businesses trust YD Commercial Cleaning with their most important cleaning jobs.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/services.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="service-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="hero-badge">Customer Stories</span>
+        <h1>Trusted testimonials from Adelaide businesses and homes.</h1>
+        <p>See the real results of professional cleaning delivered with care, consistency and exceptional service.</p>
+        <div class="cta-buttons">
+            <a href="/contact/" class="btn btn-primary">Request a Free Quote</a>
+            <a href="/resources/" class="btn btn-outline">Explore Our Resources</a>
+        </div>
+    </div>
+</section>
+
+<section class="service-list-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Why clients choose YD Commercial Cleaning</h2>
+            <p>Our Adelaide cleaning reviews show a high level of trust, reliability and satisfaction across residential and commercial bookings.</p>
+        </div>
+        <div class="service-list-grid">
+            <div class="service-card">
+                <span class="service-icon">⭐</span>
+                <h3>Professional Expertise</h3>
+                <p>Our team delivers consistent quality every time, backed by 5-star customer feedback.</p>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🤝</span>
+                <h3>Trusted Relationships</h3>
+                <p>Long-term Adelaide clients return for our reliable, friendly and detail-focused cleaning services.</p>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">💡</span>
+                <h3>Smart Results</h3>
+                <p>We solve cleaning challenges quickly with intelligent solutions tailored to your space.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="service-list-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Featured testimonials</h2>
+            <p>Selected reviews from our latest Adelaide cleaning projects.</p>
+        </div>
+        <div class="service-list-grid">
+            {% for testimonial in testimonials %}
+            <div class="service-card">
+                <div class="testimonial-rating">{{ testimonial.rating }}</div>
+                <p class="testimonial-text">"{{ testimonial.review_text }}"</p>
+                <strong>{{ testimonial.reviewer_name }}</strong>
+                {% if testimonial.suburb %}
+                <span class="testimonial-badge">{{ testimonial.suburb }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% if testimonials|length == 0 %}
+            <div class="service-card">
+                <h3>No testimonials are available yet.</h3>
+                <p>We are updating this page with our latest customer reviews. Please check back soon.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% include 'shared/includes/google_reviews.html' with reviews=google_reviews title='Google Reviews' review_count=google_review_count %}
+
+<section class="service-cta">
+    <div class="container">
+        <h2>Ready to experience premium cleaning?</h2>
+        <p>Book Adelaide's trusted cleaning team today and join the many customers who recommend YD Commercial Cleaning.</p>
+        <div class="cta-buttons">
+            <a href="/contact/" class="btn btn-primary">Book Your Clean</a>
+            <a href="/about/" class="btn btn-outline">Learn More About Us</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

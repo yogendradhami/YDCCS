@@ -15,7 +15,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="Expense",
             fields=[
                 (
@@ -68,22 +67,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["-date", "-created_at"],
-=======
-            name='Expense',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('category', models.CharField(choices=[('fuel', 'Fuel'), ('cleaning_supplies', 'Cleaning Supplies'), ('equipment', 'Equipment'), ('marketing', 'Marketing'), ('insurance', 'Insurance'), ('vehicle', 'Vehicle'), ('software', 'Software'), ('office', 'Office'), ('other', 'Other')], default='other', max_length=50)),
-                ('description', models.CharField(max_length=255)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('receipt', models.FileField(blank=True, null=True, upload_to='expense_receipts/')),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('paid_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'ordering': ['-date', '-created_at'],
->>>>>>> 5815f15 (Initial project commit)
             },
         ),
     ]

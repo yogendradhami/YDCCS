@@ -1,8 +1,5 @@
 from django import forms
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 from .models import Customer
 
 
@@ -33,12 +30,7 @@ class CustomerForm(forms.ModelForm):
             "suburb_postcode": forms.TextInput(attrs={"class": "form-control"}),
             "notes": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
             "jobs_completed": forms.NumberInput(attrs={"class": "form-control"}),
-<<<<<<< HEAD
             "total_revenue": forms.NumberInput(
                 attrs={"class": "form-control", "step": "0.01"}
             ),
         }
-=======
-            "total_revenue": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
-        }
->>>>>>> 5815f15 (Initial project commit)

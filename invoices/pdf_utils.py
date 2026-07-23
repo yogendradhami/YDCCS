@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import os
 from io import BytesIO
-=======
-from io import BytesIO
-import os
->>>>>>> 5815f15 (Initial project commit)
 
 from django.conf import settings
 from reportlab.lib.pagesizes import A4
@@ -20,16 +15,7 @@ def generate_invoice_pdf(invoice):
 
     width, height = A4
 
-<<<<<<< HEAD
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.jpeg")
-=======
-    logo_path = os.path.join(
-        settings.BASE_DIR,
-        "static",
-        "images",
-        "logo.jpeg"
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     if os.path.exists(logo_path):
         pdf.drawImage(
@@ -39,11 +25,7 @@ def generate_invoice_pdf(invoice):
             width=85,
             height=85,
             preserveAspectRatio=True,
-<<<<<<< HEAD
             mask="auto",
-=======
-            mask="auto"
->>>>>>> 5815f15 (Initial project commit)
         )
 
     pdf.setFont("Helvetica-Bold", 20)
@@ -61,13 +43,9 @@ def generate_invoice_pdf(invoice):
     pdf.setFont("Helvetica", 10)
     pdf.drawRightString(width - 45, height - 115, f"Issue Date: {invoice.issue_date}")
     pdf.drawRightString(width - 45, height - 133, f"Due Date: {invoice.due_date}")
-<<<<<<< HEAD
     pdf.drawRightString(
         width - 45, height - 151, f"Status: {invoice.get_status_display()}"
     )
-=======
-    pdf.drawRightString(width - 45, height - 151, f"Status: {invoice.get_status_display()}")
->>>>>>> 5815f15 (Initial project commit)
 
     pdf.line(45, height - 170, width - 45, height - 170)
 
@@ -152,25 +130,16 @@ def generate_invoice_pdf(invoice):
     pdf.line(45, 85, width - 45, 85)
 
     pdf.setFont("Helvetica", 9)
-<<<<<<< HEAD
     pdf.drawCentredString(
         width / 2, 65, "Thank you for choosing YD Commercial Cleaning Services."
     )
     pdf.drawCentredString(
         width / 2, 50, "Professional Cleaning. Reliable Service. Spotless Results."
     )
-=======
-    pdf.drawCentredString(width / 2, 65, "Thank you for choosing YD Commercial Cleaning Services.")
-    pdf.drawCentredString(width / 2, 50, "Professional Cleaning. Reliable Service. Spotless Results.")
->>>>>>> 5815f15 (Initial project commit)
 
     pdf.showPage()
     pdf.save()
 
     buffer.seek(0)
 
-<<<<<<< HEAD
     return buffer
-=======
-    return buffer
->>>>>>> 5815f15 (Initial project commit)
