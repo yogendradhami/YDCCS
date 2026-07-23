@@ -1,31 +1,237 @@
+# ==================================================
 # Python
+# ==================================================
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
+*.pyc
 
-# Virtualenv
+# Python logs
+*.log
+
+
+# ==================================================
+# Virtual Environment
+# ==================================================
 venv/
 env/
-/.venv
+.venv/
+ENV/
 
+
+# ==================================================
 # Django
-db.sqlite3
-/media/
-/staticfiles/
-/local_settings.py
-.env
-.env.local
+# ==================================================
 
+# Database
+db.sqlite3
+*.sqlite3
+
+# User uploaded files
+media/
+
+# Collected static files
+staticfiles/
+
+# Local Django settings
+local_settings.py
+
+
+# ==================================================
+# Environment Variables / Secrets
+# ==================================================
+
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+
+# ==================================================
+# API Credentials / Private Keys
+# ==================================================
+
+# Google OAuth credentials
+credentials.json
+client_secret*.json
+
+# Certificates
+*.pem
+*.key
+
+
+# ==================================================
+# Django Cache / Temporary Files
+# ==================================================
+
+*.mo
+*.pot
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+
+# ==================================================
 # Editor
+# ==================================================
+
 .vscode/
 .idea/
 
+
+# ==================================================
 # macOS
+# ==================================================
+
 .DS_Store
-# Test and build reports
+
+
+# ==================================================
+# Testing / Reports
+# ==================================================
+
 *.report.html
+
 lighthouse*.json
 lighthouse_*.json
 
-# Temporary marker files
+
+# ==================================================
+# Temporary Project Files
+# ==================================================
+
 *_template_marker.txt
+
+
+# ==================================================
+# Deployment
+# ==================================================
+
+# Gunicorn / Server files
+*.pid
+
+# Node files (if frontend tools added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*# ==================================================
+# Python
+# ==================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Python logs
+*.log
+
+
+# ==================================================
+# Virtual Environment
+# ==================================================
+venv/
+env/
+.venv/
+ENV/
+
+
+# ==================================================
+# Django
+# ==================================================
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# User uploaded files
+media/
+
+# Collected static files
+staticfiles/
+
+# Local Django settings
+local_settings.py
+
+
+# ==================================================
+# Environment Variables / Secrets
+# ==================================================
+
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+
+# ==================================================
+# API Credentials / Private Keys
+# ==================================================
+
+# Google OAuth credentials
+credentials.json
+client_secret*.json
+
+# Certificates
+*.pem
+*.key
+
+
+# ==================================================
+# Django Cache / Temporary Files
+# ==================================================
+
+*.mo
+*.pot
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+
+# ==================================================
+# Editor
+# ==================================================
+
+.vscode/
+.idea/
+
+
+# ==================================================
+# macOS
+# ==================================================
+
+.DS_Store
+
+
+# ==================================================
+# Testing / Reports
+# ==================================================
+
+*.report.html
+
+lighthouse*.json
+lighthouse_*.json
+
+
+# ==================================================
+# Temporary Project Files
+# ==================================================
+
+*_template_marker.txt
+
+
+# ==================================================
+# Deployment
+# ==================================================
+
+# Gunicorn / Server files
+*.pid
+
+# Node files (if frontend tools added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
