@@ -51,8 +51,7 @@ _allowed = env.str("DJANGO_ALLOWED_HOSTS", default="")
 if _allowed:
     ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
 else:
-    ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
-
+    ALLOWED_HOSTS = env.list( "ALLOWED_HOSTS", default=[ "127.0.0.1", "localhost", ".onrender.com", "ydcleaning.com.au", "www.ydcleaning.com.au", ], )
 
 # Application definition
 
@@ -278,7 +277,7 @@ TWILIO_AUTH_TOKEN = env.str("TWILIO_AUTH_TOKEN", default="")
 TWILIO_PHONE_NUMBER = env.str("TWILIO_PHONE_NUMBER", default="")
 
 # Security settings (toggleable via env)
-SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
+SECURE_SSL_REDIRECT=True
 SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=False)
 CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=0)
