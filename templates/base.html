@@ -1,27 +1,3 @@
-<<<<<<< HEAD
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-
-    <title>
-        {% if company_settings and company_settings.business_name %}
-            {{ company_settings.business_name }}
-        {% else %}
-            {% block title %}YD Commercial Cleaning Services{% endblock %}
-        {% endif %}
-    </title>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Main website CSS -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-    <!-- Dynamic favicon from Dashboard → Settings -->
-    {% if company_settings and company_settings.favicon %}
-        <link rel="icon" href="{{ company_settings.favicon.url }}">
-=======
 {% load static seo_tags %}
 <!DOCTYPE html>
 <html lang="en-AU">
@@ -40,7 +16,6 @@
     <meta name="keywords" content="{% block meta_keywords %}{{ page_keywords|default:default_seo_keywords }}{% endblock %}">
     <meta name="robots" content="{% block robots_meta %}index, follow{% endblock %}">
     <meta name="theme-color" content="#0072CE">
-    <meta name="google-site-verification" content="">
 
     <link rel="canonical" href="{% canonical_url %}">
 
@@ -64,14 +39,11 @@
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
 
     <link rel="preload" href="{% static 'css/core/style.css' %}?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <!-- Main website CSS (non-blocking load) -->
     <noscript><link rel="stylesheet" href="{% static 'css/core/style.css' %}?v=2"></noscript>
-    <!-- Load the minified global stylesheet asynchronously to avoid render-blocking. -->
     <link rel="preload" href="{% static 'css/global/style.min.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="{% static 'css/global/style.min.css' %}"></noscript>
-    <!-- Critical CSS: inline minimal styles for header/hero to reduce render blocking and CLS -->
+
     <style>
-    /* Critical header/branding layout */
     .promo-bar{background:#f6f9fc;color:#111;padding:6px 12px;font-size:13px;text-align:center}
     .yd-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-bottom:1px solid #eee}
     .yd-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
@@ -80,9 +52,7 @@
     .yd-menu{display:none}
     .yd-header-actions{display:flex;align-items:center;gap:8px}
     @media(min-width:768px){.yd-menu{display:flex;gap:12px}}
-    /* Keep critical type visible */
     .yd-logo-title{font-weight:700;font-size:16px;line-height:1}
-    /* Critical hero section - minimal essential styles to reduce render delay */
     .hero-section{background:linear-gradient(135deg,#2563eb 0%,#1e40af 50%,#0f172a 100%);color:#fff;padding:140px 0;position:relative;overflow:hidden}
     .hero-section h1{font-size:56px;line-height:1.1;margin-bottom:20px;font-weight:900}
     .hero-section p{font-size:20px;margin-bottom:40px;color:rgba(255,255,255,.95);max-width:700px;margin-left:auto;margin-right:auto}
@@ -91,6 +61,7 @@
     .hero-grid{display:grid;grid-template-columns:1fr;gap:60px;align-items:center}
     @media(min-width:768px){.hero-grid{grid-template-columns:1fr 1fr}}
     </style>
+
     {% block extra_css %}{% endblock %}
 
     {% if company_settings %}
@@ -155,455 +126,121 @@
       ]
     }
     </script>
->>>>>>> 5815f15 (Initial project commit)
     {% endif %}
 </head>
 
 <body>
+    {% include 'includes/header.html' %}
 
-<<<<<<< HEAD
-<!-- Promotional top bar -->
-<header class="promo-bar">
-    <span>
-        ⚡ 🎉 Limited Time Offer: Get 20% off your first cleaning service! Use code: CLEAN20
-    </span>
-</header>
-
-<!-- Main public website header -->
-<nav class="yd-header">
-
-    <!-- Dynamic logo and business name -->
-    <a href="/" class="yd-logo">
-
-        {% if company_settings and company_settings.logo %}
-            <img src="{{ company_settings.logo.url }}" alt="{{ company_settings.business_name }}">
-        {% else %}
-            <img src="{% static 'images/logo.jpeg' %}" alt="YD Cleaning Logo">
-        {% endif %}
-
-        <span>
-            {% if company_settings and company_settings.business_name %}
-                {{ company_settings.business_name }}
-            {% else %}
-                YD Commercial Cleaning Services
-            {% endif %}
-        </span>
-    </a>
-
-    <!-- Mobile hamburger button -->
-    <button class="yd-menu-btn" id="publicMenuButton" type="button">☰</button>
-
-    <!-- Main navigation menu -->
-    <div class="yd-menu" id="publicMenu">
-
-        <a href="/">Home</a>
-
-        <!-- Services mega menu -->
-        <div class="yd-mega-parent">
-            <a href="#">Services ▾</a>
-
-            <div class="yd-mega-menu">
-                <a href="/house-cleaning-adelaide/" class="yd-mega-card">
-                    <div>🏠</div>
-                    <h4>Residential Cleaning</h4>
-                    <p>Professional house cleaning and deep cleans.</p>
-                </a>
-
-                <a href="/commercial-cleaning-adelaide/" class="yd-mega-card">
-                    <div>🏢</div>
-                    <h4>Commercial Cleaning</h4>
-                    <p>Office and workspace cleaning solutions.</p>
-                </a>
-
-                <a href="/end-of-lease-cleaning-adelaide/" class="yd-mega-card">
-                    <div>🔑</div>
-                    <h4>End-of-Lease Cleaning</h4>
-                    <p>Bond recovery cleaning services.</p>
-                </a>
-
-                <a href="/office-cleaning-adelaide/" class="yd-mega-card">
-                    <div>🧹</div>
-                    <h4>Office Cleaning</h4>
-                    <p>Reliable office cleaning for businesses.</p>
-                </a>
-
-                <a href="/window-cleaning-adelaide/" class="yd-mega-card">
-                    <div>🪟</div>
-                    <h4>Window Cleaning</h4>
-                    <p>Interior and exterior glass cleaning.</p>
-                </a>
-
-                <a href="/post-construction-cleaning-adelaide/" class="yd-mega-card">
-                    <div>🚧</div>
-                    <h4>Post Construction</h4>
-                    <p>After renovation and construction cleanup.</p>
-                </a>
-
-                <div class="yd-mega-footer">
-                    <strong>Not sure which service you need?</strong>
-                    <span>Chat with our team to find the perfect cleaning solution.</span>
-                    <a href="/contact/">Get Consultation</a>
+    <main id="main-content" role="main">
+        {% if messages %}
+        <div class="global-message-wrapper">
+            {% for message in messages %}
+                <div class="global-message {{ message.tags }}">
+                    {{ message }}
                 </div>
-            </div>
+            {% endfor %}
         </div>
-
-        <a href="/gallery/">Gallery</a>
-        <a href="/reviews/">Reviews</a>
-        <a href="/contact/">Contact</a>
-
-        <!-- Resources dropdown -->
-        <div class="yd-dropdown-parent">
-            <a href="#">Resources ▾</a>
-
-            <div class="yd-dropdown-menu">
-                <a href="/blog/">Blog</a>
-                <a href="/guides/">Guides</a>
-                <a href="/case-studies/">Case Studies</a>
-                <a href="/faq/">FAQ</a>
-            </div>
-        </div>
-
-        <!-- Portals dropdown -->
-        <div class="yd-dropdown-parent">
-            <a href="#">Portals ▾</a>
-
-            <div class="yd-dropdown-menu">
-                {% if request.user.is_authenticated and request.user.customer_profile %}
-                    <a href="/portal/dashboard/">Customer Dashboard</a>
-                {% else %}
-                    <a href="/portal/login/">Customer Portal</a>
-                {% endif %}
-
-                {% if request.user.is_authenticated and request.user.employee_profile %}
-                    <a href="/employee/dashboard/">Employee Dashboard</a>
-                {% else %}
-                    <a href="/employee/login/">Employee Portal</a>
-                {% endif %}
-
-                {% if request.user.is_staff %}
-                    <a href="/dashboard/">Admin Dashboard</a>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Account dropdown only appears after login -->
-        {% if request.user.is_authenticated %}
-            <div class="yd-dropdown-parent">
-                <a href="#">Account ▾</a>
-
-                <div class="yd-dropdown-menu">
-                    {% if request.user.customer_profile %}
-                        <a href="/portal/profile/">My Profile</a>
-                        <a href="/portal/dashboard/">Customer Dashboard</a>
-                        <a href="/portal/logout/">Logout</a>
-                    {% endif %}
-
-                    {% if request.user.employee_profile %}
-                        <a href="/employee/profile/">My Profile</a>
-                        <a href="/employee/dashboard/">Employee Dashboard</a>
-                        <a href="/employee/logout/">Logout</a>
-                    {% endif %}
-
-                    {% if request.user.is_staff %}
-                        <a href="/dashboard/">Admin Dashboard</a>
-                        <a href="/admin/">Django Admin</a>
-                    {% endif %}
-                </div>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Header action buttons -->
-    <div class="yd-header-actions">
-
-        <!-- Global search button -->
-        <button class="yd-search-btn" id="publicSearchButton" type="button">🔍</button>
-
-        <!-- Notification bell only shows in customer/employee portals -->
-        {% if request.user.is_authenticated %}
-            {% if "/portal/" in request.path or "/employee/" in request.path %}
-                <div class="portal-notification-box">
-                    <button class="notification-bell" id="notificationBell" type="button">
-                        🔔
-
-                        {% if global_unread_notifications > 0 %}
-                            <span id="notificationCount">{{ global_unread_notifications }}</span>
-                        {% else %}
-                            <span id="notificationCount" style="display:none;">0</span>
-                        {% endif %}
-                    </button>
-
-                    <div class="notification-dropdown">
-                        <h4>Notifications</h4>
-
-                        {% for note in global_notifications %}
-                            <a href="{{ note.link|default:'#' }}" class="{% if not note.is_read %}unread{% endif %}">
-                                <strong>{{ note.title }}</strong>
-                                <small>{{ note.message }}</small>
-                                <em>{{ note.created_at|date:"d M, g:i A" }}</em>
-                            </a>
-                        {% empty %}
-                            <p>No notifications yet.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
         {% endif %}
 
-        <a href="/#quote" class="yd-book-btn">Book Now</a>
-        <a href="/#quote" class="yd-quote-btn">Get Quote</a>
-    </div>
-</nav>
+        {% block content %}{% endblock %}
 
-<!-- Optional dynamic contact strip -->
-{% if company_settings %}
-    <div class="company-contact-strip">
-        {% if company_settings.phone %}
-            <span>📞 {{ company_settings.phone }}</span>
-        {% endif %}
+        {% block default_why_choose_section %}
+            {% include 'shared/partials/why_choose_us.html' %}
+        {% endblock %}
 
-        {% if company_settings.email %}
-            <span>✉️ {{ company_settings.email }}</span>
-        {% endif %}
+        {% block default_faq_section %}
+            {% include 'shared/partials/faq.html' %}
+        {% endblock %}
 
-        {% if company_settings.address %}
-            <span>📍 {{ company_settings.address|truncatechars:80 }}</span>
-        {% endif %}
-    </div>
-{% endif %}
+        {% include 'includes/footer.html' %}
+    </main>
 
-<!-- Global search popup -->
-<div class="site-search-box" id="siteSearchBox">
-    <input type="text" id="siteSearchInput" placeholder="Search YD Cleaning website...">
+    <a href="#" class="chat-btn" aria-label="Open chat support">💬</a>
 
-    <div class="site-search-results" id="siteSearchResults">
-        <a href="/">Home</a>
-        <a href="/commercial-cleaning-adelaide/">Commercial Cleaning</a>
-        <a href="/office-cleaning-adelaide/">Office Cleaning</a>
-        <a href="/end-of-lease-cleaning-adelaide/">End of Lease Cleaning</a>
-        <a href="/house-cleaning-adelaide/">House Cleaning</a>
-        <a href="/window-cleaning-adelaide/">Window Cleaning</a>
-        <a href="/gallery/">Gallery</a>
-        <a href="/reviews/">Reviews</a>
-        <a href="/contact/">Contact</a>
-
-        <a href="/portal/login/">Customer Portal</a>
-        <a href="/employee/login/">Employee Portal</a>
-        <a href="/portal/dashboard/">Customer Dashboard</a>
-        <a href="/portal/profile/">Customer Profile</a>
-        <a href="/portal/bookings/">Customer Bookings</a>
-        <a href="/portal/invoices/">Customer Invoices</a>
-
-        <a href="/employee/dashboard/">Employee Dashboard</a>
-        <a href="/employee/profile/">Employee Profile</a>
-        <a href="/employee/jobs/">Employee Jobs</a>
-        <a href="/employee/attendance/">Employee Attendance</a>
-        <a href="/employee/leave/">Employee Leave</a>
-        <a href="/employee/roster/">Employee Schedule</a>
-
-        <a href="/dashboard/">Admin Dashboard</a>
-        <a href="/dashboard/settings/">Company Settings</a>
-    </div>
-</div>
-=======
-{% include 'includes/header.html' %}
-
-<main id="main-content" role="main">
->>>>>>> 5815f15 (Initial project commit)
-
-<!-- Page content -->
-<!-- Global Messages -->
-
-{% if messages %}
-<div class="global-message-wrapper">
-
-    {% for message in messages %}
-
-        <div class="global-message {{ message.tags }}">
-            {{ message }}
-        </div>
-
-    {% endfor %}
-
-</div>
-{% endif %}
-
-<!-- Page content -->
-
-{% block content %}
-{% endblock %}
-
-<<<<<<< HEAD
-<!-- Floating chat button -->
-<a href="#" class="chat-btn">💬</a>
-
-<script>
-/*
-    Get CSRF cookie value.
-    Required for AJAX POST requests such as marking notifications as read.
-*/
-function getCookie(name) {
-    let cookieValue = null;
-
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+    <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === name + "=") {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
         }
+        return cookieValue;
     }
 
-    return cookieValue;
-}
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuButton = document.getElementById("publicMenuButton");
+        const publicMenu = document.getElementById("publicMenu");
+        const searchButton = document.getElementById("publicSearchButton");
+        const searchBox = document.getElementById("siteSearchBox");
+        const searchInput = document.getElementById("siteSearchInput");
+        const searchResults = document.getElementById("siteSearchResults");
+        const notificationBell = document.getElementById("notificationBell");
+        const notificationCount = document.getElementById("notificationCount");
 
-document.addEventListener("DOMContentLoaded", function () {
-    /*
-        Public/mobile menu toggle.
-    */
-    const menuButton = document.getElementById("publicMenuButton");
-    const publicMenu = document.getElementById("publicMenu");
-
-    /*
-        Global search elements.
-    */
-    const searchButton = document.getElementById("publicSearchButton");
-    const searchBox = document.getElementById("siteSearchBox");
-    const searchInput = document.getElementById("siteSearchInput");
-    const searchResults = document.getElementById("siteSearchResults");
-
-    /*
-        Notification elements.
-    */
-    const notificationBell = document.getElementById("notificationBell");
-    const notificationCount = document.getElementById("notificationCount");
-
-    /*
-        Open/close mobile menu.
-    */
-    if (menuButton && publicMenu) {
-        menuButton.addEventListener("click", function () {
-            publicMenu.classList.toggle("active");
-        });
-    }
-
-    /*
-        Open/close global search popup.
-    */
-    if (searchButton && searchBox) {
-        searchButton.addEventListener("click", function () {
-            searchBox.classList.toggle("active");
-
-            if (searchBox.classList.contains("active")) {
-                searchInput.focus();
-            }
-        });
-    }
-
-    /*
-        Filter search result links as user types.
-    */
-    if (searchInput && searchResults) {
-        searchInput.addEventListener("input", function () {
-            const keyword = searchInput.value.toLowerCase();
-            const links = searchResults.querySelectorAll("a");
-
-            links.forEach(function (link) {
-                link.style.display = link.textContent.toLowerCase().includes(keyword)
-                    ? "block"
-                    : "none";
+        if (menuButton && publicMenu) {
+            menuButton.addEventListener("click", function () {
+                publicMenu.classList.toggle("active");
             });
-        });
-    }
+        }
 
-    /*
-        Mark notifications as read when bell is clicked.
-    */
-    if (notificationBell) {
-        notificationBell.addEventListener("click", function () {
-            fetch("/notifications/mark-read/", {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken"),
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && notificationCount) {
-                    notificationCount.textContent = "0";
-                    notificationCount.style.display = "none";
-
-                    document.querySelectorAll(".notification-dropdown a.unread").forEach(function (item) {
-                        item.classList.remove("unread");
-                    });
+        if (searchButton && searchBox) {
+            searchButton.addEventListener("click", function () {
+                searchBox.classList.toggle("active");
+                if (searchBox.classList.contains("active")) {
+                    searchInput.focus();
                 }
             });
-        });
-    }
-});
-</script>
+        }
 
+        if (searchInput && searchResults) {
+            searchInput.addEventListener("input", function () {
+                const keyword = searchInput.value.toLowerCase();
+                const links = searchResults.querySelectorAll("a");
+                links.forEach(function (link) {
+                    link.style.display = link.textContent.toLowerCase().includes(keyword) ? "block" : "none";
+                });
+            });
+        }
 
-<style>
+        if (notificationBell) {
+            notificationBell.addEventListener("click", function () {
+                fetch("/notifications/mark-read/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && notificationCount) {
+                        notificationCount.textContent = "0";
+                        notificationCount.style.display = "none";
+                        document.querySelectorAll(".notification-dropdown a.unread").forEach(function (item) {
+                            item.classList.remove("unread");
+                        });
+                    }
+                });
+            });
+        }
+    });
+    </script>
 
-.global-message-wrapper{
-    max-width:1200px;
-    margin:20px auto;
-    padding:0 20px;
-}
+    <script defer src="{% static 'js/global/site.js' %}"></script>
 
-.global-message{
-    padding:15px 20px;
-    border-radius:12px;
-    margin-bottom:10px;
-    font-weight:600;
-}
-
-.global-message.success{
-    background:#dcfce7;
-    color:#166534;
-    border-left:5px solid #22c55e;
-}
-
-.global-message.error{
-    background:#fee2e2;
-    color:#991b1b;
-    border-left:5px solid #ef4444;
-}
-
-.global-message.warning{
-    background:#fef3c7;
-    color:#92400e;
-    border-left:5px solid #f59e0b;
-}
-
-</style>
-
+    <style>
+    .global-message-wrapper{max-width:1200px;margin:20px auto;padding:0 20px}
+    .global-message{padding:15px 20px;border-radius:12px;margin-bottom:10px;font-weight:600}
+    .global-message.success{background:#dcfce7;color:#166534;border-left:5px solid #22c55e}
+    .global-message.error{background:#fee2e2;color:#991b1b;border-left:5px solid #ef4444}
+    .global-message.warning{background:#fef3c7;color:#92400e;border-left:5px solid #f59e0b}
+    </style>
 </body>
 </html>
-=======
-{% block default_why_choose_section %}
-    {% include 'shared/partials/why_choose_us.html' %}
-{% endblock %}
-
-{% block default_faq_section %}
-    {% include 'shared/partials/faq.html' %}
-{% endblock %}
-
-{% include 'includes/footer.html' %}
-</main>
-
-<!-- Floating chat button -->
-<a href="#" class="chat-btn" aria-label="Open chat support">💬</a>
-
-<!-- Global site JavaScript -->
-<script defer src="{% static 'js/global/site.js' %}"></script>
-
-</body>
-</html>
->>>>>>> 5815f15 (Initial project commit)
