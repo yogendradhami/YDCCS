@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Referral Program | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Earn rewards when you refer friends and businesses to YD Commercial Cleaning. Learn how our referral program works and get cleaning discounts.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/referral.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="referral-hero">
+    <div class="container">
+        <h1>Referral Rewards Program</h1>
+        <p>Share the benefits of our professional cleaning services and earn credits or discounts for every successful referral.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Refer a Friend</a>
+    </div>
+</section>
+
+<section class="referral-details">
+    <div class="container">
+        <h2>How the Program Works</h2>
+        <ul class="referral-list">
+            <li><strong>1.</strong> Refer a friend or business to YD Commercial Cleaning.</li>
+            <li><strong>2.</strong> They book a service and mention your referral.</li>
+            <li><strong>3.</strong> You receive a reward or discount on your next clean.</li>
+        </ul>
+        <p>It’s a simple way to keep your property clean while saving money and helping someone else discover Adelaide’s trusted cleaning team.</p>
+    </div>
+</section>
+
+<section class="referral-benefits">
+    <div class="container">
+        <h2>Referral Benefits</h2>
+        <div class="benefit-grid">
+            <div class="benefit-card">
+                <h3>Discounts</h3>
+                <p>Get price reductions on future cleaning services for each successful referral.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Easy Process</h3>
+                <p>Refer by email, phone or form—no complicated steps.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Flexible Rewards</h3>
+                <p>Choose credits for your own clean or free add-ons for your next booking.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="referral-cta">
+    <div class="container">
+        <h2>Ready to save on your next service?</h2>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Start a Referral</a>
+    </div>
+</section>
+{% endblock %}

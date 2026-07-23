@@ -64,7 +64,7 @@
         </div>
     </a>
 
-    <button class="yd-menu-btn" id="publicMenuButton" type="button" aria-label="Toggle main menu">☰</button>
+    <button class="yd-menu-btn" id="publicMenuButton" type="button" aria-label="Toggle main menu" aria-expanded="false">☰</button>
 
     <div class="yd-menu" id="publicMenu">
         <a href="/">Home</a>
@@ -142,12 +142,13 @@
         <a href="{% url 'contact' %}">Contact</a>
 
         <div class="yd-dropdown-parent">
-            <a href="{% url 'resources' %}">Resources <span class="nav-arrow">▾</span></a>
+            <a href="/resources/">Resources <span class="nav-arrow">▾</span></a>
             <div class="yd-dropdown-menu">
-                <a href="/local/">Local Services</a>
+                <a href="{% url 'local_services' %}">Local Services</a>
                 <a href="/blog/">Blog</a>
                 <a href="/guides/">Guides</a>
                 <a href="/case-studies/">Case Studies</a>
+                <a href="{% url 'testimonials' %}">Testimonials</a>
                 <a href="/faq/">FAQ</a>
             </div>
         </div>

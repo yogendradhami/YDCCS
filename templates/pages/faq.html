@@ -10,6 +10,32 @@
 
 {% block content %}
 
+{% block extra_head %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What cleaning services do you offer?",
+            "acceptedAnswer": {"@type":"Answer","text":"We offer residential, commercial, bond/end-of-lease, deep cleaning, carpet, window and post-construction cleaning tailored to your needs."}
+        },
+        {
+            "@type": "Question",
+            "name": "How do I book a cleaning service?",
+            "acceptedAnswer": {"@type":"Answer","text":"Request a free quote via our contact form, call 0430 049 865, or use our online booking system."}
+        },
+        {
+            "@type": "Question",
+            "name": "Are you insured and bonded?",
+            "acceptedAnswer": {"@type":"Answer","text":"Yes — YD Commercial Cleaning is fully insured and bonded for all services."}
+        }
+    ]
+}
+</script>
+{% endblock %}
+
 <!-- Hero Section -->
 <section class="faq-hero">
     <div class="container">

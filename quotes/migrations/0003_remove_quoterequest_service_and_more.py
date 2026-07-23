@@ -7,16 +7,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("quotes", "0002_quoterequest_suburb_alter_quoterequest_service"),
-=======
-        ('quotes', '0002_quoterequest_suburb_alter_quoterequest_service'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.RemoveField(
-<<<<<<< HEAD
             model_name="quoterequest",
             name="service",
         ),
@@ -107,72 +102,6 @@ class Migration(migrations.Migration):
                         to="quotes.quoterequest",
                     ),
                 ),
-=======
-            model_name='quoterequest',
-            name='service',
-        ),
-        migrations.RemoveField(
-            model_name='quoterequest',
-            name='suburb',
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='carpet_shampooing',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='grout_cleaning',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='is_not_robot',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='laundry_service',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='preferred_date',
-            field=models.DateField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='property_type',
-            field=models.CharField(choices=[('House', 'House'), ('Apartment', 'Apartment'), ('Office', 'Office'), ('Commercial Property', 'Commercial Property'), ('End of Lease Property', 'End of Lease Property'), ('Other', 'Other')], default='House', max_length=100),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='suburb_postcode',
-            field=models.CharField(default='', max_length=150),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='upholstery_cleaning',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='quoterequest',
-            name='window_cleaning',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AlterField(
-            model_name='quoterequest',
-            name='email',
-            field=models.EmailField(max_length=254),
-        ),
-        migrations.CreateModel(
-            name='QuoteImage',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(upload_to='quote_images/')),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('quote', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='images', to='quotes.quoterequest')),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

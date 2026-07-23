@@ -43,18 +43,12 @@ class BookingAdmin(admin.ModelAdmin):
         }
 
         return format_html(
-<<<<<<< HEAD
             (
                 '<span style="background:{};color:white;padding:5px 10px;'
                 'border-radius:20px;font-weight:bold;">{}</span>'
             ),
             colors.get(obj.status, "#6b7280"),
             obj.get_status_display(),
-=======
-            '<span style="background:{};color:white;padding:5px 10px;border-radius:20px;font-weight:bold;">{}</span>',
-            colors.get(obj.status, "#6b7280"),
-            obj.get_status_display()
->>>>>>> 5815f15 (Initial project commit)
         )
 
     status_badge.short_description = "Status"
@@ -64,11 +58,7 @@ class BookingAdmin(admin.ModelAdmin):
             '<a href="/reports/booking/{}/" target="_blank">View Report</a> | '
             '<a href="/reports/booking/{}/download/" target="_blank">PDF</a>',
             obj.id,
-<<<<<<< HEAD
             obj.id,
-=======
-            obj.id
->>>>>>> 5815f15 (Initial project commit)
         )
 
     report_link.short_description = "Report"
@@ -104,17 +94,9 @@ class JobPhotoAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="width:120px;height:auto;border-radius:8px;" />',
-<<<<<<< HEAD
                 obj.image.url,
-=======
-                obj.image.url
->>>>>>> 5815f15 (Initial project commit)
             )
 
         return "No image"
 
-<<<<<<< HEAD
     image_preview.short_description = "Preview"
-=======
-    image_preview.short_description = "Preview"
->>>>>>> 5815f15 (Initial project commit)

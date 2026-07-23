@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import os
 from io import BytesIO
 
@@ -14,24 +13,6 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from bookings.models import Booking
-=======
-from io import BytesIO
-import os
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, HttpResponseForbidden
-
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
-
-from bookings.models import Booking
-from django.conf import settings
-from django.utils import timezone
-from django.contrib import messages
-from django.core.mail import EmailMessage
->>>>>>> 5815f15 (Initial project commit)
 from reports.models import CleaningReport
 
 
@@ -53,7 +34,6 @@ def report_list(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return HttpResponseForbidden("Only admin/staff can view all reports.")
 
-<<<<<<< HEAD
     bookings = (
         Booking.objects.select_related(
             "cleaning_report", "customer", "assigned_employee"
@@ -61,13 +41,7 @@ def report_list(request):
         .all()
         .order_by("-booking_date", "-booking_time")
     )
-    return render(request, "report_list.html", {"bookings": bookings})
-=======
-    bookings = Booking.objects.select_related( "cleaning_report", "customer", "assigned_employee" ).all().order_by( "-booking_date", "-booking_time" )
-    return render(request, "reports/report_list.html", {
-        "bookings": bookings
-    })
->>>>>>> 5815f15 (Initial project commit)
+    return render(request, "reports/report_list.html", {"bookings": bookings})
 
 
 @login_required
@@ -77,7 +51,6 @@ def cleaning_report_detail(request, booking_id):
     if not user_can_view_booking_report(request.user, booking):
         return HttpResponseForbidden("You do not have permission to view this report.")
 
-<<<<<<< HEAD
     before_photos = booking.job_photos.filter(photo_type="before").order_by(
         "uploaded_at"
     )
@@ -85,23 +58,13 @@ def cleaning_report_detail(request, booking_id):
 
     return render(
         request,
-        "cleaning_report_detail.html",
+        "reports/cleaning_report_detail.html",
         {
             "booking": booking,
             "before_photos": before_photos,
             "after_photos": after_photos,
         },
     )
-=======
-    before_photos = booking.job_photos.filter(photo_type="before").order_by("uploaded_at")
-    after_photos = booking.job_photos.filter(photo_type="after").order_by("uploaded_at")
-
-    return render(request, "reports/cleaning_report_detail.html", {
-        "booking": booking,
-        "before_photos": before_photos,
-        "after_photos": after_photos,
-    })
->>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
@@ -109,27 +72,16 @@ def download_cleaning_report_pdf(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
     if not user_can_view_booking_report(request.user, booking):
-<<<<<<< HEAD
         return HttpResponseForbidden(
             "You do not have permission to download this report."
         )
-=======
-        return HttpResponseForbidden("You do not have permission to download this report.")
->>>>>>> 5815f15 (Initial project commit)
 
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
     y = height - 50
 
-<<<<<<< HEAD
     logo_path = os.path.join(settings.MEDIA_ROOT, "company/logo.jpeg")
-=======
-    logo_path = os.path.join(
-        settings.MEDIA_ROOT,
-        "company/logo.jpeg"
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     if os.path.exists(logo_path):
         pdf.drawImage(
@@ -139,11 +91,7 @@ def download_cleaning_report_pdf(request, booking_id):
             width=120,
             height=50,
             preserveAspectRatio=True,
-<<<<<<< HEAD
             mask="auto",
-=======
-            mask="auto"
->>>>>>> 5815f15 (Initial project commit)
         )
 
     pdf.setFont("Helvetica-Bold", 18)
@@ -178,16 +126,7 @@ def download_cleaning_report_pdf(request, booking_id):
     pdf.drawString(50, y, f"Status: {booking.get_status_display()}")
     y -= 16
 
-<<<<<<< HEAD
     pdf.drawString(50, y, f"Generated: {timezone.now().strftime('%d %B %Y %I:%M %p')}")
-=======
-    pdf.drawString(
-        50,
-        y,
-        f"Generated: {timezone.now().strftime('%d %B %Y %I:%M %p')}"
-    )
-
->>>>>>> 5815f15 (Initial project commit)
 
     y -= 16
     pdf.drawString(50, y, f"Address: {booking.address}")
@@ -291,7 +230,6 @@ def download_cleaning_report_pdf(request, booking_id):
                         width=image_width,
                         height=image_height,
                         preserveAspectRatio=True,
-<<<<<<< HEAD
                         mask="auto",
                     )
 
@@ -304,16 +242,6 @@ def download_cleaning_report_pdf(request, booking_id):
                     pdf.drawString(
                         x, image_y - image_height - 34, (photo.notes or "No notes")[:40]
                     )
-=======
-                        mask="auto"
-                    )
-
-                    pdf.setFont("Helvetica-Bold", 10)
-                    pdf.drawString(x, image_y - image_height - 18, photo.get_photo_type_display())
-
-                    pdf.setFont("Helvetica", 9)
-                    pdf.drawString(x, image_y - image_height - 34, (photo.notes or "No notes")[:40])
->>>>>>> 5815f15 (Initial project commit)
 
                 except Exception:
                     pdf.setFont("Helvetica", 10)
@@ -324,46 +252,20 @@ def download_cleaning_report_pdf(request, booking_id):
     pdf.showPage()
 
     pdf.setFont("Helvetica-Bold", 18)
-<<<<<<< HEAD
     pdf.drawString(50, height - 70, "Verification & Signatures")
 
     y = height - 120
 
     latest_photo = booking.job_photos.order_by("-uploaded_at").first()
-=======
-    pdf.drawString(
-        50,
-        height - 70,
-        "Verification & Signatures"
-    )
-
-    y = height - 120
-
-    latest_photo = booking.job_photos.order_by(
-        "-uploaded_at"
-    ).first()
->>>>>>> 5815f15 (Initial project commit)
 
     if latest_photo:
 
         if latest_photo.employee_signature:
 
             pdf.setFont("Helvetica-Bold", 12)
-<<<<<<< HEAD
             pdf.drawString(50, y, "Employee Signature")
 
             if os.path.exists(latest_photo.employee_signature.path):
-=======
-            pdf.drawString(
-                50,
-                y,
-                "Employee Signature"
-            )
-
-            if os.path.exists(
-                latest_photo.employee_signature.path
-            ):
->>>>>>> 5815f15 (Initial project commit)
                 pdf.drawImage(
                     latest_photo.employee_signature.path,
                     50,
@@ -371,11 +273,7 @@ def download_cleaning_report_pdf(request, booking_id):
                     width=180,
                     height=70,
                     preserveAspectRatio=True,
-<<<<<<< HEAD
                     mask="auto",
-=======
-                    mask="auto"
->>>>>>> 5815f15 (Initial project commit)
                 )
 
             y -= 120
@@ -383,21 +281,9 @@ def download_cleaning_report_pdf(request, booking_id):
         if latest_photo.customer_signature:
 
             pdf.setFont("Helvetica-Bold", 12)
-<<<<<<< HEAD
             pdf.drawString(50, y, "Customer Signature")
 
             if os.path.exists(latest_photo.customer_signature.path):
-=======
-            pdf.drawString(
-                50,
-                y,
-                "Customer Signature"
-            )
-
-            if os.path.exists(
-                latest_photo.customer_signature.path
-            ):
->>>>>>> 5815f15 (Initial project commit)
                 pdf.drawImage(
                     latest_photo.customer_signature.path,
                     50,
@@ -405,47 +291,26 @@ def download_cleaning_report_pdf(request, booking_id):
                     width=180,
                     height=70,
                     preserveAspectRatio=True,
-<<<<<<< HEAD
                     mask="auto",
-=======
-                    mask="auto"
->>>>>>> 5815f15 (Initial project commit)
                 )
 
             y -= 120
 
     pdf.setFont("Helvetica", 11)
 
-<<<<<<< HEAD
     pdf.drawString(50, y, "This cleaning service has been completed and verified.")
-=======
-    pdf.drawString(
-        50,
-        y,
-        "This cleaning service has been completed and verified."
-    )
-
-
-
-
->>>>>>> 5815f15 (Initial project commit)
 
     pdf.showPage()
     pdf.setFont("Helvetica-Bold", 18)
     pdf.drawString(50, height - 80, "Report Completed")
 
     pdf.setFont("Helvetica", 11)
-<<<<<<< HEAD
     pdf.drawString(
         50, height - 110, "Thank you for choosing YD Commercial Cleaning Services."
     )
     pdf.drawString(
         50, height - 130, "Professional Cleaning. Reliable Service. Spotless Results."
     )
-=======
-    pdf.drawString(50, height - 110, "Thank you for choosing YD Commercial Cleaning Services.")
-    pdf.drawString(50, height - 130, "Professional Cleaning. Reliable Service. Spotless Results.")
->>>>>>> 5815f15 (Initial project commit)
 
     pdf.showPage()
     pdf.save()
@@ -453,13 +318,7 @@ def download_cleaning_report_pdf(request, booking_id):
     buffer.seek(0)
 
     return FileResponse(
-<<<<<<< HEAD
         buffer, as_attachment=True, filename=f"cleaning-report-booking-{booking.id}.pdf"
-=======
-        buffer,
-        as_attachment=True,
-        filename=f"cleaning-report-booking-{booking.id}.pdf"
->>>>>>> 5815f15 (Initial project commit)
     )
 
 
@@ -476,13 +335,7 @@ def email_cleaning_report(request, booking_id):
         messages.error(request, "Customer does not have an email address.")
         return redirect("cleaning_report_detail", booking_id=booking.id)
 
-<<<<<<< HEAD
     report, created = CleaningReport.objects.get_or_create(booking=booking)
-=======
-    report, created = CleaningReport.objects.get_or_create(
-        booking=booking
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     # Generate PDF in memory
     buffer = BytesIO()
@@ -530,13 +383,7 @@ def email_cleaning_report(request, booking_id):
 
     pdf.setFont("Helvetica", 11)
     pdf.drawString(
-<<<<<<< HEAD
         50, height - 110, "Thank you for choosing YD Commercial Cleaning Services."
-=======
-        50,
-        height - 110,
-        "Thank you for choosing YD Commercial Cleaning Services."
->>>>>>> 5815f15 (Initial project commit)
     )
 
     pdf.save()
@@ -565,11 +412,7 @@ YD Commercial Cleaning Services
     email.attach(
         f"cleaning-report-booking-{booking.id}.pdf",
         buffer.getvalue(),
-<<<<<<< HEAD
         "application/pdf",
-=======
-        "application/pdf"
->>>>>>> 5815f15 (Initial project commit)
     )
 
     email.send(fail_silently=False)
@@ -578,15 +421,7 @@ YD Commercial Cleaning Services
     report.save(update_fields=["emailed_to_customer"])
 
     messages.success(
-<<<<<<< HEAD
         request, "✅ Cleaning report PDF emailed to customer successfully."
     )
 
     return redirect("cleaning_report_detail", booking_id=booking.id)
-=======
-        request,
-        "✅ Cleaning report PDF emailed to customer successfully."
-    )
-
-    return redirect("cleaning_report_detail", booking_id=booking.id)
->>>>>>> 5815f15 (Initial project commit)

@@ -9,18 +9,12 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-<<<<<<< HEAD
         ("bookings", "0003_jobphoto"),
         ("employees", "0002_employee_user"),
-=======
-        ('bookings', '0003_jobphoto'),
-        ('employees', '0002_employee_user'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="AttendanceLog",
             fields=[
                 (
@@ -82,24 +76,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["-created_at"],
-=======
-            name='AttendanceLog',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('check_in_time', models.DateTimeField(blank=True, null=True)),
-                ('check_out_time', models.DateTimeField(blank=True, null=True)),
-                ('check_in_latitude', models.DecimalField(blank=True, decimal_places=8, max_digits=12, null=True)),
-                ('check_in_longitude', models.DecimalField(blank=True, decimal_places=8, max_digits=12, null=True)),
-                ('check_out_latitude', models.DecimalField(blank=True, decimal_places=8, max_digits=12, null=True)),
-                ('check_out_longitude', models.DecimalField(blank=True, decimal_places=8, max_digits=12, null=True)),
-                ('total_hours', models.DecimalField(decimal_places=2, default=0, max_digits=6)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendance_logs', to='bookings.booking')),
-                ('employee', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendance_logs', to='employees.employee')),
-            ],
-            options={
-                'ordering': ['-created_at'],
->>>>>>> 5815f15 (Initial project commit)
             },
         ),
     ]

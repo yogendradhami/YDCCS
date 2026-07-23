@@ -40,12 +40,10 @@
 
                     <td>
 
-                        <a
-                            href="/dashboard/contracts/{{ contract.id }}/renewal-email/"
-                            class="small-link-btn"
-                        >
-                            Send Renewal
-                        </a>
+                        <form method="post" action="{% url 'send_contract_renewal_email' contract.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="small-link-btn">Send Renewal</button>
+                        </form>
 
                     </td>
 

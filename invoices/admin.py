@@ -72,7 +72,6 @@ class InvoiceAdmin(admin.ModelAdmin):
         }
 
         return format_html(
-<<<<<<< HEAD
             (
                 '<span style="background:{};color:white;padding:5px 10px;'
                 'border-radius:20px;font-weight:bold;">{}</span>'
@@ -82,11 +81,3 @@ class InvoiceAdmin(admin.ModelAdmin):
         )
 
     status_badge.short_description = "Status"
-=======
-            '<span style="background:{};color:white;padding:5px 10px;border-radius:20px;font-weight:bold;">{}</span>',
-            colors.get(obj.status, "#6b7280"),
-            obj.get_status_display()
-        )
-
-    status_badge.short_description = "Status"
->>>>>>> 5815f15 (Initial project commit)

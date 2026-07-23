@@ -47,11 +47,11 @@
                 <h4 class="footer-heading">Resources</h4>
                 <ul class="footer-list">
                     <li><a href="/resources/" class="footer-link">Resources</a></li>
+                    <li><a href="{% url 'testimonials' %}" class="footer-link">Testimonials</a></li>
                     <li><a href="/guides/" class="footer-link">Cleaning Guides</a></li>
                     <li><a href="/blog/" class="footer-link">Blog</a></li>
                     <li><a href="/case-studies/" class="footer-link">Case Studies</a></li>
                     <li><a href="/faq/" class="footer-link">FAQ</a></li>
-                    <li><a href="/contact/" class="footer-link">Contact</a></li>
                 </ul>
             </div>
 
@@ -89,20 +89,18 @@
             <div>
                 <h5 class="footer-heading">Help</h5>
                 <ul class="footer-list">
-                    <li><a href="/faq/" class="footer-link">FAQ</a></li>
-                    <li><a href="/blog/" class="footer-link">Blog</a></li>
                     <li><a href="{% url 'contact' %}" class="footer-link">Contact</a></li>
-                    <li><a href="/sitemap.xml" class="footer-link">Sitemap</a></li>
-                    <li><a href="/rss.xml" class="footer-link">RSS Feed</a></li>
-                    <li><a href="tel:+61430049865" class="footer-link">Call Us</a></li>
+                    <li><a href="{% url 'sitemap_xml' %}" class="footer-link">Sitemap</a></li>
+                    <li><a href="{% url 'rss_xml' %}" class="footer-link">RSS Feed</a></li>
                 </ul>
             </div>
             <div>
                 <h5 class="footer-heading">Legal</h5>
                 <ul class="footer-list">
+                    <li><a href="/legal/" class="footer-link">Legal Overview</a></li>
                     <li><a href="/terms/" class="footer-link">Terms</a></li>
                     <li><a href="/privacy/" class="footer-link">Privacy</a></li>
-                    <li><a href="/booking-terms/" class="footer-link">Booking Terms</a></li>
+                    <li><a href="{% url 'booking_terms' %}" class="footer-link">Booking Terms</a></li>
                 </ul>
             </div>
             <div>

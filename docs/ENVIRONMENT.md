@@ -8,7 +8,7 @@ Do not commit `.env` to Git. `.gitignore` already excludes it.
 
 Loading
 
-`config/settings.py` includes a small loader that reads `.env` from the project root and sets any variables that are not already present in the environment. This means:
+`ydcleaning/settings.py` reads `.env` and `.env.local` from the project root when present. This means:
 
 - For local dev, copy `.env.example` to `.env` and fill the values.
 - For CI/CD or production, supply secrets via the environment (GitHub Actions secrets, Docker secrets, cloud provider env variables).

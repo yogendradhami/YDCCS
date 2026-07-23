@@ -6,16 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("leave_management", "0001_initial"),
-=======
-        ('leave_management', '0001_initial'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AlterModelOptions(
-<<<<<<< HEAD
             name="leaverequest",
             options={"ordering": ["-created_at"]},
         ),
@@ -40,24 +35,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="leaverequest",
             name="reason",
-=======
-            name='leaverequest',
-            options={'ordering': ['-created_at']},
-        ),
-        migrations.AddField(
-            model_name='leaverequest',
-            name='updated_at',
-            field=models.DateTimeField(auto_now=True),
-        ),
-        migrations.AlterField(
-            model_name='leaverequest',
-            name='leave_type',
-            field=models.CharField(choices=[('annual', 'Annual Leave'), ('sick', 'Sick Leave'), ('personal', 'Personal Leave'), ('unpaid', 'Unpaid Leave')], max_length=30),
-        ),
-        migrations.AlterField(
-            model_name='leaverequest',
-            name='reason',
->>>>>>> 5815f15 (Initial project commit)
             field=models.TextField(blank=True),
         ),
     ]

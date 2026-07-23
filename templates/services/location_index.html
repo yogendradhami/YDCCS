@@ -25,7 +25,7 @@
             <h1>{{ location_name }} Cleaning Areas Starting with {{ current_letter }}</h1>
             <nav class="slp-breadcrumb" aria-label="Breadcrumb">
                 <ol>
-                    <li><a href="/local/index/adelaide/">Adelaide</a></li>
+                    <li><a href="{% url 'local_area_index_default' %}">Adelaide</a></li>
                     <li>{{ current_letter }}</li>
                 </ol>
             </nav>
@@ -47,7 +47,7 @@
 
         <div class="alphabet-nav">
             {% for letter in letters %}
-                <a href="/local/index/adelaide/{{ letter|lower }}/" class="{% if letter == current_letter %}active{% endif %}">{{ letter }}</a>
+                <a href="{% url 'local_area_index' letter=letter|lower %}" class="{% if letter == current_letter %}active{% endif %}">{{ letter }}</a>
             {% endfor %}
         </div>
     </div>
@@ -63,7 +63,7 @@
         {% if matching_areas %}
             <div class="suburbs-display">
                 {% for area in matching_areas %}
-                    <a href="/local/adelaide/{{ area.slug }}/" class="suburb-link">{{ area.name }}, {{ area.postcode }}</a>
+                    <a href="{% url 'local_suburb_detail' area_slug=area.slug %}" class="suburb-link">{{ area.name }}, {{ area.postcode }}</a>
                 {% endfor %}
             </div>
         {% else %}

@@ -7,18 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("bookings", "0005_jobphoto_google_calendar_event_id"),
         ("reviews", "0001_initial"),
-=======
-        ('bookings', '0005_jobphoto_google_calendar_event_id'),
-        ('reviews', '0001_initial'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="ReviewRequest",
             fields=[
                 (
@@ -42,17 +36,6 @@ class Migration(migrations.Migration):
                         to="bookings.booking",
                     ),
                 ),
-=======
-            name='ReviewRequest',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('customer_name', models.CharField(max_length=150)),
-                ('customer_email', models.EmailField(max_length=254)),
-                ('request_sent', models.BooleanField(default=False)),
-                ('review_received', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bookings.booking')),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

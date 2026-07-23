@@ -18,8 +18,8 @@
             {% for review in reviews %}
             <div class="review-card">
                 <h3>{{ review.reviewer_name }}</h3>
-                <p>⭐⭐⭐⭐⭐</p>
-                <p>{{ review.comment|truncatewords:35 }}</p>
+                <p>{{ review.rating|default:'⭐⭐⭐⭐⭐' }}</p>
+                <p>{% if review.comment %}{{ review.comment|truncatewords:35 }}{% else %}{{ review.review_text|truncatewords:35 }}{% endif %}</p>
             </div>
             {% endfor %}
 

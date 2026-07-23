@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eco-Friendly Cleaning | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Discover our eco-friendly commercial cleaning solutions in Adelaide. Safe, sustainable cleaning for your workplace and shared spaces.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/eco.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="eco-hero">
+    <div class="container">
+        <h1>Eco-Friendly Cleaning for Businesses</h1>
+        <p>Protect your employees and the environment with cleaning services that use sustainable products and low-impact methods.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Book Sustainable Cleaning</a>
+    </div>
+</section>
+
+<section class="eco-overview">
+    <div class="container">
+        <h2>What Makes Our Cleaning Eco-Friendly?</h2>
+        <ul class="eco-list">
+            <li>Non-toxic, biodegradable cleaning products.</li>
+            <li>Reduced water usage and waste management.</li>
+            <li>Efficient cleaning practices that minimise environmental impact.</li>
+        </ul>
+        <p>Our cleaning teams are trained to deliver excellent results without harsh chemicals, making your space healthier and more sustainable.</p>
+    </div>
+</section>
+
+<section class="eco-benefits">
+    <div class="container">
+        <h2>Benefits for Your Business</h2>
+        <div class="benefit-grid">
+            <div class="benefit-card">
+                <h3>Healthier Workspace</h3>
+                <p>Reduce irritants and allergens in your commercial environment.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Sustainability</h3>
+                <p>Choose greener cleaning practices that support your corporate responsibility goals.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>Professional Results</h3>
+                <p>We combine eco-friendly products with industry-standard cleaning expertise.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="eco-cta">
+    <div class="container">
+        <h2>Switch to greener cleaning today</h2>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Request an Eco Clean</a>
+    </div>
+</section>
+{% endblock %}

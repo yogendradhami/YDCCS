@@ -11,10 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-<<<<<<< HEAD
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ydcleaning.settings")
-=======
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ydcleaning.settings')
->>>>>>> 5815f15 (Initial project commit)
 
 application = get_asgi_application()

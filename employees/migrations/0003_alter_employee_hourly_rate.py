@@ -6,22 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("employees", "0002_employee_user"),
-=======
-        ('employees', '0002_employee_user'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AlterField(
-<<<<<<< HEAD
             model_name="employee",
             name="hourly_rate",
-=======
-            model_name='employee',
-            name='hourly_rate',
->>>>>>> 5815f15 (Initial project commit)
             field=models.DecimalField(decimal_places=2, default=35, max_digits=8),
         ),
     ]

@@ -1,64 +1,5 @@
 {% load static %}
 <!DOCTYPE html>
-<<<<<<< HEAD
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}YD Dashboard{% endblock %}</title>
-
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="{% static 'js/dashboard.js' %}"></script>
-
-    <style>
-        .sidebar-dropdown {
-            margin-bottom: 8px;
-        }
-
-        .sidebar-dropdown-btn {
-            width: 100%;
-            border: none;
-            background: transparent;
-            color: inherit;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            cursor: pointer;
-            font-weight: 800;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        .sidebar-dropdown-btn:hover {
-            background: rgba(255,255,255,0.08);
-            border-radius: 10px;
-        }
-
-        .sidebar-arrow {
-            font-size: 12px;
-            transition: 0.25s;
-        }
-
-        .sidebar-dropdown.open .sidebar-arrow {
-            transform: rotate(180deg);
-        }
-
-        .sidebar-submenu {
-            display: none;
-            padding-left: 10px;
-        }
-
-        .sidebar-dropdown.open .sidebar-submenu {
-            display: block;
-        }
-
-        .sidebar-submenu a {
-            padding-left: 24px;
-        }
-    </style>
-=======
 <html lang="en-AU">
 <head>
     <meta charset="UTF-8">
@@ -73,7 +14,6 @@
     <!-- Dashboard scripts -->
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="{% static 'js/dashboard.js' %}"></script>
->>>>>>> 5815f15 (Initial project commit)
 </head>
 
 <body class="crm-body">
@@ -83,7 +23,6 @@
 
 <div class="crm-layout">
 
-<<<<<<< HEAD
     <aside class="crm-sidebar" id="crmSidebar">
 
         <div class="crm-logo">
@@ -96,6 +35,12 @@
 
             <a href="/dashboard/">
                 <span>Dashboard</span>
+            </a>
+            <a href="/dashboard/careers/">
+
+                <span>Careers</span>
+                
+                
             </a>
 
             <div class="sidebar-dropdown open">
@@ -384,74 +329,74 @@
 
 
 
-            <div class="sidebar-submenu">
+                <div class="sidebar-submenu">
 
-                <a href="/dashboard/equipment/">
-                    <span>Equipment Inventory</span>
+                    <a href="/dashboard/equipment/">
+                        <span>Equipment Inventory</span>
 
-                    {% if notification_counts.equipment %}
-                        <span class="side-badge">
-                            {{ notification_counts.equipment }}
-                        </span>
-                    {% endif %}
-                </a>
+                        {% if notification_counts.equipment %}
+                            <span class="side-badge">
+                                {{ notification_counts.equipment }}
+                            </span>
+                        {% endif %}
+                    </a>
 
-                <a href="/dashboard/supplies/">
-                    <span>Cleaning Supplies</span>
+                    <a href="/dashboard/supplies/">
+                        <span>Cleaning Supplies</span>
 
-                    {% if notification_counts.supplies %}
-                        <span class="side-badge">
-                            {{ notification_counts.supplies }}
-                        </span>
-                    {% endif %}
-                </a>
-
-
-                <a href="/dashboard/purchase-orders/">
-                    <span>Purchase Orders</span>
-
-                    {% if notification_counts.purchase_orders %}
-                        <span class="side-badge">
-                            {{ notification_counts.purchase_orders }}
-                        </span>
-                    {% endif %}
-                </a>
+                        {% if notification_counts.supplies %}
+                            <span class="side-badge">
+                                {{ notification_counts.supplies }}
+                            </span>
+                        {% endif %}
+                    </a>
 
 
-                <a href="/dashboard/suppliers/">
-                    <span>Suppliers</span>
+                    <a href="/dashboard/purchase-orders/">
+                        <span>Purchase Orders</span>
 
-                    {% if notification_counts.suppliers %}
-                        <span class="side-badge">
-                            {{ notification_counts.suppliers }}
-                        </span>
-                    {% endif %}
-                </a>
-
-                <a href="/dashboard/vehicles/">
-                    <span>Vehicle Management</span>
-
-                    {% if notification_counts.vehicles %}
-                        <span class="side-badge">
-                            {{ notification_counts.vehicles }}
-                        </span>
-                    {% endif %}
-                </a>
-
-               <a href="/dashboard/maintenance/">
-                    <span>Maintenance History</span>
-
-                    {% if notification_counts.maintenance %}
-                        <span class="side-badge">
-                            {{ notification_counts.maintenance }}
-                        </span>
-                    {% endif %}
-                </a>
+                        {% if notification_counts.purchase_orders %}
+                            <span class="side-badge">
+                                {{ notification_counts.purchase_orders }}
+                            </span>
+                        {% endif %}
+                    </a>
 
 
+                    <a href="/dashboard/suppliers/">
+                        <span>Suppliers</span>
 
+                        {% if notification_counts.suppliers %}
+                            <span class="side-badge">
+                                {{ notification_counts.suppliers }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    <a href="/dashboard/vehicles/">
+                        <span>Vehicle Management</span>
+
+                        {% if notification_counts.vehicles %}
+                            <span class="side-badge">
+                                {{ notification_counts.vehicles }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                   <a href="/dashboard/maintenance/">
+                        <span>Maintenance History</span>
+
+                        {% if notification_counts.maintenance %}
+                            <span class="side-badge">
+                                {{ notification_counts.maintenance }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+
+
+                </div>
             </div>
-
 
             <div class="sidebar-dropdown">
                 <button class="sidebar-dropdown-btn" type="button">
@@ -579,6 +524,10 @@
                         <span>Settings</span>
                     </a>
 
+                    <a href="/dashboard/logout/">
+                        <span>Logout</span>
+                    </a>
+
                     <a href="/admin/">
                         <span>Django Admin</span>
                     </a>
@@ -624,10 +573,16 @@
                     </div>
                 </div>
 
+                
                 <div class="crm-user-box">
                     <span>Logged in as</span>
                     <strong>{{ request.user.username }}</strong>
                 </div>
+
+                <form method="post" action="{% url 'dashboard_logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="crm-logout-button">Logout</button>
+                </form>
             </div>
         </header>
 
@@ -640,13 +595,6 @@
                     {% endfor %}
                 </div>
             {% endif %}
-=======
-    {% include 'dashboard/partials/sidebar.html' %}
-
-    <main class="crm-main">
-
-        {% include 'dashboard/partials/topbar.html' %}
->>>>>>> 5815f15 (Initial project commit)
 
         {% block content %}
         {% endblock %}
@@ -655,23 +603,7 @@
 
 </div>
 
-<<<<<<< HEAD
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const dropdownButtons = document.querySelectorAll(".sidebar-dropdown-btn");
-
-    dropdownButtons.forEach(function (button) {
-        button.addEventListener("click", function () {
-            const parent = button.closest(".sidebar-dropdown");
-            parent.classList.toggle("open");
-        });
-    });
-});
-</script>
-
-=======
->>>>>>> 5815f15 (Initial project commit)
 </body>
 </html>

@@ -1,8 +1,5 @@
 from django import forms
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 from .models import QuoteRequest
 
 
@@ -18,13 +15,9 @@ class MultipleImageField(forms.FileField):
             return []
 
         if isinstance(data, (list, tuple)):
-<<<<<<< HEAD
             return [
                 super(MultipleImageField, self).clean(file, initial) for file in data
             ]
-=======
-            return [super(MultipleImageField, self).clean(file, initial) for file in data]
->>>>>>> 5815f15 (Initial project commit)
 
         return [super().clean(data, initial)]
 
@@ -32,7 +25,6 @@ class MultipleImageField(forms.FileField):
 class QuoteRequestForm(forms.ModelForm):
     property_images = MultipleImageField(
         required=False,
-<<<<<<< HEAD
         widget=MultipleFileInput(
             attrs={
                 "class": "form-control",
@@ -40,13 +32,6 @@ class QuoteRequestForm(forms.ModelForm):
                 "accept": "image/*",
             }
         ),
-=======
-        widget=MultipleFileInput(attrs={
-            "class": "form-control",
-            "multiple": True,
-            "accept": "image/*",
-        })
->>>>>>> 5815f15 (Initial project commit)
     )
 
     class Meta:
@@ -71,7 +56,6 @@ class QuoteRequestForm(forms.ModelForm):
         ]
 
         widgets = {
-<<<<<<< HEAD
             "name": forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -144,54 +128,6 @@ class QuoteRequestForm(forms.ModelForm):
                     "class": "form-check-input",
                 }
             ),
-=======
-            "name": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Your name",
-            }),
-            "email": forms.EmailInput(attrs={
-                "class": "form-control",
-                "placeholder": "your@email.com",
-            }),
-            "phone": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "0233 222 333",
-            }),
-            "property_type": forms.Select(attrs={
-                "class": "form-control",
-            }),
-            "suburb_postcode": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "e.g., Adelaide 5000",
-            }),
-            "preferred_date": forms.DateInput(attrs={
-                "class": "form-control",
-                "type": "date",
-            }),
-            "message": forms.Textarea(attrs={
-                "class": "form-control",
-                "placeholder": "Tell us more about your cleaning needs...",
-                "rows": 4,
-            }),
-            "window_cleaning": forms.CheckboxInput(attrs={
-                "class": "form-check-input",
-            }),
-            "carpet_shampooing": forms.CheckboxInput(attrs={
-                "class": "form-check-input",
-            }),
-            "grout_cleaning": forms.CheckboxInput(attrs={
-                "class": "form-check-input",
-            }),
-            "upholstery_cleaning": forms.CheckboxInput(attrs={
-                "class": "form-check-input",
-            }),
-            "laundry_service": forms.CheckboxInput(attrs={
-                "class": "form-check-input",
-            }),
-            "is_not_robot": forms.CheckboxInput(attrs={
-                "class": "form-check-input",
-            }),
->>>>>>> 5815f15 (Initial project commit)
         }
 
     def clean_property_type(self):
@@ -204,8 +140,4 @@ class QuoteRequestForm(forms.ModelForm):
         value = self.cleaned_data.get("is_not_robot")
         if not value:
             raise forms.ValidationError("Please confirm that you are not a robot.")
-<<<<<<< HEAD
         return value
-=======
-        return value
->>>>>>> 5815f15 (Initial project commit)

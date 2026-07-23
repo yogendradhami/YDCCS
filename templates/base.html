@@ -38,10 +38,13 @@
     <link rel="apple-touch-icon" href="{% if company_settings and company_settings.favicon %}{{ company_settings.favicon.url }}{% else %}{% static 'images/logo.jpeg' %}{% endif %}">
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
 
+    <!-- Preload critical styles and optimize external font connections -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="{% static 'css/core/style.css' %}?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="{% static 'css/core/style.css' %}?v=2"></noscript>
-    <link rel="preload" href="{% static 'css/global/style.min.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{% static 'css/global/style.min.css' %}"></noscript>
+    <link rel="preload" href="{% static 'css/canonical.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{% static 'css/canonical.css' %}"></noscript>
 
     <style>
     .promo-bar{background:#f6f9fc;color:#111;padding:6px 12px;font-size:13px;text-align:center}
@@ -234,6 +237,21 @@
     </script>
 
     <script defer src="{% static 'js/global/site.js' %}"></script>
+    <script defer>
+    document.addEventListener('DOMContentLoaded', function () {
+        if ('loading' in HTMLImageElement.prototype) {
+            document.querySelectorAll('img[data-src]').forEach(function (img) {
+                img.loading = 'lazy';
+                img.src = img.dataset.src;
+            });
+        } else {
+            var script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    });
+    </script>
 
     <style>
     .global-message-wrapper{max-width:1200px;margin:20px auto;padding:0 20px}

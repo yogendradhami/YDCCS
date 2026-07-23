@@ -1,0 +1,177 @@
+/* Corporate Page Styles */
+
+.corporate-hero {
+    position: relative;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
+    color: white;
+    text-align: center;
+    overflow: hidden;
+    padding: 80px 20px;
+}
+
+.corporate-hero .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    z-index: 2;
+}
+
+.corporate-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.corporate-hero p {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    margin-bottom: 30px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Benefits Section */
+.corporate-benefits {
+    padding: 80px 20px;
+    background: #f8fafc;
+}
+
+.corporate-benefits .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.corporate-benefits h2 {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 60px;
+    text-align: center;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 40px;
+}
+
+.benefit-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.benefit-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
+}
+
+.benefit-card h3 {
+    font-size: 1.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+}
+
+.benefit-card p {
+    font-size: 1rem;
+    color: var(--text-gray);
+    line-height: 1.6;
+}
+
+/* Services Section */
+.corporate-services {
+    padding: 80px 20px;
+    background: white;
+}
+
+.corporate-services .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.corporate-services h2 {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.service-list {
+    list-style: none;
+    padding: 0;
+    max-width: 600px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.service-list li {
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    padding-left: 30px;
+    position: relative;
+    line-height: 1.6;
+}
+
+.service-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--secondary-green);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* CTA Section */
+.corporate-cta {
+    padding: 80px 20px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
+    color: white;
+    text-align: center;
+}
+
+.corporate-cta .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.corporate-cta h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.corporate-cta p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    opacity: 0.95;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .corporate-hero h1 {
+        font-size: 2rem;
+    }
+
+    .corporate-hero p {
+        font-size: 1rem;
+    }
+
+    .corporate-benefits h2,
+    .corporate-services h2,
+    .corporate-cta h2 {
+        font-size: 2rem;
+    }
+
+    .benefits-grid {
+        grid-template-columns: 1fr;
+    }
+}

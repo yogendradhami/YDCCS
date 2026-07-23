@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Insurance, Guarantees & Safety | YD Commercial Cleaning{% endblock %}
+{% block meta_description %}Learn about our insurance coverage, risk-free guarantees and safety commitment for every cleaning service in Adelaide.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/insurance.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="insurance-hero">
+    <div class="container">
+        <h1>Fully Insured Cleaning Services</h1>
+        <p>Enjoy peace of mind with professional cleaning backed by insurance, guarantees and quality controls.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Confirm Your Coverage</a>
+    </div>
+</section>
+
+<section class="insurance-details">
+    <div class="container">
+        <h2>Our Insurance & Guarantee Promise</h2>
+        <div class="insurance-grid">
+            <div class="insurance-card">
+                <h3>Comprehensive Coverage</h3>
+                <p>Our team is covered by public liability and professional indemnity insurance during every job.</p>
+            </div>
+            <div class="insurance-card">
+                <h3>Damage Protection</h3>
+                <p>We protect your property and respond quickly if accidental damage occurs during cleaning.</p>
+            </div>
+            <div class="insurance-card">
+                <h3>Satisfaction Guarantee</h3>
+                <p>We stand behind our work. If you are not happy, we will return and make it right.</p>
+            </div>
+            <div class="insurance-card">
+                <h3>Trusted Professionals</h3>
+                <p>All cleaners are vetted, trained and backed by formal insurance cover.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="insurance-cta">
+    <div class="container">
+        <h2>Safe, reliable cleaning for Adelaide homes and businesses</h2>
+        <p>Our insurance and guarantees make it easy to choose the right service without worrying about risk.</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Ask About Coverage</a>
+    </div>
+</section>
+{% endblock %}

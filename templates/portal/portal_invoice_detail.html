@@ -231,7 +231,7 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
 
         <div class="invoice-top">
             <div class="invoice-brand">
-                <img src="/static/images/logo.jpeg" alt="YD Commercial Cleaning Services Logo" class="invoice-logo">
+                <img src="{% static 'images/logo.jpeg' %}" alt="YD Commercial Cleaning Services Logo" class="invoice-logo">
 
                 <div>
                     <h1>YD Commercial<br>Cleaning Services</h1>
@@ -343,9 +343,10 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             <a href="/dashboard/invoices/{{ invoice.id }}/download/" class="invoice-btn btn-blue">⬇ Download PDF</a>
 
             {% if invoice.status != "paid" %}
-                <a href="/dashboard/invoices/{{ invoice.id }}/pay/" class="invoice-btn btn-green">
-                    💳 Pay Now with Stripe
-                </a>
+                <form method="post" action="{% url 'portal_create_stripe_checkout_session' invoice.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="invoice-btn btn-green">💳 Pay Now with Stripe</button>
+                </form>
             {% else %}
                 <span class="invoice-btn btn-green">Paid</span>
             {% endif %}

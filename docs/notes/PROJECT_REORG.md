@@ -4,12 +4,8 @@ This project has been updated with a cleaner structure while preserving existing
 
 ## What changed
 
-- Added a new `config/` package with:
-  - `config/settings.py`
-  - `config/urls.py`
-  - `config/wsgi.py`
-  - `config/asgi.py`
-- Updated `manage.py` to use `config.settings`.
+- Removed the legacy `config/` package and kept the canonical `ydcleaning/` project package.
+- Updated `manage.py` to use `ydcleaning.settings`.
 - Created a more modern template organization pattern:
   - `templates/layouts/`
   - `templates/includes/`
@@ -21,7 +17,7 @@ This project has been updated with a cleaner structure while preserving existing
 
 ## Why this is better
 
-- `config/` separates project configuration from application code.
+- `ydcleaning/` now contains the active project configuration and URL routing.
 - `templates/layouts/` and `templates/includes/` make it easier to find shared layout files.
 - `templates/pages/` groups page-level templates in a more scalable way.
 - `static/css/*` directories let you separate base styles, component styles, and page-specific styles.
@@ -29,7 +25,7 @@ This project has been updated with a cleaner structure while preserving existing
 ## Notes
 
 - The existing `ydcleaning/` package is still preserved for compatibility.
-- Active Django execution now uses `config/settings.py` through `manage.py`.
+- Active Django execution now uses `ydcleaning/settings.py` through `manage.py`.
 - No application logic was changed; the code behavior remains the same.
 
 ## Next steps

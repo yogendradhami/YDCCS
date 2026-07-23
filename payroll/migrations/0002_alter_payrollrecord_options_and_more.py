@@ -6,16 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("payroll", "0001_initial"),
-=======
-        ('payroll', '0001_initial'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AlterModelOptions(
-<<<<<<< HEAD
             name="payrollrecord",
             options={"ordering": ["-period_end", "employee__full_name"]},
         ),
@@ -60,44 +55,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="payrollrecord",
             name="hourly_rate",
-=======
-            name='payrollrecord',
-            options={'ordering': ['-period_end', 'employee__full_name']},
-        ),
-        migrations.RenameField(
-            model_name='payrollrecord',
-            old_name='week_end',
-            new_name='period_end',
-        ),
-        migrations.RenameField(
-            model_name='payrollrecord',
-            old_name='week_start',
-            new_name='period_start',
-        ),
-        migrations.AddField(
-            model_name='payrollrecord',
-            name='notes',
-            field=models.TextField(blank=True),
-        ),
-        migrations.AddField(
-            model_name='payrollrecord',
-            name='status',
-            field=models.CharField(choices=[('draft', 'Draft'), ('approved', 'Approved'), ('paid', 'Paid')], default='draft', max_length=20),
-        ),
-        migrations.AddField(
-            model_name='payrollrecord',
-            name='updated_at',
-            field=models.DateTimeField(auto_now=True),
-        ),
-        migrations.AlterField(
-            model_name='payrollrecord',
-            name='gross_pay',
-            field=models.DecimalField(decimal_places=2, default=0, max_digits=10),
-        ),
-        migrations.AlterField(
-            model_name='payrollrecord',
-            name='hourly_rate',
->>>>>>> 5815f15 (Initial project commit)
             field=models.DecimalField(decimal_places=2, default=0, max_digits=8),
         ),
     ]

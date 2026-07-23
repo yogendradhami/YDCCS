@@ -21,7 +21,7 @@ cp .env.example .env
 # Edit .env and set DJANGO_SECRET_KEY, RESEND_API_KEY, STRIPE keys, etc.
 ```
 
-Note: `config/settings.py` will automatically load the `.env` file from the project root.
+Note: `ydcleaning/settings.py` will automatically load `.env` and `.env.local` files from the project root when present.
 
 4. Run migrations and create a superuser:
 

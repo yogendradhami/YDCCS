@@ -96,8 +96,4 @@ Login to Django Admin to view full details and uploaded images.
         settings.DEFAULT_FROM_EMAIL,
         [settings.ADMIN_EMAIL],
         fail_silently=False,
-<<<<<<< HEAD
     )
-=======
-    )
->>>>>>> 5815f15 (Initial project commit)

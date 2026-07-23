@@ -6,16 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("contracts", "0001_initial"),
-=======
-        ('contracts', '0001_initial'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AddField(
-<<<<<<< HEAD
             model_name="cleaningcontract",
             name="renewal_14_sent",
             field=models.BooleanField(default=False),
@@ -28,20 +23,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="cleaningcontract",
             name="renewal_7_sent",
-=======
-            model_name='cleaningcontract',
-            name='renewal_14_sent',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='cleaningcontract',
-            name='renewal_30_sent',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='cleaningcontract',
-            name='renewal_7_sent',
->>>>>>> 5815f15 (Initial project commit)
             field=models.BooleanField(default=False),
         ),
     ]

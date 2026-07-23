@@ -6,16 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("quotes", "0006_quoterequest_bathrooms_quoterequest_bedrooms_and_more"),
-=======
-        ('quotes', '0006_quoterequest_bathrooms_quoterequest_bedrooms_and_more'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.AddField(
-<<<<<<< HEAD
             model_name="quoterequest",
             name="lead_source",
             field=models.CharField(
@@ -32,10 +27,5 @@ class Migration(migrations.Migration):
                 default="website",
                 max_length=50,
             ),
-=======
-            model_name='quoterequest',
-            name='lead_source',
-            field=models.CharField(choices=[('website', 'Website'), ('google', 'Google Business Profile'), ('facebook', 'Facebook'), ('instagram', 'Instagram'), ('tiktok', 'TikTok'), ('hipages', 'Hipages'), ('referral', 'Referral'), ('other', 'Other')], default='website', max_length=50),
->>>>>>> 5815f15 (Initial project commit)
         ),
     ]

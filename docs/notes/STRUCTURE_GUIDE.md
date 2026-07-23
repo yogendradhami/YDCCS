@@ -4,7 +4,7 @@
 
 ```
 yd-cleaning/
-├── config/                          # Django project config (NEW - aligned with yd_website)
+├── ydcleaning/                      # Django project package and settings
 │   ├── settings.py
 │   ├── urls.py
 │   ├── wsgi.py
@@ -46,15 +46,15 @@ yd-cleaning/
 │   └── js/
 │
 ├── [Django apps]                    # attendance/, bookings/, core/, etc.
-├── manage.py                        # Updated to use config.settings
-└── ydcleaning/                      # Legacy (preserved for backward compatibility)
+├── manage.py                        # Updated to use ydcleaning.settings
+└── ydcleaning/                      # Canonical project package
 ```
 
 ## Alignment with yd_website
 
 | Feature | yd-cleaning | yd_website | Status |
 |---------|------------|-----------|--------|
-| `config/` package | ✅ | ✅ | **SAME** |
+| `ydcleaning/` package | ✅ | ✅ | **SAME** |
 | `templates/layouts/` | ✅ | ✅ | **SAME** |
 | `templates/includes/` | ✅ | ✅ | **SAME** |
 | `templates/pages/` | ✅ | ✅ | **SAME** |
@@ -67,7 +67,7 @@ yd-cleaning/
 
 ## Key Improvements Made
 
-1. ✅ **Project config reorganized** — moved to `config/` package
+1. ✅ **Project config consolidated** — configuration now lives in `ydcleaning/` package
 2. ✅ **Template structure modernized** — layouts/, includes/, pages/
 3. ✅ **CSS modularized** — base/, components/, pages/, responsive/
 4. ✅ **Responsive CSS added** — `static/css/responsive/`

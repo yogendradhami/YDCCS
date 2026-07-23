@@ -57,9 +57,10 @@ My Invoices | YD Commercial Cleaning
                                     </td>
                                     <td>
                                         {% if invoice.status != "paid" %}
-                                            <a href="/dashboard/invoices/{{ invoice.id }}/pay/" class="small-pay-btn">
-                                                Pay
-                                            </a>
+                                            <form method="post" action="{% url 'portal_create_stripe_checkout_session' invoice.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="small-pay-btn">Pay</button>
+                                            </form>
                                         {% else %}
                                             <span class="paid-small-label">Paid</span>
                                         {% endif %}

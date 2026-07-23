@@ -50,7 +50,6 @@ class EmployeeAdmin(admin.ModelAdmin):
         }
 
         return format_html(
-<<<<<<< HEAD
             (
                 '<span style="background:{};color:white;padding:5px 10px;'
                 'border-radius:20px;font-weight:bold;">{}</span>'
@@ -60,11 +59,3 @@ class EmployeeAdmin(admin.ModelAdmin):
         )
 
     availability_badge.short_description = "Availability"
-=======
-            '<span style="background:{};color:white;padding:5px 10px;border-radius:20px;font-weight:bold;">{}</span>',
-            colors.get(obj.availability, "#6b7280"),
-            obj.get_availability_display()
-        )
-
-    availability_badge.short_description = "Availability"
->>>>>>> 5815f15 (Initial project commit)

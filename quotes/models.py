@@ -52,15 +52,8 @@ class QuoteRequest(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=30)
     lead_source = models.CharField(
-<<<<<<< HEAD
         max_length=50, choices=LEAD_SOURCE_CHOICES, default="website"
     )
-=======
-    max_length=50,
-    choices=LEAD_SOURCE_CHOICES,
-    default="website"
-)
->>>>>>> 5815f15 (Initial project commit)
 
     # -------------------------------
     # Property and booking details
@@ -75,15 +68,7 @@ class QuoteRequest(models.Model):
 
     bathrooms = models.PositiveIntegerField(default=1)
 
-<<<<<<< HEAD
     estimated_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-=======
-    estimated_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     # -------------------------------
     # Add-on cleaning services
@@ -94,11 +79,6 @@ class QuoteRequest(models.Model):
     upholstery_cleaning = models.BooleanField(default=False)
     laundry_service = models.BooleanField(default=False)
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 5815f15 (Initial project commit)
     # -------------------------------
     # Simple anti-spam checkbox
     # -------------------------------
@@ -107,15 +87,7 @@ class QuoteRequest(models.Model):
     # -------------------------------
     # Lead management status
     # -------------------------------
-<<<<<<< HEAD
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
-=======
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="new"
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     # -------------------------------
     # Admin notes for follow-up
@@ -137,21 +109,11 @@ class QuoteImage(models.Model):
     # linked to one quote request
     # -------------------------------
     quote = models.ForeignKey(
-<<<<<<< HEAD
         QuoteRequest, on_delete=models.CASCADE, related_name="images"
-=======
-        QuoteRequest,
-        on_delete=models.CASCADE,
-        related_name="images"
->>>>>>> 5815f15 (Initial project commit)
     )
 
     image = models.ImageField(upload_to="quote_images/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-<<<<<<< HEAD
         return f"Image for {self.quote.name}"
-=======
-        return f"Image for {self.quote.name}"
->>>>>>> 5815f15 (Initial project commit)

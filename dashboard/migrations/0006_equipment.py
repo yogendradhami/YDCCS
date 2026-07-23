@@ -7,18 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-<<<<<<< HEAD
         ("dashboard", "0005_campaignlog"),
         ("employees", "0003_alter_employee_hourly_rate"),
-=======
-        ('dashboard', '0005_campaignlog'),
-        ('employees', '0003_alter_employee_hourly_rate'),
->>>>>>> 5815f15 (Initial project commit)
     ]
 
     operations = [
         migrations.CreateModel(
-<<<<<<< HEAD
             name="Equipment",
             fields=[
                 (
@@ -63,20 +57,6 @@ class Migration(migrations.Migration):
                         to="employees.employee",
                     ),
                 ),
-=======
-            name='Equipment',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('serial_number', models.CharField(blank=True, max_length=100)),
-                ('purchase_date', models.DateField(blank=True, null=True)),
-                ('purchase_cost', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('condition', models.CharField(choices=[('excellent', 'Excellent'), ('good', 'Good'), ('fair', 'Fair'), ('repair', 'Needs Repair'), ('retired', 'Retired')], default='good', max_length=20)),
-                ('next_service_date', models.DateField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('assigned_employee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='employees.employee')),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

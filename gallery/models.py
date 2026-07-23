@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-from django.db import models
-
->>>>>>> 5815f15 (Initial project commit)
 # Create your models here.
 from django.db import models
 
@@ -30,8 +25,4 @@ class GalleryItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-<<<<<<< HEAD
         return self.title
-=======
-        return self.title
->>>>>>> 5815f15 (Initial project commit)

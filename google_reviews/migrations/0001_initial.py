@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     initial = True
 
-<<<<<<< HEAD
     dependencies = []
 
     operations = [
@@ -28,21 +27,6 @@ class Migration(migrations.Migration):
                 ("refresh_token", models.TextField(blank=True, null=True)),
                 ("connected_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-=======
-    dependencies = [
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='GoogleAccount',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('email', models.EmailField(blank=True, max_length=254)),
-                ('access_token', models.TextField()),
-                ('refresh_token', models.TextField(blank=True, null=True)),
-                ('connected_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

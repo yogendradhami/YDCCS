@@ -1,18 +1,9 @@
 from django.db import models
-<<<<<<< HEAD
-
-# Create your models here.
-=======
-import os
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-
-# Store blog images under project static/uploads/blog/
-static_fs = FileSystemStorage(location=os.path.join(settings.BASE_DIR, "static"), base_url=settings.STATIC_URL)
 
 
 def blog_upload_path(instance, filename):
-    return os.path.join("uploads", "blog", filename)
+    """Generate upload path for blog featured images."""
+    return f"blog/{instance.slug}/{filename}"
 
 
 class BlogPost(models.Model):
@@ -20,11 +11,12 @@ class BlogPost(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     excerpt = models.TextField(blank=True)
     content = models.TextField()
-
-    featured_image = models.ImageField(upload_to=blog_upload_path, storage=static_fs, blank=True, null=True)
+    featured_image = models.ImageField(
+        upload_to=blog_upload_path, blank=True, null=True
+    )
     category = models.CharField(max_length=100, blank=True)
     published = models.BooleanField(default=True)
-    published_at = models.DateTimeField(null=True, blank=True)
+    published_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,4 +25,3 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return self.title
->>>>>>> 5815f15 (Initial project commit)

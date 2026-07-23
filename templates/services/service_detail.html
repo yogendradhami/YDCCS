@@ -5,6 +5,7 @@
 =================================================== -->
 
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 {{ service.title }} | YD Commercial Cleaning Services
@@ -22,8 +23,8 @@
 {{ service.description }}
 {% endblock %}
 
-{% block og_image %}{% endblock %}
-{% block twitter_image %}{% endblock %}
+{% block og_image %}{% if service.hero_image %}{{ service.hero_image.url }}{% else %}{{ open_graph_image }}{% endif %}{% endblock %}
+{% block twitter_image %}{% if service.hero_image %}{{ service.hero_image.url }}{% else %}{{ twitter_image }}{% endif %}{% endblock %}
 
 {% if service_url %}
 <link rel="canonical" href="{{ service_url }}">
@@ -37,8 +38,13 @@
         <div class="service-split" role="region" aria-label="Service detail">
             <div class="split-image" aria-hidden="true">
                 <picture>
-                    <source srcset="{{ service.hero_image|default:'/static/images/logo.jpeg' }}" type="image/jpeg">
-                    <img src="{{ service.hero_image|default:'/static/images/logo.jpeg' }}" alt="{{ service.title }}" loading="lazy">
+                    {% if service.hero_image %}
+                        <source srcset="{{ service.hero_image.url }}" type="image/jpeg">
+                        <img src="{{ service.hero_image.url }}" alt="{{ service.title }}" loading="lazy" width="1200" height="800">
+                    {% else %}
+                        <source srcset="{% static 'images/logo.jpeg' %}" type="image/jpeg">
+                        <img src="{% static 'images/logo.jpeg' %}" alt="{{ service.title }}" loading="lazy" width="1200" height="800">
+                    {% endif %}
                 </picture>
             </div>
 

@@ -30,7 +30,7 @@ Successfully reduced **Largest Contentful Paint (LCP) by 82%** (9.7s → 1.7s), 
 ### 3. Cache Headers Configuration
 **Solution**:
 - Created `CacheHeaderMiddleware` in `core/middleware.py`
-- Added to Django middleware stack in `config/settings.py`
+- Added to Django middleware stack in `ydcleaning/settings.py`
 - Configured:
   - Static assets (`/static/`): 1-year cache, immutable (hashed filenames)
   - Media files (`/media/`): 30-day cache
@@ -71,7 +71,7 @@ Successfully reduced **Largest Contentful Paint (LCP) by 82%** (9.7s → 1.7s), 
 - Added new `CacheHeaderMiddleware` class
 - Sets appropriate Cache-Control headers for different asset types
 
-### 3. `config/settings.py`
+### 3. `ydcleaning/settings.py`
 - Added `CacheHeaderMiddleware` to MIDDLEWARE list
 - Cache configuration already had WhiteNoise with 1-year max age
 

@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     initial = True
 
-<<<<<<< HEAD
     dependencies = []
 
     operations = [
@@ -29,22 +28,6 @@ class Migration(migrations.Migration):
                 ("service", models.CharField(max_length=100)),
                 ("message", models.TextField(blank=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
-=======
-    dependencies = [
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='QuoteRequest',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('phone', models.CharField(max_length=30)),
-                ('email', models.EmailField(blank=True, max_length=254)),
-                ('service', models.CharField(max_length=100)),
-                ('message', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
->>>>>>> 5815f15 (Initial project commit)
             ],
         ),
     ]

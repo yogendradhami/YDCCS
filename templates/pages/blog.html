@@ -42,7 +42,7 @@
         <div class="featured-blog-post">
             <div class="featured-image">
                 {% if featured.featured_image %}
-                    <img src="{{ featured.featured_image.url }}" alt="{{ featured.title }}" loading="lazy">
+                    <img src="{{ featured.featured_image.url }}" alt="{{ featured.title }}" loading="lazy" width="1200" height="630">
                 {% else %}
                     <img src="{% static 'images/blog-featured.jpg' %}" alt="{{ featured.title }}" loading="lazy">
                 {% endif %}
@@ -66,9 +66,9 @@
             <article class="blog-card" data-category="{{ post.category|default:'tips' }}">
                 <div class="blog-image">
                     {% if post.featured_image %}
-                        <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" loading="lazy">
+                        <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" loading="lazy" width="800" height="450">
                     {% else %}
-                        <img src="{% static 'images/blog-post-1.jpg' %}" alt="{{ post.title }}" loading="lazy">
+                        <img src="{% static 'images/blog-post-1.jpg' %}" alt="{{ post.title }}" loading="lazy" width="800" height="450">
                     {% endif %}
                 </div>
                 <div class="blog-content">
@@ -91,7 +91,7 @@
         <!-- Featured Blog Post -->
         <div class="featured-blog-post">
             <div class="featured-image">
-                <img src="{% static 'images/blog-featured.jpg' %}" alt="Featured blog post about professional cleaning" loading="lazy">
+                <img src="{% static 'images/blog-featured.jpg' %}" alt="Featured blog post about professional cleaning" loading="lazy" width="1200" height="630">
             </div>
             <div class="featured-content">
                 <span class="featured-badge">Featured</span>
@@ -111,7 +111,7 @@
             <!-- Blog Post 1 -->
             <article class="blog-card" data-category="residential">
                 <div class="blog-image">
-                    <img src="{% static 'images/blog-post-1.jpg' %}" alt="Blog post about residential cleaning" loading="lazy">
+                    <img src="{% static 'images/blog-post-1.jpg' %}" alt="Blog post about residential cleaning" loading="lazy" width="800" height="450">
                 </div>
                 <div class="blog-content">
                     <div class="blog-category-tag">Residential</div>
@@ -129,7 +129,7 @@
             <!-- Blog Post 2 -->
             <article class="blog-card" data-category="commercial">
                 <div class="blog-image">
-                    <img src="{% static 'images/blog-post-2.jpg' %}" alt="Blog post about office cleaning" loading="lazy">
+                    <img src="{% static 'images/blog-post-2.jpg' %}" alt="Blog post about office cleaning" loading="lazy" width="800" height="450">
                 </div>
                 <div class="blog-content">
                     <div class="blog-category-tag">Commercial</div>
@@ -147,7 +147,7 @@
             <!-- Blog Post 3 -->
             <article class="blog-card" data-category="tips">
                 <div class="blog-image">
-                    <img src="{% static 'images/blog-post-3.jpg' %}" alt="Blog post about spring cleaning" loading="lazy">
+                    <img src="{% static 'images/blog-post-3.jpg' %}" alt="Blog post about spring cleaning" loading="lazy" width="800" height="450">
                 </div>
                 <div class="blog-content">
                     <div class="blog-category-tag">Tips & Guides</div>
@@ -165,7 +165,7 @@
             <!-- Blog Post 4 -->
             <article class="blog-card" data-category="seasonal">
                 <div class="blog-image">
-                    <img src="{% static 'images/blog-post-4.jpg' %}" alt="Blog post about summer cleaning" loading="lazy">
+                    <img src="{% static 'images/blog-post-4.jpg' %}" alt="Blog post about summer cleaning" loading="lazy" width="800" height="450">
                 </div>
                 <div class="blog-content">
                     <div class="blog-category-tag">Seasonal</div>
@@ -183,7 +183,7 @@
             <!-- Blog Post 5 -->
             <article class="blog-card" data-category="tips">
                 <div class="blog-image">
-                    <img src="{% static 'images/blog-post-5.jpg' %}" alt="Blog post about eco-friendly cleaning" loading="lazy">
+                    <img src="{% static 'images/blog-post-5.jpg' %}" alt="Blog post about eco-friendly cleaning" loading="lazy" width="800" height="450">
                 </div>
                 <div class="blog-content">
                     <div class="blog-category-tag">Tips & Guides</div>
@@ -201,7 +201,7 @@
             <!-- Blog Post 6 -->
             <article class="blog-card" data-category="residential">
                 <div class="blog-image">
-                    <img src="{% static 'images/blog-post-6.jpg' %}" alt="Blog post about bond cleaning" loading="lazy">
+                    <img src="{% static 'images/blog-post-6.jpg' %}" alt="Blog post about bond cleaning" loading="lazy" width="800" height="450">
                 </div>
                 <div class="blog-content">
                     <div class="blog-category-tag">Residential</div>

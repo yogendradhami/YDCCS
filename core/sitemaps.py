@@ -33,7 +33,7 @@ class ServicePageSitemap(Sitemap):
         return service_page_slugs()
 
     def location(self, item):
-        return reverse("service_page_services", kwargs={"service_slug": item})
+        return reverse("service_page", kwargs={"service_slug": item})
 
 
 sitemaps = {

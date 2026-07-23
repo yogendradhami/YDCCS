@@ -12,48 +12,40 @@
 from io import BytesIO
 
 import stripe
-<<<<<<< HEAD
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
 from .forms import InvoiceForm
 from .models import Invoice
-=======
 
-from django.conf import settings
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.http import FileResponse
-from django.urls import reverse
-from django.utils import timezone
 
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
+def get_accessible_invoice(request, invoice_id):
+    invoice = get_object_or_404(Invoice.objects.select_related("booking__customer"), id=invoice_id)
+    if request.user.is_staff or request.user.is_superuser:
+        return invoice
+    if invoice.booking.customer.user_id == request.user.id:
+        return invoice
+    raise PermissionDenied("You do not have permission to access this invoice.")
 
-from .models import Invoice
-from .forms import InvoiceForm
->>>>>>> 5815f15 (Initial project commit)
+
+def invoice_detail_redirect_name(user):
+    return "portal_invoice_detail" if hasattr(user, "customer_profile") else "invoice_detail"
 
 
 @login_required
 def invoice_list(request):
     invoices = Invoice.objects.all().order_by("-created_at")
 
-<<<<<<< HEAD
-    return render(request, "invoice_list.html", {"invoices": invoices})
-=======
-    return render(request, "invoices/invoice_list.html", {
-        "invoices": invoices
-    })
->>>>>>> 5815f15 (Initial project commit)
+    return render(request, "invoices/invoice_list.html", {"invoices": invoices})
 
 
 @login_required
@@ -71,20 +63,13 @@ def create_invoice(request):
     else:
         form = InvoiceForm()
 
-<<<<<<< HEAD
-    return render(request, "invoice_form.html", {"form": form})
-=======
-    return render(request, "invoices/invoice_form.html", {
-        "form": form
-    })
->>>>>>> 5815f15 (Initial project commit)
+    return render(request, "invoices/invoice_form.html", {"form": form})
 
 
 @login_required
 def invoice_detail(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_accessible_invoice(request, invoice_id)
 
-<<<<<<< HEAD
     return render(
         request,
         "invoice_detail.html",
@@ -93,21 +78,16 @@ def invoice_detail(request, invoice_id):
             "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
         },
     )
-=======
-    return render(request, "invoices/invoice_detail.html", {
-        "invoice": invoice,
-        "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
-    })
->>>>>>> 5815f15 (Initial project commit)
 
 
 @login_required
+@require_POST
 def create_stripe_checkout_session(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_accessible_invoice(request, invoice_id)
 
     if invoice.status == "paid":
         messages.info(request, "This invoice has already been paid.")
-        return redirect("invoice_detail", invoice_id=invoice.id)
+        return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -115,18 +95,18 @@ def create_stripe_checkout_session(request, invoice_id):
 
     success_url = (
         domain
-        + reverse("stripe_payment_success", kwargs={"invoice_id": invoice.id})
+        + reverse(
+            "portal_stripe_payment_success"
+            if hasattr(request.user, "customer_profile")
+            else "stripe_payment_success",
+            kwargs={"invoice_id": invoice.id},
+        )
         + "?session_id={CHECKOUT_SESSION_ID}"
     )
 
-<<<<<<< HEAD
-    cancel_url = domain + reverse("invoice_detail", kwargs={"invoice_id": invoice.id})
-=======
-    cancel_url = (
-        domain
-        + reverse("invoice_detail", kwargs={"invoice_id": invoice.id})
+    cancel_url = domain + reverse(
+        invoice_detail_redirect_name(request.user), kwargs={"invoice_id": invoice.id}
     )
->>>>>>> 5815f15 (Initial project commit)
 
     amount_in_cents = int(invoice.total_amount * 100)
 
@@ -165,7 +145,7 @@ def create_stripe_checkout_session(request, invoice_id):
 
 @login_required
 def stripe_payment_success(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_accessible_invoice(request, invoice_id)
 
     session_id = request.GET.get("session_id")
 
@@ -174,7 +154,18 @@ def stripe_payment_success(request, invoice_id):
 
         session = stripe.checkout.Session.retrieve(session_id)
 
-        if session.payment_status == "paid":
+        # The success URL is user-controlled.  Only accept the session created
+        # for this exact invoice; otherwise a paid session for another invoice
+        # could mark this invoice as paid.
+        metadata = session.metadata or {}
+        session_invoice_id = str(metadata.get("invoice_id", ""))
+        is_expected_session = session.id == invoice.stripe_checkout_session_id
+
+        if (
+            is_expected_session
+            and session_invoice_id == str(invoice.id)
+            and session.payment_status == "paid"
+        ):
             invoice.status = "paid"
             invoice.stripe_checkout_session_id = session.id
             invoice.stripe_payment_intent_id = session.payment_intent or ""
@@ -183,28 +174,25 @@ def stripe_payment_success(request, invoice_id):
 
             messages.success(request, "✅ Payment successful. Invoice marked as paid.")
         else:
-            messages.warning(request, "Payment was not completed yet.")
+            messages.error(request, "The payment session does not match this invoice or is incomplete.")
 
-    return redirect("invoice_detail", invoice_id=invoice.id)
+    return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
 
 
 @login_required
 def stripe_payment_cancel(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_accessible_invoice(request, invoice_id)
 
     messages.error(request, "❌ Payment cancelled.")
 
-    return redirect("invoice_detail", invoice_id=invoice.id)
+    return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 5815f15 (Initial project commit)
 @login_required
 def download_invoice_pdf(request, invoice_id):
     import os
 
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_accessible_invoice(request, invoice_id)
     booking = invoice.booking
     customer = booking.customer
 
@@ -214,16 +202,7 @@ def download_invoice_pdf(request, invoice_id):
     width, height = A4
 
     # Logo
-<<<<<<< HEAD
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.jpeg")
-=======
-    logo_path = os.path.join(
-        settings.BASE_DIR,
-        "static",
-        "images",
-        "logo.jpeg"
-    )
->>>>>>> 5815f15 (Initial project commit)
 
     if os.path.exists(logo_path):
         pdf.drawImage(
@@ -233,11 +212,7 @@ def download_invoice_pdf(request, invoice_id):
             width=85,
             height=85,
             preserveAspectRatio=True,
-<<<<<<< HEAD
             mask="auto",
-=======
-            mask="auto"
->>>>>>> 5815f15 (Initial project commit)
         )
 
     # Company details
@@ -262,13 +237,9 @@ def download_invoice_pdf(request, invoice_id):
     else:
         pdf.drawRightString(width - 45, height - 133, "Due Date: Not set")
 
-<<<<<<< HEAD
     pdf.drawRightString(
         width - 45, height - 151, f"Status: {invoice.get_status_display()}"
     )
-=======
-    pdf.drawRightString(width - 45, height - 151, f"Status: {invoice.get_status_display()}")
->>>>>>> 5815f15 (Initial project commit)
 
     # Divider
     pdf.line(45, height - 170, width - 45, height - 170)
@@ -380,21 +351,10 @@ def download_invoice_pdf(request, invoice_id):
 
     pdf.setFont("Helvetica", 9)
     pdf.drawCentredString(
-<<<<<<< HEAD
         width / 2, 65, "Thank you for choosing YD Commercial Cleaning Services."
     )
     pdf.drawCentredString(
         width / 2, 50, "Professional Cleaning. Reliable Service. Spotless Results."
-=======
-        width / 2,
-        65,
-        "Thank you for choosing YD Commercial Cleaning Services."
-    )
-    pdf.drawCentredString(
-        width / 2,
-        50,
-        "Professional Cleaning. Reliable Service. Spotless Results."
->>>>>>> 5815f15 (Initial project commit)
     )
 
     pdf.showPage()
@@ -403,12 +363,5 @@ def download_invoice_pdf(request, invoice_id):
     buffer.seek(0)
 
     return FileResponse(
-<<<<<<< HEAD
         buffer, as_attachment=True, filename=f"{invoice.invoice_number}.pdf"
     )
-=======
-        buffer,
-        as_attachment=True,
-        filename=f"{invoice.invoice_number}.pdf"
-    )
->>>>>>> 5815f15 (Initial project commit)
