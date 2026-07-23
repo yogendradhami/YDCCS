@@ -277,7 +277,7 @@ TWILIO_AUTH_TOKEN = env.str("TWILIO_AUTH_TOKEN", default="")
 TWILIO_PHONE_NUMBER = env.str("TWILIO_PHONE_NUMBER", default="")
 
 # Security settings (toggleable via env)
-SECURE_SSL_REDIRECT=True
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
 SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=False)
 CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=0)
