@@ -21,7 +21,7 @@
 }
 
 .gallery-hero h1 {
-    font-size: 48px;
+    font-size: var(--font-size-h1);
     line-height: 1.1;
     margin-bottom: 20px;
     position: relative;
@@ -30,7 +30,7 @@
 }
 
 .gallery-hero p {
-    font-size: 18px;
+    font-size: var(--font-size-p);
     max-width: 700px;
     margin: 0 auto;
     position: relative;
@@ -60,7 +60,7 @@
     border-radius: var(--radius-full);
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
+    font-size: var(--font-size-base);
     transition: var(--transition);
 }
 
@@ -122,20 +122,20 @@
     opacity: 1;
 }
 
-.gallery-info {
-    text-align: center;
-    color: var(--white);
-    z-index: 1;
-}
-
 .gallery-info h3 {
-    font-size: 20px;
+    font-size: var(--font-size-h3);
     margin-bottom: 8px;
     font-weight: 700;
 }
+.gallery-info p {
+    font-size: var(--font-size-base);
+    color: rgba(255,255,255,0.95);
+    margin-bottom: 0;
+}
+}
 
 .gallery-info p {
-    font-size: 14px;
+    font-size: var(--font-size-small);
     color: rgba(255,255,255,0.95);
     margin-bottom: 0;
 }
@@ -162,7 +162,7 @@
     font-weight: 600;
     transition: var(--transition);
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--font-size-small);
 }
 
 .page-link:hover {
@@ -231,7 +231,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 24px;
+    font-size: var(--font-size-h3);
     font-weight: bold;
     transition: var(--transition);
     border: none;
@@ -256,7 +256,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 28px;
+    font-size: var(--font-size-h2);
     transition: var(--transition);
     border: none;
 }
@@ -297,7 +297,7 @@
 }
 
 .gallery-cta h2 {
-    font-size: 36px;
+    font-size: var(--font-size-h1);
     margin-bottom: 15px;
     position: relative;
     z-index: 1;
@@ -305,7 +305,7 @@
 }
 
 .gallery-cta p {
-    font-size: 16px;
+    font-size: var(--font-size-base);
     margin-bottom: 30px;
     position: relative;
     z-index: 1;
@@ -333,11 +333,11 @@
 
 @media (max-width: 768px) {
     .gallery-hero h1 {
-        font-size: 32px;
+        font-size: var(--font-size-h1);
     }
 
     .gallery-hero p {
-        font-size: 16px;
+        font-size: var(--font-size-base);
     }
 
     .gallery-grid {
@@ -350,12 +350,12 @@
     }
 
     .filter-btn {
-        font-size: 13px;
+        font-size: var(--font-size-xsmall);
         padding: 8px 16px;
     }
 
     .gallery-cta h2 {
-        font-size: 28px;
+        font-size: var(--font-size-h2);
     }
 
     .cta-buttons {
@@ -377,12 +377,12 @@
     .lightbox-next {
         width: 40px;
         height: 40px;
-        font-size: 20px;
+        font-size: var(--font-size-h3);
     }
 
     .lightbox-close {
         width: 35px;
         height: 35px;
-        font-size: 20px;
+        font-size: var(--font-size-h3);
     }
 }

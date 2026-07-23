@@ -260,14 +260,14 @@
 }
 
 .testimonial-info h4 {
-    font-size: 15px;
+    font-size: var(--font-size-base);
     margin-bottom: 3px;
     color: var(--dark);
     font-weight: 700;
 }
 
 .testimonial-info p {
-    font-size: 13px;
+    font-size: var(--font-size-xsmall);
     color: var(--gray);
     margin-bottom: 0;
 }
@@ -278,9 +278,9 @@
     background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
 }
 
-.why-choose-us-section > .container > h2 {
+    .why-choose-us-section > .container > h2 {
     text-align: center;
-    font-size: 42px;
+    font-size: var(--font-size-h1);
     margin-bottom: 20px;
     color: var(--dark);
     font-weight: 800;
@@ -317,22 +317,22 @@
     transform: translateY(-6px);
 }
 
-.why-item-icon {
-    font-size: 36px;
+    .why-item-icon {
+    font-size: var(--font-size-h2);
     margin-bottom: 15px;
     display: inline-block;
 }
 
-.why-item h3 {
-    font-size: 20px;
+    .why-item h3 {
+    font-size: var(--font-size-h3);
     margin-bottom: 12px;
     color: var(--dark);
     font-weight: 700;
 }
 
-.why-item p {
+    .why-item p {
     color: var(--gray);
-    font-size: 15px;
+    font-size: var(--font-size-base);
     line-height: 1.6;
     margin-bottom: 0;
 }
@@ -343,9 +343,9 @@
     background: var(--white);
 }
 
-.faq-section > .container > h2 {
+    .faq-section > .container > h2 {
     text-align: center;
-    font-size: 42px;
+    font-size: var(--font-size-h1);
     margin-bottom: 20px;
     color: var(--dark);
     font-weight: 800;
@@ -387,10 +387,10 @@
     box-shadow: var(--shadow-lg);
 }
 
-.faq-question {
+    .faq-question {
     font-weight: 700;
     color: var(--dark);
-    font-size: 16px;
+    font-size: var(--font-size-base);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -398,7 +398,7 @@
 }
 
 .faq-toggle {
-    font-size: 20px;
+    font-size: var(--font-size-h3);
     transition: transform 0.3s ease;
     display: inline-block;
 }
@@ -407,13 +407,13 @@
     transform: rotate(180deg);
 }
 
-.faq-answer {
+    .faq-answer {
     display: none;
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid var(--light-gray);
     color: var(--gray);
-    font-size: 15px;
+    font-size: var(--font-size-base);
     line-height: 1.6;
 }
 
@@ -454,16 +454,16 @@
     border-radius: 50%;
 }
 
-.cta-section h2 {
-    font-size: 36px;
+    .cta-section h2 {
+    font-size: var(--font-size-h2);
     margin-bottom: 15px;
     position: relative;
     z-index: 1;
     font-weight: 800;
 }
 
-.cta-section p {
-    font-size: 16px;
+    .cta-section p {
+    font-size: var(--font-size-base);
     margin-bottom: 30px;
     position: relative;
     z-index: 1;
@@ -485,7 +485,7 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
     .hero-content h1 {
-        font-size: 42px;
+        font-size: var(--font-size-h1);
     }
 
     .features-grid,
@@ -501,11 +501,11 @@
     }
 
     .hero-content h1 {
-        font-size: 32px;
+        font-size: var(--font-size-h2);
     }
 
     .hero-content p {
-        font-size: 16px;
+        font-size: var(--font-size-p);
     }
 
     .hero-buttons {
@@ -536,11 +536,11 @@
     .faq-section > .container > h2,
     .testimonials-section > .container > h2,
     .why-choose-us-section > .container > h2 {
-        font-size: 28px;
+        font-size: var(--font-size-h2);
     }
 
     .cta-section h2 {
-        font-size: 28px;
+        font-size: var(--font-size-h2);
     }
 
     .cta-buttons {
@@ -555,11 +555,11 @@
     }
 
     .quote-section blockquote {
-        font-size: 22px;
+        font-size: var(--font-size-h3);
     }
 
     .quote-section blockquote::before {
-        font-size: 80px;
+        font-size: var(--font-size-h1);
         top: -30px;
         left: -20px;
     }
