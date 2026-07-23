@@ -192,11 +192,14 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Let WhiteNoise (or the staticfiles app) serve compressed static files in production.
-STATICFILES_STORAGE = env.str(
-    "DJANGO_STATICFILES_STORAGE",
-    default="whitenoise.storage.CompressedManifestStaticFilesStorage",
-)
+# Use plain static file storage in development so static assets resolve without collectstatic.
+if DEBUG:
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+else:
+    STATICFILES_STORAGE = env.str(
+        "DJANGO_STATICFILES_STORAGE",
+        default="whitenoise.storage.CompressedManifestStaticFilesStorage",
+    )
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

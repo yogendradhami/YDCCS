@@ -12,8 +12,8 @@
         {% if service.hero_image %}
             {# Display uploaded image from media folder #}
             <picture>
-                <source srcset="{{ service.hero_image }} 1x, {{ service.hero_image }} 2x" type="image/jpeg">
-                <img src="{{ service.hero_image }}" alt="{{ service.service_name }} image" loading="lazy" width="800" height="500">
+                <source srcset="{{ service.hero_image.url }} 1x, {{ service.hero_image.url }} 2x" type="image/jpeg">
+                <img src="{{ service.hero_image.url }}" alt="{{ service.service_name }} image" loading="lazy" width="800" height="500">
             </picture>
         {% else %}
             {# Fallback to static placeholder images #}
