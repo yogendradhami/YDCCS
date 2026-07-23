@@ -81,4 +81,15 @@ class QuoteRequestAdmin(admin.ModelAdmin):
 
 @admin.register(QuoteImage)
 class QuoteImageAdmin(admin.ModelAdmin):
-    list_display = ("quote", "image", "uploaded_at")
+    list_display = ("quote", "image_preview", "uploaded_at")
+    readonly_fields = ("image_preview",)
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="width:120px;height:auto;border-radius:6px;object-fit:cover;" />',
+                obj.image.url,
+            )
+        return "No image"
+
+    image_preview.short_description = "Uploaded Image"
