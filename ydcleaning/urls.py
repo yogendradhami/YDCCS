@@ -31,6 +31,6 @@ urlpatterns = [
     path("", include("core.urls")),
 ]
 
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve uploaded media files from MEDIA_ROOT. This is required when the deployment container
+# does not have an external media host configured.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
