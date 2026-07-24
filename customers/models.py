@@ -34,5 +34,41 @@ class Customer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def title_prefix(self):
+        parts = (self.full_name or "").strip().split()
+        if not parts:
+            return ""
+
+        prefix = parts[0].lower()
+        mapping = {
+            "mr": "Mr.",
+            "mrs": "Mrs.",
+            "ms": "Ms.",
+            "miss": "Miss",
+            "master": "Master",
+            "dr": "Dr.",
+        }
+
+        if prefix.rstrip(".") in mapping:
+            return mapping[prefix.rstrip(".")]
+
+        return ""
+
+    @property
+    def last_name(self):
+        parts = (self.full_name or "").strip().split()
+        if len(parts) <= 1:
+            return parts[0] if parts else ""
+        return parts[-1]
+
+    @property
+    def gallery_display_name(self):
+        title = self.title_prefix
+        last_name = self.last_name
+        if title and last_name:
+            return f"{title} {last_name}"
+        return self.full_name or last_name
+
     def __str__(self):
         return self.full_name

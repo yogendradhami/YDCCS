@@ -221,13 +221,6 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
 <section class="invoice-page">
     <div class="invoice-card">
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="custom-alert {{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
 
         <div class="invoice-top">
             <div class="invoice-brand">

@@ -14,13 +14,6 @@ Send invoice reminders, booking reminders and quote follow-up emails.
 
 {% block content %}
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="custom-alert {{ message.tags }}">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
 
 <div class="crm-summary-grid">
 

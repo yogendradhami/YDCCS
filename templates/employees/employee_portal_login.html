@@ -15,11 +15,6 @@ Employee Login | YD Commercial Cleaning
                 <p>Login to view assigned jobs and update job status.</p>
             </div>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="custom-alert {{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
 
             <form method="POST">
                 {% csrf_token %}

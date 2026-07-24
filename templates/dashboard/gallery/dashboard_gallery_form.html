@@ -8,13 +8,6 @@
 
 <section class="crm-panel">
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="custom-alert {{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
