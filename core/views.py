@@ -215,39 +215,8 @@ def contact(request):
 
 
 def services_list(request):
-    services = [
-        {
-            "slug": "commercial-cleaning-adelaide",
-            "service_name": "Commercial Cleaning",
-            "description": "Reliable commercial cleaning for offices, shops, warehouses and business premises across Adelaide.",
-            "url": "/services/commercial-cleaning-adelaide/",
-        },
-        {
-            "slug": "office-cleaning-adelaide",
-            "service_name": "Office Cleaning",
-            "description": "Keep your workplace clean, fresh and professional with regular office cleaning services tailored to your business needs.",
-            "url": "/services/office-cleaning-adelaide/",
-        },
-        {
-            "slug": "end-of-lease-cleaning-adelaide",
-            "service_name": "End of Lease Cleaning",
-            "description": "Detailed end-of-lease cleaning for tenants, landlords and property managers across Adelaide.",
-            "url": "/services/end-of-lease-cleaning-adelaide/",
-        },
-        {
-            "slug": "house-cleaning-adelaide",
-            "service_name": "House Cleaning",
-            "description": "Affordable and reliable house cleaning for Adelaide homes, including regular cleans, one-off cleans and deep cleaning.",
-            "url": "/services/house-cleaning-adelaide/",
-        },
-        {
-            "slug": "window-cleaning-adelaide",
-            "service_name": "Window Cleaning",
-            "description": "Interior and exterior window cleaning for homes, offices and commercial spaces across Adelaide.",
-            "url": "/services/window-cleaning-adelaide/",
-        },
-    ]
-    
+    services = Service.objects.filter(is_active=True).order_by("name")
+
     db_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
     google_reviews = []
     for r in db_reviews:
