@@ -16,13 +16,6 @@
             YD Commercial Cleaning Services
         </p>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:10px;margin-bottom:15px;">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
 
         <form method="POST">
             {% csrf_token %}

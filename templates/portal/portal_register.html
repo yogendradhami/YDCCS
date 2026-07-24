@@ -15,11 +15,6 @@ Create Customer Account | YD Commercial Cleaning
                 <p>Use a strong password to protect your bookings and invoices.</p>
             </div>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="custom-alert {{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
 
             <form method="POST">
                 {% csrf_token %}

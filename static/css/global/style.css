@@ -1805,6 +1805,39 @@ body {
     background: #16a34a;
 }
 
+.job-photo-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.job-photo-card {
+    position: relative;
+}
+
+.btn-delete-small {
+    background-color: #ef4444;
+    color: white;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-delete-small:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
 @media (max-width: 900px) {
     .job-photo-grid {
         grid-template-columns: 1fr;

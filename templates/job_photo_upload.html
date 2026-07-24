@@ -18,13 +18,6 @@ Upload Job Photo | Employee Portal
 
         <div class="auth-card">
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="custom-alert {{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
 
             <h2>{{ booking.service_type }}</h2>
             <p><strong>Customer:</strong> {{ booking.customer.full_name }}</p>

@@ -76,7 +76,7 @@ class JobPhoto(models.Model):
 
     photo_type = models.CharField(max_length=20, choices=PHOTO_TYPES)
 
-    image = models.ImageField(upload_to="job_photos/")
+    image = models.FileField(upload_to="job_photos/")
 
     employee_signature = models.ImageField(
         upload_to="signatures/employees/", blank=True, null=True

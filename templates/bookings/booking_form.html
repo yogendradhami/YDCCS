@@ -12,13 +12,6 @@ Create or update cleaning job bookings for YD Commercial Cleaning Services.
 
 <section class="crm-panel">
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="custom-alert {{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
 
     {% if form.non_field_errors %}
         <div class="custom-alert error">

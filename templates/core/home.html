@@ -125,7 +125,11 @@ YD Commercial Cleaning Services Adelaide
             <div class="home-gallery-grid">
                 {% for item in gallery_items %}
                     <div class="home-gallery-card">
-                        <img src="{{ item.after_image.url }}" alt="{{ item.title }}" loading="lazy">
+                        {% if item.primary_image %}
+                            <img src="{{ item.primary_image.url }}" alt="{{ item.title }}" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'images/placeholder.svg' %}" alt="{{ item.title }}" loading="lazy">
+                        {% endif %}
                         <h3>{{ item.title }}</h3>
                         <p>{{ item.service_type }}</p>
                     </div>
@@ -233,13 +237,6 @@ YD Commercial Cleaning Services Adelaide
         </div>
 
         <div>
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="custom-alert {{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
 
             <form method="POST" enctype="multipart/form-data" action="#quote" class="quote-card">
                 {% csrf_token %}

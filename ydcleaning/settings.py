@@ -90,8 +90,8 @@ INSTALLED_APPS = [
     "expenses",
     "support",
 
-    "cloudinary",
-    "cloudinary_storage",
+    # "cloudinary",
+    # "cloudinary_storage",
 
 ]
 

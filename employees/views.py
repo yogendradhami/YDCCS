@@ -404,3 +404,38 @@ def employee_profile(request):
             "password_form": password_form,
         },
     )
+
+
+# ==========================================================
+# Delete Job Photo
+# ==========================================================
+
+@login_required
+def delete_job_photo(request, photo_id):
+    """Delete a job photo uploaded by employee"""
+    from bookings.models import JobPhoto
+    
+    photo = get_object_or_404(JobPhoto, id=photo_id)
+    employee = get_object_or_404(Employee, user=request.user)
+    
+    # Verify employee owns this photo
+    if photo.employee != employee:
+        messages.error(request, "❌ You can only delete your own photos.")
+        return redirect("employee_job_detail", booking_id=photo.booking.id)
+    
+    booking_id = photo.booking.id
+    
+    if request.method == "POST":
+        photo.delete()
+        messages.success(request, "✅ Photo deleted successfully.")
+        return redirect("employee_job_detail", booking_id=booking_id)
+    
+    return render(
+        request,
+        "shared/confirm_delete.html",
+        {
+            "object_name": f"Job Photo",
+            "cancel_url": f"/employees/jobs/{booking_id}/",
+        },
+    )
+

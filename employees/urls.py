@@ -20,6 +20,7 @@ from .views import (
     employee_logout,
     employee_profile,
     upload_job_photo,
+    delete_job_photo,
 )
 
 urlpatterns = [
@@ -41,5 +42,10 @@ urlpatterns = [
         "employee/jobs/<int:booking_id>/upload-photo/",
         upload_job_photo,
         name="upload_job_photo",
+    ),
+    path(
+        "employee/photos/<int:photo_id>/delete/",
+        delete_job_photo,
+        name="delete_job_photo",
     ),
 ]

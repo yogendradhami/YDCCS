@@ -2793,7 +2793,8 @@ def employee_schedule(request):
         )
 
         schedule_rows.append(
-            {
+          
+           {
                 "employee": employee,
                 "days": employee_days,
                 "total_jobs": total_jobs,
@@ -3534,9 +3535,9 @@ def business_intelligence(request):
     )
 
     monthly_revenue = (
-        Invoice.objects.filter(status="paid", paid_at__date__gte=month_start).aggregate(
-            total=Sum("total_amount")
-        )["total"]
+        Invoice.objects.filter(status="paid").aggregate(total=Sum("total_amount"))[
+            "total"
+        ]
         or 0
     )
 
@@ -3933,23 +3934,6 @@ def email_business_report(request):
     email.send()
 
     messages.success(request, "PDF report emailed successfully.")
-
-    return redirect("business_intelligence")
-
-    subject = "Business Intelligence Report"
-
-    message = """
-Business Intelligence Report
-
-Generated automatically from
-YD Commercial Cleaning Services.
-"""
-
-    email = EmailMessage(subject, message, to=["ydcommercialcleaning@gmail.com"])
-
-    email.send()
-
-    messages.success(request, "Business report emailed successfully.")
 
     return redirect("business_intelligence")
 
@@ -4461,54 +4445,31 @@ def owner_command_centre(request):
 
     today = timezone.localdate()
 
-    today_jobs = Booking.objects.filter(booking_date=today).count()
+    overdue_equipment = Equipment.objects.filter(next_service_date__lt=today)
 
-    outstanding_invoices = Invoice.objects.exclude(status="paid").count()
+    vehicles_due_service = Vehicle.objects.filter(service_due_date__lt=today)
 
-    monthly_revenue = (
-        Invoice.objects.filter(created_at__month=today.month)
-        .exclude(status="cancelled")
-        .aggregate(total=Sum("total_amount"))["total"]
-        or 0
-    )
-
-    monthly_expenses = (
-        Expense.objects.filter(date__month=today.month).aggregate(total=Sum("amount"))[
-            "total"
-        ]
-        or 0
-    )
-
-    estimated_profit = monthly_revenue - monthly_expenses
-
-    low_stock_items = CleaningSupply.objects.filter(
+    low_stock_supplies = CleaningSupply.objects.filter(
         current_stock__lte=F("minimum_stock")
-    ).count()
-
-    overdue_equipment = Equipment.objects.filter(next_service_date__lt=today).count()
-
-    vehicles_due_service = Vehicle.objects.filter(service_due_date__lt=today).count()
-
-    pending_leave_requests = LeaveRequest.objects.filter(status="pending").count()
-
-    draft_purchase_orders = PurchaseOrder.objects.filter(status="draft").count()
-
-    return render(
-        request,
-        "dashboard/command_centres/owner_command_centre.html",
-        {
-            "today_jobs": today_jobs,
-            "outstanding_invoices": outstanding_invoices,
-            "monthly_revenue": monthly_revenue,
-            "monthly_expenses": monthly_expenses,
-            "estimated_profit": estimated_profit,
-            "low_stock_items": low_stock_items,
-            "overdue_equipment": overdue_equipment,
-            "vehicles_due_service": vehicles_due_service,
-            "pending_leave_requests": pending_leave_requests,
-            "draft_purchase_orders": draft_purchase_orders,
-        },
     )
+
+    draft_purchase_orders = PurchaseOrder.objects.filter(status="draft")
+
+    outstanding_invoices = Invoice.objects.exclude(status="paid")
+
+    unassigned_jobs = Booking.objects.filter(assigned_employee__isnull=True)
+
+    context = {
+        "today": today,
+        "overdue_equipment": overdue_equipment,
+        "vehicles_due_service": vehicles_due_service,
+        "low_stock_supplies": low_stock_supplies,
+        "draft_purchase_orders": draft_purchase_orders,
+        "outstanding_invoices": outstanding_invoices,
+        "unassigned_jobs": unassigned_jobs,
+    }
+
+    return render(request, "dashboard/command_centres/owner_command_centre.html", context)
 
 
 @login_required
@@ -4968,9 +4929,12 @@ def service_performance_dashboard(request):
 
     monthly_revenue = defaultdict(float)
 
-    for booking in bookings:
+    for booking in Booking.objects.all():
 
         month_name = booking.booking_date.strftime("%b %Y")
+
+        if month_name not in monthly_revenue:
+            monthly_revenue[month_name] = 0
 
         monthly_revenue[month_name] += float(booking.quoted_price or 0)
 
@@ -5153,3 +5117,38 @@ def staff_schedule_dashboard(request):
             "today": today,
         },
     )
+
+
+def _build_dashboard_gallery_groups(gallery_items):
+    grouped_map = defaultdict(list)
+
+    for item in gallery_items:
+        customer = None
+        if item.job_photo and item.job_photo.booking and item.job_photo.booking.customer:
+            customer = item.job_photo.booking.customer
+            key = f"customer-{customer.id}"
+        else:
+            key = f"item-{item.id}"
+
+        grouped_map[key].append(item)
+
+    gallery_groups = []
+    for key, items in grouped_map.items():
+        items = sorted(items, key=lambda x: x.created_at, reverse=True)
+        first_item = items[0]
+        customer = None
+        if first_item.job_photo and first_item.job_photo.booking and first_item.job_photo.booking.customer:
+            customer = first_item.job_photo.booking.customer
+
+        gallery_groups.append(
+            {
+                "customer": customer,
+                "items": items,
+                "title": customer.gallery_display_name if customer else first_item.title,
+                "service_type": first_item.service_type,
+                "suburb": customer.suburb_postcode if customer and customer.suburb_postcode else first_item.suburb,
+                "image_count": len(items),
+            }
+        )
+
+    return gallery_groups
