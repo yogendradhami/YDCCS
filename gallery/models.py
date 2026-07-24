@@ -1,4 +1,7 @@
 # Create your models here.
+import mimetypes
+from pathlib import Path
+
 from django.db import models
 
 
@@ -73,6 +76,30 @@ class GalleryItem(models.Model):
         if self.image:
             return self.image
         return self.after_image or self.before_image
+
+    def _media_entry(self, field):
+        if not field:
+            return None
+
+        file_name = Path(field.name).name
+        content_type, _ = mimetypes.guess_type(file_name)
+        is_image = bool(content_type and content_type.startswith("image/"))
+
+        return {
+            "url": field.url,
+            "name": file_name,
+            "is_image": is_image,
+            "field": field,
+        }
+
+    @property
+    def gallery_media(self):
+        media = []
+        for field in (self.image, self.before_image, self.after_image):
+            entry = self._media_entry(field)
+            if entry:
+                media.append(entry)
+        return media
 
     @property
     def gallery_images(self):

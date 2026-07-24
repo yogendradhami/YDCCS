@@ -4095,6 +4095,29 @@ table {
     align-items: center;
     justify-content: center;
     text-align: center;
+    position: relative;
+    gap: 12px;
+}
+
+.promo-close {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.yd-header,
+.yd-header * {
+    font-family: "Segoe UI", "Inter", Arial, sans-serif;
 }
 
 .yd-header {
@@ -4139,7 +4162,7 @@ table {
 .yd-logo-title {
     color: #0ea5a8;
     font-weight: 900;
-    font-size: var(--font-size-small);
+    font-size: clamp(0.95rem, 1.45vw, 1.05rem);
     line-height: 1.1;
     white-space: normal;
     max-width: 220px;
@@ -4177,7 +4200,7 @@ table {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: var(--font-size-xsmall);
+    font-size: 0.95rem;
     white-space: normal;
     min-width: 0;
     line-height: 1.2;
@@ -4484,7 +4507,8 @@ table {
 
 @media (max-width: 1000px) {
     .yd-header {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        align-items: center;
     }
 
     .yd-menu-btn {
@@ -4518,6 +4542,7 @@ table {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-direction: row;
     }
 
     .yd-search-btn {
@@ -4561,6 +4586,10 @@ table {
         padding: 10px 4%;
     }
 
+    .yd-header {
+        flex-wrap: nowrap;
+    }
+
     .yd-logo {
         min-width: auto;
     }
@@ -4579,9 +4608,10 @@ table {
     }
 
     .yd-header-actions {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
+        width: auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
     }
 
     .yd-search-btn {

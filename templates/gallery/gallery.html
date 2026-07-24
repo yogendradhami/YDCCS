@@ -98,10 +98,11 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
     }
 
     .gallery-card {
-        background: white;
-        border-radius: 12px;
+        background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+        border: 1px solid #e5e7f2;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
         transition: all 0.3s ease;
         position: relative;
         display: flex;
@@ -109,15 +110,50 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
     }
 
     .gallery-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        transform: translateY(-6px);
+        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
     }
 
     .gallery-image-container {
         position: relative;
         overflow: hidden;
-        height: 250px;
+        height: 290px;
         background: #f5f5f5;
+        border-bottom: 1px solid #eef2ff;
+    }
+
+    .gallery-image-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+        height: 100%;
+    }
+
+    .gallery-split-pane {
+        position: relative;
+        min-height: 100%;
+        background: #f8fafc;
+    }
+
+    .gallery-split-pane img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .gallery-split-label {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(15, 23, 42, 0.72);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
     }
 
     .gallery-image {
@@ -133,15 +169,17 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
 
     .source-badge {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(102, 126, 234, 0.9);
+        top: 12px;
+        right: 12px;
+        background: rgba(102, 126, 234, 0.92);
         color: white;
         padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0.03em;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
     }
 
     .source-badge.job_photo {
@@ -161,7 +199,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
     }
 
     .gallery-content {
-        padding: 20px;
+        padding: 18px 18px 16px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -169,9 +207,9 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
 
     .gallery-card h3 {
         margin: 0 0 8px 0;
-        font-size: 1.2rem;
-        color: #333;
-        font-weight: 600;
+        font-size: 1.22rem;
+        color: #1f2937;
+        font-weight: 700;
     }
 
     .gallery-meta {
@@ -182,12 +220,13 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
 
     .gallery-service {
         display: inline-block;
-        background: #f0f0f0;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        color: #555;
+        background: #eef2ff;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        color: #4f46e5;
         margin-bottom: 10px;
+        font-weight: 700;
     }
 
     .gallery-description {
@@ -201,9 +240,9 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
     .gallery-actions {
         display: flex;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 14px;
         padding-top: 12px;
-        border-top: 1px solid #eee;
+        border-top: 1px solid #e5e7eb;
     }
 
     .gallery-actions button {
@@ -228,17 +267,18 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
 
     .gallery-thumb-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
         gap: 8px;
         margin-top: 14px;
     }
 
     .gallery-thumb {
-        border-radius: 8px;
+        border-radius: 10px;
         overflow: hidden;
-        height: 90px;
+        height: 92px;
         background: #f4f4f4;
-        border: 1px solid #eee;
+        border: 1px solid #e6e8f2;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
     }
 
     .gallery-thumb img {
@@ -246,6 +286,12 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
         height: 100%;
         object-fit: cover;
         display: block;
+    }
+
+    .gallery-card-meta {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 12px;
     }
 
     .before-after-grid {
@@ -439,7 +485,16 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                         <div class="gallery-image-container">
                             {% with first_item=group.items|first %}
                                 {% if first_item.before_image and first_item.after_image %}
-                                    <img src="{{ first_item.after_image.url }}" alt="{{ group.title }}" class="gallery-image">
+                                    <div class="gallery-image-split">
+                                        <div class="gallery-split-pane">
+                                            <span class="gallery-split-label">Before</span>
+                                            <img src="{{ first_item.before_image.url }}" alt="{{ group.title }} before" class="gallery-image">
+                                        </div>
+                                        <div class="gallery-split-pane">
+                                            <span class="gallery-split-label">After</span>
+                                            <img src="{{ first_item.after_image.url }}" alt="{{ group.title }} after" class="gallery-image">
+                                        </div>
+                                    </div>
                                 {% elif first_item.primary_image %}
                                     <img src="{{ first_item.primary_image.url }}" alt="{{ group.title }}" class="gallery-image">
                                 {% else %}
@@ -460,16 +515,23 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                             <p class="gallery-meta">📍 {{ group.suburb }}</p>
                             {% endif %}
 
-                            {% if group.items|length > 1 %}
+                            {% if group.items %}
                             <div class="gallery-thumb-grid">
-                                {% for item in group.items|slice:":3" %}
-                                    {% if item.primary_image %}
-                                        <div class="gallery-thumb">
-                                            <img src="{{ item.primary_image.url }}" alt="{{ group.title }} photo {{ forloop.counter }}">
-                                        </div>
-                                    {% endif %}
+                                {% for item in group.items %}
+                                    {% for media in item.gallery_media %}
+                                        {% if media.is_image %}
+                                            <div class="gallery-thumb">
+                                                <img src="{{ media.url }}" alt="{{ group.title }} photo {{ forloop.counter }}">
+                                            </div>
+                                        {% else %}
+                                            <div class="gallery-thumb" style="display:flex; align-items:center; justify-content:center; background:#eef2ff; color:#334155; font-size:0.78rem; font-weight:600; text-align:center; padding:6px;">
+                                                {{ media.name }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
                                 {% endfor %}
                             </div>
+                            <p class="gallery-card-meta">Multiple media files shown in one gallery card.</p>
                             {% endif %}
 
                             <div class="gallery-actions">

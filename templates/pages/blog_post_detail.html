@@ -15,7 +15,7 @@
             "datePublished": "{{ post.published_at|date:'c' }}",
             "author": {
                 "@type": "Person",
-                "name": "{{ post.author|getattr:'username'|default:'YD Commercial Cleaning'|escape }}"
+                "name": "YD Commercial Cleaning"
             },
             "image": {% if post.featured_image %}"{{ post.featured_image.url }}"{% else %}"{{ open_graph_image }}"{% endif %},
             "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ request.build_absolute_uri }}"}
@@ -29,7 +29,29 @@
     <link rel="stylesheet" href="{% static 'css/blog_post_detail.css' %}">
 {% endblock %}
 
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const progressBar = document.getElementById('readingProgressBar');
+    if (!progressBar) return;
+
+    const updateProgress = function () {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+    };
+
+    updateProgress();
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
+});
+</script>
+{% endblock %}
+
 {% block content %}
+<div class="reading-progress"><span id="readingProgressBar"></span></div>
+
 <section class="blog-detail-hero" style="background-image: url('{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{% static 'images/placeholder-hero.jpg' %}{% endif %}');">
     <div class="overlay">
         <div class="container">
@@ -45,21 +67,58 @@
 <section class="blog-detail-content">
     <div class="container grid">
         <main class="content-area">
+            <div class="article-kicker">
+                <span class="pill">Article</span>
+                {% if post.category %}<span class="pill accent">{{ post.category }}</span>{% endif %}
+                <span class="pill">{{ post.published_at|date:"j F Y" }}</span>
+            </div>
+
             {% if post.excerpt %}
                 <p class="lead">{{ post.excerpt }}</p>
             {% endif %}
 
-            <article class="post-body">{{ post.content|safe }}</article>
+            <blockquote class="article-quote">
+                “Clean spaces don’t just look better — they support comfort, health, and confidence every single day.”
+            </blockquote>
+
+            <div class="article-copy-shell">
+                <article class="post-body">{{ post.content|safe }}</article>
+            </div>
 
             <div class="post-actions">
                 <a href="{% url 'blog' %}" class="btn btn-outline">← Back to Blog</a>
             </div>
+
+            <section class="latest-insights">
+                <div class="latest-insights-header">
+                    <h4>Latest Insights</h4>
+                    <a href="{% url 'blog' %}">Browse all articles</a>
+                </div>
+                <div class="latest-insights-grid">
+                    {% for p in related_posts|default:posts|slice:":3" %}
+                        {% if p.slug != post.slug %}
+                            <a href="{% url 'blog_detail' p.slug %}" class="insight-card">
+                                <span>{{ p.category|default:"Guides" }}</span>
+                                <strong>{{ p.title }}</strong>
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
         </main>
 
         <aside class="sidebar">
-            <div class="card about-author">
-                <h4>About the Author</h4>
-                <p>YD Commercial Cleaning — Professional cleaning services across Adelaide.</p>
+            <div class="card author-card">
+                <div class="author-avatar">YD</div>
+                <div>
+                    <h4>About the Author</h4>
+                    <p>YD Commercial Cleaning — Professional cleaning services across Adelaide.</p>
+                </div>
+            </div>
+
+            <div class="card quote-card">
+                <h4>Why this matters</h4>
+                <p>Practical cleaning insights help homes and businesses stay healthier, more comfortable, and easier to maintain all year round.</p>
             </div>
 
             <div class="card related-posts">

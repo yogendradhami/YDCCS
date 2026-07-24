@@ -105,11 +105,37 @@
         transform: translateY(-2px);
     }
 
-    .dashboard-gallery-card img {
+    .dashboard-gallery-media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 8px;
+        padding: 12px;
+        background: #f8f9fb;
+        border-bottom: 1px solid #eee;
+    }
+
+    .dashboard-gallery-media-grid img {
         width: 100%;
-        height: 200px;
+        height: 100px;
         object-fit: cover;
         background: #f0f0f0;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .dashboard-gallery-file {
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        background: #eef2ff;
+        color: #334155;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px dashed #94a3b8;
     }
 
     .dashboard-gallery-info {
@@ -294,10 +320,18 @@
         <div class="dashboard-gallery-grid">
             {% for item in items %}
                 <div class="dashboard-gallery-card">
-                    {% if item.primary_image %}
-                        <img src="{{ item.primary_image.url }}" alt="{{ item.title }}" loading="lazy">
+                    {% if item.gallery_media %}
+                        <div class="dashboard-gallery-media-grid">
+                            {% for media in item.gallery_media %}
+                                {% if media.is_image %}
+                                    <img src="{{ media.url }}" alt="{{ item.title }}" loading="lazy">
+                                {% else %}
+                                    <div class="dashboard-gallery-file">{{ media.name }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
                     {% else %}
-                        <img src="{% static 'images/placeholder.svg' %}" alt="Placeholder">
+                        <img src="{% static 'images/placeholder.svg' %}" alt="Placeholder" style="width:100%;height:200px;object-fit:cover;background:#f0f0f0;">
                     {% endif %}
 
                     <div class="dashboard-gallery-info">

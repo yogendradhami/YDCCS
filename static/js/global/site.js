@@ -7,36 +7,154 @@ document.addEventListener("DOMContentLoaded", function () {
     const searchResults = document.getElementById("siteSearchResults");
     const notificationBell = document.getElementById("notificationBell");
     const notificationCount = document.getElementById("notificationCount");
+    const offerBanner = document.getElementById("offerBanner");
+    const offerClose = document.querySelector(".promo-close");
+
+    const siteSearchData = [
+        { title: "Home", url: "/" },
+        { title: "About Us", url: "/about/" },
+        { title: "Pricing", url: "/pricing/" },
+        { title: "Team", url: "/team/" },
+        { title: "Gallery", url: "/gallery/" },
+        { title: "Contact", url: "/contact/" },
+        { title: "Services", url: "/services/" },
+        { title: "House Cleaning", url: "/services/house-cleaning-adelaide/" },
+        { title: "Commercial Cleaning", url: "/services/commercial-cleaning-adelaide/" },
+        { title: "Office Cleaning", url: "/services/office-cleaning/" },
+        { title: "Spring Cleaning", url: "/services/spring-cleaning/" },
+        { title: "Oven Cleaning", url: "/services/oven-cleaning/" },
+        { title: "Bathroom Cleaning", url: "/services/bathroom-cleaning/" },
+        { title: "Bond Cleaning", url: "/services/bond-cleaning/" },
+        { title: "Exit Cleaning", url: "/services/exit-cleaning/" },
+        { title: "Carpet Cleaning", url: "/services/carpet-cleaning/" },
+        { title: "Window Cleaning", url: "/services/window-cleaning-adelaide/" },
+        { title: "Post Construction Cleaning", url: "/services/post-construction-cleaning-adelaide/" },
+        { title: "End of Lease Cleaning", url: "/services/end-of-lease-cleaning-adelaide/" },
+        { title: "Resources", url: "/resources/" },
+        { title: "Blog", url: "/blog/" },
+        { title: "Customer Portal", url: "/portal/login/" },
+        { title: "Employee Portal", url: "/employee/login/" }
+    ];
+
+    const closeMenu = function () {
+        if (publicMenu) {
+            publicMenu.classList.remove("active");
+        }
+        if (menuButton) {
+            menuButton.setAttribute("aria-expanded", "false");
+        }
+    };
+
+    const closeSearch = function () {
+        if (searchBox) {
+            searchBox.classList.remove("active");
+        }
+    };
+
+    const refreshSearchResults = function (keyword) {
+        if (!searchResults) {
+            return;
+        }
+
+        const query = (keyword || "").trim().toLowerCase();
+        const links = Array.from(searchResults.querySelectorAll("a"));
+
+        if (!links.length) {
+            return;
+        }
+
+        links.forEach(function (link) {
+            const text = (link.textContent || "").toLowerCase();
+            const url = (link.getAttribute("href") || "").toLowerCase();
+            const matches = !query || text.includes(query) || url.includes(query);
+            link.style.display = matches ? "block" : "none";
+        });
+
+        const matchingCount = links.filter(function (link) {
+            return window.getComputedStyle(link).display !== "none";
+        }).length;
+
+        if (!matchingCount && query) {
+            const fallback = document.createElement("a");
+            fallback.href = "/";
+            fallback.textContent = "No exact matches found. Try a broader keyword.";
+            fallback.style.display = "block";
+            searchResults.appendChild(fallback);
+        }
+    };
+
+    if (offerBanner && offerClose) {
+        const bannerDismissed = localStorage.getItem("yd_offer_banner_dismissed");
+        if (bannerDismissed === "true") {
+            offerBanner.style.display = "none";
+        }
+
+        offerClose.addEventListener("click", function () {
+            offerBanner.style.display = "none";
+            localStorage.setItem("yd_offer_banner_dismissed", "true");
+        });
+    }
 
     if (menuButton && publicMenu) {
         menuButton.addEventListener("click", function () {
             const isOpen = publicMenu.classList.toggle("active");
             menuButton.setAttribute("aria-expanded", isOpen.toString());
+            closeSearch();
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!publicMenu.contains(event.target) && !menuButton.contains(event.target)) {
+                closeMenu();
+            }
         });
     }
 
     if (searchButton && searchBox) {
         searchButton.addEventListener("click", function () {
-            searchBox.classList.toggle("active");
+            const shouldOpen = !searchBox.classList.contains("active");
+            searchBox.classList.toggle("active", shouldOpen);
+            closeMenu();
 
-            if (searchBox.classList.contains("active")) {
-                searchInput.focus();
+            if (shouldOpen && searchInput) {
+                searchInput.value = "";
+                refreshSearchResults("");
+                setTimeout(function () {
+                    searchInput.focus();
+                }, 20);
             }
         });
     }
 
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeMenu();
+            closeSearch();
+        }
+    });
+
     if (searchInput && searchResults) {
         searchInput.addEventListener("input", function () {
-            const keyword = searchInput.value.toLowerCase();
-            const links = searchResults.querySelectorAll("a");
-
-            links.forEach(function (link) {
-                link.style.display = link.textContent.toLowerCase().includes(keyword)
-                    ? "block"
-                    : "none";
-            });
+            refreshSearchResults(searchInput.value);
         });
     }
+
+    document.querySelectorAll(".yd-dropdown-parent, .yd-mega-parent").forEach(function (parentItem) {
+        const trigger = parentItem.querySelector("a");
+        if (!trigger || window.innerWidth > 1000) {
+            return;
+        }
+
+        trigger.addEventListener("click", function (event) {
+            const submenu = parentItem.querySelector(".yd-dropdown-menu, .yd-mega-menu");
+            if (!submenu) {
+                return;
+            }
+
+            const isOpen = parentItem.classList.toggle("js-open");
+            event.preventDefault();
+            submenu.style.display = isOpen ? "block" : "none";
+        });
+    });
 
     if (notificationBell) {
         notificationBell.addEventListener("click", function () {
@@ -69,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (window.innerWidth <= 1000) {
                 const parent = servicesLink.parentElement;
                 const isOpen = parent.classList.contains("js-open");
-                
+
                 if (!isOpen) {
                     e.preventDefault();
                     parent.classList.add("js-open");
