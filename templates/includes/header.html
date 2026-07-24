@@ -37,13 +37,14 @@
 </div>
 {% endif %}
 
-<header class="promo-bar">
+<header class="promo-bar" id="offerBanner">
     <span>
         ⚡ 🎉 Limited Time Offer: Get 20% off your first cleaning service! Use code: CLEAN20
     </span>
+    <button class="promo-close" type="button" aria-label="Dismiss offer banner">×</button>
 </header>
 
-<nav class="yd-header">
+<nav class="yd-header" style="flex-wrap: nowrap;">
     <a href="/" class="yd-logo group" aria-label="{{ company_settings.business_name|default:'YD Commercial Cleaning' }}">
         {% comment %}Use a picture element to prefer an optimized WebP static asset when available, fall back to uploaded media. Alt left empty because company name is provided as adjacent text to avoid redundant alt copying by screen readers.{% endcomment %}
         <picture>
@@ -173,7 +174,7 @@
         </div>
     </div>
 
-    <div class="yd-header-actions">
+    <div class="yd-header-actions" style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center;">
         <button class="yd-search-btn" id="publicSearchButton" type="button" aria-label="Open site search">🔍</button>
 
         {% if request.user.is_authenticated %}
@@ -231,6 +232,10 @@
         <a href="/gallery/">Gallery</a>
         <a href="{% url 'contact' %}">Contact</a>
         <a href="/blog/">Blog</a>
+        <a href="/blog/spring-cleaning-checklist/">Spring Cleaning Checklist</a>
+        <a href="/blog/summer-cleaning-adelaide/">Summer Cleaning Tips Adelaide</a>
+        <a href="/blog/professional-cleaning-best-practices/">Professional Cleaning Best Practices</a>
+        <a href="/blog/eco-friendly-cleaning-solutions/">Eco-Friendly Cleaning Solutions</a>
         <a href="/resources/">Resources</a>
         <a href="/portal/login/">Customer Portal</a>
         <a href="/employee/login/">Employee Portal</a>

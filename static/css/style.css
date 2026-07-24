@@ -3763,6 +3763,29 @@ button,
     align-items: center;
     justify-content: center;
     text-align: center;
+    position: relative;
+    gap: 12px;
+}
+
+.promo-close {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.yd-header,
+.yd-header * {
+    font-family: "Segoe UI", "Inter", Arial, sans-serif;
 }
 
 .yd-header {
@@ -4070,7 +4093,8 @@ button,
 
 @media (max-width: 1000px) {
     .yd-header {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        align-items: center;
     }
 
     .yd-menu-btn {
@@ -4093,6 +4117,8 @@ button,
 
     .yd-header-actions {
         margin-left: auto;
+        flex-direction: row;
+        flex-wrap: nowrap;
     }
 
     .yd-book-btn,
@@ -4127,6 +4153,10 @@ button,
     .promo-bar {
         font-size: var(--font-size-xsmall);
         padding: 10px 4%;
+    }
+
+    .yd-header {
+        flex-wrap: nowrap;
     }
 
     .yd-logo {

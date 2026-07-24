@@ -1,6 +1,7 @@
 # Register your models here.
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from .models import GalleryItem
 
@@ -54,40 +55,54 @@ class GalleryItemAdmin(admin.ModelAdmin):
         }),
     )
 
-    def image_preview(self, obj):
-        if obj.primary_image:
-            return format_html(
-                '<img src="{}" width="60" height="60" '
-                'style="object-fit:cover;border-radius:6px;" />',
-                obj.primary_image.url,
+    def _build_gallery_media_html(self, obj, thumb_size=60, max_items=None):
+        media = list(obj.gallery_media)
+        if not media:
+            return "No image"
+
+        if max_items is None:
+            max_items = len(media)
+
+        html_parts = [
+            '<div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">'
+        ]
+
+        for item in media[:max_items]:
+            if item["is_image"]:
+                html_parts.append(
+                    format_html(
+                        '<div><img src="{}" width="{}" height="{}" '
+                        'style="object-fit:cover;border-radius:6px;" /></div>',
+                        item["url"],
+                        thumb_size,
+                        thumb_size,
+                    )
+                )
+            else:
+                html_parts.append(
+                    format_html(
+                        '<div style="min-width:150px; padding:12px; border:1px solid #ddd; border-radius:6px;">'
+                        '<strong>{}</strong><br><a href="{}" target="_blank">Open file</a></div>',
+                        item["name"],
+                        item["url"],
+                    )
+                )
+
+        if len(media) > max_items:
+            html_parts.append(
+                '<span style="align-self:center; color:#666; font-size:12px;">+ more</span>'
             )
-        return "No image"
+
+        html_parts.append('</div>')
+        return mark_safe(''.join(html_parts))
+
+    def image_preview(self, obj):
+        return self._build_gallery_media_html(obj, thumb_size=60, max_items=3)
     image_preview.short_description = "Preview"
 
     def gallery_preview(self, obj):
-        """Full preview of all images"""
-        html = '<div style="display: flex; gap: 15px; flex-wrap: wrap;">'
-        
-        if obj.before_image:
-            html += format_html(
-                '<div><strong>Before:</strong><br><img src="{}" width="150" height="120" style="object-fit:cover;border-radius:6px;"/></div>',
-                obj.before_image.url,
-            )
-        
-        if obj.after_image:
-            html += format_html(
-                '<div><strong>After:</strong><br><img src="{}" width="150" height="120" style="object-fit:cover;border-radius:6px;"/></div>',
-                obj.after_image.url,
-            )
-        
-        if obj.image and (not obj.before_image and not obj.after_image):
-            html += format_html(
-                '<div><strong>Image:</strong><br><img src="{}" width="150" height="120" style="object-fit:cover;border-radius:6px;"/></div>',
-                obj.image.url,
-            )
-        
-        html += '</div>'
-        return format_html(html)
+        """Full preview of all media in a single grouped card"""
+        return self._build_gallery_media_html(obj, thumb_size=150, max_items=None)
     gallery_preview.short_description = "Gallery Preview"
 
     def job_photo_link(self, obj):

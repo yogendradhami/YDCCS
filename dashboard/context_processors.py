@@ -25,9 +25,10 @@ from .models import CompanySettings
 
 
 def company_settings(request):
-    # Get the first company settings record.
-    # If it does not exist yet, return None safely.
-    settings = CompanySettings.objects.first()
+    # Return the first company settings record when present.
+    # When the database is empty, fall back to a safe default model instance
+    # so templates can still render without raising lookup errors.
+    settings = CompanySettings.objects.first() or CompanySettings()
 
     return {"company_settings": settings}
 
