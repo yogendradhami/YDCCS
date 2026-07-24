@@ -89,7 +89,12 @@ INSTALLED_APPS = [
     "rosters",
     "expenses",
     "support",
+
+    "cloudinary",
+    "cloudinary_storage",
+
 ]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -204,6 +209,10 @@ else:
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+DEFAULT_FILE_STORAGE = (
+    "cloudinary_storage.storage.MediaCloudinaryStorage"
+)
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # (Email / external keys consolidated later in this file.)
@@ -267,8 +276,7 @@ ADMIN_EMAIL = env.str("ADMIN_EMAIL", default="")
 
 GOOGLE_CLIENT_ID = env.str("GOOGLE_CLIENT_ID", default="")
 GOOGLE_CLIENT_SECRET = env.str("GOOGLE_CLIENT_SECRET", default="")
-GOOGLE_REDIRECT_URI = env.str("GOOGLE_REDIRECT_URI", default="http://localhost:8000/google/oauth/callback/")
-
+GOOGLE_REDIRECT_URI = env.str( "GOOGLE_REDIRECT_URI", default="https://www.ydcleaning.com.au/google/oauth/callback/" )
 # ====================================================
 # Resend Email API
 # ====================================================
