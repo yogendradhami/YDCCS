@@ -5,14 +5,13 @@
 # - Main project URL configuration
 # ====================================================
 
-from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path, re_path
-from django.views.static import serve
+from django.urls import include, path
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
     path("", include("dashboard.urls")),
     path("", include("payroll.urls")),
     path("", include("invoices.urls")),
@@ -31,17 +30,3 @@ urlpatterns = [
     path("", include("support.urls")),
     path("", include("core.urls")),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-else:
-    # In simple containerized deployments, Django can still serve media files from MEDIA_ROOT
-    # when no external media host is configured. For production scale, use a dedicated media
-    # storage backend such as S3 or a mounted volume behind the web server.
-    urlpatterns += [
-        re_path(
-            r"^%s(?P<path>.*)$" % settings.MEDIA_URL.lstrip("/"),
-            serve,
-            {"document_root": settings.MEDIA_ROOT},
-        ),
-    ]

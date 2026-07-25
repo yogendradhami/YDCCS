@@ -30,19 +30,19 @@ class GalleryItem(models.Model):
     suburb = models.CharField(max_length=100, blank=True)
 
     # Single or before/after images
-    before_image = models.ImageField(
+    before_image = models.FileField(
         upload_to="gallery/before/",
         null=True,
         blank=True,
     )
-    after_image = models.ImageField(
+    after_image = models.FileField(
         upload_to="gallery/after/",
         null=True,
         blank=True,
     )
 
     # Single image for generic gallery uploads
-    image = models.ImageField(
+    image = models.FileField(
         upload_to="gallery/uploads/",
         null=True,
         blank=True,
