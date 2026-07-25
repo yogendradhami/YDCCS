@@ -63,6 +63,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # Cloudinary
+    'cloudinary_storage',
+    'cloudinary',
+
     "django.contrib.sitemaps",
     # My apps
     "core",
@@ -90,10 +95,24 @@ INSTALLED_APPS = [
     "expenses",
     "support",
 
-    # "cloudinary",
-    # "cloudinary_storage",
-
+ 
 ]
+
+# Cloudinary Media Storage Configuration
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": env.str("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": env.str("CLOUDINARY_API_KEY"),
+    "API_SECRET": env.str("CLOUDINARY_API_SECRET"),
+}
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -206,12 +225,10 @@ else:
         default="whitenoise.storage.CompressedManifestStaticFilesStorage",
     )
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Media files are stored in Cloudinary
+# No local MEDIA_ROOT required
 
-DEFAULT_FILE_STORAGE = (
-    "cloudinary_storage.storage.MediaCloudinaryStorage"
-)
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
