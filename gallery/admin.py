@@ -4,10 +4,12 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .models import GalleryItem
-
+from .forms import GalleryItemForm
 
 @admin.register(GalleryItem)
 class GalleryItemAdmin(admin.ModelAdmin):
+    form = GalleryItemForm
+
     list_display = (
         "title",
         "service_type",
