@@ -563,11 +563,9 @@ def robots_txt(request):
     content = """User-agent: *
 Allow: /
 
-Sitemap: https://www.ydcleaning.com/sitemap.xml
+Sitemap: https://www.ydcleaning.com.au/sitemap.xml
 """
     return HttpResponse(content, content_type="text/plain")
-
-
 
 # ====================================================
 # Careers page & application handler
