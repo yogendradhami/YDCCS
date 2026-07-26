@@ -12,7 +12,10 @@ class BlogPost(models.Model):
     excerpt = models.TextField(blank=True)
     content = models.TextField()
     featured_image = models.ImageField(
-        upload_to=blog_upload_path, blank=True, null=True
+        upload_to=blog_upload_path,
+        blank=True,
+        null=True,
+        max_length=500,
     )
     category = models.CharField(max_length=100, blank=True)
     published = models.BooleanField(default=True)
