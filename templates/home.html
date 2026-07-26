@@ -2,11 +2,54 @@
 {% load static %}
 
 {% block title %}
-YD Commercial Cleaning Services Adelaide
+Professional Cleaning Services Adelaide | YD Commercial Cleaning
+{% endblock %}
+
+{% block meta_description %}
+Trusted cleaning services in Adelaide for homes, offices, end-of-lease and commercial spaces. Get a free quote for residential, office and move-out cleaning.
+{% endblock %}
+
+{% block meta_keywords %}
+commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide, end of lease cleaning adelaide, professional cleaners adelaide, local cleaning services
 {% endblock %}
 
 {% block extra_css %}
 <style>
+html {
+    scroll-behavior: smooth;
+}
+body {
+    overflow-x: hidden;
+}
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+.floating-quote {
+    position: fixed;
+    right: 20px;
+    bottom: 24px;
+    z-index: 1200;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 18px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 16px 34px rgba(37, 99, 235, 0.3);
+}
+.floating-quote:hover {
+    color: #fff;
+    transform: translateY(-2px);
+}
 .home-reviews-premium {
     background: linear-gradient(180deg, #f8fbff 0%, #fff 100%);
     padding: 80px 0;
@@ -236,124 +279,716 @@ YD Commercial Cleaning Services Adelaide
         right: 6px;
     }
 }
+
+.hero-section {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    padding: 100px 0 120px;
+    background: linear-gradient(120deg, #07111f 0%, #11305f 45%, #2563eb 100%);
+}
+.hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.28;
+    filter: blur(1px);
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(7,17,31,0.82) 0%, rgba(17,48,95,0.72) 45%, rgba(9,80,145,0.6) 100%);
+}
+.hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 40px;
+    align-items: center;
+}
+.hero-copy h1 {
+    font-size: clamp(2.3rem, 4vw, 3.7rem);
+    line-height: 1.08;
+    margin-bottom: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.hero-copy p {
+    font-size: 1.08rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.92);
+    max-width: 700px;
+}
+.hero-trust-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+}
+.hero-trust-list span {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.95rem;
+    backdrop-filter: blur(6px);
+}
+.hero-visual-card {
+    background: rgba(248, 250, 252, 0.95);
+    color: #0f172a;
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 24px 60px rgba(2, 8, 23, 0.2);
+    border: 1px solid rgba(255,255,255,0.7);
+}
+.hero-visual-card h3 {
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    color: #0f172a;
+}
+.hero-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 0;
+    display: grid;
+    gap: 10px;
+}
+.hero-feature-list li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: #334155;
+}
+.hero-feature-list li::before {
+    content: "✓";
+    color: #0ea5e9;
+    font-weight: 700;
+}
+.hero-quick-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+.hero-stat {
+    background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid #dbeafe;
+}
+.hero-stat strong {
+    display: block;
+    font-size: 1.25rem;
+    color: #0f172a;
+}
+.hero-stat span {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+.trust-strip {
+    background: linear-gradient(135deg, #f8fbff 0%, #eff6ff 100%);
+    border-top: 1px solid #dbeafe;
+    border-bottom: 1px solid #dbeafe;
+    padding: 18px 0;
+}
+.trust-strip .trust-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    align-items: center;
+}
+.trust-strip .trust-grid > div {
+    background: rgba(255,255,255,0.8);
+    border-radius: 999px;
+    padding: 10px 14px;
+    text-align: center;
+    color: #1e3a8a;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+.section-surface {
+    padding: 80px 0;
+    background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+.section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-bottom: 10px;
+}
+.section-title h2 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    margin-bottom: 12px;
+    color: #0f172a;
+}
+.section-title p {
+    color: #475569;
+    max-width: 740px;
+    margin: 0 auto;
+    line-height: 1.8;
+}
+.service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 36px;
+}
+.service-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 15px 35px rgba(15,23,42,0.05);
+}
+.service-card h4 {
+    font-size: 1.1rem;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+.service-card p {
+    color: #475569;
+    line-height: 1.75;
+    margin-bottom: 12px;
+}
+.service-card ul {
+    padding-left: 18px;
+    color: #334155;
+    line-height: 1.75;
+}
+.benefit-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 28px;
+    align-items: center;
+    padding: 20px 0 40px;
+}
+.benefit-card {
+    background: #0f172a;
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(15,23,42,0.16);
+}
+.benefit-card ul {
+    padding-left: 18px;
+    display: grid;
+    gap: 10px;
+    line-height: 1.7;
+}
+.process-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+.process-step {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+}
+.process-step .step-number {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.area-section {
+    padding: 70px 0 40px;
+}
+.area-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+.area-list span {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 9px 14px;
+    color: #334155;
+}
+.cta-band {
+    margin-top: 24px;
+    padding: 24px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+    border: 1px solid #bfdbfe;
+}
+.industry-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 32px;
+}
+.industry-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 15px 35px rgba(15,23,42,0.05);
+}
+.industry-card h4 {
+    font-size: 1.05rem;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+.industry-card p {
+    color: #475569;
+    line-height: 1.75;
+    margin-bottom: 0;
+}
+.faq-section {
+    padding: 70px 0 20px;
+}
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 28px;
+}
+.faq-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 14px 35px rgba(15,23,42,0.05);
+}
+.faq-card h4 {
+    font-size: 1.05rem;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+.faq-card p {
+    color: #475569;
+    line-height: 1.75;
+    margin-bottom: 0;
+}
+.quote-section {
+    padding: 90px 0;
+    background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #1d4ed8 100%);
+    color: #fff;
+}
+.quote-shell {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    gap: 28px;
+    align-items: start;
+}
+.quote-intro {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 28px;
+    padding: 30px;
+    backdrop-filter: blur(10px);
+}
+.quote-intro h2 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    margin: 10px 0 14px;
+}
+.quote-intro p {
+    color: rgba(255,255,255,0.86);
+    line-height: 1.8;
+}
+.quote-mini-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+}
+.quote-mini-list div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 10px 14px;
+    color: #f8fafc;
+}
+.quote-form-card {
+    background: #fff;
+    color: #0f172a;
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: 0 24px 60px rgba(2, 8, 23, 0.2);
+}
+.quote-form-card h3 {
+    font-size: 1.3rem;
+    margin: 8px 0 6px;
+}
+.quote-form-card .section-eyebrow {
+    margin-bottom: 0;
+}
+.form-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+}
+.form-grid .field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.form-group {
+    display: grid;
+    gap: 6px;
+}
+.form-group label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #334155;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    background: #f8fafc;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    background: #fff;
+}
+.form-group textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+.addon-grid {
+    display: grid;
+    gap: 8px;
+    margin-top: 6px;
+}
+.addon-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+.optional-details {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 10px 12px;
+    background: #fbfdff;
+}
+.optional-details summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: #1d4ed8;
+}
+.optional-details[open] summary {
+    margin-bottom: 8px;
+}
+.addon-option input {
+    width: auto;
+    margin: 0;
+}
+.estimate-card {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+    border: 1px solid #bfdbfe;
+}
+.estimate-card .estimate-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.estimate-card strong {
+    font-size: 1.6rem;
+    color: #0f172a;
+}
+.quote-submit {
+    width: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 18px;
+    margin-top: 18px;
+    font-weight: 700;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.25);
+}
+.quote-submit:hover {
+    transform: translateY(-1px);
+}
+.form-footnote {
+    margin-top: 12px;
+    text-align: center;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+.form-footnote a {
+    color: #2563eb;
+    font-weight: 700;
+    text-decoration: none;
+}
+@media (max-width: 980px) {
+    .service-grid,
+    .process-grid,
+    .benefit-grid,
+    .industry-grid,
+    .quote-shell {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 640px) {
+    .form-grid .field-row {
+        grid-template-columns: 1fr;
+    }
+    .hero-quick-stats {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<section class="hero-section">
+<section class="hero-section reveal">
+    <video class="hero-video" autoplay muted loop playsinline>
+        <source src="https://cdn.coverr.co/videos/coverr-cleaning-a-home-1562150754/1080p.mp4" type="video/mp4">
+    </video>
+    <div class="hero-overlay"></div>
     <div class="container hero-grid">
-        <div>
-            <span class="hero-badge">Adelaide Local Cleaning Experts</span>
-
-            <h1>Professional Commercial & Residential Cleaning Across Adelaide</h1>
-
+        <div class="hero-copy">
+            <span class="hero-badge">Adelaide’s trusted cleaning specialists</span>
+            <h1>Professional Cleaning Services for Homes, Offices & Commercial Spaces</h1>
             <p>
-                Reliable, fully insured and affordable cleaning services for homes,
-                offices, businesses, end-of-lease properties and commercial spaces.
+                From routine house cleaning to office maintenance and end-of-lease cleans, our local Adelaide team delivers reliable, detail-focused results with flexible scheduling and transparent pricing.
             </p>
 
             <div class="hero-buttons">
-                <a href="#quote" class="btn-fill">Get Free Quote</a>
+                <a href="#quote" class="btn-fill">Get a Free Quote</a>
                 <a href="tel:0430049865" class="btn-light-outline">Call Now</a>
+            </div>
+
+            <div class="hero-trust-list">
+                <span>✅ Fully insured</span>
+                <span>✅ Same-week availability</span>
+                <span>✅ Eco-friendly products</span>
+                <span>✅ Adelaide-wide coverage</span>
             </div>
         </div>
 
-        <div class="hero-card">
-            <h3>Need a Cleaner Today?</h3>
-            <p>Send your details and our team will contact you shortly.</p>
+        <div class="hero-visual-card reveal">
+            <h3>Why clients choose YD Commercial Cleaning</h3>
+            <ul class="hero-feature-list">
+                <li>Flexible bookings for homes, offices and commercial sites</li>
+                <li>Meticulous attention to detail and consistent quality</li>
+                <li>Friendly local team with honest, upfront quotes</li>
+            </ul>
+            <div class="hero-quick-stats">
+                <div class="hero-stat">
+                    <strong>100%</strong>
+                    <span>Local service focus</span>
+                </div>
+                <div class="hero-stat">
+                    <strong>24 hrs</strong>
+                    <span>Fast response time</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="trust-strip reveal">
+    <div class="container trust-grid">
+        <div>✅ Fully insured cleaning specialists</div>
+        <div>✅ Free quotes and no hidden fees</div>
+        <div>✅ Trusted by homes and businesses</div>
+        <div>✅ Local Adelaide team</div>
+    </div>
+</section>
+
+<section id="services" class="section section-surface reveal">
+    <div class="container">
+        <div class="section-title">
+            <span class="section-eyebrow">Our specialist services</span>
+            <h2>Cleaning solutions for every property type across Adelaide</h2>
+            <p>Whether you need weekly office cleaning, a one-off deep clean, or a detailed end-of-lease service, our team delivers dependable, professional results tailored to your space.</p>
+        </div>
+
+        <div class="service-grid">
+            {% if services %}
+                {% for service in services %}
+                    <div class="service-card">
+                        <h4>{{ service.name }}</h4>
+                        <p>{{ service.description }}</p>
+                        {% if service.included %}
+                            <ul>
+                                {% for item in service.included %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="service-card">
+                    <h4>Commercial Cleaning</h4>
+                    <p>Reliable cleaning for offices, medical centres, retail spaces and business premises.</p>
+                    <ul>
+                        <li>Daily, weekly or periodic visits</li>
+                        <li>Reception, kitchen and washroom care</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <h4>Office Cleaning</h4>
+                    <p>Professional office cleaning that keeps your workplace fresh, hygienic and presentable.</p>
+                    <ul>
+                        <li>Dusting, sanitising and floor care</li>
+                        <li>Flexible after-hours service</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <h4>End of Lease Cleaning</h4>
+                    <p>Detailed move-out cleaning for tenants, landlords and real estate agents.</p>
+                    <ul>
+                        <li>Full oven, bathroom and cabinet detailing</li>
+                        <li>Bond-ready presentation</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <h4>House Cleaning</h4>
+                    <p>One-off, regular and deep house cleaning for Adelaide homes and family properties.</p>
+                    <ul>
+                        <li>Kitchen, bathroom and living areas</li>
+                        <li>Weekly, fortnightly or once-off visits</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <h4>Window Cleaning</h4>
+                    <p>Interior and exterior window cleaning for bright, streak-free results.</p>
+                    <ul>
+                        <li>Residential and commercial glass</li>
+                        <li>Frames, sills and hard-to-reach areas</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <h4>Deep Cleaning</h4>
+                    <p>High-impact cleaning for kitchens, bathrooms, high-use areas and seasonal refreshes.</p>
+                    <ul>
+                        <li>Detailed sanitising and finishing touch</li>
+                        <li>Perfect for pre-sale or post-event cleans</li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="section reveal">
+    <div class="container benefit-grid">
+        <div>
+            <span class="section-eyebrow">Why Adelaide trusts YD Cleaning</span>
+            <h2>Reliable service, meticulous results and friendly local support</h2>
+            <p>
+                We combine professional standards with a personal approach, helping homeowners and business owners keep their spaces spotless with minimal disruption. Every clean is tailored to your property, schedule and budget.
+            </p>
+            <div class="cta-band">
+                <strong>Need a cleaner for your home or workplace?</strong>
+                <p>Request a free quote today and we’ll help you choose the right service package.</p>
+                <a href="#quote" class="btn-fill">Request a Free Quote</a>
+            </div>
+        </div>
+
+        <div class="benefit-card reveal">
+            <h3>What you can expect from every booking</h3>
             <ul>
-                <li>✓ Fully Insured</li>
-                <li>✓ Free Quotes</li>
-                <li>✓ Flexible Scheduling</li>
-                <li>✓ Adelaide-Wide Service</li>
+                <li>Professional, fully trained cleaning staff</li>
+                <li>Flexible scheduling including after-hours visits</li>
+                <li>Transparent quotes and affordable pricing</li>
+                <li>Attention to detail in kitchens, bathrooms and living spaces</li>
             </ul>
         </div>
     </div>
 </section>
 
-<section class="trust-strip">
-    <div class="container trust-grid">
-        <div>✅ Fully Insured</div>
-        <div>✅ Free Quotes</div>
-        <div>✅ Satisfaction Focused</div>
-        <div>✅ Local Adelaide Team</div>
+<section class="section section-surface reveal">
+    <div class="container">
+        <div class="section-title reveal">
+            <span class="section-eyebrow">How it works</span>
+            <h2>Simple, stress-free booking from quote to completion</h2>
+        </div>
+        <div class="process-grid">
+            <div class="process-step">
+                <div class="step-number">1</div>
+                <h4>Share your needs</h4>
+                <p>Tell us about your property, preferred date and the type of clean you need.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">2</div>
+                <h4>Receive a tailored quote</h4>
+                <p>We provide a clear price estimate based on your property size and service requirements.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">3</div>
+                <h4>Enjoy a spotless finish</h4>
+                <p>Our team arrives on time, completes the job with care and leaves your space refreshed.</p>
+            </div>
+        </div>
     </div>
 </section>
 
-<section id="services" class="section">
+<section class="area-section reveal">
+    <div class="container section-title">
+        <span class="section-eyebrow">Service areas</span>
+        <h2>Professional cleaners servicing Adelaide and nearby suburbs</h2>
+        <p>We proudly support homes and businesses throughout Adelaide CBD, Unley, Norwood, Glenelg, Burnside, Prospect, Mawson Lakes, Modbury and surrounding areas.</p>
+        <div class="area-list">
+            <span>Adelaide CBD</span>
+            <span>North Adelaide</span>
+            <span>Glenelg</span>
+            <span>Unley</span>
+            <span>Norwood</span>
+            <span>Burnside</span>
+            <span>Prospect</span>
+            <span>Mawson Lakes</span>
+            <span>Modbury</span>
+        </div>
+    </div>
+</section>
+
+<section class="section home-gallery reveal">
     <div class="container">
         <div class="section-title">
-            <h2>Our Cleaning Services</h2>
-            <p>Professional cleaning solutions for homes and businesses.</p>
-        </div>
-
-        <div class="card-grid">
-            <div class="service-card">
-                <h4>Commercial Cleaning</h4>
-                <p>Reliable cleaning for offices, shops, warehouses and business premises.</p>
-            </div>
-
-            <div class="service-card">
-                <h4>Office Cleaning</h4>
-                <p>Regular office cleaning to keep your workplace fresh and professional.</p>
-            </div>
-
-            <div class="service-card">
-                <h4>End of Lease Cleaning</h4>
-                <p>Detailed move-out cleaning for tenants, landlords and real estate agents.</p>
-            </div>
-
-            <div class="service-card">
-                <h4>House Cleaning</h4>
-                <p>One-off, regular and deep house cleaning for Adelaide homes.</p>
-            </div>
-
-            <div class="service-card">
-                <h4>Window Cleaning</h4>
-                <p>Interior and exterior window cleaning for clear, spotless results.</p>
-            </div>
-
-            <div class="service-card">
-                <h4>Deep Cleaning</h4>
-                <p>Intensive cleaning for kitchens, bathrooms, offices and high-use areas.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="why-section">
-    <div class="container why-grid">
-        <div>
-            <h2>Why Choose YD Cleaning?</h2>
-            <p>
-                We focus on quality, reliability and customer satisfaction. Whether you need
-                a regular office cleaner or a one-time end-of-lease clean, our team is ready
-                to deliver spotless results.
-            </p>
-
-            <div class="features-grid">
-                <div>✓ Professional Team</div>
-                <div>✓ Affordable Pricing</div>
-                <div>✓ Flexible Times</div>
-                <div>✓ Attention to Detail</div>
-            </div>
-        </div>
-
-        <div class="stats-box">
-            <h3>Adelaide Cleaning You Can Trust</h3>
-            <p>
-                Commercial, residential and end-of-lease cleaning services designed around your needs.
-            </p>
-        </div>
-    </div>
-</section>
-
-<section class="section home-gallery">
-    <div class="container">
-        <div class="section-title">
-            <h2>Before & After Gallery</h2>
-            <p>Real cleaning transformations from our work.</p>
+            <h2>Recent cleaning transformations</h2>
+            <p>Explore a selection of completed projects and real cleaning results from our Adelaide clients.</p>
         </div>
 
         {% if gallery_items %}
@@ -382,7 +1017,7 @@ YD Commercial Cleaning Services Adelaide
     </div>
 </section>
 
-<section id="reviews" class="home-reviews-premium">
+<section id="reviews" class="home-reviews-premium reveal">
     <div class="container">
         <div class="section-title">
             <h2>Premium Google Live Reviews</h2>
@@ -462,145 +1097,204 @@ YD Commercial Cleaning Services Adelaide
 </script>
 {% endif %}
 
-<section class="areas-section">
-    <div class="container section-title">
-        <h2>Areas We Service</h2>
-        <p>
-            Adelaide CBD, Unley, Norwood, Glenelg, Burnside, Prospect, Campbelltown,
-            Mawson Lakes, Modbury, North Adelaide and surrounding suburbs.
-        </p>
+<section class="section section-surface">
+    <div class="container">
+        <div class="section-title">
+            <span class="section-eyebrow">Tailored for every property</span>
+            <h2>From family homes to busy offices, we keep Adelaide spaces spotless</h2>
+            <p>Our team supports residential, commercial and move-out cleaning needs with flexible scheduling, dependable staff and a polished finish every time.</p>
+        </div>
+
+        <div class="industry-grid">
+            <div class="industry-card">
+                <h4>Residential homes</h4>
+                <p>Regular house cleaning, deep cleans, and seasonal refreshes for families, homeowners and rental properties.</p>
+            </div>
+            <div class="industry-card">
+                <h4>Commercial spaces</h4>
+                <p>Professional office, retail and facility cleaning that helps your business stay welcoming and hygienic.</p>
+            </div>
+            <div class="industry-card">
+                <h4>Move-out and real estate</h4>
+                <p>Bond-ready end-of-lease cleaning designed to meet strict property presentation standards.</p>
+            </div>
+        </div>
+
+        <div class="area-list" style="justify-content:center;">
+            <span>Adelaide CBD</span>
+            <span>North Adelaide</span>
+            <span>Glenelg</span>
+            <span>Unley</span>
+            <span>Norwood</span>
+            <span>Burnside</span>
+            <span>Prospect</span>
+            <span>Mawson Lakes</span>
+            <span>Modbury</span>
+        </div>
     </div>
 </section>
 
-<section id="quote" class="quote-section">
-    <div class="container quote-grid">
-        <div>
-            <h2>Get Your Free Quote</h2>
-            <p>
-                Fill out the form and upload property images if available.
-                We will contact you shortly.
-            </p>
-
-            <p><strong>Phone:</strong> 0430 049 865</p>
-            <p><strong>Service Area:</strong> Adelaide and surrounding suburbs</p>
+<section class="section faq-section reveal">
+    <div class="container">
+        <div class="section-title">
+            <span class="section-eyebrow">Frequently asked questions</span>
+            <h2>Everything you need to know before booking</h2>
+            <p>From availability to service coverage, these are the questions we hear most often from Adelaide customers.</p>
         </div>
 
-        <div>
+        <div class="faq-grid">
+            <div class="faq-card">
+                <h4>Do you service all Adelaide suburbs?</h4>
+                <p>Yes. We provide cleaning services throughout Adelaide and surrounding areas, including homes, offices and commercial premises.</p>
+            </div>
+            <div class="faq-card">
+                <h4>Can I book a one-off clean?</h4>
+                <p>Absolutely. We offer one-off, recurring and deep cleans depending on your schedule and property needs.</p>
+            </div>
+            <div class="faq-card">
+                <h4>Are your cleaners insured?</h4>
+                <p>Yes. Our team is fully insured and committed to delivering safe, professional service with peace of mind.</p>
+            </div>
+            <div class="faq-card">
+                <h4>How quickly can I get a quote?</h4>
+                <p>Most enquiries receive a prompt response and we can often provide an estimate within 24 hours.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-            <form method="POST" enctype="multipart/form-data" action="#quote" class="quote-card">
+<section id="quote" class="quote-section reveal">
+    <div class="container quote-shell">
+        <div class="quote-intro reveal">
+            <span class="section-eyebrow" style="color:#bfdbfe;">Request your free quote</span>
+            <h2>Let’s make your space feel fresh, polished and ready to impress.</h2>
+            <p>Share a few details about your property and the kind of cleaning you need. We’ll return with a tailored quote and clear next steps.</p>
+
+            <div class="quote-mini-list">
+                <div>✅ Fast response within 24 hours</div>
+                <div>✅ Fully insured and trusted local team</div>
+                <div>✅ Flexible bookings for homes and businesses</div>
+            </div>
+        </div>
+
+        <div class="quote-form-card reveal">
+            <span class="section-eyebrow">Premium quote request</span>
+            <h3>Tell us about your space and we’ll handle the rest.</h3>
+
+            <form method="POST" enctype="multipart/form-data" action="#quote" class="form-grid">
                 {% csrf_token %}
 
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    {{ form.name }}
-                    <div class="text-danger">{{ form.name.errors }}</div>
+                <div class="field-row">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        {{ form.name }}
+                        <div class="text-danger">{{ form.name.errors }}</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        {{ form.email }}
+                        <div class="text-danger">{{ form.email.errors }}</div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Email Address *</label>
-                    {{ form.email }}
-                    
-                    <div class="text-danger">{{ form.email.errors }}</div>
+                <div class="field-row">
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        {{ form.phone }}
+                        <div class="text-danger">{{ form.phone.errors }}</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Property Type *</label>
+                        {{ form.property_type }}
+                        <div class="text-danger">{{ form.property_type.errors }}</div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Phone Number *</label>
-                    {{ form.phone }}
-                    <div class="text-danger">{{ form.phone.errors }}</div>
+                <div class="field-row">
+                    <div class="form-group">
+                        <label>Suburb / Postcode *</label>
+                        {{ form.suburb_postcode }}
+                        <div class="text-danger">{{ form.suburb_postcode.errors }}</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Preferred Date *</label>
+                        {{ form.preferred_date }}
+                        <div class="text-danger">{{ form.preferred_date.errors }}</div>
+                    </div>
                 </div>
 
-                <div class="form-group">
+                <details class="optional-details">
+                    <summary>Optional details</summary>
+                    <div class="field-row">
+                        <div class="form-group">
+                            <label>Bedrooms</label>
+                            {{ form.bedrooms }}
+                        </div>
 
-                    <label>
-                        How Did You Hear About Us?
+                        <div class="form-group">
+                            <label>Bathrooms</label>
+                            {{ form.bathrooms }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>How Did You Hear About Us?</label>
+                        {{ form.lead_source }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Upload Property Images (optional)</label>
+                        {{ form.property_images }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Additional Details / Message</label>
+                        {{ form.message }}
+                        <div class="text-danger">{{ form.message.errors }}</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Optional add-ons</label>
+                        <div class="addon-grid">
+                            <label class="addon-option">{{ form.window_cleaning }} <span>Window Cleaning (+$50)</span></label>
+                            <label class="addon-option">{{ form.carpet_shampooing }} <span>Carpet Shampooing (+$100)</span></label>
+                            <label class="addon-option">{{ form.grout_cleaning }} <span>Grout Cleaning (+$75)</span></label>
+                            <label class="addon-option">{{ form.upholstery_cleaning }} <span>Upholstery Cleaning (+$60)</span></label>
+                            <label class="addon-option">{{ form.laundry_service }} <span>Laundry Service (+$60)</span></label>
+                        </div>
+                    </div>
+                </details>
+
+                <div class="form-group">
+                    <label class="addon-option" style="justify-content:flex-start;">
+                        {{ form.is_not_robot }}
+                        <span>I’m not a robot</span>
                     </label>
-
-                    {{ form.lead_source }}
-
-                </div>
-
-                <div class="form-group">
-                    <label>Property Type *</label>
-                    {{ form.property_type }}
-                    <div class="text-danger">{{ form.property_type.errors }}</div>
-                </div>
-
-                <div class="form-group">
-
-                    <div class="form-group">
-                        <label>Bedrooms</label>
-                        {{ form.bedrooms }}
-                    </div>
-
-                    <div class="form-group">
-                        <label>Bathrooms</label>
-                        {{ form.bathrooms }}
-                    </div>
-                    <label>Suburb/Postcode *</label>
-                    {{ form.suburb_postcode }}
-                    <div class="text-danger">{{ form.suburb_postcode.errors }}</div>
-                </div>
-
-                <div class="form-group">
-                  
-
-                    <label>Preferred Date *</label>
-                    {{ form.preferred_date }}
-                    <div class="text-danger">{{ form.preferred_date.errors }}</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Upload Property Images Optional</label>
-                    {{ form.property_images }}
-                </div>
-
-                <div class="form-group">
-                    <label>Additional Details/Message</label>
-                    {{ form.message }}
-                    <div class="text-danger">{{ form.message.errors }}</div>
-                </div>
-
-                <div class="form-group">
-                    <label><strong>Would you like any add-ons?</strong></label>
-
-                    <div class="form-check">{{ form.window_cleaning }} <span>Window Cleaning (+$50)</span></div>
-                    <div class="form-check">{{ form.carpet_shampooing }} <span>Carpet Shampooing (+$100)</span></div>
-                    <div class="form-check">{{ form.grout_cleaning }} <span>Grout Cleaning (+$75)</span></div>
-                    <div class="form-check">{{ form.upholstery_cleaning }} <span>Upholstery Cleaning (+$60)</span></div>
-                    <div class="form-check">{{ form.laundry_service }} <span>Laundry Service (+$60)</span></div>
-                </div>
-
-                <div class="form-check robot-check">
-                    {{ form.is_not_robot }}
-                    <span>I'm not a robot</span>
                     <div class="text-danger">{{ form.is_not_robot.errors }}</div>
                 </div>
 
-                <div class="estimate-box" style="
-                    background:#f8fafc;
-                    border:2px solid #0ea5e9;
-                    padding:20px;
-                    border-radius:12px;
-                    margin-bottom:20px;
-                    text-align:center;
-                ">
-                    <h3>Estimated Quote</h3>
-
-                    <h2 id="estimated-price">$120</h2>
-
-                    <p>
-                        Final pricing will be confirmed by
-                        YD Commercial Cleaning Services.
-                    </p>
+                <div class="estimate-card">
+                    <div class="estimate-head">
+                        <span>Estimated quote</span>
+                        <strong id="estimated-price">$120</strong>
+                    </div>
+                    <p>Final pricing will be confirmed by YD Commercial Cleaning Services after review.</p>
                 </div>
 
-                <button type="submit" class="btn-fill full-width">
-                    Get Your Free Quote
+                <button type="submit" class="quote-submit">
+                    Request My Free Quote
                 </button>
+
+                <p class="form-footnote">Prefer to call us directly? <a href="tel:0430049865">0430 049 865</a></p>
             </form>
         </div>
     </div>
 </section>
+
+<a href="#quote" class="floating-quote" aria-label="Request a free quote">✦ Get Free Quote</a>
 
 <script>
 function getFieldValueByName(name) {
@@ -671,6 +1365,20 @@ document.addEventListener("DOMContentLoaded", function () {
             field.addEventListener("keyup", updateEstimate);
             field.addEventListener("input", updateEstimate);
         });
+
+    const revealElements = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    revealElements.forEach(function (element) {
+        observer.observe(element);
+    });
 
     updateEstimate();
 });
