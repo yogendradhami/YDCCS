@@ -75,14 +75,22 @@
       "@graph": [
         {
           "@type": "Organization",
+          "@id": "https://www.ydcleaning.com.au/#organization",
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
           "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
-          "logo": "{{ open_graph_image|default:'/static/images/logo.jpeg'|escapejs }}",
-          "sameAs": {{ same_as_urls|default:'[]'|safe }},
+          "logo": {
+            "@type": "ImageObject",
+            "url": "{{ open_graph_image|default:'https://www.ydcleaning.com.au/static/images/logo.jpeg'|escapejs }}"
+        },
+          "sameAs":[
+          "https://www.facebook.com/ydcommercialcleaning/",
+          "https://www.instagram.com/ydcommercialcleaning/"
+          ],
+
           "contactPoint": [
             {
               "@type": "ContactPoint",
-              "telephone": "{{ company_settings.phone|default:'0430 049 865'|escapejs }}",
+              "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",
               "contactType": "customer service",
               "areaServed": ["Adelaide", "South Australia"],
               "availableLanguage": ["English"]
@@ -99,10 +107,18 @@
         },
         {
           "@type": "LocalBusiness",
+          "@id": "https://www.ydcleaning.com.au/#localbusiness",
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
-          "image": "{{ open_graph_image|default:'/static/images/logo.jpeg'|escapejs }}",
-          "telephone": "{{ company_settings.phone|default:'0430 049 865'|escapejs }}",
+
+          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
+          "image": {
+            "@type": "ImageObject",
+            "url": "{{ open_graph_image|default:'https://www.ydcleaning.com.au/static/images/logo.jpeg'|escapejs }}"
+          },
+          "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",
           "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com'|escapejs }}",
+          "priceRange": "$$",
+
           "address": {
             "@type": "PostalAddress",
             "streetAddress": "{{ address_street|default:'Adelaide'|escapejs }}",
@@ -111,21 +127,95 @@
             "postalCode": "{{ address_postal_code|default:'5000'|escapejs }}",
             "addressCountry": "{{ address_country|default:'AU'|escapejs }}"
           },
-          "areaServed": {{ service_area_list|default:'["Adelaide","South Australia"]'|safe }},
+          "areaServed": [
+          {
+            "@type": "City",
+            "name": "Adelaide"
+          },
+          {
+            "@type": "City",
+            "name": "South Australia"
+          }
+         ],
           "openingHoursSpecification": [
             {
               "@type": "OpeningHoursSpecification",
               "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
               "opens": "08:00",
               "closes": "12:00"
-            }
+            },
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Cleaning Services",
+              "itemListElement": [
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Commercial Cleaning Adelaide"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Office Cleaning Adelaide"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "House Cleaning Adelaide"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "End of Lease Cleaning Adelaide"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Bond Cleaning Adelaide"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Window Cleaning Adelaide"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Carpet Steam Cleaning Adelaide"
+                  }
+                  {
+                    "@type": "Offer",
+                    "itemOffered": {
+                      "@type": "Service",
+                      "name": "Deep Cleaning Services Adelaide"
+                  }
+                }
+              ]
+            }   
           ]
         },
         {
           "@type": "WebSite",
+          "@id": "https://www.ydcleaning.com.au/#website",
           "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
           "description": "{{ default_seo_description|default:'Professional commercial cleaning services in Adelaide.'|escapejs }}"
+          publisher: {
+            "@id": "https://www.ydcleaning.com.au/#organization"
+          }
         }
       ]
     }
