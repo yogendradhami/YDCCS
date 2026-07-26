@@ -74,7 +74,8 @@ INSTALLED_APPS = [
     "quotes",
     "services",
     "reviews",
-    "gallery",
+    "gallery.apps.GalleryConfig",
+
     "blog",
     "locations",
     "dashboard",
@@ -94,6 +95,7 @@ INSTALLED_APPS = [
     "rosters",
     "expenses",
     "support",
+
 
  
 ]
