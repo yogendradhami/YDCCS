@@ -40,6 +40,14 @@ def seo_context(request):
         "default_seo_keywords": "commercial cleaning Adelaide, office cleaning, house cleaning, end of lease cleaning, bond cleaning, window cleaning",
         "open_graph_image": "/static/img/og-image.png",
         "twitter_image": "/static/img/twitter-image.png",
+        "site_url": "https://www.ydcleaning.com.au",
+        "same_as_urls": '["https://www.facebook.com/ydcommercialcleaning","https://www.instagram.com/ydcommercialcleaning"]',
+        "service_area_list": '["Adelaide","South Australia"]',
+        "address_street": "Adelaide",
+        "address_locality": "Adelaide",
+        "address_region": "SA",
+        "address_postal_code": "5000",
+        "address_country": "AU",
     }
 
 

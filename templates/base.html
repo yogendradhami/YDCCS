@@ -75,14 +75,14 @@
       "@graph": [
         {
           "@type": "Organization",
-          "name": "{{ company_settings.business_name|escape }}",
-          "url": "{{ site_url }}",
-          "logo": "{{ open_graph_image }}",
-          "sameAs": {{ same_as_urls|safe }},
+          "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
+          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
+          "logo": "{{ open_graph_image|default:'/static/images/logo.jpeg'|escapejs }}",
+          "sameAs": {{ same_as_urls|default:'[]'|safe }},
           "contactPoint": [
             {
               "@type": "ContactPoint",
-              "telephone": "{{ company_settings.phone }}",
+              "telephone": "{{ company_settings.phone|default:'0430 049 865'|escapejs }}",
               "contactType": "customer service",
               "areaServed": ["Adelaide", "South Australia"],
               "availableLanguage": ["English"]
@@ -90,28 +90,28 @@
           ],
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "{{ address_street|escape }}",
-            "addressLocality": "{{ address_locality|escape }}",
-            "addressRegion": "{{ address_region|escape }}",
-            "postalCode": "{{ address_postal_code|escape }}",
-            "addressCountry": "{{ address_country|escape }}"
+            "streetAddress": "{{ address_street|default:'Adelaide'|escapejs }}",
+            "addressLocality": "{{ address_locality|default:'Adelaide'|escapejs }}",
+            "addressRegion": "{{ address_region|default:'SA'|escapejs }}",
+            "postalCode": "{{ address_postal_code|default:'5000'|escapejs }}",
+            "addressCountry": "{{ address_country|default:'AU'|escapejs }}"
           }
         },
         {
           "@type": "LocalBusiness",
-          "name": "{{ company_settings.business_name|escape }}",
-          "image": "{{ open_graph_image }}",
-          "telephone": "{{ company_settings.phone }}",
-          "email": "{{ company_settings.email }}",
+          "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
+          "image": "{{ open_graph_image|default:'/static/images/logo.jpeg'|escapejs }}",
+          "telephone": "{{ company_settings.phone|default:'0430 049 865'|escapejs }}",
+          "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com'|escapejs }}",
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "{{ address_street|escape }}",
-            "addressLocality": "{{ address_locality|escape }}",
-            "addressRegion": "{{ address_region|escape }}",
-            "postalCode": "{{ address_postal_code|escape }}",
-            "addressCountry": "{{ address_country|escape }}"
+            "streetAddress": "{{ address_street|default:'Adelaide'|escapejs }}",
+            "addressLocality": "{{ address_locality|default:'Adelaide'|escapejs }}",
+            "addressRegion": "{{ address_region|default:'SA'|escapejs }}",
+            "postalCode": "{{ address_postal_code|default:'5000'|escapejs }}",
+            "addressCountry": "{{ address_country|default:'AU'|escapejs }}"
           },
-          "areaServed": {{ service_area_list|safe }},
+          "areaServed": {{ service_area_list|default:'["Adelaide","South Australia"]'|safe }},
           "openingHoursSpecification": [
             {
               "@type": "OpeningHoursSpecification",
@@ -123,9 +123,9 @@
         },
         {
           "@type": "WebSite",
-          "url": "{{ site_url }}",
-          "name": "{{ company_settings.business_name|escape }}",
-          "description": "{{ default_seo_description|escape }}"
+          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
+          "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
+          "description": "{{ default_seo_description|default:'Professional commercial cleaning services in Adelaide.'|escapejs }}"
         }
       ]
     }

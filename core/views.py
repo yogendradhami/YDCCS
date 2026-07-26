@@ -99,6 +99,7 @@ def _get_suburb_by_slug(area_slug):
 def home(request):
     gallery_items = GalleryItem.objects.filter(featured=True).order_by("-created_at")[:6]
     featured_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
+    featured_services = list(Service.objects.filter(is_active=True).order_by("name")[:6])
 
     google_reviews = get_google_reviews_api()
     if not google_reviews:
@@ -192,6 +193,7 @@ def home(request):
         {
             "form": form,
             "gallery_items": gallery_items,
+            "services": featured_services,
             "reviews": featured_reviews,
             "google_reviews": google_reviews,
             "average_rating": average_rating,
