@@ -2,8 +2,10 @@
 import mimetypes
 from pathlib import Path
 
-from django.db import models
+from pillow_heif import register_heif_opener
+register_heif_opener()
 
+from django.db import models
 
 class GalleryItem(models.Model):
     SERVICE_CHOICES = [
