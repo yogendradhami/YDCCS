@@ -1,7 +1,5 @@
 from django.contrib import admin
 from django.utils.html import format_html
-import os
-
 from .models import Service
 
 
@@ -16,15 +14,10 @@ class ServiceAdmin(admin.ModelAdmin):
 
     def hero_preview(self, obj):
         if obj.hero_image:
-            try:
-                path = obj.hero_image.path
-                if os.path.exists(path):
-                    return format_html(
-                        '<img src="{}" style="width:120px;height:auto;border-radius:6px;object-fit:cover;" />',
-                        obj.hero_image.url,
-                    )
-            except Exception:
-                pass
+            return format_html(
+                '<img src="{}" style="width:120px;height:80px;border-radius:6px;object-fit:cover;" />',
+                obj.hero_image.url,
+            )
 
         return "No image"
 
