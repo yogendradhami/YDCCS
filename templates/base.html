@@ -39,12 +39,13 @@
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
 
     <!-- Preload critical styles and optimize external font connections -->
+   <!-- CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="{% static 'css/core/style.css' %}?v=2" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{% static 'css/core/style.css' %}?v=2"></noscript>
-    <link rel="preload" href="{% static 'css/canonical.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{% static 'css/canonical.css' %}"></noscript>
+
+    <link rel="stylesheet" href="{% static 'css/core/style.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/canonical.css' %}">
+
 
     <style>
     .promo-bar{background:#f6f9fc;color:#111;padding:6px 12px;font-size:13px;text-align:center}
