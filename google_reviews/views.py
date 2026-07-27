@@ -125,21 +125,27 @@ def google_reviews(request):
             "Google not connected. Open /google/connect/ first."
         )
 
-
     headers = {
         "Authorization": f"Bearer {google_account.access_token}",
         "Accept": "application/json",
     }
 
-
     account_id = "103743515012926700887"
-
 
     response = requests.get(
         f"https://mybusinessbusinessinformation.googleapis.com/v1/accounts/{account_id}/locations",
         headers=headers,
     )
 
+    if response.status_code != 200:
+        return HttpResponse(
+            f"""
+            <h2>Google API Error</h2>
+            <p>Status Code: {response.status_code}</p>
+            <pre>{response.text}</pre>
+            """,
+            status=response.status_code
+        )
 
     return HttpResponse(
         response.text,
