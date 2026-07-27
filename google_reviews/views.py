@@ -132,9 +132,13 @@ def google_reviews(request):
 
     account_id = "103743515012926700887"
 
+
     response = requests.get(
         f"https://mybusinessbusinessinformation.googleapis.com/v1/accounts/{account_id}/locations",
         headers=headers,
+        params={
+            "readMask": "name,title,storefrontAddress,websiteUri"
+        }
     )
 
     if response.status_code != 200:
