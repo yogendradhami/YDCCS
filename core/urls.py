@@ -39,6 +39,7 @@ from .views import (
     privacy,
     legal,
     local_suburb_detail,
+    booking,
 )
 from .views_append import blog_detail
 
@@ -71,6 +72,7 @@ urlpatterns = [
     path("eco-friendly-cleaning/", eco_friendly_cleaning, name="eco_friendly_cleaning"),
     path("emergency-cleaning/", emergency_cleaning, name="emergency_cleaning"),
     path("rss.xml", rss_xml, name="rss_xml"),
+    path("booking/", booking, name="booking"),
 
     # SEO files
     path("robots.txt", robots_txt, name="robots_txt"),
@@ -94,6 +96,17 @@ urlpatterns = [
         local_suburb_detail,
         name="local_suburb_detail",
     ),
-    path("services/<slug:service_slug>/", service_page, name="service_page"),
-    path("<slug:service_slug>/", service_page, name="service_page"),
+    # SEO service pages
+    path(
+        "services/<slug:service_slug>/",
+        service_page,
+        name="service_page"
+    ),
+
+    # Legacy service URLs (keep existing indexed URLs working)
+    path(
+        "<slug:service_slug>/",
+        service_page,
+        name="legacy_service_page"
+    ),
 ]

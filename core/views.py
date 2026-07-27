@@ -29,6 +29,9 @@ from services.models import Service
 from google_reviews.review_utils import get_google_reviews_api, get_public_google_reviews
 from core.seo_data import LOCATION_ALIASES
 
+from django.shortcuts import  redirect
+from bookings.forms import BookingForm
+
 
 def _slugify_area(area):
     return slugify(f"{area['name']} {area['postcode']}")
@@ -680,4 +683,34 @@ def booking_terms(request):
     return render(
         request,
         "pages/booking_terms.html"
+    )
+
+
+
+
+
+
+def booking(request):
+    if request.method == "POST":
+        form = BookingForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+
+            messages.success(
+                request,
+                "Your booking request has been submitted successfully."
+            )
+
+            return redirect("home")
+
+    else:
+        form = BookingForm()
+
+    return render(
+        request,
+        "bookings/public_booking.html",
+        {
+            "form": form
+        }
     )
