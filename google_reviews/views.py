@@ -63,36 +63,60 @@ def google_connect(request):
 
 
 def google_callback(request):
+
     state = request.session.get("google_oauth_state")
     code_verifier = request.session.get("google_code_verifier")
 
     if not state or not code_verifier:
         return HttpResponse(
-            "OAuth session expired. Please open /google/connect/ again."
+            """
+            <h2>OAuth session expired</h2>
+            <p>Please start again:</p>
+            <a href="/google/connect/">Connect Google</a>
+            """
         )
 
-    flow = get_flow()
-    flow.oauth2session.state = state
+    try:
 
-    flow.fetch_token(
-        authorization_response=request.build_absolute_uri(),
-        code_verifier=code_verifier,
-    )
+        flow = get_flow()
+        flow.oauth2session.state = state
 
-    credentials = flow.credentials
+        flow.fetch_token(
+            authorization_response=request.build_absolute_uri(),
+            code_verifier=code_verifier,
+        )
 
-    request.session["google_access_token"] = credentials.token
+        credentials = flow.credentials
 
-    if credentials.refresh_token:
-        request.session["google_refresh_token"] = credentials.refresh_token
 
-    GoogleAccount.objects.all().delete()
+        GoogleAccount.objects.all().delete()
 
-    GoogleAccount.objects.create(
-        access_token=credentials.token, refresh_token=credentials.refresh_token or ""
-    )
+        GoogleAccount.objects.create(
+            access_token=credentials.token,
+            refresh_token=credentials.refresh_token or ""
+        )
 
-    return HttpResponse("✅ Google connected successfully and saved to database.")
+
+        request.session["google_access_token"] = credentials.token
+
+
+        return HttpResponse(
+            """
+            <h2>✅ Google connected successfully</h2>
+            <p>Your Google account is connected.</p>
+            <a href="/google/reviews/">Check Reviews</a>
+            """
+        )
+
+
+    except Exception as e:
+
+        return HttpResponse(
+            f"""
+            <h2>Google OAuth Error</h2>
+            <pre>{e}</pre>
+            """
+        )
 
 
 def google_reviews(request):
