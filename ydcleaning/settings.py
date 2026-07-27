@@ -24,6 +24,7 @@ env = environ.Env(
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+SITE_URL = "https://ydcleaning.com.au"
 
 # Read local .env if present
 if (BASE_DIR / ".env").exists():
@@ -217,6 +218,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 # Use plain static file storage in development so static assets resolve without collectstatic.
 if DEBUG:

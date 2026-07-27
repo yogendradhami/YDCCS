@@ -596,7 +596,7 @@ def service_page(request, service_slug):
     if not service:
         return redirect("home")
 
-    service_url = request.build_absolute_uri(request.path)
+    service_url = f"{settings.SITE_URL}{request.path}"
 
     return render(
         request,
