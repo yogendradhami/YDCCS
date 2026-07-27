@@ -1,4 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.urls import path
+from django.shortcuts import redirect
 
 from .models import GoogleAccount, GoogleReview
 
@@ -31,3 +33,32 @@ class GoogleReviewAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+
+    change_list_template = "reviews/google_review_change_list.html"
+    def get_urls(self):
+        urls = super().get_urls()
+
+        custom_urls = [
+            path(
+                "sync/",
+                self.admin_site.admin_view(self.sync_reviews),
+                name="sync_google_reviews",
+            ),
+        ]
+
+        return custom_urls + urls
+
+
+    def sync_reviews(self, request):
+
+        from .views import sync_google_reviews
+
+        sync_google_reviews(request)
+
+        messages.success(
+            request,
+            "✅ Google reviews synced successfully"
+        )
+
+        return redirect("../")
