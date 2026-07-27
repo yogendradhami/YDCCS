@@ -17,3 +17,62 @@ class GoogleAccount(models.Model):
             return self.email
 
         return "Google Account"
+
+
+
+class GoogleReview(models.Model):
+
+    review_id = models.CharField(
+        max_length=255,
+        unique=True
+    )
+
+    reviewer_name = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
+    reviewer_photo = models.URLField(
+        blank=True,
+        null=True
+    )
+
+    rating = models.CharField(
+        max_length=20,
+        blank=True
+    )
+
+    comment = models.TextField(
+        blank=True
+    )
+
+    review_date = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    reply = models.TextField(
+        blank=True
+    )
+
+    reply_date = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    review_url = models.URLField(
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+
+    def __str__(self):
+        return f"{self.reviewer_name} - {self.rating}"
