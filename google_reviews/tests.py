@@ -1,11 +1,29 @@
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
+from django.utils import timezone
 
-from .review_utils import get_google_reviews_api
+from .models import GoogleReview
+from .review_utils import get_google_reviews_api, get_public_google_reviews
 
 
 class GoogleReviewsUtilsTests(TestCase):
+    def test_get_public_google_reviews_returns_db_reviews(self):
+        GoogleReview.objects.create(
+            review_id="review-1",
+            reviewer_name="Alicia",
+            comment="Excellent service and attention to detail.",
+            rating="5",
+            review_date=timezone.now(),
+        )
+
+        reviews = get_public_google_reviews(limit=3)
+
+        self.assertEqual(len(reviews), 1)
+        self.assertEqual(reviews[0]["reviewer_name"], "Alicia")
+        self.assertEqual(reviews[0]["comment"], "Excellent service and attention to detail.")
+        self.assertEqual(reviews[0]["rating"], "⭐⭐⭐⭐⭐")
+
     def test_get_google_reviews_api_returns_empty_without_account(self):
         with patch("google_reviews.review_utils.GoogleAccount.objects") as objects_mock:
             objects_mock.first.return_value = None
