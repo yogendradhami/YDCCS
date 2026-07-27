@@ -1041,7 +1041,7 @@ body {
                 </div>
 
                 <div class="home-review-cta">
-                    <a href="/testimonials/" class="btn-fill">Read All Testimonials</a>
+                    <a href="/google-reviews/" class="btn-fill">Read All Reviews</a>
                     <a href="#quote" class="btn-light-outline">Get a Free Quote</a>
                 </div>
             </div>
@@ -1054,14 +1054,14 @@ body {
                                 {% for review in google_reviews %}
                                     <article class="home-review-card home-review-slide">
                                         <div class="review-rating">{{ review.rating }}</div>
-                                        <p class="review-comment">{{ review.comment }}</p>
+                                        <p class="review-comment">{{ review.comment|truncatechars:220 }}</p>
                                         <div class="review-author">
                                             <strong>{{ review.reviewer_name }}</strong>
                                             {% if review.suburb %}
                                                 <span class="review-suburb">{{ review.suburb }}</span>
                                             {% endif %}
                                             {% if review.created_at %}
-                                                <time>{{ review.created_at }}</time>
+                                                <time>{{ review.created_at|date:"d M Y" }}</time>
                                             {% endif %}
                                         </div>
                                     </article>

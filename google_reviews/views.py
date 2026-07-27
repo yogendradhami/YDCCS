@@ -6,12 +6,13 @@ from datetime import datetime, timedelta
 import requests
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from .models import GoogleAccount, GoogleReview
+from .review_utils import get_public_google_reviews
 from django.utils.dateparse import parse_datetime
 SCOPES = [
     "https://www.googleapis.com/auth/business.manage",
@@ -115,6 +116,29 @@ def google_callback(request):
             <pre>{e}</pre>
             """
         )
+
+def public_google_reviews(request):
+    reviews = get_public_google_reviews(limit=12)
+    review_count = len(reviews)
+    average_rating = 5.0
+
+    if reviews:
+        rating_values = []
+        for review in reviews:
+            rating_text = review.get("rating", "")
+            rating_values.append(len(rating_text.replace("☆", "").replace("★", "")) or 5)
+        average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
+
+    return render(
+        request,
+        "google_reviews/public_reviews.html",
+        {
+            "reviews": reviews,
+            "review_count": review_count,
+            "average_rating": average_rating,
+        },
+    )
+
 
 def google_reviews(request):
 

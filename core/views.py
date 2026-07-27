@@ -26,7 +26,7 @@ from quotes.forms import QuoteRequestForm
 from quotes.models import QuoteImage
 from reviews.models import Review
 from services.models import Service
-from google_reviews.review_utils import get_google_reviews_api
+from google_reviews.review_utils import get_google_reviews_api, get_public_google_reviews
 
 
 def _slugify_area(area):
@@ -101,7 +101,9 @@ def home(request):
     featured_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
     featured_services = list(Service.objects.filter(is_active=True).order_by("name")[:6])
 
-    google_reviews = get_google_reviews_api()
+    google_reviews = get_public_google_reviews(limit=6)
+    if not google_reviews:
+        google_reviews = get_google_reviews_api()
     if not google_reviews:
         google_reviews = [
             {

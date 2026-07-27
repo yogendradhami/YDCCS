@@ -4,7 +4,7 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
-from .models import GoogleAccount
+from .models import GoogleAccount, GoogleReview
 
 
 def get_google_mybusiness_service():
@@ -46,6 +46,43 @@ def _normalize_star_rating(star_rating):
         return max(1, min(int(star_rating), 5))
     except (TypeError, ValueError):
         return 5
+
+
+def _format_rating(rating):
+    if rating is None:
+        return "⭐⭐⭐⭐⭐"
+
+    if isinstance(rating, str):
+        try:
+            numeric_value = int(rating)
+        except ValueError:
+            return "⭐⭐⭐⭐⭐"
+        return "⭐" * max(1, min(5, numeric_value))
+
+    try:
+        numeric_value = int(rating)
+    except (TypeError, ValueError):
+        return "⭐⭐⭐⭐⭐"
+
+    return "⭐" * max(1, min(5, numeric_value))
+
+
+def get_public_google_reviews(limit=6):
+    """Return a public-friendly list of Google reviews from the database."""
+    reviews = GoogleReview.objects.order_by("-review_date", "-created_at")[:limit]
+
+    return [
+        {
+            "reviewer_name": review.reviewer_name or "Anonymous",
+            "comment": review.comment or "",
+            "rating": _format_rating(review.rating),
+            "suburb": "",
+            "created_at": review.review_date or review.created_at,
+            "review_url": review.review_url,
+            "reviewer_photo": review.reviewer_photo,
+        }
+        for review in reviews
+    ]
 
 
 def get_google_reviews_api():

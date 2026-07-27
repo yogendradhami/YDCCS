@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Google Reviews | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block meta_description %}
+Read recent Google reviews from Adelaide customers about YD Commercial Cleaning Services and our dependable residential and commercial cleaning work.
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <span class="section-eyebrow">Customer feedback</span>
+        <h1>What Adelaide customers are saying about YD Commercial Cleaning</h1>
+        <p>We’re proud to share recent Google reviews from homes, offices and rental properties across Adelaide.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Recent Google reviews</h2>
+            <p>Based on {{ review_count }} verified reviews with an average rating of {{ average_rating }}/5.</p>
+        </div>
+
+        {% if reviews %}
+            <div class="testimonial-grid">
+                {% for review in reviews %}
+                    <article class="testimonial-card">
+                        <div class="testimonial-rating">{{ review.rating }}</div>
+                        <p class="testimonial-text">“{{ review.comment }}”</p>
+                        <div class="testimonial-author">{{ review.reviewer_name }}</div>
+                        {% if review.created_at %}
+                            <div class="testimonial-title">{{ review.created_at|date:"d M Y" }}</div>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-box">
+                <p>No public reviews are available right now. Please check back soon.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
