@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import os
 import secrets
 from datetime import datetime, timedelta
 
@@ -13,8 +12,6 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
 from .models import GoogleAccount
-
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 SCOPES = [
     "https://www.googleapis.com/auth/business.manage",
@@ -102,19 +99,26 @@ def google_reviews(request):
     access_token = request.session.get("google_access_token")
 
     if not access_token:
-        return HttpResponse("Google not connected. Open /google/connect/ first.")
+        return HttpResponse(
+            "Google not connected. Open /google/connect/ first."
+        )
 
     headers = {
         "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json",
     }
 
+    account_id = "103743515012926700887"
+
     response = requests.get(
-        "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
+        f"https://mybusinessbusinessinformation.googleapis.com/v1/accounts/{account_id}/locations",
         headers=headers,
     )
 
-    return HttpResponse(response.text, content_type="application/json")
-
+    return HttpResponse(
+        response.text,
+        content_type="application/json"
+    )
 
 def test_calendar_event(request):
 
