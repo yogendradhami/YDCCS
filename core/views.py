@@ -9,13 +9,13 @@ import string
 from django.conf import settings
 
 from django.contrib import messages
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, request
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.utils.text import slugify
 
 from .suburbs_data import ADELAIDE_SUBURBS
-from .seo_data import SERVICE_DEFINITIONS
+from .seo_data import LOCATION_ALIASES, SERVICE_DEFINITIONS
 from blog.models import BlogPost
 from gallery.models import GalleryItem
 from quotes.email_service import (
@@ -27,6 +27,7 @@ from quotes.models import QuoteImage
 from reviews.models import Review
 from services.models import Service
 from google_reviews.review_utils import get_google_reviews_api, get_public_google_reviews
+from core.seo_data import LOCATION_ALIASES
 
 
 def _slugify_area(area):
@@ -489,11 +490,49 @@ def local_suburb_detail(request, area_slug):
 # SEO Service Page View
 # ====================================================
 
-
 def _normalize_service_slug(service_slug):
-    if service_slug.endswith("-adelaide"):
-        return service_slug[: -len("-adelaide")]
-    return service_slug
+    """
+    Convert SEO location service URLs into base service slugs.
+
+    Examples:
+    bond-cleaning-adelaide-glenelg
+        -> bond-cleaning-adelaide
+
+    carpet-steam-cleaning-adelaide-norwood
+        -> carpet-steam-cleaning-adelaide
+
+    commercial-cleaning-burnside
+        -> commercial-cleaning
+    """
+
+    slug = service_slug.lower().strip("-")
+
+    # Remove suburb suffixes first (exclude Adelaide)
+    for suburb_slug in LOCATION_ALIASES.keys():
+        if suburb_slug == "adelaide":
+            continue
+
+        if slug.endswith(f"-{suburb_slug}"):
+            slug = slug[: -len(suburb_slug)-1]
+            break
+
+    return slug
+
+def _get_location_from_slug(slug):
+    """
+    Extract suburb/location from SEO URL slug.
+    Example:
+    bond-cleaning-adelaide-glenelg
+    returns:
+    Glenelg
+    """
+
+    for location_slug, location_name in LOCATION_ALIASES.items():
+        if slug.endswith(location_slug):
+            return location_name
+
+    return "Adelaide"
+
 
 
 def _service_context_from_model(service_obj):
@@ -540,8 +579,14 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
 
 
 def service_page(request, service_slug):
+
+    location = _get_location_from_slug(service_slug)
+
     normalized_slug = _normalize_service_slug(service_slug)
-    service_obj = Service.objects.filter(slug__iexact=normalized_slug).first()
+
+    service_obj = Service.objects.filter(
+        slug__iexact=normalized_slug
+    ).first()
 
     if service_obj:
         service = _service_context_from_model(service_obj)
@@ -551,9 +596,17 @@ def service_page(request, service_slug):
     if not service:
         return redirect("home")
 
-    service_url = request.build_absolute_uri()
-    return render(request, "services/service_detail.html", {"service": service, "service_url": service_url})
+    service_url = request.build_absolute_uri(request.path)
 
+    return render(
+        request,
+        "services/service_detail.html",
+        {
+            "service": service,
+            "service_url": service_url,
+            "location": location,
+        }
+    )
 
 # ====================================================
 # robots.txt
