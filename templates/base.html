@@ -80,13 +80,12 @@
           "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
           "logo": {
             "@type": "ImageObject",
-            "url":  "https://www.ydcleaning.com.au/static/images/logo.jpeg"
-        },
-          "sameAs":[
-          "https://www.facebook.com/ydcommercialcleaning/",
-          "https://www.instagram.com/ydcommercialcleaning/"
+            "url": "https://www.ydcleaning.com.au/static/images/logo.jpeg"
+          },
+          "sameAs": [
+            "https://www.facebook.com/ydcommercialcleaning/",
+            "https://www.instagram.com/ydcommercialcleaning/"
           ],
-
           "contactPoint": [
             {
               "@type": "ContactPoint",
@@ -109,16 +108,14 @@
           "@type": "LocalBusiness",
           "@id": "https://www.ydcleaning.com.au/#localbusiness",
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
-
           "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
           "image": {
             "@type": "ImageObject",
-            "url":  "https://www.ydcleaning.com.au/static/images/logo.jpeg"
+            "url": "https://www.ydcleaning.com.au/static/images/logo.jpeg"
           },
           "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",
           "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com'|escapejs }}",
           "priceRange": "$$",
-
           "address": {
             "@type": "PostalAddress",
             "streetAddress": "{{ address_street|default:'Adelaide'|escapejs }}",
@@ -128,84 +125,85 @@
             "addressCountry": "{{ address_country|default:'AU'|escapejs }}"
           },
           "areaServed": [
-          {
-            "@type": "City",
-            "name": "Adelaide"
-          },
-          {
-            "@type": "City",
-            "name": "South Australia"
-          }
-         ],
-          "openingHoursSpecification": {
+            {
+              "@type": "City",
+              "name": "Adelaide"
+            },
+            {
+              "@type": "AdministrativeArea",
+              "name": "South Australia"
+            }
+          ],
+          "openingHoursSpecification": [
+            {
               "@type": "OpeningHoursSpecification",
               "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
               "opens": "08:00",
               "closes": "12:00"
-            },
-            "hasOfferCatalog": {
-              "@type": "OfferCatalog",
-              "name": "Cleaning Services",
-              "itemListElement": [
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "Commercial Cleaning Adelaide"
-                  }
-                },
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "Office Cleaning Adelaide"
-                  }
-                },
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "House Cleaning Adelaide"
-                  }
-                },
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "End of Lease Cleaning Adelaide"
-                  }
-                },
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "Bond Cleaning Adelaide"
-                  }
-                },
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "Window Cleaning Adelaide"
-                  }
-                },
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "Carpet Steam Cleaning Adelaide"
-                  }
-                },
-                {
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Service",
-                    "name": "Deep Cleaning Services Adelaide"
-                  }
+            }
+          ],
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Cleaning Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Commercial Cleaning Adelaide"
                 }
-              ]
-            }   
-          ]
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Office Cleaning Adelaide"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "House Cleaning Adelaide"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "End of Lease Cleaning Adelaide"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Bond Cleaning Adelaide"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Window Cleaning Adelaide"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Carpet Steam Cleaning Adelaide"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Deep Cleaning Services Adelaide"
+                }
+              }
+            ]
+          }
         },
         {
           "@type": "WebSite",
