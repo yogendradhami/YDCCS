@@ -317,8 +317,8 @@
       }{% if service_review_count %},
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": "{{ service_average_rating }}",
-        "reviewCount": "{{ service_review_count }}"
+        "ratingValue": {{ service_average_rating|default:0 }},
+        "reviewCount": {{ service_review_count|default:0 }}
       },
       "review": [
         {% for review in service_reviews %}
@@ -329,8 +329,8 @@
           "reviewBody": "{{ review.comment|escape }}",
           "reviewRating": {
             "@type": "Rating",
-            "ratingValue": "{{ review.rating }}",
-            "bestRating": "5"
+            "ratingValue": {{ review.rating|default:5 }},
+            "bestRating": 5
           }
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
