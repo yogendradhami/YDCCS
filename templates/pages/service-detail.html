@@ -153,15 +153,15 @@
         },
         {
             "@type": "Service",
-            "serviceType": "{{ service_data.service_name }}",
-            "name": "{{ service_data.service_name }}",
-            "description": "{{ service_data.description|escapejs }}",
+            "serviceType": "{{ service_data.service_name|default:'Cleaning Service'|escapejs }}",
+            "name": "{{ service_data.service_name|default:'Cleaning Service'|escapejs }}",
+            "description": "{{ service_data.description|default:'Professional cleaning services in Adelaide.'|escapejs }}",
             "provider": {
                 "@type": "LocalBusiness",
-                "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escape }}",
-                "telephone": "{{ company_settings.phone|default:'0430 049 865' }}",
-                "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com' }}",
-                "url": "{{ site_url }}"
+                "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
+                "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",
+                "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com'|escapejs }}",
+                "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}"
             }
         }
     ]

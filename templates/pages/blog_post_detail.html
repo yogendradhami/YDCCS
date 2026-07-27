@@ -10,15 +10,15 @@
         {
             "@context": "https://schema.org",
             "@type": "Article",
-            "headline": "{{ post.title|escape }}",
-            "description": "{{ post.excerpt|escape }}",
-            "datePublished": "{{ post.published_at|date:'c' }}",
+            "headline": "{{ post.title|default:'Cleaning Article'|escapejs }}",
+            "description": "{{ post.excerpt|default:'Cleaning guidance and insights from YD Commercial Cleaning.'|escapejs }}",
+            "datePublished": "{{ post.published_at|date:'c'|default:'2026-01-01T00:00:00+00:00' }}",
             "author": {
                 "@type": "Person",
                 "name": "YD Commercial Cleaning"
             },
-            "image": {% if post.featured_image %}"{{ post.featured_image.url }}"{% else %}"{{ open_graph_image }}"{% endif %},
-            "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ request.build_absolute_uri }}"}
+            "image": {% if post.featured_image %}"{{ post.featured_image.url|escapejs }}"{% else %}"{{ open_graph_image|default:'https://www.ydcleaning.com.au/static/images/logo.jpeg'|escapejs }}"{% endif %},
+            "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ request.build_absolute_uri|default:'https://www.ydcleaning.com.au'|escapejs }}"}
         }
         </script>
 {% endblock %}
