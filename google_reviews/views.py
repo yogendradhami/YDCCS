@@ -120,15 +120,22 @@ def google_callback(request):
 
 
 def google_reviews(request):
-    access_token = request.session.get("google_access_token")
 
-    if not access_token:
-        return HttpResponse(
-            "Google not connected. Open /google/connect/ first."
-        )
+    google_account = GoogleAccount.objects.first()
+
+    if not google_account:
+        return HttpResponse("Google not connected.")
+
+    creds = Credentials(
+        token=google_account.access_token,
+        refresh_token=google_account.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=settings.GOOGLE_CLIENT_ID,
+        client_secret=settings.GOOGLE_CLIENT_SECRET,
+    )
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {creds.token}",
         "Accept": "application/json",
     }
 
@@ -143,6 +150,9 @@ def google_reviews(request):
         response.text,
         content_type="application/json"
     )
+
+
+
 
 def test_calendar_event(request):
 
