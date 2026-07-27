@@ -8,11 +8,16 @@
 {% load static %}
 
 {% block title %}
-{{ service.title }} | YD Commercial Cleaning Services
+{{ service.title }}
+{% if location %} {{ location }}{% endif %}
+| YD Commercial Cleaning Services
 {% endblock %}
 
 {% block meta_description %}
 {{ service.description }}
+{% if location %}
+Professional {{ service.title|lower }} available in {{ location }}, Adelaide SA and surrounding suburbs.
+{% endif %}
 {% endblock %}
 
 {% block og_title %}
@@ -29,7 +34,10 @@
 {% if service_url %}
 <link rel="canonical" href="{{ service_url }}">
 {% endif %}
-<meta name="robots" content="index,follow">
+<meta 
+name="description"
+content="{{ service.description }} {% if location %}Serving {{ location }}, Adelaide SA.{% endif %}"
+>
 
 {% block content %}
 
@@ -49,10 +57,20 @@
             </div>
 
             <div class="split-content">
-                <span class="hero-badge">Professional Cleaning in Adelaide</span>
-                <h1>{{ service.heading }}</h1>
-                <p>{{ service.description }}</p>
+               <span class="hero-badge"> Professional Cleaning {% if location %} in {{ location }} {% else %} in Adelaide {% endif %} </span>
+                <h1>
+                    {{ service.heading }}
+                    {% if location %}
+                        {{ location }}
+                    {% endif %}
+                </h1>
+                <p>
+                    {{ service.description }}
 
+                    {% if location %}
+                    Our {{ service.title|lower }} service is available in {{ location }} and surrounding Adelaide suburbs.
+                    {% endif %}
+                </p>
                 <div class="service-hero-buttons">
                     <a href="{% url 'contact' %}" class="btn btn-primary">Get a Free Quote</a>
                     <a href="tel:0430049865" class="btn btn-outline">Call 0430 049 865</a>
@@ -149,7 +167,7 @@
                 <h3>Quick Service Overview</h3>
                 <div class="calculator-row">
                     <span>Service Type</span>
-                    <strong>{{ service.title }}</strong>
+                    <strong>{{ service.title }} {% if location%} {{ location }}{% endif %}</strong>
                 </div>
                 <div class="calculator-row">
                     <span>Starting Price</span>
@@ -164,8 +182,16 @@
             <h3>Ready to Book?</h3>
             <p><strong>Phone:</strong><br><a href="tel:0430049865">0430 049 865</a></p>
             <p><strong>Email:</strong><br><a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a></p>
-            <p><strong>Service Area:</strong><br>Adelaide and surrounding suburbs</p>
-            <p><strong>Hours:</strong><br>Available 7 days a week</p>
+            <p>
+            <strong>Service Area:</strong><br>
+
+            {% if location %}
+            {{ location }}, Adelaide SA and surrounding suburbs
+            {% else %}
+            Adelaide and surrounding suburbs
+            {% endif %}
+
+            </p>
             <a href="tel:0430049865" class="btn-fill full-width">Call Now</a>
             <a href="{% url 'contact' %}" class="btn-outline full-width" style="margin-top: 16px;">Request a Quote</a>
         </div>
@@ -215,7 +241,12 @@
 
         <div class="faq-box">
             <h4>Which Adelaide suburbs do you service?</h4>
-            <p>We service Adelaide CBD, Unley, Norwood, Glenelg, Burnside and surrounding suburbs.</p>
+            <p>We provide professional cleaning service in 
+            {% if location %}
+            {{ location }},
+            {% endif %}
+            Adelaide CBD, Unley, Norwood, Glenelg, Burnside and surrounding suburbs.
+            </p>
         </div>
 
         <div class="faq-box">
@@ -245,7 +276,7 @@
     <div class="container">
         <div class="service-cta-box">
             <h2>Ready for a Spotless Home?</h2>
-            <p>Schedule your {{ service.title|lower }} today. Free quote, no obligation, fast response.</p>
+            <p>Schedule your {{ service.heading|lower }} {% if location %} in {{ location }}{% endif %} today. Free quote, no obligation, fast response.</p>
             <div class="service-cta-actions">
                 <a href="{% url 'contact' %}" class="btn-fill">Get Your Free Quote</a>
                 <a href="tel:0430049865" class="btn-outline">Call 0430 049 865</a>
@@ -290,7 +321,26 @@
           "postalCode": "{{ address_postal_code|default:'5000'|escapejs }}",
           "addressCountry": "{{ address_country|default:'AU'|escapejs }}"
         },
-        "areaServed": {% if service_area_list %}{{ service_area_list|safe }}{% else %}["Adelaide","South Australia"]{% endif %},
+        "areaServed": [
+        {% if location %}
+        "{{ location }}",
+        {% endif %}
+        "Adelaide",
+        "South Australia"
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "{{ service.title|escape }} Packages",
+          "itemListElement": [
+            {% for package in service.packages %}
+            {
+              "@type": "Offer",
+              "name": "{{ package.name|default:'Service package'|escapejs }}",
+              "description": "{{ package.description|default:'Cleaning service package.'|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          ]
+        },
         "openingHoursSpecification": [
           {
             "@type": "OpeningHoursSpecification",
@@ -301,7 +351,7 @@
         ],
         "sameAs": {% if same_as_urls %}{{ same_as_urls|safe }}{% else %}["https://www.facebook.com/ydcommercialcleaning","https://www.instagram.com/ydcommercialcleaning"]{% endif %}
       },
-      "areaServed": {% if service_area_list %}{{ service_area_list|safe }}{% else %}["Adelaide","South Australia"]{% endif %},
+      areaServed: [ {% if location %} "{{ location }}", {% endif %} "Adelaide", "South Australia" ],
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": "{{ service.title|escape }} Packages",
