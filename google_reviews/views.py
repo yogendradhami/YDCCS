@@ -89,15 +89,13 @@ def google_callback(request):
         credentials = flow.credentials
 
 
+        # Save Google token in database
         GoogleAccount.objects.all().delete()
 
         GoogleAccount.objects.create(
             access_token=credentials.token,
             refresh_token=credentials.refresh_token or ""
         )
-
-
-        request.session["google_access_token"] = credentials.token
 
 
         return HttpResponse(
@@ -118,44 +116,35 @@ def google_callback(request):
             """
         )
 
-
 def google_reviews(request):
 
     google_account = GoogleAccount.objects.first()
 
     if not google_account:
-        return HttpResponse("Google not connected.")
+        return HttpResponse(
+            "Google not connected. Open /google/connect/ first."
+        )
 
-    creds = Credentials(
-        token=google_account.access_token,
-        refresh_token=google_account.refresh_token,
-        token_uri="https://oauth2.googleapis.com/token",
-        client_id=settings.GOOGLE_CLIENT_ID,
-        client_secret=settings.GOOGLE_CLIENT_SECRET,
-    )
 
     headers = {
-        "Authorization": f"Bearer {creds.token}",
+        "Authorization": f"Bearer {google_account.access_token}",
         "Accept": "application/json",
     }
 
+
     account_id = "103743515012926700887"
 
-    url = (
-        f"https://mybusinessbusinessinformation.googleapis.com/v1/"
-        f"accounts/{account_id}/locations"
-    )
 
     response = requests.get(
-        url,
+        f"https://mybusinessbusinessinformation.googleapis.com/v1/accounts/{account_id}/locations",
         headers=headers,
     )
+
 
     return HttpResponse(
         response.text,
         content_type="application/json"
     )
-
 
 
 def test_calendar_event(request):
