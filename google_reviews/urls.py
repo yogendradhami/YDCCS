@@ -10,4 +10,5 @@ urlpatterns = [
         "google/test-calendar/", views.test_calendar_event, name="test_calendar_event"
     ),
     path("google/customer-reviews/",views.get_google_reviews,name="get_google_reviews"),
+    path("google/sync-reviews/",views.sync_google_reviews,name="sync_google_reviews"),
 ]

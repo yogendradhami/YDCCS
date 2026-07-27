@@ -11,8 +11,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
-from .models import GoogleAccount
-
+from .models import GoogleAccount, GoogleReview
+from django.utils.dateparse import parse_datetime
 SCOPES = [
     "https://www.googleapis.com/auth/business.manage",
     "https://www.googleapis.com/auth/calendar",
@@ -125,35 +125,148 @@ def google_reviews(request):
             "Google not connected. Open /google/connect/ first."
         )
 
+
     headers = {
         "Authorization": f"Bearer {google_account.access_token}",
         "Accept": "application/json",
     }
 
+
     account_id = "103743515012926700887"
+    location_id = "1982958555522724329"
+
+
+    url = (
+        f"https://mybusiness.googleapis.com/v4/"
+        f"accounts/{account_id}/locations/{location_id}/reviews"
+    )
 
 
     response = requests.get(
-        f"https://mybusinessbusinessinformation.googleapis.com/v1/accounts/{account_id}/locations",
-        headers=headers,
-        params={
-            "readMask": "name,title,storefrontAddress,websiteUri"
-        }
+        url,
+        headers=headers
     )
+
 
     if response.status_code != 200:
         return HttpResponse(
-            f"""
-            <h2>Google API Error</h2>
-            <p>Status Code: {response.status_code}</p>
-            <pre>{response.text}</pre>
-            """,
-            status=response.status_code
+            response.text,
+            status=response.status_code,
+            content_type="application/json"
         )
+
 
     return HttpResponse(
         response.text,
         content_type="application/json"
+    )
+
+def sync_google_reviews(request):
+
+    google_account = GoogleAccount.objects.first()
+
+    if not google_account:
+        return HttpResponse(
+            "Google not connected"
+        )
+
+
+    headers = {
+        "Authorization": f"Bearer {google_account.access_token}",
+        "Accept": "application/json",
+    }
+
+
+    account_id = "103743515012926700887"
+    location_id = "1982958555522724329"
+
+
+    url = (
+        f"https://mybusiness.googleapis.com/v4/"
+        f"accounts/{account_id}/locations/{location_id}/reviews"
+    )
+
+
+    response = requests.get(
+        url,
+        headers=headers
+    )
+
+
+    data = response.json()
+
+
+    for review in data.get("reviews", []):
+
+        reviewer = review.get("reviewer", {})
+
+        review_reply = review.get(
+            "reviewReply",
+            {}
+        )
+
+
+        GoogleReview.objects.update_or_create(
+
+            review_id=review.get("reviewId"),
+
+            defaults={
+
+                "reviewer_name":
+                    reviewer.get(
+                        "displayName",
+                        ""
+                    ),
+
+                "reviewer_photo":
+                    reviewer.get(
+                        "profilePhotoUrl",
+                        ""
+                    ),
+
+                "rating":
+                    review.get(
+                        "starRating",
+                        ""
+                    ),
+
+                "comment":
+                    review.get(
+                        "comment",
+                        ""
+                    ),
+
+                "review_date":
+                    parse_datetime(
+                        review.get(
+                            "createTime"
+                        )
+                    ),
+
+                "reply":
+                    review_reply.get(
+                        "comment",
+                        ""
+                    ),
+
+                "reply_date":
+                    parse_datetime(
+                        review_reply.get(
+                            "updateTime"
+                        )
+                    ),
+
+                "review_url":
+                    review.get(
+                        "reviewReplyUrl",
+                        ""
+                    ),
+            }
+        )
+
+
+    return HttpResponse(
+        "✅ Google reviews synced successfully"
     )
 
 
