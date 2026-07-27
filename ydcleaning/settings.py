@@ -295,7 +295,7 @@ ADMIN_EMAIL = env.str("ADMIN_EMAIL", default="")
 
 GOOGLE_CLIENT_ID = env.str("GOOGLE_CLIENT_ID", default="")
 GOOGLE_CLIENT_SECRET = env.str("GOOGLE_CLIENT_SECRET", default="")
-GOOGLE_REDIRECT_URI = env.str( "GOOGLE_REDIRECT_URI", default="https://www.ydcleaning.com.au/google/oauth/callback/" )
+GOOGLE_REDIRECT_URI = env.str( "GOOGLE_REDIRECT_URI", default="https://ydcleaning.com.au/google/oauth/callback/" )
 # ====================================================
 # Resend Email API
 # ====================================================
