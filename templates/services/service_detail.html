@@ -274,23 +274,23 @@
     },
     {
       "@type": "Service",
-      "serviceType": "{{ service.title|escape }}",
-      "name": "{{ service.title|escape }}",
-      "description": "{{ service.description|escape }}",
+      "serviceType": "{{ service.title|default:'Cleaning Service'|escapejs }}",
+      "name": "{{ service.title|default:'Cleaning Service'|escapejs }}",
+      "description": "{{ service.description|default:'Professional cleaning services in Adelaide.'|escapejs }}",
       "provider": {
         "@type": "LocalBusiness",
-        "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escape }}",
-        "telephone": "{{ company_settings.phone|default:'0430 049 865' }}",
-        "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com' }}",
+        "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
+        "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",
+        "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com'|escapejs }}",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "{{ address_street|escape }}",
-          "addressLocality": "{{ address_locality|escape }}",
-          "addressRegion": "{{ address_region|escape }}",
-          "postalCode": "{{ address_postal_code|escape }}",
-          "addressCountry": "{{ address_country|escape }}"
+          "streetAddress": "{{ address_street|default:'Adelaide'|escapejs }}",
+          "addressLocality": "{{ address_locality|default:'Adelaide'|escapejs }}",
+          "addressRegion": "{{ address_region|default:'SA'|escapejs }}",
+          "postalCode": "{{ address_postal_code|default:'5000'|escapejs }}",
+          "addressCountry": "{{ address_country|default:'AU'|escapejs }}"
         },
-        "areaServed": {{ service_area_list|safe }},
+        "areaServed": {% if service_area_list %}{{ service_area_list|safe }}{% else %}["Adelaide","South Australia"]{% endif %},
         "openingHoursSpecification": [
           {
             "@type": "OpeningHoursSpecification",
@@ -299,9 +299,9 @@
             "closes": "12:00"
           }
         ],
-        "sameAs": {{ same_as_urls|safe }}
+        "sameAs": {% if same_as_urls %}{{ same_as_urls|safe }}{% else %}["https://www.facebook.com/ydcommercialcleaning","https://www.instagram.com/ydcommercialcleaning"]{% endif %}
       },
-      "areaServed": {{ service_area_list|safe }},
+      "areaServed": {% if service_area_list %}{{ service_area_list|safe }}{% else %}["Adelaide","South Australia"]{% endif %},
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": "{{ service.title|escape }} Packages",
@@ -309,8 +309,8 @@
           {% for package in service.packages %}
           {
             "@type": "Offer",
-            "name": "{{ package.name|escape }}",
-            "description": "{{ package.description|escape }}"
+            "name": "{{ package.name|default:'Service package'|escapejs }}",
+            "description": "{{ package.description|default:'Cleaning service package.'|escapejs }}"
           }{% if not forloop.last %},{% endif %}
           {% endfor %}
         ]
@@ -324,9 +324,9 @@
         {% for review in service_reviews %}
         {
           "@type": "Review",
-          "author": "{{ review.reviewer_name|escape }}",
-          "datePublished": "{{ review.review_date|date:'Y-m-d' }}",
-          "reviewBody": "{{ review.comment|escape }}",
+          "author": "{{ review.reviewer_name|default:'Anonymous'|escapejs }}",
+          "datePublished": "{{ review.review_date|date:'Y-m-d'|default:'2026-01-01' }}",
+          "reviewBody": "{{ review.comment|default:'Great service.'|escapejs }}",
           "reviewRating": {
             "@type": "Rating",
             "ratingValue": {{ review.rating|default:5 }},
