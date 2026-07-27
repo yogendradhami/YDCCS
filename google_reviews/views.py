@@ -141,8 +141,13 @@ def google_reviews(request):
 
     account_id = "103743515012926700887"
 
+    url = (
+        f"https://mybusinessbusinessinformation.googleapis.com/v1/"
+        f"accounts/{account_id}/locations"
+    )
+
     response = requests.get(
-        f"https://mybusinessbusinessinformation.googleapis.com/v1/accounts/{account_id}/locations",
+        url,
         headers=headers,
     )
 
@@ -150,7 +155,6 @@ def google_reviews(request):
         response.text,
         content_type="application/json"
     )
-
 
 
 
