@@ -30,6 +30,13 @@ class StaticViewSitemap(Sitemap):
     def location(self, item):
         return reverse(item)
 
+    def priority(self, item):
+        if item == "booking":
+            return 1.0
+        if item == "home":
+            return 1.0
+        return 0.8
+
 
 class LocalServiceSitemap(Sitemap):
     changefreq = "weekly"
