@@ -618,10 +618,11 @@ def service_page(request, service_slug):
 
 
 def robots_txt(request):
-    content = """User-agent: *
+    content = """
+User-agent: *
 Allow: /
 
-Sitemap: https://www.ydcleaning.com.au/sitemap.xml
+Sitemap: https://ydcleaning.com.au/sitemap.xml
 """
     return HttpResponse(content, content_type="text/plain")
 
