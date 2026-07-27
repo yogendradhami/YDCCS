@@ -157,6 +157,43 @@ def google_reviews(request):
     )
 
 
+
+def get_google_reviews(request):
+
+    google_account = GoogleAccount.objects.first()
+
+    if not google_account:
+        return HttpResponse(
+            "Google not connected."
+        )
+
+    headers = {
+        "Authorization": f"Bearer {google_account.access_token}",
+        "Accept": "application/json",
+    }
+
+
+    account_id = "103743515012926700887"
+    location_id = "1982958555522724329"
+
+
+    url = (
+        f"https://mybusiness.googleapis.com/v4/"
+        f"accounts/{account_id}/locations/{location_id}/reviews"
+    )
+
+
+    response = requests.get(
+        url,
+        headers=headers
+    )
+
+
+    return HttpResponse(
+        response.text,
+        content_type="application/json"
+    )
+
 def test_calendar_event(request):
 
     google_account = GoogleAccount.objects.first()
