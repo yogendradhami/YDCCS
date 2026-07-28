@@ -6,16 +6,17 @@
 
 import os
 import string
-from django.conf import settings
 
+from django.conf import settings
 from django.contrib import messages
-from django.http import Http404, HttpResponse, request
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.utils.text import slugify
 
 from .suburbs_data import ADELAIDE_SUBURBS
 from .seo_data import LOCATION_ALIASES, SERVICE_DEFINITIONS
+
 from blog.models import BlogPost
 from gallery.models import GalleryItem
 from quotes.email_service import (
@@ -26,13 +27,12 @@ from quotes.forms import QuoteRequestForm
 from quotes.models import QuoteImage
 from reviews.models import Review
 from services.models import Service
-from google_reviews.review_utils import get_google_reviews_api, get_public_google_reviews
-from core.seo_data import LOCATION_ALIASES
+from google_reviews.review_utils import (
+    get_google_reviews_api,
+    get_public_google_reviews,
+)
 
-from django.shortcuts import  redirect
 from bookings.forms import BookingForm
-from django.contrib.sitemaps.views import sitemap as django_sitemap
-from .sitemaps import sitemaps
 
 def _slugify_area(area):
     return slugify(f"{area['name']} {area['postcode']}")
@@ -717,15 +717,3 @@ def booking(request):
         }
     )
 
-def sitemap_view(request):
-    response = django_sitemap(
-        request,
-        sitemaps=sitemaps
-    )
-
-    if "X-Robots-Tag" in response.headers:
-        del response.headers["X-Robots-Tag"]
-
-    response["Content-Type"] = "application/xml"
-
-    return response

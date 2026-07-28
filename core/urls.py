@@ -4,11 +4,10 @@
 # Purpose: Main website URL routing
 # ====================================================
 from django.http import HttpResponse
-from django.contrib.sitemaps.views import sitemap as django_sitemap
 from django.urls import path
 from django.views.generic import RedirectView
 
-from .sitemaps import sitemaps
+
 from .views import (
     about,
     booking_terms,
@@ -46,24 +45,26 @@ from .views_append import blog_detail
 
 
 # ADD THIS HERE
+from django.contrib.sitemaps.views import sitemap as django_sitemap
+from .sitemaps import sitemaps
+
+
+# Sitemap view for SEO
 def sitemap_view(request):
     response = django_sitemap(
         request,
         sitemaps=sitemaps
     )
 
-    # Remove Django sitemap noindex header
+    # Remove unwanted robots header
     if "X-Robots-Tag" in response.headers:
         del response.headers["X-Robots-Tag"]
 
-    response["Content-Type"] = "application/xml"
-
-    # Prevent Cloudflare / browsers keeping old sitemap
-    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response["Pragma"] = "no-cache"
-    response["Expires"] = "0"
+    # Correct XML content type
+    response["Content-Type"] = "application/xml; charset=utf-8"
 
     return response
+
 
 urlpatterns = [
     # Login redirect for convenience
