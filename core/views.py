@@ -337,6 +337,15 @@ def testimonials(request):
         for review in featured_reviews
     ]
 
+    rating_values = []
+    for review in google_reviews:
+        rating = review.get("rating")
+        if isinstance(rating, str):
+            rating_values.append(rating.count("★") or rating.count("⭐"))
+        elif isinstance(rating, (int, float)):
+            rating_values.append(float(rating))
+
+    average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
     google_review_count = len(google_reviews)
 
     return render(
@@ -346,6 +355,7 @@ def testimonials(request):
             "testimonials": testimonials,
             "google_reviews": google_reviews,
             "google_review_count": google_review_count,
+            "average_rating": average_rating,
         },
     )
 

@@ -6,46 +6,53 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/insurance.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="insurance-hero">
-    <div class="container">
-        <h1>Fully Insured Cleaning Services</h1>
-        <p>Enjoy peace of mind with professional cleaning backed by insurance, guarantees and quality controls.</p>
-        <a href="{% url 'contact' %}" class="btn btn-primary">Confirm Your Coverage</a>
-    </div>
-</section>
+<div class="modern-landing-page">
+    <section class="modern-landing-hero">
+        <div class="container">
+            <span class="eyebrow">Protected service</span>
+            <h1>Insurance-backed cleaning with confidence built in.</h1>
+            <p>From public liability to satisfaction guarantees, we make it simple to book a safe, reliable clean.</p>
+        </div>
+    </section>
 
-<section class="insurance-details">
-    <div class="container">
-        <h2>Our Insurance & Guarantee Promise</h2>
-        <div class="insurance-grid">
-            <div class="insurance-card">
-                <h3>Comprehensive Coverage</h3>
-                <p>Our team is covered by public liability and professional indemnity insurance during every job.</p>
-            </div>
-            <div class="insurance-card">
-                <h3>Damage Protection</h3>
-                <p>We protect your property and respond quickly if accidental damage occurs during cleaning.</p>
-            </div>
-            <div class="insurance-card">
-                <h3>Satisfaction Guarantee</h3>
-                <p>We stand behind our work. If you are not happy, we will return and make it right.</p>
-            </div>
-            <div class="insurance-card">
-                <h3>Trusted Professionals</h3>
-                <p>All cleaners are vetted, trained and backed by formal insurance cover.</p>
+    <section class="modern-landing-section">
+        <div class="container">
+            <div class="modern-landing-grid">
+                <div class="modern-landing-card">
+                    <h2>Our insurance & guarantee promise</h2>
+                    <ul class="modern-landing-list">
+                        <li>Public liability and professional indemnity cover for each job.</li>
+                        <li>Rapid response if accidental damage or concerns arise.</li>
+                        <li>Guaranteed follow-up support if the standard is not met.</li>
+                    </ul>
+                </div>
+                <div class="modern-landing-card">
+                    <h3>Why it matters</h3>
+                    <div class="modern-landing-inline-list">
+                        <div><strong>Vetted team</strong><span>Trained and trusted professionals</span></div>
+                        <div><strong>Property protection</strong><span>Careful handling throughout the visit</span></div>
+                        <div><strong>Quality assurance</strong><span>We stand behind our workmanship</span></div>
+                        <div><strong>Peace of mind</strong><span>Confidence for homes and businesses</span></div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="insurance-cta">
-    <div class="container">
-        <h2>Safe, reliable cleaning for Adelaide homes and businesses</h2>
-        <p>Our insurance and guarantees make it easy to choose the right service without worrying about risk.</p>
-        <a href="{% url 'contact' %}" class="btn btn-primary">Ask About Coverage</a>
-    </div>
-</section>
+    <section class="modern-landing-cta">
+        <div class="container">
+            <div class="modern-landing-cta-card">
+                <div>
+                    <h2>Safe, reliable cleaning for Adelaide homes and businesses</h2>
+                    <p>Ask about coverage and let us tailor the right service for your property.</p>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Ask About Coverage</a>
+            </div>
+        </div>
+    </section>
+</div>
 {% endblock %}

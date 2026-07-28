@@ -75,7 +75,52 @@
     </div>
 </section>
 
-{% include 'shared/includes/google_reviews.html' with reviews=google_reviews title='Google Reviews' review_count=google_review_count %}
+<section class="service-list-section testimonials-live-section">
+    <div class="container">
+        <div class="testimonials-live-shell">
+            <div class="testimonial-summary-card">
+                <span class="hero-badge">Live Google Reviews</span>
+                <h2>Recent feedback from Adelaide customers</h2>
+                <p>Real-time reviews from our Google Business Profile, shared here so visitors can see the latest feedback from local customers.</p>
+
+                <div class="testimonial-summary-stats">
+                    <div>
+                        <strong>{{ average_rating|default:'5.0' }}</strong>
+                        <span>Average rating</span>
+                    </div>
+                    <div>
+                        <strong>{{ google_review_count|default:0 }}</strong>
+                        <span>Reviews</span>
+                    </div>
+                </div>
+
+                <a href="/google-reviews/" class="btn btn-primary">View All Reviews</a>
+            </div>
+
+            <div class="testimonial-review-stack">
+                {% if google_reviews %}
+                    {% for review in google_reviews %}
+                    <article class="testimonial-review-card">
+                        <div class="testimonial-rating">{{ review.rating|default:'⭐⭐⭐⭐⭐' }}</div>
+                        <p class="testimonial-text">"{% if review.comment %}{{ review.comment|truncatewords:35 }}{% else %}{{ review.review_text|truncatewords:35 }}{% endif %}"</p>
+                        <div class="testimonial-author-row">
+                            <strong>{% if review.reviewer_name %}{{ review.reviewer_name }}{% else %}Google Reviewer{% endif %}</strong>
+                            {% if review.created_at %}
+                            <span class="testimonial-badge">{{ review.created_at }}</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                <div class="testimonial-review-card">
+                    <h3>No live Google reviews are available right now.</h3>
+                    <p>We’ll display the latest Google Business feedback here as soon as it’s available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
 
 <section class="service-cta">
     <div class="container">

@@ -6,53 +6,53 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/emergency.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="emergency-hero">
-    <div class="container">
-        <h1>Emergency Cleaning Services</h1>
-        <p>Reliable same-day or next-day commercial cleaning for spills, events, property turnovers, and urgent hygiene needs.</p>
-        <a href="{% url 'contact' %}" class="btn btn-primary">Request Emergency Cleaning</a>
-    </div>
-</section>
+<div class="modern-landing-page">
+    <section class="modern-landing-hero">
+        <div class="container">
+            <span class="eyebrow">Rapid response cleaning</span>
+            <h1>Emergency cleaning when every minute matters.</h1>
+            <p>From spills and urgent sanitisation to post-event recovery, our Adelaide team responds quickly and professionally.</p>
+        </div>
+    </section>
 
-<section class="emergency-services">
-    <div class="container">
-        <h2>Rapid Response for Urgent Needs</h2>
-        <ul class="emergency-list">
-            <li>Post-event cleanup for corporate and retail spaces.</li>
-            <li>Accident and spill management.</li>
-            <li>Cleaning after tenant move-outs or maintenance works.</li>
-        </ul>
-        <p>Our team moves quickly while maintaining professional standards, so your business can reopen or continue operating with confidence.</p>
-    </div>
-</section>
-
-<section class="emergency-benefits">
-    <div class="container">
-        <h2>Why Choose Our Emergency Cleaning?</h2>
-        <div class="benefit-grid">
-            <div class="benefit-card">
-                <h3>Fast Response</h3>
-                <p>We can mobilise quickly to address urgent cleaning and sanitisation needs.</p>
-            </div>
-            <div class="benefit-card">
-                <h3>Trusted Professionals</h3>
-                <p>Experienced cleaning teams handle emergencies safely and efficiently.</p>
-            </div>
-            <div class="benefit-card">
-                <h3>Complete Coverage</h3>
-                <p>From debris removal to sanitisation, we restore commercial spaces fast.</p>
+    <section class="modern-landing-section">
+        <div class="container">
+            <div class="modern-landing-grid">
+                <div class="modern-landing-card">
+                    <h2>Rapid response for urgent needs</h2>
+                    <ul class="modern-landing-list">
+                        <li>Post-event cleanup for offices, retail and hospitality venues.</li>
+                        <li>Spill, accident and hygiene response for busy operations.</li>
+                        <li>Move-out, maintenance and turnover cleans completed fast.</li>
+                    </ul>
+                </div>
+                <div class="modern-landing-card">
+                    <h3>Why clients rely on us</h3>
+                    <div class="modern-landing-inline-list">
+                        <div><strong>Fast mobilisation</strong><span>Same-day or next-day support</span></div>
+                        <div><strong>Professional team</strong><span>Experienced cleaners with safety focus</span></div>
+                        <div><strong>Complete recovery</strong><span>From debris removal to sanitisation</span></div>
+                        <div><strong>Business-ready</strong><span>Minimise downtime and restore confidence</span></div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="emergency-cta">
-    <div class="container">
-        <h2>Need urgent cleaning now?</h2>
-        <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us Immediately</a>
-    </div>
-</section>
+    <section class="modern-landing-cta">
+        <div class="container">
+            <div class="modern-landing-cta-card">
+                <div>
+                    <h2>Need urgent cleaning now?</h2>
+                    <p>Contact us immediately and we will help you restore the space quickly.</p>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us Immediately</a>
+            </div>
+        </div>
+    </section>
+</div>
 {% endblock %}

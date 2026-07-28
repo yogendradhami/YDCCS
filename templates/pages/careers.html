@@ -1,53 +1,65 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Careers - Join Our Team{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="team-careers">
-    <div class="container">
-        <h2>Join Our Growing Team</h2>
-        <p>Are you passionate about professional cleaning and customer service? We're always looking for talented, reliable individuals to join our team.</p>
-        <div class="career-benefits">
-            <h3>Benefits of Working with YD Commercial Cleaning:</h3>
-            <ul>
-                <li>Competitive wages and regular pay increases</li>
-                <li>Flexible scheduling and work-life balance</li>
-                <li>Comprehensive training and career development</li>
-                <li>Supportive, friendly team environment</li>
-                <li>Opportunities for advancement and leadership roles</li>
-                <li>Full insurance coverage while working</li>
-            </ul>
+<div class="modern-landing-page">
+    <section class="modern-landing-hero">
+        <div class="container">
+            <span class="eyebrow">Join our team</span>
+            <h1>Build a career with a trusted cleaning company in Adelaide.</h1>
+            <p>We’re proud to offer opportunities for reliable, hardworking people who want to grow with a respected local business.</p>
         </div>
+    </section>
 
-        <h3>Apply Now</h3>
-        <p>Fill out the form below to submit your application.</p>
-
-        <form method="post" enctype="multipart/form-data" class="career-form">
-            {% csrf_token %}
-            <div class="form-row">
-                {{ form.full_name.label_tag }}
-                {{ form.full_name }}
+    <section class="modern-landing-section">
+        <div class="container">
+            <div class="modern-landing-grid">
+                <div class="modern-landing-card">
+                    <h2>Why work with us</h2>
+                    <ul class="modern-landing-list">
+                        <li>Competitive wages and regular pay progression.</li>
+                        <li>Flexible scheduling and support for work-life balance.</li>
+                        <li>Training and career development opportunities.</li>
+                        <li>Full insurance protection while working with the team.</li>
+                    </ul>
+                </div>
+                <div class="modern-landing-card">
+                    <h3>Apply now</h3>
+                    <p>Fill out the form below and tell us a little about yourself. We’ll be in touch if your experience matches our current needs.</p>
+                    <form method="post" enctype="multipart/form-data" class="career-form">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            {{ form.full_name.label_tag }}
+                            {{ form.full_name }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.phone.label_tag }}
+                            {{ form.phone }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.cover_letter.label_tag }}
+                            {{ form.cover_letter }}
+                        </div>
+                        <div class="form-row">
+                            {{ form.resume.label_tag }}
+                            {{ form.resume }}
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-row">
-                {{ form.email.label_tag }}
-                {{ form.email }}
-            </div>
-            <div class="form-row">
-                {{ form.phone.label_tag }}
-                {{ form.phone }}
-            </div>
-            <div class="form-row">
-                {{ form.cover_letter.label_tag }}
-                {{ form.cover_letter }}
-            </div>
-            <div class="form-row">
-                {{ form.resume.label_tag }}
-                {{ form.resume }}
-            </div>
-            <div class="form-row">
-                <button type="submit" class="btn btn-primary">Submit Application</button>
-            </div>
-        </form>
-
-    </div>
-</section>
+        </div>
+    </section>
+</div>
 {% endblock %}
