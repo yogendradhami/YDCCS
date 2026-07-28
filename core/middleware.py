@@ -109,6 +109,7 @@ class SEOMiddleware:
 
         return response
 
+
 class CacheHeaderMiddleware:
     """Set Cache-Control headers for static assets and HTML pages."""
 
@@ -118,22 +119,32 @@ class CacheHeaderMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
 
-        # Sitemap and robots should always be fresh
-        if request.path.endswith('/sitemap.xml') or request.path.endswith('/robots.txt'):
-            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            response['Pragma'] = 'no-cache'
-            response['Expires'] = '0'
+        # SEO files
+        if request.path == "/robots.txt":
+            response["Cache-Control"] = "public, max-age=86400"
 
-        # Static assets: cache for 1 year (immutable hashed files)
-        elif request.path.startswith('/static/'):
-            response['Cache-Control'] = 'public, max-age=31536000, immutable'
+        elif request.path == "/sitemap.xml":
+            response["Cache-Control"] = "public, max-age=86400"
 
-        # Media files: cache for 30 days
-        elif request.path.startswith('/media/'):
-            response['Cache-Control'] = 'public, max-age=2592000'
+        # Static assets
+        elif request.path.startswith("/static/"):
+            response["Cache-Control"] = (
+                "public, max-age=31536000, immutable"
+            )
 
-        # Public HTML pages
-        elif request.path.startswith('/') and not request.path.startswith('/admin/'):
-            response['Cache-Control'] = 'public, max-age=3600, must-revalidate'
+        # Media files
+        elif request.path.startswith("/media/"):
+            response["Cache-Control"] = (
+                "public, max-age=2592000"
+            )
+
+        # Public pages
+        elif (
+            request.path.startswith("/")
+            and not request.path.startswith("/admin/")
+        ):
+            response["Cache-Control"] = (
+                "public, max-age=3600, must-revalidate"
+            )
 
         return response
