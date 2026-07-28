@@ -58,7 +58,12 @@ class SmokeTest(TestCase):
     def test_robots_exists(self):
         resp = self.client.get("/robots.txt")
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("Sitemap:", resp.content.decode("utf-8"))
+        self.assertEqual(resp["Content-Type"], "text/plain; charset=utf-8")
+        body = resp.content.decode("utf-8")
+        self.assertIn("User-agent: *", body)
+        self.assertIn("Allow: /", body)
+        self.assertNotIn("Disallow: /", body)
+        self.assertIn("Sitemap:", body)
 
     def test_home_meta_and_og(self):
         resp = self.client.get("/")
