@@ -77,28 +77,37 @@ class RoleAccessMiddleware:
 
 
 class SEOMiddleware:
-    """Add lightweight SEO headers for public and private pages."""
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+
         response = self.get_response(request)
 
-        # Never allow a shared browser/proxy cache to store personalised
-        # dashboard, portal, or employee responses.
+        if request.path.endswith("sitemap.xml"):
+            response["X-Robots-Tag"] = "all"
+            return response
+
         if request.user.is_authenticated:
             response["Cache-Control"] = "private, no-store"
             return response
-        content_type = response.get("Content-Type", "")
 
-        if request.path.startswith("/admin/") or request.path.startswith("/dashboard/") or request.path.startswith("/portal/") or request.path.startswith("/employee/"):
+        if (
+            request.path.startswith("/admin/")
+            or request.path.startswith("/dashboard/")
+            or request.path.startswith("/portal/")
+            or request.path.startswith("/employee/")
+        ):
             response["X-Robots-Tag"] = "noindex, nofollow"
-        elif "text/html" in content_type:
-            response.setdefault("X-Robots-Tag", "index, follow")
+
+        elif "text/html" in response.get("Content-Type", ""):
+            response.setdefault(
+                "X-Robots-Tag",
+                "index, follow"
+            )
 
         return response
-
 
 class CacheHeaderMiddleware:
     """Set Cache-Control headers for static assets and HTML pages."""
@@ -108,18 +117,23 @@ class CacheHeaderMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        
+
+        # Sitemap and robots should always be fresh
+        if request.path.endswith('/sitemap.xml') or request.path.endswith('/robots.txt'):
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+
         # Static assets: cache for 1 year (immutable hashed files)
-        if request.path.startswith('/static/'):
+        elif request.path.startswith('/static/'):
             response['Cache-Control'] = 'public, max-age=31536000, immutable'
-        
+
         # Media files: cache for 30 days
         elif request.path.startswith('/media/'):
             response['Cache-Control'] = 'public, max-age=2592000'
-        
-        # Public HTML can be revalidated by caches.  Private HTML returned
-        # above is explicitly excluded from shared caches.
+
+        # Public HTML pages
         elif request.path.startswith('/') and not request.path.startswith('/admin/'):
             response['Cache-Control'] = 'public, max-age=3600, must-revalidate'
-        
+
         return response
