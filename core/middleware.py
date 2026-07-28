@@ -93,7 +93,7 @@ class SEOMiddleware:
 
         response = self.get_response(request)
 
-        if request.path.endswith("sitemap.xml"):
+        if request.path in {"/robots.txt", "/sitemap.xml"}:
             return response
 
         if request.user.is_authenticated:

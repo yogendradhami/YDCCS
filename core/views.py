@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
+from django.template.loader import render_to_string
 from django.utils.text import slugify
 
 from .suburbs_data import ADELAIDE_SUBURBS
@@ -619,13 +620,8 @@ def service_page(request, service_slug):
 
 
 def robots_txt(request):
-    content = """
-User-agent: *
-Allow: /
-
-Sitemap: https://ydcleaning.com.au/sitemap.xml
-"""
-    return HttpResponse(content, content_type="text/plain")
+    content = render_to_string("robots.txt", {"site_url": settings.SITE_URL})
+    return HttpResponse(content, content_type="text/plain; charset=utf-8")
 
 # ====================================================
 # Careers page & application handler
