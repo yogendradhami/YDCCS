@@ -1,3 +1,4 @@
+from functools import lru_cache
 from django.contrib.sitemaps import Sitemap
 from django.conf import settings
 from django.urls import reverse
@@ -12,6 +13,7 @@ class BaseSitemap(Sitemap):
     def get_domain(self, site=None):
         return "ydcleaning.com.au"
 
+@lru_cache(maxsize=1)
 def service_page_slugs():
     active_services = Service.objects.filter(is_active=True)
     slugs = []
@@ -29,8 +31,6 @@ def service_page_slugs():
 
 class StaticViewSitemap(BaseSitemap):
 
-    changefreq = "weekly"
-    priority = 0.8
 
     def items(self):
         return ["home", "contact", "booking"]
@@ -46,9 +46,6 @@ class StaticViewSitemap(BaseSitemap):
 
 class LocalServiceSitemap(BaseSitemap):
 
-    changefreq = "weekly"
-    priority = 0.9
-
     def items(self):
         return service_page_slugs()
 
@@ -58,11 +55,26 @@ class LocalServiceSitemap(BaseSitemap):
             kwargs={"service_slug": item}
         )
 
+    def lastmod(self, item):
+
+        service_slug = item
+
+        for location in LOCATION_ALIASES:
+            suffix = f"-{location}"
+
+            if service_slug.endswith(suffix):
+                service_slug = service_slug[:-len(suffix)]
+                break
+
+        service = Service.objects.filter(
+            slug=service_slug
+        ).first()
+
+        return service.updated_at if service else None
+
 
 class ServicesIndexSitemap(BaseSitemap):
 
-    changefreq = "weekly"
-    priority = 1.0
 
     def items(self):
         return ["services_home"]
@@ -73,11 +85,11 @@ class ServicesIndexSitemap(BaseSitemap):
 
 class ServiceDetailSitemap(BaseSitemap):
 
-    changefreq = "weekly"
-    priority = 0.9
-
     def items(self):
         return Service.objects.filter(is_active=True)
+
+    def lastmod(self, obj):
+        return obj.updated_at
 
     def location(self, obj):
         return reverse(
