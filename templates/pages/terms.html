@@ -1,42 +1,39 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Terms of Service - YD Commercial Cleaning{% endblock %}
 {% block meta_description %}Read the Terms of Service for YD Commercial Cleaning. Learn about our website use, service bookings, estimates, and payment terms.{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="legal-page">
-    <div class="container">
-        <h1>Terms of Service</h1>
-        <p>Welcome to YD Commercial Cleaning. These terms govern your use of our website and services. By using our site, you agree to these terms.</p>
-
-        <div class="legal-section">
-            <h2>1. Use of Our Website</h2>
-            <p>You may use this website for lawful purposes only. You may not use the site in any way that causes harm, interferes with it, or violates any applicable laws or regulations.</p>
+<div class="modern-landing-page">
+    <section class="modern-landing-hero">
+        <div class="container">
+            <span class="eyebrow">Terms & conditions</span>
+            <h1>Clear terms for a smooth cleaning experience.</h1>
+            <p>These terms outline how our website and services work together so you know what to expect when booking with us.</p>
         </div>
+    </section>
 
-        <div class="legal-section">
-            <h2>2. Service Information</h2>
-            <p>We strive to keep website information accurate, but we do not guarantee that all service details, pricing, or availability are current. Please contact us directly for the latest information.</p>
+    <section class="modern-landing-section">
+        <div class="container">
+            <div class="modern-landing-grid">
+                <div class="modern-landing-card">
+                    <h2>Key points</h2>
+                    <ul class="modern-landing-list">
+                        <li>Website use must remain lawful and respectful.</li>
+                        <li>Service details, pricing and availability may change, so confirm directly.</li>
+                        <li>Quotes are indicative and may vary based on property conditions.</li>
+                    </ul>
+                </div>
+                <div class="modern-landing-card">
+                    <h3>Booking & payments</h3>
+                    <p>Payment terms are determined by each booking, and invoices are issued according to our standard process. We recommend contacting us directly for any questions before confirming a service.</p>
+                </div>
+            </div>
         </div>
-
-        <div class="legal-section">
-            <h2>3. Booking and Estimates</h2>
-            <p>Any estimates provided on this site are indicative only. Final cleaning quotes may vary based on property condition, scope of work, and client requirements.</p>
-        </div>
-
-        <div class="legal-section">
-            <h2>4. Payments and Invoicing</h2>
-            <p>Payment terms are determined by each booking and may be subject to our standard payment policy. Where applicable, invoices are issued after services are delivered.</p>
-        </div>
-
-        <div class="legal-section">
-            <h2>5. Liability</h2>
-            <p>YD Commercial Cleaning is not responsible for indirect, incidental, or consequential losses arising from the use of this website or our services, except where prohibited by law.</p>
-        </div>
-
-        <div class="legal-section">
-            <h2>6. Contact</h2>
-            <p>If you have questions about these terms, please <a href="/contact/">get in touch</a> with our team.</p>
-        </div>
-    </div>
-</section>
+    </section>
+</div>
 {% endblock %}

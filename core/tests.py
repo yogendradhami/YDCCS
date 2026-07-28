@@ -65,6 +65,30 @@ class SmokeTest(TestCase):
         self.assertNotIn("Disallow: /", body)
         self.assertIn("Sitemap:", body)
 
+    def test_testimonials_page_includes_live_google_reviews_section(self):
+        resp = self.client.get("/testimonials/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode("utf-8")
+        self.assertIn("Live Google Reviews", body)
+
+    def test_footer_special_services_section_uses_simple_links(self):
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode("utf-8")
+        self.assertNotIn("special-service-card", body)
+        self.assertIn("/eco-friendly-cleaning/", body)
+        self.assertIn("/emergency-cleaning/", body)
+        self.assertIn("/insurance/", body)
+        self.assertIn("/referral-program/", body)
+
+    def test_eco_friendly_page_has_modern_sections(self):
+        resp = self.client.get("/eco-friendly-cleaning/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode("utf-8")
+        self.assertIn("Why businesses choose our eco approach", body)
+        self.assertIn("Cleaner spaces, lower impact", body)
+        self.assertIn("What we use", body)
+
     def test_home_meta_and_og(self):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, 200)

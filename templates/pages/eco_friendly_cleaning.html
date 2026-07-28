@@ -9,50 +9,80 @@
 {% endblock %}
 
 {% block content %}
-<section class="eco-hero">
-    <div class="container">
-        <h1>Eco-Friendly Cleaning for Businesses</h1>
-        <p>Protect your employees and the environment with cleaning services that use sustainable products and low-impact methods.</p>
-        <a href="{% url 'contact' %}" class="btn btn-primary">Book Sustainable Cleaning</a>
-    </div>
-</section>
-
-<section class="eco-overview">
-    <div class="container">
-        <h2>What Makes Our Cleaning Eco-Friendly?</h2>
-        <ul class="eco-list">
-            <li>Non-toxic, biodegradable cleaning products.</li>
-            <li>Reduced water usage and waste management.</li>
-            <li>Efficient cleaning practices that minimise environmental impact.</li>
-        </ul>
-        <p>Our cleaning teams are trained to deliver excellent results without harsh chemicals, making your space healthier and more sustainable.</p>
-    </div>
-</section>
-
-<section class="eco-benefits">
-    <div class="container">
-        <h2>Benefits for Your Business</h2>
-        <div class="benefit-grid">
-            <div class="benefit-card">
-                <h3>Healthier Workspace</h3>
-                <p>Reduce irritants and allergens in your commercial environment.</p>
-            </div>
-            <div class="benefit-card">
-                <h3>Sustainability</h3>
-                <p>Choose greener cleaning practices that support your corporate responsibility goals.</p>
-            </div>
-            <div class="benefit-card">
-                <h3>Professional Results</h3>
-                <p>We combine eco-friendly products with industry-standard cleaning expertise.</p>
+<div class="eco-page">
+    <section class="eco-hero">
+        <div class="container">
+            <span class="eyebrow">Sustainable cleaning in Adelaide</span>
+            <h1>Cleaner spaces, lower impact.</h1>
+            <p>Protect your team, your clients and the environment with professional cleaning that uses safer products, smarter systems and responsible practices.</p>
+            <div class="eco-hero-actions">
+                <a href="{% url 'contact' %}" class="btn btn-primary">Request an Eco Clean</a>
+                <a href="/services/commercial-cleaning-adelaide/" class="btn btn-outline">Explore Commercial Services</a>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="eco-cta">
-    <div class="container">
-        <h2>Switch to greener cleaning today</h2>
-        <a href="{% url 'contact' %}" class="btn btn-primary">Request an Eco Clean</a>
-    </div>
-</section>
+    <section class="eco-section">
+        <div class="container">
+            <div class="eco-grid two-up">
+                <div class="eco-card">
+                    <h2>Why businesses choose our eco approach</h2>
+                    <p>We blend high-performance cleaning with sustainability, so your workplace stays fresh without compromising on comfort, safety or presentation.</p>
+                    <ul class="eco-list">
+                        <li>Non-toxic, biodegradable products chosen for sensitive environments.</li>
+                        <li>Reduced water usage, waste and unnecessary chemical exposure.</li>
+                        <li>Efficient workflows that create exceptional results with lower environmental impact.</li>
+                    </ul>
+                    <div class="eco-pill-row">
+                        <span class="eco-pill">🌿 Safer products</span>
+                        <span class="eco-pill">🧼 Low-impact methods</span>
+                        <span class="eco-pill">📍 Adelaide service</span>
+                    </div>
+                </div>
+
+                <div class="eco-card">
+                    <h3>What we use</h3>
+                    <p>Our team focuses on practical green cleaning choices that are easy to maintain and effective in real-world spaces.</p>
+                    <ul class="eco-list">
+                        <li>Plant-based cleaners for daily surfaces and shared areas.</li>
+                        <li>Microfibre tools that reduce water and product waste.</li>
+                        <li>Targeted methods that avoid over-application and unnecessary residue.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="eco-section">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom:24px;">Benefits for your business</h2>
+            <div class="eco-benefits-grid">
+                <div class="eco-benefit-card">
+                    <h3>Healthier workspace</h3>
+                    <p>Reduce irritants, odours and harsh chemical exposure for staff, visitors and clients.</p>
+                </div>
+                <div class="eco-benefit-card">
+                    <h3>Lower environmental footprint</h3>
+                    <p>Support your sustainability goals with smarter cleaning routines and responsible products.</p>
+                </div>
+                <div class="eco-benefit-card">
+                    <h3>Professional finish</h3>
+                    <p>Enjoy a polished, dependable result without sacrificing quality or consistency.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="eco-cta">
+        <div class="container">
+            <div class="eco-cta-card">
+                <div>
+                    <h2>Switch to greener cleaning today</h2>
+                    <p>Let us create a tailored eco-friendly cleaning plan for your workspace or property.</p>
+                </div>
+                <a href="{% url 'contact' %}" class="btn btn-primary">Book Your Eco Clean</a>
+            </div>
+        </div>
+    </section>
+</div>
 {% endblock %}
