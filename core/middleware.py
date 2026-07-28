@@ -93,8 +93,16 @@ class SEOMiddleware:
 
         response = self.get_response(request)
 
-        if request.path in {"/robots.txt", "/sitemap.xml"}:
+        # Remove Django sitemap noindex header
+        if request.path == "/sitemap.xml":
+            if "X-Robots-Tag" in response.headers:
+                del response.headers["X-Robots-Tag"]
+
             return response
+
+        if request.path == "/robots.txt":
+            return response
+
 
         if request.user.is_authenticated:
             response["Cache-Control"] = "private, no-store"
@@ -108,22 +116,14 @@ class SEOMiddleware:
         )
 
         if request.path.startswith(private_paths):
-            response["X-Robots-Tag"] = (
-                "noindex, nofollow"
-            )
-            response["Cache-Control"] = (
-                "private, no-store"
-            )
+            response["X-Robots-Tag"] = "noindex, nofollow"
+            response["Cache-Control"] = "private, no-store"
 
         elif (
             response.status_code == 200
-            and "text/html" in response.get(
-                "Content-Type", ""
-            )
+            and "text/html" in response.get("Content-Type", "")
         ):
-            response["X-Robots-Tag"] = (
-                "index, follow"
-            )
+            response["X-Robots-Tag"] = "index, follow"
 
         return response
 

@@ -51,14 +51,15 @@ from .sitemaps import sitemaps
 
 # Sitemap view for SEO
 def sitemap_view(request):
+
     response = django_sitemap(
         request,
         sitemaps=sitemaps
     )
 
+    response.headers.pop("X-Robots-Tag", None)
 
-    # Correct XML content type
-    response["Content-Type"] = "application/xml; charset=utf-8"
+    response["Content-Type"] = "application/xml"
 
     return response
 
