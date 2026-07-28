@@ -56,9 +56,6 @@ def sitemap_view(request):
         sitemaps=sitemaps
     )
 
-    # Remove unwanted robots header
-    if "X-Robots-Tag" in response.headers:
-        del response.headers["X-Robots-Tag"]
 
     # Correct XML content type
     response["Content-Type"] = "application/xml; charset=utf-8"
