@@ -12,7 +12,7 @@
     </title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}{{ page_description|default:default_seo_description }}{% endblock %}">
+    <meta name="description" content="{% block meta_description %}{{ page_description|default:default_seo_description|default:'Professional cleaning services in Adelaide by YD Commercial Cleaning Services. Residential, commercial, bond cleaning and end-of-lease cleaning experts.' }}{% endblock %}">
     <meta name="keywords" content="{% block meta_keywords %}{{ page_keywords|default:default_seo_keywords }}{% endblock %}">
     <meta name="robots" content="{% block robots_meta %}index, follow{% endblock %}">
     <meta name="theme-color" content="#0072CE">
@@ -22,14 +22,14 @@
     <meta property="og:locale" content="en_AU">
     <meta property="og:type" content="website">
     <meta property="og:title" content="{% block og_title %}{{ page_title|default:company_settings.business_name|default:'YD Commercial Cleaning Services' }}{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}{{ page_description|default:default_seo_description }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ page_description|default:default_seo_description|default:'Professional cleaning services in Adelaide by YD Commercial Cleaning Services.' }}{% endblock %}">
     <meta property="og:url" content="{% canonical_url %}">
     <meta property="og:site_name" content="{{ company_settings.business_name|default:'YD Commercial Cleaning Services' }}">
     <meta property="og:image" content="{% block og_image %}{{ page_image|default:open_graph_image }}{% endblock %}">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}{{ page_title|default:company_settings.business_name|default:'YD Commercial Cleaning Services' }}{% endblock %}">
-    <meta name="twitter:description" content="{% block twitter_description %}{{ page_description|default:default_seo_description }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ page_description|default:default_seo_description|default:'Professional cleaning services in Adelaide by YD Commercial Cleaning Services.' }}{% endblock %}">
     <meta name="twitter:image" content="{% block twitter_image %}{{ page_image|default:twitter_image }}{% endblock %}">
     <meta name="twitter:site" content="@YDCommercialClean">
     <meta name="twitter:creator" content="@YDCommercialClean">
@@ -75,12 +75,12 @@
       "@graph": [
         {
           "@type": "Organization",
-          "@id": "https://www.ydcleaning.com.au/#organization",
+          "@id": "https://ydcleaning.com.au/#organization",
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
-          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
+          "url": "{{ site_url|default:'https://ydcleaning.com.au'|escapejs }}",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://www.ydcleaning.com.au/static/images/logo.jpeg"
+            "url": "https://ydcleaning.com.au/static/images/logo.jpeg"
           },
           "sameAs": [
             "https://www.facebook.com/ydcommercialcleaning/",
@@ -106,12 +106,13 @@
         },
         {
           "@type": "LocalBusiness",
-          "@id": "https://www.ydcleaning.com.au/#localbusiness",
+          "@id": "https://ydcleaning.com.au/#localbusiness",
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
-          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
+          "url": "{{ site_url|default:'https://ydcleaning.com.au'|escapejs }}",
           "image": {
             "@type": "ImageObject",
-            "url": "https://www.ydcleaning.com.au/static/images/logo.jpeg"
+
+            "url": "https://ydcleaning.com.au/static/images/logo.jpeg"
           },
           "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",
           "email": "{{ company_settings.email|default:'ydcommercialcleaning@gmail.com'|escapejs }}",
@@ -207,13 +208,36 @@
         },
         {
           "@type": "WebSite",
-          "@id": "https://www.ydcleaning.com.au/#website",
-          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
+          "@id": "https://ydcleaning.com.au/#website",
+          "url": "{{ site_url|default:'https://ydcleaning.com.au'|escapejs }}",
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
-          "description": "{{ default_seo_description|default:'Professional commercial cleaning services in Adelaide.'|escapejs }}",
+          "description": "{{ page_description|default:default_seo_description|default:'Professional cleaning services in Adelaide by YD Commercial Cleaning Services.'|escapejs }}",
           "publisher": {
-            "@id": "https://www.ydcleaning.com.au/#organization"
+            "@id": "https://ydcleaning.com.au/#organization"
           }
+        },
+
+        {
+          "@type": "Service",
+          "@id": "{{ request.build_absolute_uri }}#service",
+          "name":  "{% if service %}{{ service.title|escapejs }}{% else %}Cleaning Services Adelaide{% endif %}{% if location %} {{ location|escapejs }}{% endif %}",
+          "serviceType": "{% if service %}{{ service.title|escapejs }}{% else %}Cleaning Services{% endif %}",
+
+          "description": "{% if service and service.description %}{{ service.description|escapejs }}{% else %}Professional cleaning services in Adelaide by YD Commercial Cleaning Services.{% endif %}",
+
+          "url": "{{ request.build_absolute_uri }}",
+
+          "provider": {
+            "@id": "https://ydcleaning.com.au/#localbusiness"
+          },
+
+          "areaServed": {
+            "@type": "Place",
+            "name": "{% if location %}{{ location|escapejs }}{% else %}Adelaide, South Australia{% endif %}"
+          }
+
+
+
         }
       ]
     }
