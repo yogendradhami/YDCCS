@@ -58,6 +58,11 @@ def sitemap_view(request):
 
     response["Content-Type"] = "application/xml"
 
+    # Prevent Cloudflare / browsers keeping old sitemap
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+
     return response
 
 urlpatterns = [
