@@ -7,11 +7,14 @@
 
 from django.contrib import admin
 from django.urls import include, path
+from django.contrib.sitemaps.views import sitemap
 
+from core.sitemaps import sitemaps
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
 
+    path("admin/", admin.site.urls),
     path("", include("dashboard.urls")),
     path("", include("payroll.urls")),
     path("", include("invoices.urls")),

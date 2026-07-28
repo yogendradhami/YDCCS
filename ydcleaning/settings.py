@@ -25,6 +25,8 @@ env = environ.Env(
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = "https://ydcleaning.com.au"
+SITE_ID = 1
+
 
 # Read local .env if present
 if (BASE_DIR / ".env").exists():
@@ -64,12 +66,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "django.contrib.sitemaps",
+
 
     # Cloudinary
     'cloudinary_storage',
     'cloudinary',
 
-    "django.contrib.sitemaps",
     # My apps
     "core",
     "quotes",
