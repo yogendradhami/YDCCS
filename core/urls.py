@@ -3,8 +3,8 @@
 # File: core/urls.py
 # Purpose: Main website URL routing
 # ====================================================
-
-from django.contrib.sitemaps.views import sitemap
+from django.http import HttpResponse
+from django.contrib.sitemaps.views import sitemap as django_sitemap
 from django.urls import path
 from django.views.generic import RedirectView
 
@@ -43,6 +43,23 @@ from .views import (
 )
 from .views_append import blog_detail
 
+
+
+# ADD THIS HERE
+def sitemap_view(request):
+    response = django_sitemap(
+        request,
+        sitemaps=sitemaps
+    )
+
+    # Remove Django sitemap noindex header
+    if "X-Robots-Tag" in response.headers:
+        del response.headers["X-Robots-Tag"]
+
+    response["Content-Type"] = "application/xml"
+
+    return response
+
 urlpatterns = [
     # Login redirect for convenience
     path("login/", RedirectView.as_view(url="/dashboard/login/", permanent=False), name="login_redirect"),
@@ -76,8 +93,7 @@ urlpatterns = [
 
     # SEO files
     path("robots.txt", robots_txt, name="robots_txt"),
-    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap_xml"),
-    # SEO service pages
+    path("sitemap.xml", sitemap_view, name="sitemap_xml"),    # SEO service pages
     path("services/", services_list, name="services_home"),
     path("local/", local_services, name="local_services"),
     path(
