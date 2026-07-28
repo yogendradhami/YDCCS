@@ -20,7 +20,6 @@ class RoleAccessMiddleware:
         path = request.path
 
         public_paths = (
-            "/admin/",
             "/static/",
             "/media/",
             "/portal/login/",
@@ -38,6 +37,16 @@ class RoleAccessMiddleware:
                 return self.get_response(request)
 
         if not request.user.is_authenticated:
+
+            if path.startswith("/dashboard/"):
+                return redirect("dashboard_login")
+
+            if path.startswith("/employee/"):
+                return redirect("employee_login")
+
+            if path.startswith("/portal/"):
+                return redirect("portal_login")
+
             return self.get_response(request)
 
         if request.user.is_staff or request.user.is_superuser:
@@ -75,7 +84,6 @@ class RoleAccessMiddleware:
 
         return self.get_response(request)
 
-
 class SEOMiddleware:
 
     def __init__(self, get_response):
@@ -86,24 +94,31 @@ class SEOMiddleware:
         response = self.get_response(request)
 
         if request.path.endswith("sitemap.xml"):
-            response["X-Robots-Tag"] = "all"
             return response
 
         if request.user.is_authenticated:
             response["Cache-Control"] = "private, no-store"
             return response
 
-        if (
-            request.path.startswith("/admin/")
-            or request.path.startswith("/dashboard/")
-            or request.path.startswith("/portal/")
-            or request.path.startswith("/employee/")
-        ):
-            response["X-Robots-Tag"] = "noindex, nofollow"
+        private_paths = (
+            "/admin/",
+            "/dashboard/",
+            "/portal/",
+            "/employee/",
+        )
 
-        elif "text/html" in response.get("Content-Type", ""):
-            response.setdefault(
-                "X-Robots-Tag",
+        if request.path.startswith(private_paths):
+            response["X-Robots-Tag"] = (
+                "noindex, nofollow"
+            )
+
+        elif (
+            response.status_code == 200
+            and "text/html" in response.get(
+                "Content-Type", ""
+            )
+        ):
+            response["X-Robots-Tag"] = (
                 "index, follow"
             )
 
@@ -111,40 +126,82 @@ class SEOMiddleware:
 
 
 class CacheHeaderMiddleware:
-    """Set Cache-Control headers for static assets and HTML pages."""
+    """
+    Set cache headers safely:
+    - SEO files cached
+    - Static/media cached
+    - Public pages cached
+    - Private pages never cached
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+
         response = self.get_response(request)
 
+        # Never cache authenticated users
+        if request.user.is_authenticated:
+            response["Cache-Control"] = (
+                "private, no-store"
+            )
+            return response
+
+        path = request.path
+
+        # Never cache private areas
+        private_paths = (
+            "/admin/",
+            "/dashboard/",
+            "/portal/",
+            "/employee/",
+            "/booking/",
+            "/checkout/",
+            "/account/",
+            "/login/",
+            "/register/",
+            "/password-reset/",
+        )
+
+        if path.startswith(private_paths):
+            response["Cache-Control"] = (
+                "private, no-store"
+            )
+            return response
+
+
         # SEO files
-        if request.path == "/robots.txt":
-            response["Cache-Control"] = "public, max-age=86400"
+        if path == "/robots.txt":
+            response["Cache-Control"] = (
+                "public, max-age=86400"
+            )
 
-        elif request.path == "/sitemap.xml":
-            response["Cache-Control"] = "public, max-age=86400"
+        elif path == "/sitemap.xml":
+            response["Cache-Control"] = (
+                "public, max-age=86400"
+            )
 
-        # Static assets
-        elif request.path.startswith("/static/"):
+
+        # Static files
+        elif path.startswith("/static/"):
             response["Cache-Control"] = (
                 "public, max-age=31536000, immutable"
             )
 
+
         # Media files
-        elif request.path.startswith("/media/"):
+        elif path.startswith("/media/"):
             response["Cache-Control"] = (
                 "public, max-age=2592000"
             )
 
-        # Public pages
-        elif (
-            request.path.startswith("/")
-            and not request.path.startswith("/admin/")
-        ):
+
+        # Public website pages
+        elif response.status_code == 200:
             response["Cache-Control"] = (
                 "public, max-age=3600, must-revalidate"
             )
+
 
         return response
