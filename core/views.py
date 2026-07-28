@@ -31,7 +31,8 @@ from core.seo_data import LOCATION_ALIASES
 
 from django.shortcuts import  redirect
 from bookings.forms import BookingForm
-
+from django.contrib.sitemaps.views import sitemap as django_sitemap
+from .sitemaps import sitemaps
 
 def _slugify_area(area):
     return slugify(f"{area['name']} {area['postcode']}")
@@ -715,3 +716,16 @@ def booking(request):
             "form": form
         }
     )
+
+def sitemap_view(request):
+    response = django_sitemap(
+        request,
+        sitemaps=sitemaps
+    )
+
+    if "X-Robots-Tag" in response.headers:
+        del response.headers["X-Robots-Tag"]
+
+    response["Content-Type"] = "application/xml"
+
+    return response
