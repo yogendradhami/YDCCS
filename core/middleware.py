@@ -111,6 +111,9 @@ class SEOMiddleware:
             response["X-Robots-Tag"] = (
                 "noindex, nofollow"
             )
+            response["Cache-Control"] = (
+                "private, no-store"
+            )
 
         elif (
             response.status_code == 200
