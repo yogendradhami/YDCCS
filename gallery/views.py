@@ -85,4 +85,3 @@ def delete_gallery_item_ajax(request, item_id):
         return JsonResponse({"success": False, "message": "Permission denied"}, status=403)
 
     return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
-

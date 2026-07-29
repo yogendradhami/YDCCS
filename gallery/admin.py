@@ -129,4 +129,3 @@ class GalleryItemAdmin(admin.ModelAdmin):
             # Make source field readonly if linked to job photo
             readonly.append("source")
         return readonly
-
