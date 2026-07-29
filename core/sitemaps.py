@@ -78,8 +78,7 @@ class LocalServiceSitemap(BaseSitemap):
             slug=service_slug
         ).first()
 
-        return service.updated_at if service else None
-
+        return service.updated_at if service else timezone.now()
 
 
 class ServicesIndexSitemap(BaseSitemap):
