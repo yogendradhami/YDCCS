@@ -12,10 +12,22 @@ class GalleryItem(models.Model):
         ("Commercial Cleaning", "Commercial Cleaning"),
         ("Office Cleaning", "Office Cleaning"),
         ("House Cleaning", "House Cleaning"),
+        ("Regular Cleaning", "Regular Cleaning"),
         ("End of Lease Cleaning", "End of Lease Cleaning"),
-        ("Window Cleaning", "Window Cleaning"),
+        ("Bond Cleaning", "Bond Cleaning"),
         ("Deep Cleaning", "Deep Cleaning"),
+        ("Bathroom Deep Cleaning", "Bathroom Deep Cleaning"),
+        ("Kitchen Deep Cleaning", "Kitchen Deep Cleaning"),
+        ("Carpet Steam Cleaning", "Carpet Steam Cleaning"),
+        ("Window & Glass Cleaning", "Window & Glass Cleaning"),
+        ("Oven Cleaning", "Oven Cleaning"),
         ("Post Construction Cleaning", "Post Construction Cleaning"),
+        ("Builders Cleaning", "Builders Cleaning"),
+        ("Pressure Washing", "Pressure Washing"),
+        ("Retail Cleaning", "Retail Cleaning"),
+        ("Warehouse Cleaning", "Warehouse Cleaning"),
+        ("School & Childcare Cleaning", "School & Childcare Cleaning"),
+        ("Medical Cleaning", "Medical Cleaning"),
     ]
 
     SOURCE_CHOICES = [
