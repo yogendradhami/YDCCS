@@ -5,6 +5,8 @@ from django.urls import reverse
 
 from .seo_data import LOCATION_ALIASES
 from services.models import Service
+from django.utils import timezone
+
 
 
 class BaseSitemap(Sitemap):
@@ -43,11 +45,17 @@ class StaticViewSitemap(BaseSitemap):
             return 1.0
         return 0.8
 
+    def lastmod(self, item):
+        return timezone.now()
+
 
 class LocalServiceSitemap(BaseSitemap):
 
     def items(self):
         return service_page_slugs()
+    def priority(self, item):
+        return 0.7
+
 
     def location(self, item):
         return reverse(
@@ -73,8 +81,8 @@ class LocalServiceSitemap(BaseSitemap):
         return service.updated_at if service else None
 
 
-class ServicesIndexSitemap(BaseSitemap):
 
+class ServicesIndexSitemap(BaseSitemap):
 
     def items(self):
         return ["services_home"]
@@ -82,11 +90,20 @@ class ServicesIndexSitemap(BaseSitemap):
     def location(self, item):
         return reverse(item)
 
+    def priority(self, item):
+        return 0.9
+
+    def lastmod(self, item):
+        return timezone.now()
+
 
 class ServiceDetailSitemap(BaseSitemap):
 
     def items(self):
         return Service.objects.filter(is_active=True)
+
+    def priority(self, obj):
+        return 0.8
 
     def lastmod(self, obj):
         return obj.updated_at

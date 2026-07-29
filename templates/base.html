@@ -34,8 +34,9 @@
     <meta name="twitter:site" content="@YDCommercialClean">
     <meta name="twitter:creator" content="@YDCommercialClean">
 
-    <link rel="icon" href="{% if company_settings and company_settings.favicon %}{{ company_settings.favicon.url }}{% else %}{% static 'images/logo.jpeg' %}{% endif %}" type="image/png">
-    <link rel="apple-touch-icon" href="{% if company_settings and company_settings.favicon %}{{ company_settings.favicon.url }}{% else %}{% static 'images/logo.jpeg' %}{% endif %}">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+
+    <link rel="apple-touch-icon" href="{% static 'images/logo.jpeg' %}">
     <link rel="manifest" href="{% static 'site.webmanifest' %}">
 
     <!-- Preload critical styles and optimize external font connections -->
@@ -220,7 +221,7 @@
         {
           "@type": "Service",
           "@id": "{{ request.build_absolute_uri }}#service",
-          "name":  "{% if service %}{{ service.title|escapejs }}{% else %}Cleaning Services Adelaide{% endif %}{% if location %} {{ location|escapejs }}{% endif %}",
+          "name": "{{ service.title }}{% if location %} {{ location }}{% endif %}",
           "serviceType": "{% if service %}{{ service.title|escapejs }}{% else %}Cleaning Services{% endif %}",
 
           "description": "{% if service and service.description %}{{ service.description|escapejs }}{% else %}Professional cleaning services in Adelaide by YD Commercial Cleaning Services.{% endif %}",
