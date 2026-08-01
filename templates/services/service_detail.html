@@ -280,44 +280,7 @@
     </div>
 </section>
 
-<!-- FAQ -->
-<section class="section faq-section">
-    <div class="container">
-        <div class="section-title">
-            <h2>Frequently Asked Questions</h2>
-        </div>
 
-        <div class="faq-box">
-            <h4>How much does {{ service.title }} cost?</h4>
-            <p>Pricing depends on property size, condition and required cleaning services. Contact us for a free quote.</p>
-        </div>
-
-        <div class="faq-box">
-            <h4>Do you provide cleaning equipment?</h4>
-            <p>Yes. Our professional cleaners bring suitable equipment and cleaning products.</p>
-        </div>
-
-        <div class="faq-box">
-            <h4>Are you insured?</h4>
-            <p>Yes. YD Commercial Cleaning Services provides professional insured cleaning services.</p>
-        </div>
-
-        <div class="faq-box">
-            <h4>Which Adelaide suburbs do you service?</h4>
-            <p>
-                We service Adelaide CBD, Unley, Norwood, Glenelg, Burnside and surrounding suburbs.
-                {% if location %}
-                    We also provide cleaning services in {{ location }}.
-                {% endif %}
-            </p>
-        </div>
-
-        <div class="faq-box">
-            <h4>What is the difference between standard and deep cleaning?</h4>
-            <p>Regular cleaning maintains your property while deep cleaning removes built-up dirt, dust and hard-to-reach areas.</p>
-        </div>
-    </div>
-</section>
 
 <!-- RELATED SERVICES -->
 <section class="section related-services-section">
@@ -351,7 +314,6 @@
 </section>
 
 {% block default_why_choose_section %}{% endblock %}
-{% block default_faq_section %}{% endblock %}
 
 <!-- SEO STRUCTURED DATA -->
 <script type="application/ld+json">
@@ -428,43 +390,6 @@
           "reviewCount": "{{ service_review_count }}"
         }
       {% endif %}
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How much does {{ service.title }} cost?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Pricing depends on property size, condition and cleaning requirements. Contact YD Commercial Cleaning Services for a free quote."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Do you provide cleaning equipment?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, our professional cleaners bring suitable cleaning equipment and products."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Are you insured?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, YD Commercial Cleaning Services provides professional insured cleaning services."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Which Adelaide suburbs do you service?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "We provide professional cleaning services across Adelaide CBD, Unley, Norwood, Glenelg, Burnside and surrounding suburbs."
-          }
-        }
-      ]
     }
   ]
 }

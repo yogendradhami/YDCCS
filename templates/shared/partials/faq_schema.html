@@ -1,0 +1,35 @@
+{% if faq_section %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% if faq_section.faq_categories %}
+      {% for category in faq_section.faq_categories %}
+        {% for item in category.entries %}
+          {
+            "@type": "Question",
+            "name": "{{ item.question|escapejs }}",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "{{ item.answer|escapejs }}"
+            }
+          }{% if not forloop.last or not forloop.parentloop.last %},{% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for item in faq_section.entries %}
+        {
+          "@type": "Question",
+          "name": "{{ item.question|escapejs }}",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "{{ item.answer|escapejs }}"
+          }
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% endif %}
+  ]
+}
+</script>
+{% endif %}
