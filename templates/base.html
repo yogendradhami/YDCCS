@@ -245,6 +245,8 @@
     </script>
     {% endif %}
     {% block extra_head %}{% endblock %}
+
+    {% block faq_schema %}{% include 'shared/partials/faq_schema.html' %}{% endblock %}
 </head>
 
 <body>
@@ -268,7 +270,11 @@
         {% endblock %}
 
         {% block default_faq_section %}
-            {% include 'shared/partials/faq.html' %}
+            {% if faq_section %}
+                {% include 'shared/partials/faq.html' %}
+            {% else %}
+                {% include 'shared/partials/faq.html' %}
+            {% endif %}
         {% endblock %}
 
         {% include 'includes/footer.html' %}

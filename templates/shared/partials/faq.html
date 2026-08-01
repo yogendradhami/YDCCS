@@ -1,35 +1,28 @@
-<section class="section faq-section">
+<section class="{{ faq_section.section_class|default:'section faq-section' }}">
     <div class="container">
         <div class="section-title">
-            <h2>Frequently Asked Questions</h2>
-            <p>Answers to the most common questions about YD Commercial Cleaning services.</p>
+            <h2>{{ faq_section.title|default:'Frequently Asked Questions' }}</h2>
+            <p>{{ faq_section.description|default:'Answers to the most common questions about YD Commercial Cleaning services.' }}</p>
         </div>
 
         <div class="faq-grid">
-            <div class="faq-box">
-                <h3>Do you service all Adelaide suburbs?</h3>
-                <p>Yes, we cover Adelaide and surrounding South Australian areas for both residential and commercial cleaning.</p>
-            </div>
-            <div class="faq-box">
-                <h3>What cleaning services do you offer?</h3>
-                <p>We provide house cleaning, office cleaning, bond cleaning, carpet cleaning, window cleaning and more.</p>
-            </div>
-            <div class="faq-box">
-                <h3>Are your cleaners insured?</h3>
-                <p>Yes, our team is fully insured and bonded to protect your property and give you peace of mind.</p>
-            </div>
-            <div class="faq-box">
-                <h3>How fast can you schedule a clean?</h3>
-                <p>We aim to respond quickly and can often book services within 24 hours depending on availability.</p>
-            </div>
-            <div class="faq-box">
-                <h3>Do I need to provide cleaning supplies?</h3>
-                <p>Our team brings professional-grade products and equipment, but we can also use your preferred supplies on request.</p>
-            </div>
-            <div class="faq-box">
-                <h3>Can I get a free quote?</h3>
-                <p>Absolutely. Contact us online or by phone and we will provide an obligation-free quote.</p>
-            </div>
+            {% if faq_section.faq_categories %}
+                {% for category in faq_section.faq_categories %}
+                    {% for item in category.entries %}
+                        <div class="{{ faq_section.item_class|default:'faq-box' }}">
+                            <h4>{{ item.question }}</h4>
+                            <p>{{ item.answer }}</p>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                {% for item in faq_section.entries %}
+                    <div class="{{ faq_section.item_class|default:'faq-box' }}">
+                        <h4>{{ item.question }}</h4>
+                        <p>{{ item.answer }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </section>

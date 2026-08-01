@@ -160,6 +160,7 @@ TEMPLATES = [
                 "notifications.context_processors.notification_context",
                 "dashboard.context_processors.company_settings",
                 "dashboard.context_processors.seo_context",
+                "core.context_processors.faq_section",
             ],
         },
     },

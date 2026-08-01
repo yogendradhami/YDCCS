@@ -4,6 +4,7 @@
 # Purpose: Handles homepage, contact, services, SEO files
 # ====================================================
 
+import copy
 import os
 import string
 
@@ -15,6 +16,7 @@ from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.text import slugify
 
+from .faq_data import FAQ_PAGE_CONFIG
 from .suburbs_data import ADELAIDE_SUBURBS
 from .seo_data import LOCATION_ALIASES, SERVICE_DEFINITIONS
 
@@ -97,6 +99,21 @@ def _get_suburb_by_slug(area_slug):
             if _slugify_area(area) == area_slug:
                 return area
     return None
+
+
+def _format_faq_value(value, **format_kwargs):
+    if isinstance(value, str):
+        return value.format(**format_kwargs)
+    if isinstance(value, list):
+        return [_format_faq_value(item, **format_kwargs) for item in value]
+    if isinstance(value, dict):
+        return {key: _format_faq_value(item, **format_kwargs) for key, item in value.items()}
+    return value
+
+
+def _get_faq_section(faq_key="generic", **format_kwargs):
+    config = FAQ_PAGE_CONFIG.get(faq_key, FAQ_PAGE_CONFIG["generic"])
+    return _format_faq_value(copy.deepcopy(config), **format_kwargs)
 
 
 # ====================================================
@@ -206,6 +223,7 @@ def home(request):
             "google_reviews": google_reviews,
             "average_rating": average_rating,
             "google_review_count": google_review_count,
+            "faq_section": _get_faq_section("home"),
         },
     )
 
@@ -377,7 +395,7 @@ def case_studies(request):
 
 
 def faq(request):
-    return render(request, "pages/faq.html")
+    return render(request, "pages/faq.html", {"faq_section": _get_faq_section("faq")})
 
 
 def blog(request):
@@ -386,7 +404,7 @@ def blog(request):
 
 
 def about(request):
-    return render(request, "pages/about.html")
+    return render(request, "pages/about.html", {"faq_section": _get_faq_section("about")})
 
 
 def pricing(request):
@@ -398,23 +416,23 @@ def team(request):
 
 
 def corporate(request):
-    return render(request, "pages/corporate.html")
+    return render(request, "pages/corporate.html", {"faq_section": _get_faq_section("corporate")})
 
 
 def insurance(request):
-    return render(request, "pages/insurance.html")
+    return render(request, "pages/insurance.html", {"faq_section": _get_faq_section("insurance")})
 
 
 def referral_program(request):
-    return render(request, "pages/referral_program.html")
+    return render(request, "pages/referral_program.html", {"faq_section": _get_faq_section("referral_program")})
 
 
 def eco_friendly_cleaning(request):
-    return render(request, "pages/eco_friendly_cleaning.html")
+    return render(request, "pages/eco_friendly_cleaning.html", {"faq_section": _get_faq_section("eco_friendly_cleaning")})
 
 
 def emergency_cleaning(request):
-    return render(request, "pages/emergency_cleaning.html")
+    return render(request, "pages/emergency_cleaning.html", {"faq_section": _get_faq_section("emergency_cleaning")})
 
 
 def rss_xml(request):
@@ -497,6 +515,11 @@ def local_suburb_detail(request, area_slug):
         "page_description": page_description,
         "services": services,
         "google_reviews": google_reviews,
+        "faq_section": _get_faq_section(
+            "suburb_detail",
+            suburb_name=suburb["name"],
+            location_name=location_name,
+        ),
     }
     return render(request, "services/suburb_detail.html", context)
 
@@ -620,6 +643,11 @@ def service_page(request, service_slug):
             "service": service,
             "service_url": service_url,
             "location": location,
+            "faq_section": _get_faq_section(
+                "service_detail",
+                service_title=service["title"],
+                location_name=location,
+            ),
         }
     )
 
@@ -671,15 +699,15 @@ def careers(request):
     else:
         form = CareerApplicationForm()
 
-    return render(request, "pages/careers.html", {"form": form})
+    return render(request, "pages/careers.html", {"form": form, "faq_section": _get_faq_section("careers")})
 
 
 def terms(request):
-    return render(request, "pages/terms.html")
+    return render(request, "pages/terms.html", {"faq_section": _get_faq_section("terms")})
 
 
 def privacy(request):
-    return render(request, "pages/privacy.html")
+    return render(request, "pages/privacy.html", {"faq_section": _get_faq_section("privacy")})
 
 
 def legal(request):
@@ -690,7 +718,8 @@ def booking_terms(request):
 
     return render(
         request,
-        "pages/booking_terms.html"
+        "pages/booking_terms.html",
+        {"faq_section": _get_faq_section("booking_terms")},
     )
 
 

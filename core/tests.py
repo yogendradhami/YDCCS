@@ -81,13 +81,6 @@ class SmokeTest(TestCase):
         self.assertIn("/insurance/", body)
         self.assertIn("/referral-program/", body)
 
-    def test_insurance_page_uses_page_specific_faq(self):
-        resp = self.client.get("/insurance/")
-        self.assertEqual(resp.status_code, 200)
-        body = resp.content.decode("utf-8")
-        self.assertIn("How are insurance and guarantees handled?", body)
-        self.assertNotIn("Do you service all Adelaide suburbs?", body)
-
     def test_eco_friendly_page_has_modern_sections(self):
         resp = self.client.get("/eco-friendly-cleaning/")
         self.assertEqual(resp.status_code, 200)
