@@ -8,17 +8,13 @@
 <link rel="stylesheet" href="{% static 'css/pages/faq.css' %}">
 {% endblock %}
 
-{% block extra_head %}
-{% block faq_schema %}{% endblock %}
-{% endblock %}
-
 {% block content %}
 
 <!-- Hero Section -->
 <section class="faq-hero">
     <div class="container">
         <h1>Common Questions Answered</h1>
-        <p>Find quick answers to frequently asked questions about our services, pricing, and booking process. Can't find what you're looking for? Contact us directly or use our chatbot for immediate assistance.</p>
+        <p>Find quick answers to our services, pricing, and booking process. Can't find what you're looking for? Send us a question below and we'll answer it here.</p>
         
         <div class="faq-search">
             <input type="text" id="faqSearch" placeholder="Search FAQ..." aria-label="Search frequently asked questions">
@@ -26,34 +22,58 @@
     </div>
 </section>
 
-{% include 'shared/partials/faq.html' %}
-
-<!-- Community Questions Section -->
-<section class="community-questions-section">
+<section class="customer-submissions">
     <div class="container">
-        <h2>Submit Your Question</h2>
-        <p>Can't find the answer you're looking for? Submit your question and our team will respond within 24 hours.</p>
-        
-        <form class="question-form" method="POST" action="">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="name">Your Name *</label>
-                <input type="text" id="name" name="name" required>
+        <div class="section-title">
+            <h2>Customer Questions</h2>
+            <p>Recent customer-submitted questions are shown here. Answers appear in this same section once an admin replies and publishes them.</p>
+        </div>
+
+        {% if customer_submissions %}
+            <div class="faq-grid">
+                {% for q in customer_submissions %}
+                    <div class="faq-item">
+                        <button type="button" class="faq-question" aria-expanded="false">
+                            <span class="faq-question-text">{{ q.question }}</span>
+                            <span class="faq-icon" aria-hidden="true">+</span>
+                        </button>
+                        <div class="faq-answer" role="region" hidden>
+                            {% if q.answer and q.is_published %}
+                                <p class="faq-status faq-status-published">Published</p>
+                                <p>{{ q.answer }}</p>
+                                <p class="faq-meta">Answered by <strong>{{ q.answered_by.get_full_name|default:q.answered_by.username }}</strong> on {{ q.answered_at|date:"j M Y" }} for <strong>{{ q.name }}</strong></p>
+                            {% elif q.answer %}
+                                <p class="faq-status faq-status-pending">Pending publication</p>
+                                <p class="faq-meta">This answer is waiting for publication.</p>
+                            {% else %}
+                                <p class="faq-status faq-status-unanswered">Unanswered</p>
+                                <p class="faq-meta">Waiting for an admin reply. Submitted by <strong>{{ q.name }}</strong>{% if q.email %} (<a href="mailto:{{ q.email }}">{{ q.email }}</a>){% endif %}.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-            
-            <div class="form-group">
-                <label for="email">Email Address *</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="question">Your Question *</label>
-                <textarea id="question" name="question" rows="5" required></textarea>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Submit Question</button>
-        </form>
+        {% else %}
+            <p>No customer questions have been submitted yet. Use the form below to ask one.</p>
+        {% endif %}
     </div>
+</section>
+
+<style>
+.customer-submissions .faq-status { display:inline-flex; align-items:center; margin:0 0 0.75rem; padding:4px 10px; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; border-radius:999px; }
+.customer-submissions .faq-status-published { background:#def7ec; color:#0f5132; }
+.customer-submissions .faq-status-pending { background:#fef3c7; color:#92400e; }
+.customer-submissions .faq-status-unanswered { background:#fee2e2; color:#991b1b; }
+.customer-submissions .faq-meta { margin:0; color:#4b5563; font-size:13px; }
+.customer-submissions .faq-answer p { margin:0 0 10px; }
+</style>
+
+<section class="faq-general">
+    {% include 'shared/partials/faq.html' %}
+</section>
+
+<section class="faq-form-section">
+    {% include 'shared/partials/faq_form.html' %}
 </section>
 
 <!-- CTA Section -->
@@ -70,58 +90,23 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const faqItems = document.querySelectorAll('.faq-item');
-
-    faqItems.forEach(item => {
-        const button = item.querySelector('.faq-question');
-        const answer = item.querySelector('.faq-answer');
-
-        if (!button || !answer) return;
-
-        answer.style.maxHeight = '0';
-        answer.style.overflow = 'hidden';
-
-        button.addEventListener('click', function() {
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
-            const category = this.closest('.faq-category');
-
-            if (category) {
-                const otherItems = category.querySelectorAll('.faq-item');
-                otherItems.forEach(otherItem => {
-                    if (otherItem !== item) {
-                        otherItem.classList.remove('expanded');
-                        const otherButton = otherItem.querySelector('.faq-question');
-                        if (otherButton) otherButton.setAttribute('aria-expanded', 'false');
-                        const otherAnswer = otherItem.querySelector('.faq-answer');
-                        if (otherAnswer) otherAnswer.style.maxHeight = '0';
-                    }
-                });
-            }
-
-            item.classList.toggle('expanded', !isExpanded);
-            this.setAttribute('aria-expanded', String(!isExpanded));
-
-            if (isExpanded) {
-                answer.style.maxHeight = '0';
-            } else {
-                answer.style.maxHeight = answer.scrollHeight + 'px';
-            }
+    const searchInput = document.getElementById('faqSearch');
+    if (!searchInput) return;
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const qEl = item.querySelector('.faq-question-text');
+            const aEl = item.querySelector('.faq-answer');
+            const questionText = qEl ? qEl.textContent.toLowerCase() : '';
+            const answerText = aEl ? aEl.textContent.toLowerCase() : '';
+            const isMatch = !searchTerm || questionText.includes(searchTerm) || answerText.includes(searchTerm);
+            item.style.display = isMatch ? '' : 'none';
         });
     });
-
-    const searchInput = document.getElementById('faqSearch');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            faqItems.forEach(item => {
-                const questionText = item.querySelector('.faq-question span').textContent.toLowerCase();
-                const answerText = item.querySelector('.faq-answer').textContent.toLowerCase();
-                const isMatch = questionText.includes(searchTerm) || answerText.includes(searchTerm);
-                item.style.display = isMatch ? 'block' : 'none';
-            });
-        });
-    }
 });
 </script>
 
 {% endblock %}
+
+{% block default_faq_section %}{% endblock %}

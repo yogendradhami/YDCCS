@@ -49,6 +49,14 @@ from payroll.models import PayrollRecord
 from quotes.models import QuoteRequest
 from reviews.forms import ReviewForm
 from reviews.models import Review
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404, redirect
+from core.models import FAQQuestion
+from core.forms import FAQSubmissionForm
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 # Company settings form
 from .forms import CompanySettingsForm
@@ -301,6 +309,46 @@ def update_quote_status(request, quote_id):
 def customer_list(request):
     customers = Customer.objects.all().order_by("-created_at")
     return render(request, "customers/customer_list.html", {"customers": customers})
+
+
+@login_required
+def faq_question_list(request):
+    questions = FAQQuestion.objects.order_by("-created_at")
+    return render(request, "dashboard/faq_questions.html", {"questions": questions})
+
+
+@login_required
+def faq_question_reply(request, question_id):
+    q = get_object_or_404(FAQQuestion, id=question_id)
+    if request.method == "POST":
+        answer = request.POST.get("answer", "").strip()
+        publish = request.POST.get("publish") == "1"
+
+        if publish and not answer:
+            messages.error(request, "❌ Please enter an answer before publishing.")
+            return render(request, "dashboard/faq_reply.html", {"question": q})
+
+        q.answer = answer
+        q.answered_by = request.user
+        q.answered_at = timezone.now()
+        q.is_published = publish and bool(answer)
+        q.save()
+
+        if publish and q.email:
+            try:
+                subject = f"Answer to your question on {settings.SITE_URL}"
+                message = f"Hi {q.name},\n\nYour question:\n{q.question}\n\nOur answer:\n{q.answer}\n\nThanks,\nYD Commercial Cleaning Team"
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [q.email])
+            except Exception:
+                pass
+
+        if publish:
+            messages.success(request, "✅ Reply saved and published.")
+        else:
+            messages.success(request, "✅ Reply saved as draft.")
+        return redirect("faq_question_list")
+
+    return render(request, "dashboard/faq_reply.html", {"question": q})
 
 
 @login_required

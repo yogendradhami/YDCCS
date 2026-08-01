@@ -67,6 +67,13 @@
     @media(min-width:768px){.hero-grid{grid-template-columns:1fr 1fr}}
     </style>
 
+    <style>
+    /* Normalize header font sizes to match Services header sizing */
+    .yd-mega-card h4, .yd-dropdown-menu a, .yd-mega-menu a h4 { font-size:16px }
+    .yd-mega-card h4, .yd-logo-title { font-size:16px }
+    .section-title h2, .page-hero h1, .service-hero h1 { font-size:24px }
+    </style>
+
     {% block extra_css %}{% endblock %}
 
     {% if company_settings %}

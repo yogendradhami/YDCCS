@@ -8,4 +8,6 @@ from .faq_data import FAQ_PAGE_CONFIG
 
 
 def faq_section(request):
-    return {"faq_section": FAQ_PAGE_CONFIG.get("generic", {})}
+    section = FAQ_PAGE_CONFIG.get("generic", {}).copy()
+    section["page_key"] = "generic"
+    return {"faq_section": section}

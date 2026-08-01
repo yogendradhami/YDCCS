@@ -35,6 +35,8 @@ from google_reviews.review_utils import (
     get_public_google_reviews,
 )
 
+from .models import FAQQuestion
+
 from bookings.forms import BookingForm
 
 def _slugify_area(area):
@@ -113,7 +115,21 @@ def _format_faq_value(value, **format_kwargs):
 
 def _get_faq_section(faq_key="generic", **format_kwargs):
     config = FAQ_PAGE_CONFIG.get(faq_key, FAQ_PAGE_CONFIG["generic"])
-    return _format_faq_value(copy.deepcopy(config), **format_kwargs)
+    section = _format_faq_value(copy.deepcopy(config), **format_kwargs)
+    # expose the key so templates can set the submission page_key
+    try:
+        section["page_key"] = faq_key
+    except Exception:
+        pass
+
+    return section
+
+
+def _get_faq_submissions(faq_key="generic"):
+    try:
+        return FAQQuestion.objects.filter(page_key=faq_key).order_by("-created_at")
+    except Exception:
+        return FAQQuestion.objects.none()
 
 
 # ====================================================
@@ -394,8 +410,52 @@ def case_studies(request):
     return render(request, "pages/case-studies.html")
 
 
+from .forms import FAQSubmissionForm
+from .models import FAQQuestion
+from django.utils import timezone
+from notifications.models import Notification
+
+
 def faq(request):
-    return render(request, "pages/faq.html", {"faq_section": _get_faq_section("faq")})
+    faq_section = _get_faq_section("faq")
+    customer_submissions = _get_faq_submissions("faq")
+
+    if request.method == "POST":
+        form = FAQSubmissionForm(request.POST)
+        if form.is_valid():
+            faq_q = form.save(commit=False)
+            faq_q.save()
+
+            # notify admin/staff users
+            from django.contrib.auth import get_user_model
+
+            User = get_user_model()
+            staff_users = User.objects.filter(is_staff=True, is_active=True)
+            for u in staff_users:
+                Notification.objects.create(
+                    user=u,
+                    title="New FAQ submission",
+                    message=f"New question submitted: {faq_q.question[:140]}",
+                    notification_type="system",
+                    link=f"/dashboard/faq-questions/",
+                )
+
+            messages.success(request, "✅ Thank you! Your question has been submitted.")
+            return redirect("/faq/#community")
+        else:
+            messages.error(request, "❌ Please check the FAQ form and try again.")
+    else:
+        form = FAQSubmissionForm(initial={"page_key": "faq"})
+
+    return render(
+        request,
+        "pages/faq.html",
+        {
+            "faq_section": faq_section,
+            "form": form,
+            "customer_submissions": customer_submissions,
+        },
+    )
 
 
 def blog(request):

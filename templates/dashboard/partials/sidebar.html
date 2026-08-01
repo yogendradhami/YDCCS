@@ -47,6 +47,17 @@
                     {% endif %}
                 </a>
 
+                <a href="/dashboard/faq-questions/">
+                    <span>FAQ Questions</span>
+                    {% if notification_counts.faq_questions %}
+                        <span class="side-badge">{{ notification_counts.faq_questions }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="/faq/" target="_blank">
+                    <span>View FAQ</span>
+                </a>
+
                 <a href="/dashboard/customer-loyalty/">
                     <span>Customer Loyalty</span>
                     {% if notification_counts.loyalty %}

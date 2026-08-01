@@ -1,3 +1,4 @@
+
 <section class="{{ faq_section.section_class|default:'section faq-section' }}">
     <div class="container">
         <div class="section-title">
@@ -8,22 +9,124 @@
         <div class="faq-grid">
             {% if faq_section.faq_categories %}
                 {% for category in faq_section.faq_categories %}
-                    {% for item in category.entries %}
-                        <div class="{{ faq_section.item_class|default:'faq-box' }}">
-                            <h4>{{ item.question }}</h4>
-                            <p>{{ item.answer }}</p>
+                    <div class="faq-category">
+                        {% if category.title %}<h3 class="faq-category-title">{{ category.title }}</h3>{% endif %}
+                        <div class="faq-category-entries">
+                            {% for item in category.entries %}
+                                <div class="faq-item">
+                                    <button type="button" class="faq-question" aria-expanded="false">
+                                        <span class="faq-question-text">{{ item.question }}</span>
+                                        <span class="faq-icon" aria-hidden="true">+</span>
+                                    </button>
+                                    <div class="faq-answer" role="region" hidden>
+                                        <p>{{ item.answer }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    </div>
                 {% endfor %}
             {% else %}
                 {% for item in faq_section.entries %}
-                    <div class="{{ faq_section.item_class|default:'faq-box' }}">
-                        <h4>{{ item.question }}</h4>
-                        <p>{{ item.answer }}</p>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question" aria-expanded="false">
+                            <span class="faq-question-text">{{ item.question }}</span>
+                            <span class="faq-icon" aria-hidden="true">+</span>
+                        </button>
+                        <div class="faq-answer" role="region" hidden>
+                            <p>{{ item.answer }}</p>
+                            {% if item.customer_name %}
+                                <p class="faq-meta">
+                                    <span class="faq-badge">Customer Q&A</span>
+                                    Answered from a customer submission by <strong>{{ item.customer_name }}</strong>{% if item.customer_email %} (<a href="mailto:{{ item.customer_email }}">{{ item.customer_email }}</a>){% endif %}{% if item.answered_at %} on {{ item.answered_at|date:"j M Y" }}{% endif %}.
+                                </p>
+                            {% endif %}
+                        </div>
                     </div>
                 {% endfor %}
             {% endif %}
         </div>
     </div>
+
+    <style>
+    /* FAQ accordion styles - compact font sizes and smooth slide-down */
+    .faq-grid { display: grid; gap: 18px; }
+    .faq-category-title { font-size: 20px; margin: 8px 0 10px; color: #333; }
+    .faq-item { background:#fff;border:1px solid #e6e6e6;border-radius:8px;overflow:hidden }
+    .faq-question { width:100%; text-align:left; padding:14px 16px; background:transparent; border:0; display:flex; align-items:center; justify-content:space-between; font-size:16px; color:#1f2937; cursor:pointer }
+    .faq-question:focus { outline:2px solid #c7ddff; outline-offset:2px }
+    .faq-question-text { flex:1; text-align:left }
+    .faq-icon { margin-left:12px; font-weight:700; color:#667eea }
+    .faq-answer { max-height:0; overflow:hidden; transition: max-height 280ms ease, padding 240ms ease; padding:0 16px }
+    .faq-item.expanded .faq-answer { padding:12px 16px; }
+    .faq-answer p { margin:0; font-size:14px; color:#374151 }
+    .faq-meta { margin-top:12px; font-size:12px; color:#6b7280; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .faq-badge { display:inline-block; padding:2px 8px; font-size:11px; font-weight:700; background:#eef2ff; color:#4338ca; border-radius:999px; text-transform:uppercase; letter-spacing:0.04em; }
+    .faq-meta a { color:#4f46e5; text-decoration:none; }
+    .faq-meta a:hover { text-decoration:underline; }
+    /* smaller, consistent section title description */
+    .section-title h2 { font-size:24px; margin-bottom:6px }
+    .section-title p { font-size:14px; margin:0 0 12px; color:#6b7280 }
+    </style>
+
+    <script>
+    (function(){
+        function toggleItem(item){
+            var btn = item.querySelector('.faq-question');
+            var ans = item.querySelector('.faq-answer');
+            var expanded = btn.getAttribute('aria-expanded') === 'true';
+            if(expanded){
+                btn.setAttribute('aria-expanded','false');
+                item.classList.remove('expanded');
+                ans.style.maxHeight = '0';
+                ans.hidden = true;
+            } else {
+                // collapse other items in same category
+                var container = item.closest('.faq-category-entries') || item.parentNode;
+                Array.prototype.forEach.call(container.querySelectorAll('.faq-item'), function(other){
+                    if(other !== item){
+                        other.classList.remove('expanded');
+                        var obtn = other.querySelector('.faq-question');
+                        var oans = other.querySelector('.faq-answer');
+                        if(obtn) obtn.setAttribute('aria-expanded','false');
+                        if(oans) { oans.style.maxHeight = '0'; oans.hidden = true; }
+                    }
+                });
+
+                btn.setAttribute('aria-expanded','true');
+                item.classList.add('expanded');
+                ans.hidden = false;
+                // set maxHeight to scrollHeight for smooth animation
+                ans.style.maxHeight = ans.scrollHeight + 'px';
+            }
+        }
+
+        // attach direct listeners to buttons (more reliable than delegated in some environments)
+        function attachListeners(){
+            Array.prototype.forEach.call(document.querySelectorAll('.faq-question'), function(btn){
+                var item = btn.closest('.faq-item');
+                if(!item) return;
+                btn.removeEventListener('click', btn._faqClickHandler || function(){});
+                btn._faqClickHandler = function(e){
+                    toggleItem(item);
+                };
+                btn.addEventListener('click', btn._faqClickHandler);
+            });
+
+            // initialize any answers left open (for noscript or server state)
+            Array.prototype.forEach.call(document.querySelectorAll('.faq-item'), function(item){
+                var ans = item.querySelector('.faq-answer');
+                if(item.classList.contains('expanded')){
+                    ans.hidden = false; ans.style.maxHeight = ans.scrollHeight + 'px';
+                } else { ans.hidden = true; ans.style.maxHeight = '0'; }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', attachListeners);
+        // in case partials are loaded dynamically, expose a method
+        window.yd_init_faqs = attachListeners;
+    })();
+    </script>
+
 </section>
 
