@@ -78,6 +78,8 @@ from .views import (
     maintenance_list,
     operations_command_centre,
     owner_alert_centre,
+    faq_question_list,
+    faq_question_reply,
     owner_command_centre,
     profit_loss_dashboard,
     purchase_orders,
@@ -106,6 +108,8 @@ from .views import (
     update_quote_status,
     vehicle_list,
     vip_campaigns,
+    faq_question_list,
+    faq_question_reply,
 )
 
 urlpatterns = [
@@ -394,6 +398,10 @@ urlpatterns = [
     ),
     path("dashboard/vip-campaigns/", vip_campaigns, name="vip_campaigns"),
     path("dashboard/vip-campaigns/send/", send_vip_campaign, name="send_vip_campaign"),
+
+    # FAQ submissions
+    path("dashboard/faq-questions/", faq_question_list, name="faq_question_list"),
+    path("dashboard/faq-questions/<int:question_id>/reply/", faq_question_reply, name="faq_question_reply"),
     path(
         "dashboard/job-profitability/",
         job_profitability_dashboard,

@@ -121,6 +121,15 @@ STORAGES = {
     },
 }
 
+# When running tests, use local file storage to avoid external Cloudinary uploads
+import sys
+if any(arg.startswith('test') for arg in sys.argv):
+    STORAGES['default'] = {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    }
+    MEDIA_ROOT = BASE_DIR / 'test_media'
+    MEDIA_URL = '/media/'
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 

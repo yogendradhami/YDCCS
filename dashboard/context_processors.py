@@ -18,6 +18,7 @@ from dashboard.models import (
     PurchaseOrder,
     Supplier,
 )
+from core.models import FAQQuestion
 from invoices.models import Invoice
 from quotes.models import QuoteRequest
 
@@ -137,6 +138,7 @@ def notification_context(request):
         ).count()
 
         notification_counts["suppliers"] = Supplier.objects.filter(active=False).count()
+        notification_counts["faq_questions"] = FAQQuestion.objects.filter(is_published=False).count()
 
     else:
         notifications = []

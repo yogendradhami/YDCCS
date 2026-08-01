@@ -1,0 +1,19 @@
+{% extends 'dashboard_base.html' %}
+
+{% block content %}
+<h1>Reply to FAQ #{{ question.id }}</h1>
+<p><strong>From:</strong> {{ question.name }} &lt;{{ question.email }}&gt;</p>
+<p><strong>Question:</strong> {{ question.question }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label for="answer">Answer</label>
+        <textarea name="answer" id="answer" rows="6">{{ question.answer }}</textarea>
+    </div>
+    <div>
+        <label><input type="checkbox" name="publish" value="1" {% if question.is_published %}checked{% endif %}> Publish and show on site</label>
+    </div>
+    <button type="submit">Save Reply</button>
+</form>
+{% endblock %}

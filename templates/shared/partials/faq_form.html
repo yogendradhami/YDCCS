@@ -1,0 +1,27 @@
+<section id="community" class="faq-submit-section">
+    <div class="container">
+        <div class="section-title">
+            <h3>Submit Your Question</h3>
+            <p>Can't find the answer? Ask us and we'll publish helpful Q&A once it has been answered.</p>
+        </div>
+        <form method="POST" action="/faq/" class="faq-submit-form">
+            {% csrf_token %}
+            {{ form.page_key }}
+            <div class="faq-form-grid">
+                <div class="faq-form-group">
+                    <label for="id_name">Your name</label>
+                    {{ form.name }}
+                </div>
+                <div class="faq-form-group">
+                    <label for="id_email">Email address</label>
+                    {{ form.email }}
+                </div>
+            </div>
+            <div class="faq-form-group">
+                <label for="id_question">Your question</label>
+                {{ form.question }}
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Question</button>
+        </form>
+    </div>
+</section>
