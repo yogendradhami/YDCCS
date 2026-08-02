@@ -44,20 +44,28 @@ FAQ_PAGE_CONFIG = {
         "item_class": "faq-card",
         "entries": [
             {
-                "question": "Do you service all Adelaide suburbs?",
-                "answer": "Yes. We provide cleaning services throughout Adelaide and surrounding areas, including homes, offices and commercial premises.",
+                "question": "How much does cleaning cost in Adelaide?",
+                "answer": "The cost of cleaning in Adelaide depends on the size of the property, the type of service, and how much detail is required. A standard home clean is usually priced by time and area, while bond cleaning and deep cleaning are typically quoted after an inspection or a quick property summary. For many customers, the best way to get a fair and accurate price is to request a free quote with your suburb, property type, and any special requirements. We believe in transparent pricing, so you will always understand what is included before the job begins. Whether you need a one-off house clean, a recurring office clean, or an end-of-lease service, we tailor the quote to your needs and budget.",
             },
             {
-                "question": "Can I book a one-off clean?",
-                "answer": "Absolutely. We offer one-off, recurring and deep cleans depending on your schedule and property needs.",
+                "question": "What is included in bond cleaning?",
+                "answer": "Bond cleaning is a thorough, inspection-focused clean designed to help tenants return a property in excellent condition. In most cases, this includes kitchen cleaning, bathroom sanitising, internal window and frame wiping, floor vacuuming and mopping, dusting of surfaces, skirting boards, light switches, door handles, and appliance exteriors. We also focus on rubbish removal, cobweb removal, and detailed presentation of cupboards, benches, and living spaces. Because bond cleaning is often judged against real estate or property manager standards, our team works carefully to make sure the finish is presentation-ready. If your property has specific inspection requirements or additional areas you want addressed, we can tailor the service to suit your move-out checklist.",
             },
             {
-                "question": "Are your cleaners insured?",
-                "answer": "Yes. Our team is fully insured and committed to delivering safe, professional service with peace of mind.",
+                "question": "Do you provide carpet cleaning?",
+                "answer": "Yes, we provide professional carpet cleaning as part of our residential and commercial service offering. Carpet cleaning is ideal for refreshing high-traffic areas, removing embedded dirt, and improving the overall appearance and hygiene of your property. We use effective cleaning methods that are suitable for different carpet types and can help reduce odours and dullness caused by regular wear. This service is especially useful for rental inspections, busy family homes, and workplace spaces where foot traffic is high. If you are unsure whether your carpet needs a light refresh or a deeper treatment, we can advise on the best approach based on the condition and use of the carpet.",
             },
             {
-                "question": "How quickly can I get a quote?",
-                "answer": "Most enquiries receive a prompt response and we can often provide an estimate within 24 hours.",
+                "question": "Do you supply cleaning products?",
+                "answer": "Yes, our team supplies the professional cleaning products and equipment needed for the job. We use trusted products that are effective for everyday cleaning while still being suitable for many homes, offices, and commercial spaces. Where customers have a preferred product or a specific sensitivity to fragrance or chemicals, we can usually adjust the approach and use what is appropriate. Our goal is to deliver a high-quality clean with minimal disruption while keeping the process efficient and dependable. That means you do not need to worry about sourcing supplies or preparing the equipment in advance.",
+            },
+            {
+                "question": "Do you clean offices after hours?",
+                "answer": "Absolutely. We understand that businesses often need cleaning outside regular operating hours so that work can continue without interruption. After-hours and early-morning office cleaning is a popular option for many of our commercial clients, especially in busy workplaces, healthcare settings, and managed properties. By scheduling around staff or customer traffic, we can complete cleaning tasks without disturbing your team or customers. Our approach is flexible and planned to suit your business routine, whether you need a one-off refresh or a recurring maintenance clean. We are happy to discuss the best timetable and service type for your site.",
+            },
+            {
+                "question": "How far do you travel?",
+                "answer": "We service Adelaide and surrounding suburbs, with coverage designed to support both residential and commercial customers across the metro area. In most cases, our local team can travel to homes, offices, retail sites, and leased properties throughout Adelaide with minimal delay. The exact travel time depends on your location, the size of the job, and your preferred time window. For customers in nearby outer suburbs or surrounding areas, we are still happy to discuss availability and plan accordingly. Our focus is to provide reliable local cleaning service with clear communication, fair scheduling, and a professional finish wherever your property is located.",
             },
         ],
     },
