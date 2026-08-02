@@ -29,7 +29,18 @@ def company_settings(request):
     # Return the first company settings record when present.
     # When the database is empty, fall back to a safe default model instance
     # so templates can still render without raising lookup errors.
-    settings = CompanySettings.objects.first() or CompanySettings()
+    settings = CompanySettings.objects.first()
+
+    if settings is None:
+        settings = CompanySettings(
+            business_name="YD Commercial Cleaning Services",
+            phone="0430 049 865",
+            email="ydcommercialcleaning@gmail.com",
+            facebook_url="https://www.facebook.com/ydcommercialcleaning",
+            instagram_url="https://www.instagram.com/ydcommercialcleaning",
+            linkedin_url="https://www.linkedin.com/in/yogendra-dhami-91b46640b",
+            tiktok_url="https://www.tiktok.com/@yd_cleaning3",
+        )
 
     return {"company_settings": settings}
 

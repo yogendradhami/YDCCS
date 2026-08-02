@@ -580,6 +580,107 @@ body {
     line-height: 1.75;
     margin-bottom: 0;
 }
+.home-promise-section {
+    padding: 80px 0 20px;
+}
+.home-promise-shell {
+    background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 28px;
+    padding: 34px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.07);
+}
+.home-promise-shell h2 {
+    margin-bottom: 14px;
+    color: #0f172a;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+}
+.home-promise-shell p {
+    color: #475569;
+    line-height: 1.85;
+    max-width: 760px;
+}
+.home-promise-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.78rem;
+    margin-bottom: 16px;
+}
+.home-blog-section {
+    padding: 20px 0 50px;
+}
+.home-blog-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 28px;
+}
+.home-blog-card {
+    background: #fff;
+    border-radius: 22px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.home-blog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.1);
+}
+.home-blog-card .home-blog-tag {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.home-blog-card h3 {
+    font-size: 1.08rem;
+    line-height: 1.45;
+    margin: 0;
+    color: #0f172a;
+}
+.home-blog-card p {
+    color: #475569;
+    line-height: 1.7;
+    margin: 0;
+}
+.home-blog-card a {
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 700;
+    margin-top: auto;
+}
+@media (max-width: 1100px) {
+    .home-blog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 640px) {
+    .home-blog-grid {
+        grid-template-columns: 1fr;
+    }
+    .home-promise-shell {
+        padding: 24px;
+    }
+}
 .quote-section {
     padding: 90px 0;
     background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #1d4ed8 100%);
@@ -781,10 +882,10 @@ body {
     <div class="hero-overlay"></div>
     <div class="container hero-grid">
         <div class="hero-copy">
-            <span class="hero-badge">Adelaide’s trusted cleaning specialists</span>
+            <span class="hero-badge">Professional Cleaning Services Adelaide | Residential & Commercial Cleaners</span>
             <h1>Professional Cleaning Services for Homes, Offices & Commercial Spaces</h1>
             <p>
-                From routine house cleaning to office maintenance and end-of-lease cleans, our local Adelaide team delivers reliable, detail-focused results with flexible scheduling and transparent pricing.
+                YD Commercial Cleaning Services provides reliable house cleaning, bond cleaning, office cleaning and commercial cleaning across Adelaide. Our fully insured local cleaners deliver detailed results with flexible scheduling and transparent pricing.
             </p>
 
             <div class="hero-buttons">
@@ -794,15 +895,26 @@ body {
 
             <div class="hero-trust-list">
                 <span>✅ Fully insured</span>
-                <span>✅ Same-week availability</span>
+                <span>✅ Adelaide Local Team</span>
+                <span>✅ Free Quotes</span>
                 <span>✅ Eco-friendly products</span>
                 <span>✅ Adelaide-wide coverage</span>
+                <span>✅ Satisfaction Guarantee</span>
             </div>
         </div>
 
         <div class="hero-visual-card reveal">
-            <h3>Why clients choose YD Commercial Cleaning</h3>
+            <h3>Why Adelaide Homeowners & Businesses Choose YD Cleaning</h3>
             <ul class="hero-feature-list">
+                
+                <li>Local Adelaide Knowledge</li>
+                <li>We understand Adelaide homes, rental inspections and commercial cleaning requirements.</li>
+
+                    <li>Professional Cleaning Standards
+
+                <li>Our cleaning process focuses on high-touch areas, hygiene, presentation and consistent results.</li>
+                <li>Reliable Communication</li>
+                <li>From your first enquiry to completion, we keep communication simple and transparent.</li>
                 <li>Flexible bookings for homes, offices and commercial sites</li>
                 <li>Meticulous attention to detail and consistent quality</li>
                 <li>Friendly local team with honest, upfront quotes</li>
@@ -830,84 +942,183 @@ body {
     </div>
 </section>
 
-<section id="services" class="section section-surface reveal">
+<section class="home-process-section reveal" aria-labelledby="home-process-heading">
     <div class="container">
-        <div class="section-title">
-            <span class="section-eyebrow">Our specialist services</span>
-            <h2>Cleaning solutions for every property type across Adelaide</h2>
-            <p>Whether you need weekly office cleaning, a one-off deep clean, or a detailed end-of-lease service, our team delivers dependable, professional results tailored to your space.</p>
-        </div>
+        <header class="home-process-header">
+            <p class="home-services-eyebrow">How we work</p>
+            <h2 id="home-process-heading">Our Professional Cleaning Process</h2>
+            <p>From the first inspection to the final walkthrough, we follow a simple, dependable process that keeps your home or workplace spotless.</p>
+        </header>
 
-        <div class="service-grid">
+        <div class="home-process-grid">
+            <article class="home-process-card">
+                <div class="home-process-step">1</div>
+                <h3>Property Assessment</h3>
+                <p>We understand your cleaning requirements, property size and preferred schedule.</p>
+            </article>
+
+            <article class="home-process-card">
+                <div class="home-process-step">2</div>
+                <h3>Detailed Cleaning Plan</h3>
+                <p>Our team prepares the right cleaning approach for your home or workplace.</p>
+            </article>
+
+            <article class="home-process-card">
+                <div class="home-process-step">3</div>
+                <h3>Professional Cleaning</h3>
+                <p>We complete the service using quality products and attention to detail.</p>
+            </article>
+
+            <article class="home-process-card">
+                <div class="home-process-step">4</div>
+                <h3>Final Inspection</h3>
+                <p>We review the completed work to ensure a high standard.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section id="services" class="home-services-section reveal" aria-labelledby="services-heading">
+    <div class="container">
+        <header class="home-services-header">
+            <p class="home-services-eyebrow">Our specialist services</p>
+            <h2 id="services-heading">Professional Cleaning Services in Adelaide</h2>
+            <p>Reliable residential and commercial cleaning services delivered by trained professionals across Adelaide and surrounding suburbs.</p>
+        </header>
+
+        <div class="home-services-grid" role="list">
             {% if services %}
-                {% for service in services %}
-                    <div class="service-card">
-                        <h4>{{ service.name }}</h4>
-                        <p>{{ service.description }}</p>
-                        {% if service.included %}
-                            <ul>
-                                {% for item in service.included %}
-                                    <li>{{ item }}</li>
-                                {% endfor %}
+                {% for service in services|slice:":6" %}
+                    <article class="home-services-card" role="listitem">
+                        <a class="home-services-card-link" href="{{ service.get_absolute_url }}" aria-label="Learn more about {{ service.name }}">
+                            <div class="home-services-iconwrap" aria-hidden="true">
+                                <img src="{% static 'images/services/' %}{% if service.slug == 'bond-cleaning' %}bond-cleaning{% elif service.slug == 'regular-house-cleaning' %}regular-house-cleaning{% elif service.slug == 'deep-cleaning' %}deep-cleaning{% elif service.slug == 'office-cleaning' %}office-cleaning{% elif service.slug == 'carpet-steam-cleaning' %}carpet-steam-cleaning{% elif service.slug == 'window-cleaning' %}window-cleaning{% elif service.slug == 'commercial-cleaning' %}commercial-cleaning{% else %}placeholder{% endif %}.svg" alt="{{ service.name }} service illustration" loading="lazy" decoding="async" width="88" height="88">
+                            </div>
+                            <h3>{{ service.name }}</h3>
+                            <p>{{ service.description }}</p>
+                            <ul class="home-services-features">
+                                {% if service.included %}
+                                    {% for item in service.included|slice:":3" %}
+                                        <li>{{ item }}</li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li>Trained local professionals</li>
+                                    <li>Flexible appointments</li>
+                                    <li>Detailed finish every visit</li>
+                                {% endif %}
                             </ul>
-                        {% endif %}
-                    </div>
+                            <span class="home-services-button">Learn More</span>
+                        </a>
+                    </article>
                 {% endfor %}
             {% else %}
-                <div class="service-card">
-                    <h4>Commercial Cleaning</h4>
-                    <p>Reliable cleaning for offices, medical centres, retail spaces and business premises.</p>
-                    <ul>
-                        <li>Daily, weekly or periodic visits</li>
-                        <li>Reception, kitchen and washroom care</li>
-                    </ul>
-                </div>
+                <article class="home-services-card" role="listitem">
+                    <a class="home-services-card-link" href="/services/commercial-cleaning-adelaide/" aria-label="Learn more about Commercial Cleaning">
+                        <div class="home-services-iconwrap" aria-hidden="true">
+                            <img src="{% static 'images/services/commercial-cleaning.svg' %}" alt="Commercial cleaning service illustration" loading="lazy" decoding="async" width="88" height="88">
+                        </div>
+                        <h3>Commercial Cleaning</h3>
+                        <p>Reliable cleaning for offices, medical centres, retail spaces and business premises.</p>
+                        <ul class="home-services-features">
+                            <li>Daily, weekly or periodic visits</li>
+                            <li>Reception and washroom care</li>
+                            <li>Professional presentation</li>
+                        </ul>
+                        <span class="home-services-button">Learn More</span>
+                    </a>
+                </article>
 
-                <div class="service-card">
-                    <h4>Office Cleaning</h4>
-                    <p>Professional office cleaning that keeps your workplace fresh, hygienic and presentable.</p>
-                    <ul>
-                        <li>Dusting, sanitising and floor care</li>
-                        <li>Flexible after-hours service</li>
-                    </ul>
-                </div>
+                <article class="home-services-card" role="listitem">
+                    <a class="home-services-card-link" href="/services/office-cleaning-adelaide/" aria-label="Learn more about Office Cleaning">
+                        <div class="home-services-iconwrap" aria-hidden="true">
+                            <img src="{% static 'images/services/office-cleaning.svg' %}" alt="Office cleaning service illustration" loading="lazy" decoding="async" width="88" height="88">
+                        </div>
+                        <h3>Office Cleaning</h3>
+                        <p>Professional office cleaning that keeps your workplace fresh, hygienic and presentable.</p>
+                        <ul class="home-services-features">
+                            <li>Dusting, sanitising and floor care</li>
+                            <li>Flexible after-hours service</li>
+                            <li>Consistent workplace standards</li>
+                        </ul>
+                        <span class="home-services-button">Learn More</span>
+                    </a>
+                </article>
 
-                <div class="service-card">
-                    <h4>End of Lease Cleaning</h4>
-                    <p>Detailed move-out cleaning for tenants, landlords and real estate agents.</p>
-                    <ul>
-                        <li>Full oven, bathroom and cabinet detailing</li>
-                        <li>Bond-ready presentation</li>
-                    </ul>
-                </div>
+                <article class="home-services-card" role="listitem">
+                    <a class="home-services-card-link" href="/services/bond-cleaning/" aria-label="Learn more about Bond Cleaning">
+                        <div class="home-services-iconwrap" aria-hidden="true">
+                            <img src="{% static 'images/services/bond-cleaning.svg' %}" alt="Bond cleaning service illustration" loading="lazy" decoding="async" width="88" height="88">
+                        </div>
+                        <h3>Bond Cleaning</h3>
+                        <p>Detailed move-out cleaning for tenants, landlords and real estate agents.</p>
+                        <ul class="home-services-features">
+                            <li>Full oven and cabinet detailing</li>
+                            <li>Bond-ready presentation</li>
+                            <li>Inspection-focused finish</li>
+                        </ul>
+                        <span class="home-services-button">Learn More</span>
+                    </a>
+                </article>
 
-                <div class="service-card">
-                    <h4>House Cleaning</h4>
-                    <p>One-off, regular and deep house cleaning for Adelaide homes and family properties.</p>
-                    <ul>
-                        <li>Kitchen, bathroom and living areas</li>
-                        <li>Weekly, fortnightly or once-off visits</li>
-                    </ul>
-                </div>
+                <article class="home-services-card" role="listitem">
+                    <a class="home-services-card-link" href="/services/regular-house-cleaning-adelaide/" aria-label="Learn more about Regular House Cleaning">
+                        <div class="home-services-iconwrap" aria-hidden="true">
+                            <img src="{% static 'images/services/regular-house-cleaning.svg' %}" alt="Regular house cleaning service illustration" loading="lazy" decoding="async" width="88" height="88">
+                        </div>
+                        <h3>Regular House Cleaning</h3>
+                        <p>One-off, regular and deep house cleaning for Adelaide homes and family properties.</p>
+                        <ul class="home-services-features">
+                            <li>Kitchen, bathroom and living areas</li>
+                            <li>Weekly or fortnightly visits</li>
+                            <li>Flexible scheduling</li>
+                        </ul>
+                        <span class="home-services-button">Learn More</span>
+                    </a>
+                </article>
 
-                <div class="service-card">
-                    <h4>Window Cleaning</h4>
-                    <p>Interior and exterior window cleaning for bright, streak-free results.</p>
-                    <ul>
-                        <li>Residential and commercial glass</li>
-                        <li>Frames, sills and hard-to-reach areas</li>
-                    </ul>
-                </div>
+                <article class="home-services-card" role="listitem">
+                    <a class="home-services-card-link" href="/services/carpet-steam-cleaning-adelaide/" aria-label="Learn more about Carpet Steam Cleaning">
+                        <div class="home-services-iconwrap" aria-hidden="true">
+                            <img src="{% static 'images/services/carpet-steam-cleaning.svg' %}" alt="Carpet steam cleaning service illustration" loading="lazy" decoding="async" width="88" height="88">
+                        </div>
+                        <h3>Carpet Steam Cleaning</h3>
+                        <p>Deep cleaning for carpets, upholstery and high-traffic soft furnishings.</p>
+                        <ul class="home-services-features">
+                            <li>Targeted stain treatment</li>
+                            <li>Refreshes odours and texture</li>
+                            <li>Ideal for homes and offices</li>
+                        </ul>
+                        <span class="home-services-button">Learn More</span>
+                    </a>
+                </article>
 
-                <div class="service-card">
-                    <h4>Deep Cleaning</h4>
-                    <p>High-impact cleaning for kitchens, bathrooms, high-use areas and seasonal refreshes.</p>
-                    <ul>
-                        <li>Detailed sanitising and finishing touch</li>
-                        <li>Perfect for pre-sale or post-event cleans</li>
-                    </ul>
-                </div>
+                <article class="home-services-card" role="listitem">
+                    <a class="home-services-card-link" href="/services/window-cleaning-adelaide/" aria-label="Learn more about Window Cleaning">
+                        <div class="home-services-iconwrap" aria-hidden="true">
+                            <img src="{% static 'images/services/window-cleaning.svg' %}" alt="Window cleaning service illustration" loading="lazy" decoding="async" width="88" height="88">
+                        </div>
+                        <h3>Window Cleaning</h3>
+                        <p>Interior and exterior window cleaning for bright, streak-free results.</p>
+                        <ul class="home-services-features">
+                            <li>Residential and commercial glass</li>
+                            <li>Frames, sills and hard-to-reach areas</li>
+                            <li>Clear finish with minimal disruption</li>
+                        </ul>
+                        <span class="home-services-button">Learn More</span>
+                    </a>
+                </article>
             {% endif %}
+        </div>
+
+        <div class="home-services-cta">
+            <div>
+                <p class="home-services-cta-eyebrow">Need Professional Cleaning?</p>
+                <h3>Request a free quote today and let our experienced team make your property spotless.</h3>
+            </div>
+            <div class="home-services-cta-actions">
+                <a href="#quote" class="home-services-cta-btn home-services-cta-btn-primary">Get Free Quote</a>
+                <a href="tel:0430049865" class="home-services-cta-btn home-services-cta-btn-secondary">Call Now</a>
+            </div>
         </div>
     </div>
 </section>
@@ -969,7 +1180,8 @@ body {
     <div class="container section-title">
         <span class="section-eyebrow">Service areas</span>
         <h2>Professional cleaners servicing Adelaide and nearby suburbs</h2>
-        <p>We proudly support homes and businesses throughout Adelaide CBD, Unley, Norwood, Glenelg, Burnside, Prospect, Mawson Lakes, Modbury and surrounding areas.</p>
+        <p>YD Commercial Cleaning Services provides professional cleaning across Adelaide and surrounding suburbs including Adelaide CBD, Glenelg, Norwood, Unley, Burnside, Prospect, Mawson Lakes and Modbury.
+        Whether you need residential cleaning, office cleaning or commercial maintenance, our local team provides reliable service throughout Adelaide.</p>
         <div class="area-list">
             <span>Adelaide CBD</span>
             <span>North Adelaide</span>
@@ -1096,6 +1308,60 @@ body {
 }
 </script>
 {% endif %}
+
+{% block default_faq_section %}
+<section class="home-promise-section reveal">
+    <div class="container">
+        <div class="home-promise-shell">
+            <div class="home-promise-badge">Our Cleaning Promise</div>
+            <h2>We believe every customer deserves reliable and professional cleaning.</h2>
+            <p>If something does not meet your expectations, contact us and we will work with you to resolve the issue.</p>
+        </div>
+    </div>
+</section>
+
+<section class="home-blog-section reveal">
+    <div class="container">
+        <div class="section-title">
+            <span class="section-eyebrow">Cleaning Tips & Advice</span>
+            <h2>Helpful reads for Adelaide homes and businesses</h2>
+            <p>Practical guides and checklists to help you plan your next clean with confidence.</p>
+        </div>
+
+        <div class="home-blog-grid">
+            <article class="home-blog-card">
+                <span class="home-blog-tag">Bond cleaning</span>
+                <h3>How Much Does Bond Cleaning Cost in Adelaide?</h3>
+                <p>Understand what affects pricing and how to plan a move-out clean without surprises.</p>
+                <a href="/services/bond-cleaning/">Read more →</a>
+            </article>
+
+            <article class="home-blog-card">
+                <span class="home-blog-tag">Spring guide</span>
+                <h3>Spring Cleaning Checklist Adelaide Homes</h3>
+                <p>A room-by-room checklist to help you refresh kitchens, bathrooms and living areas.</p>
+                <a href="/blog/spring-cleaning-checklist/">Read more →</a>
+            </article>
+
+            <article class="home-blog-card">
+                <span class="home-blog-tag">Office care</span>
+                <h3>Commercial Cleaning Checklist for Offices</h3>
+                <p>Use this checklist to keep reception, washrooms and shared spaces consistently tidy.</p>
+                <a href="/blog/office-cleanliness-productivity/">Read more →</a>
+            </article>
+
+            <article class="home-blog-card">
+                <span class="home-blog-tag">Workplace hygiene</span>
+                <h3>How Often Should Offices Be Cleaned?</h3>
+                <p>Learn the right cleaning rhythm for busy offices, meeting rooms and shared facilities.</p>
+                <a href="/blog/">Read more →</a>
+            </article>
+        </div>
+    </div>
+</section>
+
+{% include 'shared/partials/faq.html' %}
+{% endblock %}
 
 <section class="section section-surface">
     <div class="container">
