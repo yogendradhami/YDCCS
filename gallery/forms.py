@@ -3,9 +3,13 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from io import BytesIO
 
 from PIL import Image
-from pillow_heif import register_heif_opener
 
-register_heif_opener()
+# Optional HEIF/HEIC support — register opener if pillow_heif is present
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except Exception:
+    pass
 
 from .models import GalleryItem
 

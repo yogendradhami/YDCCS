@@ -2,8 +2,13 @@
 import mimetypes
 from pathlib import Path
 
-from pillow_heif import register_heif_opener
-register_heif_opener()
+# Optional HEIF/HEIC support — guard import so tests don't fail when library is missing
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except Exception:
+    # pillow_heif not available in this environment; continue without HEIF support
+    pass
 
 from django.db import models
 

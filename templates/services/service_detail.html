@@ -8,18 +8,26 @@
 {% load static %}
 
 {% block title %}
-    {{ service.title }}
-    {% if location %} {{ location }}{% endif %}
-    | YD Commercial Cleaning Services Adelaide
+{{ service.title }}{% if location %} {{ location }}{% endif %} | Professional Cleaning Services Adelaide | YD Commercial Cleaning
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.faq-question').forEach(function(btn){
+        btn.setAttribute('aria-expanded', 'false');
+        btn.addEventListener('click', function(){
+            var item = btn.closest('.faq-item');
+            var isOpen = item.classList.toggle('open');
+            btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    });
+});
+</script>
 {% endblock %}
 
 {% block meta_description %}
-    {{ service.description|default:"Professional cleaning services in Adelaide." }}
-    {% if location %}
-        Serving {{ location }}, Adelaide SA and surrounding suburbs.
-    {% else %}
-        Professional cleaners servicing Adelaide and surrounding suburbs.
-    {% endif %}
+{{ service.meta_description|default:service.description }}
 {% endblock %}
 
 {% block og_title %}
@@ -53,15 +61,20 @@
         <div class="service-split">
             <div class="split-image">
                 {% if service.hero_image %}
-                    <img src="{{ service.hero_image }}"
-                         alt="{{ service.title }} Adelaide cleaning service"
-                         loading="lazy"
-                         width="1200"
-                         height="800">
+                    <picture>
+                        <img src="{{ service.hero_image }}"
+                             alt="{{ service.title }}{% if location %} in {{ location }}{% endif %} - professional cleaning"
+                             loading="lazy"
+                             decoding="async"
+                             fetchpriority="low"
+                             width="1200"
+                             height="800">
+                    </picture>
                 {% else %}
                     <img src="{% static 'images/logo.jpeg' %}"
                          alt="YD Commercial Cleaning Services Adelaide"
                          loading="lazy"
+                         decoding="async"
                          width="1200"
                          height="800">
                 {% endif %}
@@ -93,7 +106,7 @@
 
                 <div class="service-hero-buttons">
                     <a href="{% url 'contact' %}" class="btn btn-primary">
-                        Get Free Quote
+                        Book Your Cleaning
                     </a>
                     <a href="tel:0430049865" class="btn btn-outline">
                         Call 0430 049 865
@@ -137,7 +150,7 @@
                 <div class="service-benefits-grid">
                     {% for item in service.included %}
                         <div class="service-benefit-card">
-                            <span class="benefit-icon">✓</span>
+                            <span class="benefit-icon" aria-hidden="true">✓</span>
                             <p>{{ item }}</p>
                         </div>
                     {% empty %}
@@ -178,6 +191,31 @@
                 </div>
             </div>
 
+            {% if service.process %}
+            <div class="service-section-block">
+                <h2>Our Process</h2>
+                <ol class="service-process-list">
+                    {% for step in service.process %}
+                        <li>{{ step }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+
+            {% if service.faqs %}
+            <div class="service-section-block">
+                <h2>Frequently Asked Questions</h2>
+                <div class="service-faqs">
+                    {% for qa in service.faqs %}
+                        <div class="faq-item">
+                            <button class="faq-question">{{ qa.q }}</button>
+                            <div class="faq-answer">{{ qa.a }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="service-section-block">
                 <h2>Service Packages & Pricing</h2>
                 <div class="service-pricing-grid">
@@ -197,6 +235,34 @@
                     {% endfor %}
                 </div>
             </div>
+
+            {% if service.gallery %}
+            <div class="service-section-block">
+                <h2>Before & After</h2>
+                <div class="service-gallery-grid">
+                    {% for img in service.gallery %}
+                        <div class="gallery-item">
+                            <img src="/static/images/services/{{ img }}"
+                                 alt="{{ service.title }} - image {{ forloop.counter }}"
+                                 loading="lazy"
+                                 decoding="async"
+                                 sizes="(max-width:600px) 100vw, 33vw">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if service.problems %}
+            <div class="service-section-block">
+                <h2>Common Kitchen Problems We Fix</h2>
+                <ul class="service-problems-list">
+                    {% for p in service.problems %}
+                        <li>{{ p }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
 
             <div class="service-quote-calculator">
                 <h3>Quick Service Overview</h3>
@@ -282,23 +348,25 @@
 
 
 
+{% if service.related_services %}
 <!-- RELATED SERVICES -->
 <section class="section related-services-section">
     <div class="container">
         <div class="section-title">
-            <h2>Related Adelaide Cleaning Services</h2>
-            <p>Explore our other professional cleaning solutions.</p>
+            <h2>Related Cleaning Services</h2>
+            <p>Explore other professional cleaning solutions from our Adelaide team.</p>
         </div>
 
         <div class="related-services-grid">
-            <a href="/services/commercial-cleaning-adelaide/">Commercial Cleaning Adelaide</a>
-            <a href="/services/office-cleaning-adelaide/">Office Cleaning Adelaide</a>
-            <a href="/services/end-of-lease-cleaning-adelaide/">End Of Lease Cleaning Adelaide</a>
-            <a href="/services/window-cleaning-adelaide/">Window Cleaning Adelaide</a>
-            <a href="/services/house-cleaning-adelaide/">House Cleaning Adelaide</a>
+            {% for related in service.related_services %}
+            <a href="{% url 'service_page' related.slug %}" class="related-service-card">
+                {{ related.label }}{% if location %} {{ location }}{% else %} Adelaide{% endif %}
+            </a>
+            {% endfor %}
         </div>
     </div>
 </section>
+{% endif %}
 
 <section class="section service-cta-section">
     <div class="container">

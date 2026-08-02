@@ -96,3 +96,9 @@ class SmokeTest(TestCase):
         self.assertIn("<title", body)
         self.assertIn('meta name="description"', body)
         self.assertIn('property="og:image"', body)
+
+    def test_service_page_accepts_adelaide_url_variants(self):
+        resp = self.client.get("/services/commercial-cleaning-adelaide/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode("utf-8")
+        self.assertIn("Commercial Cleaning", body)
