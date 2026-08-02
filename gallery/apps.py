@@ -6,7 +6,11 @@ class GalleryConfig(AppConfig):
     name = "gallery"
 
     def ready(self):
-        from pillow_heif import register_heif_opener
-        register_heif_opener()
+        # Optional HEIF/HEIC support — import if available
+        try:
+            from pillow_heif import register_heif_opener
+            register_heif_opener()
+        except Exception:
+            pass
 
         import gallery.signals

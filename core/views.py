@@ -18,7 +18,7 @@ from django.utils.text import slugify
 
 from .faq_data import FAQ_PAGE_CONFIG
 from .suburbs_data import ADELAIDE_SUBURBS
-from .seo_data import LOCATION_ALIASES, SERVICE_DEFINITIONS
+from .seo_data import LOCATION_ALIASES, SERVICE_DEFINITIONS, SERVICE_SLUG_ALIASES
 
 from blog.models import BlogPost
 from gallery.models import GalleryItem
@@ -599,13 +599,17 @@ def _normalize_service_slug(service_slug):
     carpet-steam-cleaning-adelaide-norwood
         -> carpet-steam-cleaning-adelaide
 
-    commercial-cleaning-burnside
+    commercial-cleaning-adelaide
         -> commercial-cleaning
     """
 
     slug = service_slug.lower().strip("-")
 
-    # Remove suburb suffixes first (exclude Adelaide)
+    # Remove Adelaide suffix first so Adelaide-specific SEO URLs map back to the base slug.
+    if slug.endswith("-adelaide"):
+        slug = slug[: -len("-adelaide")]
+
+    # Remove other suburb suffixes after that.
     for suburb_slug in LOCATION_ALIASES.keys():
         if suburb_slug == "adelaide":
             continue
@@ -614,7 +618,8 @@ def _normalize_service_slug(service_slug):
             slug = slug[: -len(suburb_slug)-1]
             break
 
-    return slug
+    # Convert common alternate service names into canonical slugs.
+    return SERVICE_SLUG_ALIASES.get(slug, slug)
 
 def _get_location_from_slug(slug):
     """
@@ -633,6 +638,20 @@ def _get_location_from_slug(slug):
 
 
 
+def _normalize_related_services(related_services):
+    normalized = []
+    for item in related_services or []:
+        if isinstance(item, dict):
+            slug = item.get("slug") or item.get("service_slug") or item.get("name") or ""
+            label = item.get("label") or item.get("title") or item.get("name") or slug.replace("-", " ").title()
+        else:
+            slug = str(item).strip()
+            label = slug.replace("-", " ").title()
+        if slug:
+            normalized.append({"slug": slug, "label": label})
+    return normalized
+
+
 def _service_context_from_model(service_obj):
     return {
         "title": service_obj.name,
@@ -641,7 +660,17 @@ def _service_context_from_model(service_obj):
         "overview": service_obj.overview,
         "included": service_obj.included or [],
         "packages": service_obj.packages or [],
-        "hero_image": service_obj.hero_image.url if service_obj.hero_image else "/static/images/logo.jpeg",
+        "hero_image": service_obj.hero_image.url if getattr(service_obj, 'hero_image', None) else "/static/images/logo.jpeg",
+        # Rich optional fields — provide safe defaults so templates can render consistently
+        "gallery": getattr(service_obj, "gallery_images", []) or [],
+        "problems": getattr(service_obj, "problems", []) or [],
+        "process": getattr(service_obj, "process_steps", []) or [],
+        "benefits": getattr(service_obj, "benefits", []) or [],
+        "ideal_for": getattr(service_obj, "ideal_for", []) or [],
+        "industries": getattr(service_obj, "industries", []) or [],
+        "faqs": getattr(service_obj, "faqs", []) or [],
+        "related_services": _normalize_related_services(getattr(service_obj, "related_services", []) or []),
+        "locations": getattr(service_obj, "locations", []) or [],
     }
 
 
@@ -665,25 +694,61 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
 
     hero_path = f"/static/images/services/{chosen}" if chosen else "/static/images/logo.jpeg"
 
+    # Build a rich context merging available definition fields and sensible defaults
     return {
-        "title": definition["service_name"],
-        "heading": definition["service_name"],
-        "description": definition["description"].format(location=location_name),
-        "overview": definition["overview"].format(location=location_name),
-        "included": definition["included"],
-        "packages": definition["packages"],
-        "hero_image": hero_path,
+        "title": definition.get("title", definition.get("service_name", "Cleaning Service")),
+        "heading": definition.get("heading", definition.get("service_name", "Cleaning Service")),
+        "description": definition.get("description", definition.get("overview", "")).format(location=location_name) if definition.get("description") else "",
+        "overview": definition.get("overview", "").format(location=location_name) if definition.get("overview") else "",
+        "meta_description": definition.get("meta_description", definition.get("description", "")).format(location=location_name) if definition.get("meta_description") or definition.get("description") else "",
+        "introduction": definition.get("introduction", definition.get("overview", "")).format(location=location_name) if definition.get("introduction") or definition.get("overview") else "",
+        "included": definition.get("included", []),
+        "packages": definition.get("packages", []),
+        "hero_image": definition.get("hero_image", hero_path),
+        "image_alt": definition.get("image_alt", f"{definition.get('title', definition.get('service_name', 'Cleaning Service'))} in {location_name}, Adelaide"),
+        "gallery": definition.get("gallery", []),
+        "problems": definition.get("problems", []),
+        "process": definition.get("process", []),
+        "benefits": definition.get("benefits", []),
+        "ideal_for": definition.get("ideal_for", []),
+        "industries": definition.get("industries", []),
+        "faqs": definition.get("faqs", []),
+        "related_services": _normalize_related_services(definition.get("related_services", [])),
+        "locations": definition.get("locations", [location_name]),
     }
+
+
+def _get_service_google_reviews(limit=6):
+    google_reviews = get_public_google_reviews(limit=limit)
+    if not google_reviews:
+        google_reviews = get_google_reviews_api()
+    if not google_reviews:
+        recent_reviews = Review.objects.order_by("-created_at")[:limit]
+        google_reviews = [
+            {
+                "reviewer_name": review.customer_name,
+                "review_text": review.review_text,
+                "rating": getattr(review, "stars", lambda: None)(),
+            }
+            for review in recent_reviews
+        ]
+    return google_reviews
 
 
 def service_page(request, service_slug):
 
-    location = _get_location_from_slug(service_slug)
-
     normalized_slug = _normalize_service_slug(service_slug)
+    path_slug = service_slug.lower().strip("-")
+    location = _get_location_from_slug(path_slug)
+
+    slug_candidates = [normalized_slug]
+    if path_slug != normalized_slug:
+        slug_candidates.append(path_slug)
+    if not normalized_slug.endswith("-adelaide"):
+        slug_candidates.append(f"{normalized_slug}-adelaide")
 
     service_obj = Service.objects.filter(
-        slug__iexact=normalized_slug
+        slug__in=slug_candidates
     ).first()
 
     if service_obj:
@@ -695,6 +760,18 @@ def service_page(request, service_slug):
         return redirect("home")
 
     service_url = f"{settings.SITE_URL}{request.path}"
+    google_reviews = _get_service_google_reviews(limit=6)
+
+    rating_values = []
+    for review in google_reviews:
+        rating = review.get("rating")
+        if isinstance(rating, int):
+            rating_values.append(rating)
+        elif isinstance(rating, str):
+            rating_values.append(rating.count("★") or rating.count("⭐"))
+
+    service_review_count = len(google_reviews)
+    service_average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
 
     return render(
         request,
@@ -703,6 +780,9 @@ def service_page(request, service_slug):
             "service": service,
             "service_url": service_url,
             "location": location,
+            "google_reviews": google_reviews,
+            "service_review_count": service_review_count,
+            "service_average_rating": service_average_rating,
             "faq_section": _get_faq_section(
                 "service_detail",
                 service_title=service["title"],

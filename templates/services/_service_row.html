@@ -5,7 +5,7 @@
     <div class="service-content" id="service-{{ index }}">
         <h3>{{ service.name }}</h3>
         <p>{{ service.description }}</p>
-        <a href="/services/{{ service.slug }}-adelaide/" class="btn btn-primary" aria-label="View {{ service.name }} details">View Service</a>
+        <a href="{{ service.get_absolute_url }}" class="btn btn-primary" aria-label="View {{ service.name }} details">View Service</a>
     </div>
 
     <figure class="service-image" aria-hidden="true">

@@ -31,3 +31,9 @@ class Service(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        slug = self.slug or ""
+        if not slug.endswith("-adelaide"):
+            slug = f"{slug}-adelaide"
+        return f"/services/{slug}/"
