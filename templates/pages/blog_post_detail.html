@@ -17,8 +17,8 @@
                 "@type": "Person",
                 "name": "YD Commercial Cleaning"
             },
-            "image": {% if post.featured_image %}"{{ post.featured_image.url|escapejs }}"{% else %}"{{ open_graph_image|default:'https://www.ydcleaning.com.au/static/images/logo.jpeg'|escapejs }}"{% endif %},
-            "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ request.build_absolute_uri|default:'https://www.ydcleaning.com.au'|escapejs }}"}
+            "image": {% if post.featured_image %}"{{ post.featured_image.url|escapejs }}"{% else %}"{{ open_graph_image|default:'https://ydcleaning.com.au/static/images/logo.jpeg'|escapejs }}"{% endif %},
+            "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ request.build_absolute_uri|default:'https://ydcleaning.com.au'|escapejs }}"}
         }
         </script>
 {% endblock %}
