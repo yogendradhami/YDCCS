@@ -593,33 +593,33 @@ def _normalize_service_slug(service_slug):
     Convert SEO location service URLs into base service slugs.
 
     Examples:
-    bond-cleaning-adelaide-glenelg
-        -> bond-cleaning-adelaide
+    end-of-lease-cleaning-north-adelaide
+        -> end-of-lease-cleaning
 
-    carpet-steam-cleaning-adelaide-norwood
-        -> carpet-steam-cleaning-adelaide
-
-    commercial-cleaning-adelaide
-        -> commercial-cleaning
+    carpet-steam-cleaning-norwood
+        -> carpet-steam-cleaning
     """
 
     slug = service_slug.lower().strip("-")
 
-    # Remove Adelaide suffix first so Adelaide-specific SEO URLs map back to the base slug.
-    if slug.endswith("-adelaide"):
-        slug = slug[: -len("-adelaide")]
+    # Remove full suburb names first (north-adelaide, glenelg, etc.)
+    location_slugs = sorted(
+        LOCATION_ALIASES.keys(),
+        key=len,
+        reverse=True
+    )
 
-    # Remove other suburb suffixes after that.
-    for suburb_slug in LOCATION_ALIASES.keys():
-        if suburb_slug == "adelaide":
-            continue
-
-        if slug.endswith(f"-{suburb_slug}"):
-            slug = slug[: -len(suburb_slug)-1]
+    for location_slug in location_slugs:
+        if slug.endswith(f"-{location_slug}"):
+            slug = slug[:-(len(location_slug) + 1)]
             break
 
-    # Convert common alternate service names into canonical slugs.
+    # Remove Adelaide suffix if still present
+    if slug.endswith("-adelaide"):
+        slug = slug[:-len("-adelaide")]
+
     return SERVICE_SLUG_ALIASES.get(slug, slug)
+
 
 def _get_location_from_slug(slug):
     """
