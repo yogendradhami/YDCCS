@@ -352,4 +352,3 @@ LOGGING = {
         "level": env.str("DJANGO_LOG_LEVEL", default="INFO"),
     },
 }
-

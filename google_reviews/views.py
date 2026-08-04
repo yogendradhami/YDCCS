@@ -1,13 +1,14 @@
+from django.utils import timezone
 import base64
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-
 import requests
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, response
 from django.shortcuts import redirect, render
 from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request as GoogleAuthRequest
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
@@ -184,7 +185,6 @@ def google_reviews(request):
         response.text,
         content_type="application/json"
     )
-
 def sync_google_reviews(request):
 
     google_account = GoogleAccount.objects.first()
@@ -217,7 +217,18 @@ def sync_google_reviews(request):
     )
 
 
+
+    if response.status_code != 200:
+        return HttpResponse(
+            response.text,
+            status=response.status_code
+        )
+
+
     data = response.json()
+
+
+    saved = 0
 
 
     for review in data.get("reviews", []):
@@ -228,6 +239,11 @@ def sync_google_reviews(request):
             "reviewReply",
             {}
         )
+
+
+        create_time = review.get("createTime")
+
+        reply_time = review_reply.get("updateTime")
 
 
         GoogleReview.objects.update_or_create(
@@ -261,11 +277,10 @@ def sync_google_reviews(request):
                     ),
 
                 "review_date":
-                    parse_datetime(
-                        review.get(
-                            "createTime"
-                        )
-                    ),
+                    parse_datetime(create_time)
+                    if isinstance(create_time, str)
+                    else None,
+
 
                 "reply":
                     review_reply.get(
@@ -273,12 +288,12 @@ def sync_google_reviews(request):
                         ""
                     ),
 
+
                 "reply_date":
-                    parse_datetime(
-                        review_reply.get(
-                            "updateTime"
-                        )
-                    ),
+                    parse_datetime(reply_time)
+                    if isinstance(reply_time, str)
+                    else None,
+
 
                 "review_url":
                     review.get(
@@ -288,12 +303,12 @@ def sync_google_reviews(request):
             }
         )
 
+        saved += 1
+
 
     return HttpResponse(
-        "✅ Google reviews synced successfully"
+        f"✅ Google reviews synced successfully. Saved {saved} reviews."
     )
-
-
 
 def get_google_reviews(request):
 
@@ -304,8 +319,26 @@ def get_google_reviews(request):
             "Google not connected."
         )
 
+    credentials = Credentials(
+        token=google_account.access_token,
+        refresh_token=google_account.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=settings.GOOGLE_CLIENT_ID,
+        client_secret=settings.GOOGLE_CLIENT_SECRET,
+    )
+
+
+    if credentials.expired and credentials.refresh_token:
+        credentials.refresh(GoogleAuthRequest())
+
+        google_account.access_token = credentials.token
+        google_account.save(
+            update_fields=["access_token"]
+        )
+
+
     headers = {
-        "Authorization": f"Bearer {google_account.access_token}",
+        "Authorization": f"Bearer {credentials.token}",
         "Accept": "application/json",
     }
 
