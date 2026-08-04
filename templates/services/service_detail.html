@@ -8,7 +8,7 @@
 {% load static %}
 
 {% block title %}
-{{ service.title }}{% if location %} {{ location }}{% endif %} | Professional Cleaning Services Adelaide | YD Commercial Cleaning
+{{ service.location_title|default:service.title }} | Professional Cleaning Services Adelaide | YD Commercial Cleaning
 {% endblock %}
 
 {% block scripts %}
@@ -31,11 +31,11 @@ document.addEventListener('DOMContentLoaded', function(){
 {% endblock %}
 
 {% block og_title %}
-    {{ service.title }} {% if location %}{{ location }}{% endif %} | YD Commercial Cleaning Services
+    {{ service.location_title|default:service.title }} | YD Commercial Cleaning Services
 {% endblock %}
 
 {% block og_description %}
-    {{ service.description }}
+    {{ service.meta_description|default:service.description }}
 {% endblock %}
 
 {% block og_image %}

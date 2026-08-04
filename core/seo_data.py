@@ -136,7 +136,7 @@ SERVICE_DEFINITIONS = {
 
         "image_alt": "End of lease cleaning service Adelaide home",
         "title": "End of Lease Cleaning",
-        "heading": "End of Lease / Bond Cleaning",
+        "heading": "End of Lease Cleaning Adelaide for Stress-Free Moving",
         "description": "Detailed end of lease cleaning for tenants, landlords and property managers in {location}.",
         "overview": "Thorough bond cleaning to help tenants leave their rental clean and compliant with landlord expectations.",
         "hero_image": "/static/images/services/end-of-lease-cleaning.svg",
@@ -155,7 +155,7 @@ SERVICE_DEFINITIONS = {
             {"name": "Premium Bond Clean", "price": "$450", "description": "Detailed cleaning for larger homes and rental properties."},
             {"name": "Express Bond Clean", "price": "$380", "description": "Fast scheduled cleaning to meet tight move-out dates."}
         ],
-        "related_services": ["bond-cleaning", "carpet-cleaning"],
+        "related_services": ["bond-cleaning","move-out-cleaning","carpet-cleaning"],
         "locations": [
             "Adelaide",
             "North Adelaide",
@@ -194,9 +194,9 @@ SERVICE_DEFINITIONS = {
         "image_alt": "Bond cleaner preparing Adelaide rental property",
 
         "title": "Bond Cleaning",
-        "heading": "Bond & End of Lease Cleaning",
-        "description": "Bond cleaning and end of lease cleaning in {location} to help customers get their deposit back.",
-        "overview": "Professional bond cleaning with same-day quotes and a satisfaction-focused approach.",
+        "heading": "Professional Bond Cleaning Adelaide for Successful Inspections",
+        "description": "Professional bond cleaning in {location} designed to help tenants prepare rental properties for final inspections and maximise their chance of bond return.",
+        "overview": "Our Adelaide bond cleaning service covers kitchens, bathrooms, carpets, floors and detailed areas checked during rental inspections. We help tenants, landlords and property managers achieve a clean property handover.",
         "hero_image": "/static/images/services/bond-cleaning.svg",
         "gallery": [],
         "problems": ["Missed inspection items", "Stubborn stains", "Unclean appliances"],
@@ -213,7 +213,7 @@ SERVICE_DEFINITIONS = {
             {"name": "Bond Clean + Carpet", "price": "$470", "description": "Includes carpet shampooing and a full move-out clean."},
             {"name": "Move-Out Bond Clean", "price": "$410", "description": "Designed for fast move-out preparation and inspection readiness."}
         ],
-        "related_services": ["end-of-lease-cleaning", "carpet-cleaning"],
+        "related_services": ["end-of-lease-cleaning","inspection-cleaning","carpet-cleaning"],
         "locations": [
             "Adelaide",
             "North Adelaide",
@@ -350,8 +350,6 @@ SERVICE_DEFINITIONS = {
         "seo_heading": "Professional Window Cleaning Adelaide",
 
         "image_alt": "Window cleaner providing glass cleaning Adelaide",
-
-        "seo_heading": "Professional Window Cleaning Adelaide",
 
         "image_alt": "Window cleaner providing glass cleaning Adelaide",
         "title": "Window Cleaning",
@@ -831,8 +829,8 @@ SERVICE_DEFINITIONS = {
 
         "image_alt":"Move out cleaning team preparing Adelaide rental property",
         "title": "Move Out Cleaning",
-        "heading": "Move-Out & End of Lease Cleaning",
-        "description": "Move out cleaning in {location} for end-of-lease and property handover requirements.",
+        "heading": "Move Out Cleaning Adelaide for Rental Property Handover",
+        "description": "Professional move out cleaning in {location} for tenants leaving houses, apartments and rental properties.",
         "overview": "Move out cleaning designed to leave rental properties in inspection-ready condition.",
         "hero_image": "/static/images/services/move-out-cleaning.svg",
         "gallery": [],
@@ -902,7 +900,7 @@ SERVICE_DEFINITIONS = {
             {"name": "Spring Deep Clean", "price": "$420", "description": "Intensive seasonal clean for extensive results."},
             {"name": "Spring Office Clean", "price": "$380", "description": "Seasonal refresh for office and commercial spaces."}
         ],
-        "related_services": ["deep-cleaning"],
+        "related_services": ["inspection-cleaning","bond-cleaning"],
         "locations": [
             "Adelaide",
             "North Adelaide",
@@ -1171,13 +1169,13 @@ SERVICE_DEFINITIONS = {
         "title": "Inspection Cleaning",
 
 
-        "heading": "Rental Inspection Cleaning Services Adelaide",
+        "heading": "Rental Inspection Cleaning Adelaide Before Your Property Inspection",
 
 
         "description": "Detailed inspection cleaning in {location} helping tenants, landlords and property managers prepare properties for successful rental inspections.",
 
 
-        "overview": "Our inspection cleaning service is designed for rental properties that require detailed preparation before landlord or property manager inspections. We focus on kitchens, bathrooms, floors, carpets, surfaces and areas commonly checked during rental inspections.",
+        "overview": "Ideal for tenants who need a professional clean before routine rental inspections. We focus on areas commonly checked by landlords and property managers.",
 
 
         "hero_image": "/static/images/services/inspection-cleaning.svg",
@@ -1333,7 +1331,7 @@ SERVICE_DEFINITIONS = {
 
         "image_alt":"Exit cleaning professional preparing Adelaide property",
         "title": "Exit Cleaning",
-        "heading": "Exit & Pre-Sale Cleaning",
+        "heading": "Exit Cleaning Adelaide for Property Handover",
         "description": "Exit cleaning in {location} to prepare properties for tenant moving or sale.",
         "overview": "Professional exit cleaning designed to meet landlord and property standards.",
         "hero_image": "/static/images/services/exit-cleaning.svg",
@@ -1352,7 +1350,10 @@ SERVICE_DEFINITIONS = {
             {"name": "Premium Exit Clean", "price": "$480", "description": "Detailed exit cleaning with extra care."},
             {"name": "Express Exit Clean", "price": "$420", "description": "Fast turnaround exit cleaning service."}
         ],
-        "related_services": ["move-out-cleaning"],
+        "related_services": [
+        "inspection-cleaning",
+        "bond-cleaning"
+        ],
         "locations": [
             "Adelaide",
             "North Adelaide",
@@ -1369,10 +1370,30 @@ SERVICE_DEFINITIONS = {
     },
     "carpet-cleaning": {
         "service_name": "Carpet Cleaning",
+            # SEO Fields
+        "meta_title": "Carpet Cleaning Adelaide | Professional Carpet Cleaners",
+
+        "meta_description": "Professional carpet cleaning Adelaide services for homes and businesses. Remove stains, dirt, allergens and odours with expert carpet cleaning methods.",
+
+        "keywords": [
+            "carpet cleaning Adelaide",
+            "carpet cleaners Adelaide",
+            "professional carpet cleaning Adelaide",
+            "carpet stain removal Adelaide",
+            "steam carpet cleaning Adelaide",
+            "commercial carpet cleaning Adelaide",
+            "residential carpet cleaners Adelaide",
+            "carpet sanitisation Adelaide"
+        ],
+
+        "seo_heading": "Professional Carpet Cleaning Services Adelaide",
+
+        "image_alt": "Professional carpet cleaning service Adelaide",
+
         "title": "Carpet Cleaning",
         "heading": "Carpet Cleaning & Restoration",
-        "description": "Carpet cleaning in {location} using hot water extraction and steam methods.",
-        "overview": "Professional carpet cleaning that removes deep-seated dirt, stains and odours.",
+        "description": "Professional carpet cleaning in {location} using hot water extraction and steam cleaning methods to remove stains, dirt, allergens and unwanted odours from residential and commercial carpets.",        
+        "overview": "Our Adelaide carpet cleaning service restores carpets by removing embedded dirt, stains, allergens and odours using professional hot water extraction techniques. Suitable for homes, offices, rental properties and commercial spaces.",
         "hero_image": "/static/images/services/carpet-cleaning.svg",
         "gallery": [],
         "problems": ["Stubborn stains", "Odours and allergens"],
@@ -1385,9 +1406,23 @@ SERVICE_DEFINITIONS = {
         "process": ["Assess fibres", "Pre-treat stains", "Hot water extraction"],
         "benefits": ["Restored carpets", "Allergen reduction"],
         "packages": [
-            {"name": "Room Carpet Clean", "price": "$160", "description": "Professional cleaning for single rooms."},
-            {"name": "Whole Home Carpet", "price": "$350", "description": "Carpet cleaning for entire residential property."},
-            {"name": "Commercial Carpet Clean", "price": "$420", "description": "Large-scale carpet cleaning for commercial spaces."}
+            {
+                "name": "Single Room Carpet Cleaning",
+                "price": "From $160",
+                "description": "Professional carpet cleaning for individual rooms and small areas."
+            },
+
+            {
+                "name": "Whole Home Carpet Cleaning",
+                "price": "From $350",
+                "description": "Deep carpet cleaning for multiple rooms and high traffic areas."
+            },
+
+            {
+                "name": "Commercial Carpet Cleaning",
+                "price": "Quote Required",
+                "description": "Large-scale carpet cleaning solutions for offices, retail and commercial properties."
+            }
         ],
         "related_services": ["carpet-steam-cleaning"],
         "locations": [
@@ -1532,8 +1567,49 @@ SERVICE_DEFINITIONS.update({
     }
 })
 SERVICE_SLUG_ALIASES = {
-    "medical-cleaning-adelaide": "medical-cleaning",
-    "inspection-cleaning-adelaide": "inspection-cleaning",
+
+    "commercial-cleaning-adelaide":
+        "commercial-cleaning",
+
+    "office-cleaning-adelaide":
+        "office-cleaning",
+
+    "house-cleaning-adelaide":
+        "house-cleaning",
+
+    "deep-cleaning-adelaide":
+        "deep-cleaning",
+
+    "bond-cleaning-adelaide":
+        "bond-cleaning",
+
+    "end-of-lease-cleaning-adelaide":
+        "end-of-lease-cleaning",
+
+    "carpet-cleaning-adelaide":
+        "carpet-cleaning",
+
+    "carpet-steam-cleaning-adelaide":
+        "carpet-steam-cleaning",
+
+    "window-cleaning-adelaide":
+        "window-cleaning",
+
+    "medical-cleaning-adelaide":
+        "medical-cleaning",
+
+    "inspection-cleaning-adelaide":
+        "inspection-cleaning",
+
+    "kitchen-deep-cleaning-adelaide":
+        "kitchen-deep-cleaning",
+
+    "spring-cleaning-adelaide":
+        "spring-cleaning",
+
+    "oven-cleaning-adelaide":
+        "oven-cleaning",
+
 }
 
 LOCATION_ALIASES = {
@@ -1628,7 +1704,6 @@ LOCATION_ALIASES = {
 
 # Hills
 
-"mount-barker": "Mount Barker",
 "hahndorf": "Hahndorf",
 "stirling": "Stirling",
 "aldgate": "Aldgate",
@@ -1807,7 +1882,37 @@ def get_location_definition(slug):
 
     # Unknown suburb
     if slug not in LOCATION_ALIASES:
-        return None
+        return {
+            "name": slug.replace("-", " ").title(),
+
+            "meta_title":
+            f"Cleaning Services {slug.replace('-', ' ').title()} Adelaide",
+
+            "meta_description":
+            f"Professional cleaning services in {slug.replace('-', ' ').title()} Adelaide including commercial cleaning, house cleaning, carpet cleaning and deep cleaning.",
+
+            "keywords": [
+                f"cleaners {slug}",
+                f"cleaning services {slug}",
+            ],
+
+            "hero_heading":
+            f"Professional Cleaning Services in {slug.replace('-', ' ').title()}",
+
+            "intro":
+            f"YD Commercial Cleaning Services provides professional cleaning services across Adelaide suburbs.",
+
+            "why_choose": [
+                "Experienced cleaners",
+                "Reliable service",
+                "Flexible booking",
+                "Residential and commercial cleaning"
+            ],
+
+            "services": list(SERVICE_DEFINITIONS.keys()),
+
+            "nearby_suburbs": []
+        }
 
     location = LOCATION_ALIASES[slug]
 
