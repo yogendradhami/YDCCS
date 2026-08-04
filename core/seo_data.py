@@ -1,8 +1,24 @@
 SERVICE_DEFINITIONS = {
     "commercial-cleaning": {
         "service_name": "Commercial Cleaning",
+            # SEO Fields
+        "meta_title": "Commercial Cleaning Adelaide | Professional Business Cleaners",
+        "meta_description": "Professional commercial cleaning Adelaide businesses trust. We provide office, retail, warehouse and workplace cleaning services with reliable local cleaners.",
+        "keywords": [
+               "commercial cleaning Adelaide",
+                "commercial cleaners Adelaide",
+                "business cleaning Adelaide",
+                "office cleaning Adelaide",
+                "warehouse cleaning Adelaide",
+                "commercial cleaning services",
+                "professional cleaners Adelaide"
+        ],
+        "seo_heading": "Professional Commercial Cleaning Services Adelaide",
+
+        "image_alt": "Commercial cleaning team providing workplace cleaning Adelaide",
+
         "title": "Commercial Cleaning",
-        "heading": "Commercial Cleaning for Businesses",
+        "heading": "Professional Commercial Cleaning Services Adelaide Businesses Trust",
         "description": "Reliable commercial cleaning for offices, retail stores, warehouses and business premises across {location}.",
         "overview": "Commercial cleaning solutions for businesses in {location}, tailored to keep workplaces clean, safe and professional.",
         "hero_image": "/static/images/services/commercial-cleaning.svg",
@@ -35,10 +51,39 @@ SERVICE_DEFINITIONS = {
             {"name": "One-Off Commercial Clean", "price": "$280", "description": "Ideal for post-event or opening-day cleaning support."}
         ],
         "related_services": ["office-cleaning", "window-cleaning", "carpet-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "office-cleaning": {
         "service_name": "Office Cleaning",
+        "meta_title": "Office Cleaning Adelaide | Professional Office Cleaners",
+    
+        "meta_description": "Reliable office cleaning Adelaide services for workplaces, meeting rooms, kitchens and commercial offices. Keep your business clean, healthy and professional.",
+
+        "keywords": [
+            "office cleaning Adelaide",
+            "office cleaners Adelaide",
+            "commercial office cleaning",
+            "workplace cleaning Adelaide",
+            "corporate cleaning Adelaide",
+            "after hours office cleaning",
+            "business cleaners Adelaide"
+        ],
+
+        "seo_heading": "Professional Office Cleaning Adelaide",
+
+        "image_alt": "Office cleaner sanitising workplace in Adelaide",
         "title": "Office Cleaning",
         "heading": "Professional Office Cleaning",
         "description": "Professional office cleaning services in {location} for desks, meeting rooms, kitchens and shared spaces.",
@@ -60,10 +105,36 @@ SERVICE_DEFINITIONS = {
             {"name": "After Hours Office Clean", "price": "$240", "description": "Flexible cleaning outside business hours for minimal disruption."}
         ],
         "related_services": ["commercial-cleaning", "carpet-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "end-of-lease-cleaning": {
         "service_name": "End of Lease Cleaning",
+        "meta_title": "End of Lease Cleaning Adelaide | Bond Return Cleaners",
+        "meta_description": "Detailed end of lease cleaning Adelaide services for tenants, landlords and property managers. Kitchen, bathroom, carpet and inspection cleaning.",
+        "keywords": [
+            "end of lease cleaning Adelaide",
+            "vacate cleaning Adelaide",
+            "rental inspection cleaning Adelaide",
+            "move out cleaning Adelaide",
+            "tenant cleaning Adelaide",
+            "property handover cleaning",
+            "bond cleaning specialists"
+        ],
+        "seo_heading": "End Of Lease Cleaning Adelaide",
+
+        "image_alt": "End of lease cleaning service Adelaide home",
         "title": "End of Lease Cleaning",
         "heading": "End of Lease / Bond Cleaning",
         "description": "Detailed end of lease cleaning for tenants, landlords and property managers in {location}.",
@@ -85,10 +156,43 @@ SERVICE_DEFINITIONS = {
             {"name": "Express Bond Clean", "price": "$380", "description": "Fast scheduled cleaning to meet tight move-out dates."}
         ],
         "related_services": ["bond-cleaning", "carpet-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "bond-cleaning": {
         "service_name": "Bond Cleaning",
+
+        "meta_title": "Bond Cleaning Adelaide | End of Lease Cleaners",
+
+        "meta_description": "Affordable bond cleaning Adelaide services helping tenants achieve a successful rental inspection. Complete kitchen, bathroom, carpet and end of lease cleaning.",
+
+        "keywords": [
+            "bond cleaning Adelaide",
+            "bond cleaners Adelaide",
+            "end of lease cleaning Adelaide",
+            "vacate cleaning Adelaide",
+            "rental cleaning Adelaide",
+            "exit cleaning Adelaide",
+            "inspection cleaning Adelaide",
+            "rental property cleaners"
+
+        ],
+
+        "seo_heading": "Professional Bond Cleaning Adelaide",
+
+        "image_alt": "Bond cleaner preparing Adelaide rental property",
+
         "title": "Bond Cleaning",
         "heading": "Bond & End of Lease Cleaning",
         "description": "Bond cleaning and end of lease cleaning in {location} to help customers get their deposit back.",
@@ -110,10 +214,38 @@ SERVICE_DEFINITIONS = {
             {"name": "Move-Out Bond Clean", "price": "$410", "description": "Designed for fast move-out preparation and inspection readiness."}
         ],
         "related_services": ["end-of-lease-cleaning", "carpet-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "house-cleaning": {
         "service_name": "House Cleaning",
+        "meta_title": "House Cleaning Adelaide | Trusted Home Cleaners",
+        "meta_description": "Reliable house cleaning Adelaide services for regular, deep and one-off home cleaning. Enjoy a healthier and cleaner home with local professionals.",
+        "keywords":[
+            "house cleaning Adelaide",
+            "home cleaners Adelaide",
+            "residential cleaning Adelaide",
+            "domestic cleaners Adelaide",
+            "home cleaning services",
+            "one off house cleaning Adelaide",
+            "professional house cleaners Adelaide",
+            "local cleaners Adelaide"
+        ],
+
+        "seo_heading":"Reliable House Cleaning Services Adelaide",
+
+        "image_alt":"Professional house cleaner providing residential cleaning Adelaide",
         "title": "House Cleaning",
         "heading": "Reliable House Cleaning",
         "description": "House cleaning services in {location} for one-off, regular and deep cleans around your home.",
@@ -135,10 +267,38 @@ SERVICE_DEFINITIONS = {
             {"name": "Move-In Home Clean", "price": "$290", "description": "Fresh start cleaning for new Adelaide homes."}
         ],
         "related_services": ["regular-house-cleaning", "carpet-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "regular-house-cleaning": {
         "service_name": "Regular House Cleaning",
+        "meta_title": "Regular House Cleaning Adelaide | Weekly Home Cleaners",
+        "meta_description": "Regular house cleaning Adelaide services for busy families. Weekly and fortnightly cleaning plans to keep your home fresh and hygienic.",
+        "keywords": [
+            "regular house cleaning Adelaide",
+            "weekly cleaners Adelaide",
+            "fortnightly cleaning Adelaide",
+            "recurring house cleaning",
+            "home maintenance cleaning",
+            "domestic cleaning services Adelaide",
+            "scheduled home cleaning"
+        ],
+        "seo_heading":"Regular House Cleaning Services Adelaide",
+
+        "image_alt":"Cleaner performing regular home cleaning service Adelaide",
+
+
         "title": "Regular House Cleaning",
         "heading": "Regular House Cleaning Plans",
         "description": "Regular house cleaning in {location} for busy households and families.",
@@ -160,10 +320,40 @@ SERVICE_DEFINITIONS = {
             {"name": "Monthly Clean", "price": "$240", "description": "Deep cleaning once per month for consistent results."}
         ],
         "related_services": ["house-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "window-cleaning": {
         "service_name": "Window Cleaning",
+        "meta_title": "Window Cleaning Adelaide | Streak Free Glass Cleaning",
+        "meta_description": "Professional window cleaning Adelaide for homes, offices and commercial properties. Clean glass, frames and windows with reliable service.",
+        "keywords": [
+            "window cleaning Adelaide",
+            "window cleaners Adelaide",
+            "glass cleaning Adelaide",
+            "commercial window cleaning",
+            "residential window cleaning",
+            "shop window cleaning"
+        ],
+
+        "seo_heading": "Professional Window Cleaning Adelaide",
+
+        "image_alt": "Window cleaner providing glass cleaning Adelaide",
+
+        "seo_heading": "Professional Window Cleaning Adelaide",
+
+        "image_alt": "Window cleaner providing glass cleaning Adelaide",
         "title": "Window Cleaning",
         "heading": "Professional Window Cleaning",
         "description": "Window cleaning in {location} for homes, offices and commercial buildings.",
@@ -185,10 +375,40 @@ SERVICE_DEFINITIONS = {
             {"name": "High-Rise Window Clean", "price": "$420", "description": "Safe, professional cleaning for taller buildings."}
         ],
         "related_services": ["pressure-washing"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "carpet-steam-cleaning": {
         "service_name": "Carpet Steam Cleaning",
+        "meta_title": "Carpet Steam Cleaning Adelaide | Carpet Cleaners",
+
+        "meta_description": "Professional carpet steam cleaning Adelaide using hot water extraction to remove stains, dirt, allergens and odours from residential and commercial carpets.",
+
+        "keywords": [
+            "carpet steam cleaning Adelaide",
+            "steam carpet cleaners Adelaide",
+            "hot water extraction carpet cleaning",
+            "carpet stain removal Adelaide",
+            "deep carpet cleaning Adelaide",
+            "commercial carpet steam cleaning",
+            "carpet sanitisation Adelaide"
+
+        ],
+
+        "seo_heading": "Professional Carpet Steam Cleaning Adelaide",
+
+        "image_alt": "Carpet steam cleaning service Adelaide",
         "title": "Carpet Steam Cleaning",
         "heading": "Carpet Steam Cleaning",
         "description": "Carpet steam cleaning in {location} for homes and offices that need deep fibre care.",
@@ -210,10 +430,38 @@ SERVICE_DEFINITIONS = {
             {"name": "Commercial Carpet Steam Clean", "price": "$390", "description": "Steam cleaning for carpets in offices and retail spaces."}
         ],
         "related_services": ["carpet-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "builders-cleaning": {
         "service_name": "Builders Cleaning",
+        "meta_title": "Builders Cleaning Adelaide | Post Construction Cleaners",
+        "meta_description": "Builders cleaning Adelaide services for new homes, renovations and construction sites. Remove dust, debris and building residue before handover.",
+        "keywords": [
+            "builders cleaning Adelaide",
+            "builders cleaners Adelaide",
+            "post construction cleaning Adelaide",
+            "construction cleaning Adelaide",
+            "new build cleaning Adelaide",
+            "handover cleaning Adelaide",
+            "renovation cleaners Adelaide",
+            "commercial builders clean"
+        ],
+
+        "seo_heading": "Builders Cleaning Services Adelaide",
+
+        "image_alt": "Builders cleaning after construction Adelaide",
         "title": "Builders Cleaning",
         "heading": "Builders & Construction Cleaning",
         "description": "Builders cleaning in {location} for construction sites, renovations and new developments.",
@@ -235,10 +483,36 @@ SERVICE_DEFINITIONS = {
             {"name": "Site Preparation Clean", "price": "$360", "description": "Pre-inspection cleaning for new builds."}
         ],
         "related_services": ["post-construction-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "post-construction-cleaning": {
         "service_name": "Post Construction Cleaning",
+        "meta_title": "Post Construction Cleaning Adelaide | Renovation Cleaners",
+        "meta_description": "Post construction cleaning Adelaide services to remove dust, debris and builders’ residue before property handover.",
+        "keywords": [
+            "post construction cleaning Adelaide",
+            "after builders cleaning Adelaide",
+            "construction site cleaners Adelaide",
+            "renovation cleaning Adelaide",
+            "building handover cleaning",
+            "final builders clean Adelaide",
+            "new property cleaning"
+        ],
+        "seo_heading":"Post Construction Cleaning Services Adelaide",
+
+        "image_alt":"Professional post construction cleaner removing building dust Adelaide",
         "title": "Post Construction Cleaning",
         "heading": "Post-Construction & Renovation Cleaning",
         "description": "Post construction cleaning in {location} to remove dust, debris and builders’ residue.",
@@ -260,10 +534,38 @@ SERVICE_DEFINITIONS = {
             {"name": "Renovation Clean", "price": "$370", "description": "After-renovation cleaning for residential properties."}
         ],
         "related_services": ["builders-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "pressure-washing": {
         "service_name": "Pressure Washing",
+        "meta_title": "Pressure Washing Adelaide | Exterior Cleaning Services",
+        "meta_description": "Professional pressure washing Adelaide for driveways, patios, paths and outdoor surfaces. Remove dirt, mould and weather stains.",
+        "keywords": [
+            "pressure washing Adelaide",
+            "pressure cleaners Adelaide",
+            "power washing Adelaide",
+            "driveway cleaning Adelaide",
+            "patio cleaning Adelaide",
+            "exterior cleaning Adelaide",
+            "commercial pressure washing"
+
+        ],
+
+        "seo_heading": "Pressure Washing Services Adelaide",
+
+        "image_alt": "Pressure washing driveway Adelaide",
         "title": "Pressure Washing",
         "heading": "Pressure Washing & Exterior Cleaning",
         "description": "Pressure washing in {location} for driveways, patios, decks and building exteriors.",
@@ -285,10 +587,38 @@ SERVICE_DEFINITIONS = {
             {"name": "Complete Outdoor Wash", "price": "$340", "description": "Full property pressure washing service."}
         ],
         "related_services": ["window-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "bathroom-cleaning": {
         "service_name": "Bathroom Cleaning",
+        "meta_title": "Bathroom Cleaning Adelaide | Deep Bathroom Cleaners",
+        "meta_description": "Bathroom cleaning Adelaide services including tile, grout, shower and sanitisation cleaning for fresh hygienic bathrooms.",
+        "keywords": [
+            "bathroom cleaning Adelaide",
+            "bathroom cleaners Adelaide",
+            "bathroom deep cleaning",
+            "shower cleaning Adelaide",
+            "tile and grout cleaning Adelaide",
+            "mould removal cleaning",
+            "bathroom sanitisation Adelaide"
+
+        ],
+        "seo_heading":"Professional Bathroom Cleaning Adelaide",
+
+        "image_alt":"Bathroom cleaner sanitising bathroom in Adelaide property",
+
         "title": "Bathroom Cleaning",
         "heading": "Bathroom Deep Cleaning & Sanitisation",
         "description": "Bathroom cleaning in {location} with thorough sanitation, grout and tile care.",
@@ -310,10 +640,40 @@ SERVICE_DEFINITIONS = {
             {"name": "Luxury Bathroom Clean", "price": "$210", "description": "Premium bathroom detailing and sanitisation."}
         ],
         "related_services": ["deep-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "kitchen-cleaning": {
         "service_name": "Kitchen Cleaning",
+        "meta_title": "Kitchen Cleaning Adelaide | Kitchen Deep Cleaning",
+        "meta_description": "Professional kitchen cleaning Adelaide removing grease, food residue and bacteria from ovens, benches, appliances and surfaces.",
+        "keywords": [
+            "kitchen cleaning Adelaide",
+            "kitchen cleaners Adelaide",
+            "kitchen deep cleaning",
+            "oven and kitchen cleaning Adelaide",
+            "commercial kitchen cleaning Adelaide",
+            "grease removal cleaning",
+            "appliance cleaning Adelaide"
+
+        ],
+        "seo_heading":
+        "Professional Kitchen Cleaning Adelaide",
+
+        "image_alt":
+        "Kitchen cleaner removing grease during Adelaide kitchen cleaning service",
+
         "title": "Kitchen Cleaning",
         "heading": "Kitchen Cleaning & Degreasing",
         "description": "Kitchen cleaning in {location} for ovens, benchtops, splashbacks and appliances.",
@@ -335,10 +695,39 @@ SERVICE_DEFINITIONS = {
             {"name": "Move-Out Kitchen Clean", "price": "$240", "description": "Kitchen cleaning for rental and sale-ready properties."}
         ],
         "related_services": ["oven-cleaning", "kitchen-deep-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "deep-cleaning": {
         "service_name": "Deep Cleaning",
+        "meta_title": "Deep Cleaning Adelaide | Complete Home & Office Cleaning",
+        "meta_description": "Detailed deep cleaning Adelaide services for homes and businesses. Remove hidden dirt, dust and grime with professional cleaners.",
+        "keywords": [
+            "deep cleaning Adelaide",
+            "deep cleaners Adelaide",
+            "deep house cleaning Adelaide",
+            "one off cleaning Adelaide",
+            "spring cleaning Adelaide",
+            "home deep cleaning services",
+            "office deep cleaning Adelaide",
+            "professional cleaners Adelaide"
+
+        ],
+
+        "seo_heading": "Complete Deep Cleaning Services Adelaide",
+
+        "image_alt": "Professional deep cleaning Adelaide service",
         "title": "Deep Cleaning",
         "heading": "Top-to-Bottom Deep Cleaning",
         "description": "Deep cleaning in {location} for kitchens, bathrooms, carpets and hard-to-reach areas.",
@@ -360,10 +749,36 @@ SERVICE_DEFINITIONS = {
             {"name": "Move-In Deep Clean", "price": "$340", "description": "Preparation cleaning for move-in homes."}
         ],
         "related_services": ["house-cleaning", "carpet-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "move-in-cleaning": {
         "service_name": "Move In Cleaning",
+        "meta_title": "Move In Cleaning Adelaide | New Home Cleaning Service",
+        "meta_description": "Move in cleaning Adelaide services preparing your new property with detailed kitchen, bathroom, floor and surface cleaning.",
+        "keywords": [
+            "move in cleaning Adelaide",
+            "new home cleaning Adelaide",
+            "pre move cleaning",
+            "new house cleaners Adelaide",
+            "property preparation cleaning",
+            "apartment cleaning Adelaide"
+        ],
+        "seo_heading":"Move-In Cleaning Services Adelaide",
+
+        "image_alt":"Move in cleaner preparing new Adelaide home",
+
         "title": "Move In Cleaning",
         "heading": "Move-In & New Home Cleaning",
         "description": "Move in cleaning in {location} that prepares new properties for a fresh start.",
@@ -385,10 +800,36 @@ SERVICE_DEFINITIONS = {
             {"name": "Premium Move-In Clean", "price": "$390", "description": "Full property preparation and sanitisation."}
         ],
         "related_services": ["deep-cleaning", "post-construction-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "move-out-cleaning": {
         "service_name": "Move Out Cleaning",
+        "meta_title": "Move Out Cleaning Adelaide | Rental Cleaning Experts",
+        "meta_description": "Professional move out cleaning Adelaide for rental properties, inspections and property handovers.",
+        "keywords": [
+            "move out cleaning Adelaide",
+            "moving out cleaners Adelaide",
+            "vacate cleaning Adelaide",
+            "rental property cleaning",
+            "property handover cleaning Adelaide",
+            "exit cleaning Adelaide",
+            "inspection cleaning Adelaide"
+        ],
+        "seo_heading":"Move-Out Cleaning Services Adelaide",
+
+        "image_alt":"Move out cleaning team preparing Adelaide rental property",
         "title": "Move Out Cleaning",
         "heading": "Move-Out & End of Lease Cleaning",
         "description": "Move out cleaning in {location} for end-of-lease and property handover requirements.",
@@ -410,10 +851,37 @@ SERVICE_DEFINITIONS = {
             {"name": "Bond Ready Clean", "price": "$460", "description": "Move out cleaning for full bond return preparation."}
         ],
         "related_services": ["end-of-lease-cleaning", "bond-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "spring-cleaning": {
         "service_name": "Spring Cleaning",
+        "meta_title": "Spring Cleaning Adelaide | Seasonal Deep Cleaning",
+        "meta_description": "Spring cleaning Adelaide services to refresh your home or workplace with detailed dusting, carpet, window and deep cleaning.",
+        "keywords": [
+            "spring cleaning Adelaide",
+            "seasonal cleaning Adelaide",
+            "spring cleaners Adelaide",
+            "home refresh cleaning",
+            "deep spring clean Adelaide",
+            "one off spring cleaning",
+            "professional home cleaners"
+
+        ],
+        "seo_heading":"Spring Cleaning Services Adelaide",
+
+        "image_alt":"Spring cleaning professional cleaner refreshing Adelaide home",
         "title": "Spring Cleaning",
         "heading": "Seasonal Spring Cleaning",
         "description": "Spring cleaning in {location} for seasonal deep cleaning and home refreshes.",
@@ -435,10 +903,37 @@ SERVICE_DEFINITIONS = {
             {"name": "Spring Office Clean", "price": "$380", "description": "Seasonal refresh for office and commercial spaces."}
         ],
         "related_services": ["deep-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "oven-cleaning": {
         "service_name": "Oven Cleaning",
+        "meta_title": "Oven Cleaning Adelaide | Professional Oven Cleaners",
+        "meta_description": "Professional oven cleaning Adelaide removing grease, burnt residue and stains from ovens, racks and kitchen appliances.",
+        "keywords": [
+            "oven cleaning Adelaide",
+            "oven cleaners Adelaide",
+            "oven deep cleaning",
+            "stove cleaning Adelaide",
+            "rangehood cleaning Adelaide",
+            "kitchen appliance cleaning",
+            "commercial oven cleaning Adelaide"
+        ],
+
+        "seo_heading": "Professional Oven Cleaning Adelaide",
+
+        "image_alt": "Professional oven cleaning Adelaide service",
         "title": "Oven Cleaning",
         "heading": "Professional Oven Cleaning",
         "description": "Professional oven cleaning in {location} for residential and commercial kitchens.",
@@ -460,10 +955,383 @@ SERVICE_DEFINITIONS = {
             {"name": "Kitchen Appliance Package", "price": "$250", "description": "Oven, stovetop and other appliance cleaning."}
         ],
         "related_services": ["kitchen-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
+
+
+    "medical-cleaning": {
+
+        "service_name": "Medical Cleaning",
+
+        # SEO Fields
+        "meta_title": "Medical Cleaning Adelaide | Healthcare Facility Cleaners",
+
+        "meta_description": "Professional medical cleaning Adelaide services for clinics, dental practices, medical centres and healthcare facilities. Reliable hygiene-focused cleaners.",
+
+        "keywords": [
+            "medical cleaning Adelaide",
+            "medical cleaners Adelaide",
+            "healthcare cleaning Adelaide",
+            "clinic cleaners Adelaide",
+            "medical centre cleaning Adelaide",
+            "dental clinic cleaning Adelaide",
+            "healthcare facility cleaners",
+            "sanitisation cleaning Adelaide",
+            "professional healthcare cleaners",
+            "commercial cleaning Adelaide"
+        ],
+
+        "seo_heading": "Professional Medical Cleaning Services Adelaide",
+
+        "image_alt": "Professional medical cleaning team sanitising healthcare facility Adelaide",
+
+
+        "title": "Medical Cleaning",
+
+        "heading": "Professional Medical Cleaning Services Adelaide",
+
+        "description": "Specialised medical cleaning services in {location} for clinics, healthcare centres, dental practices and professional medical environments.",
+
+        "overview": "YD Commercial Cleaning Services provides reliable medical cleaning solutions designed to maintain hygienic, safe and professional healthcare environments. Our trained cleaning team focuses on high-touch surfaces, sanitation, patient areas, waiting rooms, consultation rooms and common spaces using professional cleaning methods.",
+
+
+        "hero_image": "/static/images/services/medical-cleaning.svg",
+
+        "gallery": [],
+
+
+        "problems": [
+            "High-touch surfaces requiring regular sanitisation",
+            "Risk of bacteria and contamination build-up",
+            "Busy healthcare environments needing reliable cleaning",
+            "Strict hygiene expectations from patients and staff",
+            "Dust and allergens affecting indoor air quality"
+        ],
+
+
+        "included": [
+            "Reception and waiting room cleaning",
+            "Consultation room cleaning",
+            "High-touch surface sanitisation",
+            "Floor cleaning and mopping",
+            "Bathroom cleaning and disinfection",
+            "Staff kitchen and breakroom cleaning",
+            "Dust removal from surfaces and equipment areas",
+            "Waste area cleaning",
+            "Regular scheduled hygiene maintenance"
+        ],
+
+
+        "process": [
+            "Site assessment and cleaning requirements review",
+            "Create customised healthcare cleaning plan",
+            "Professional cleaning and sanitisation",
+            "Quality inspection and feedback review",
+            "Ongoing scheduled maintenance"
+        ],
+
+
+        "benefits": [
+            "Cleaner and healthier healthcare environment",
+            "Improved patient confidence",
+            "Reduced spread of germs and contaminants",
+            "Professional presentation for visitors",
+            "Reliable scheduled cleaning support"
+        ],
+
+
+        "ideal_for": [
+            "Medical centres",
+            "Dental clinics",
+            "Physiotherapy clinics",
+            "Specialist healthcare practices",
+            "Allied health facilities",
+            "Healthcare offices"
+        ],
+
+
+        "industries": [
+            "Healthcare",
+            "Medical Centres",
+            "Dental",
+            "Allied Health",
+            "Professional Services"
+        ],
+
+
+        "packages": [
+
+            {
+                "name": "Standard Medical Clean",
+                "price": "$250",
+                "description": "Regular cleaning and sanitisation for small medical practices."
+            },
+
+            {
+                "name": "Premium Healthcare Clean",
+                "price": "$450",
+                "description": "Detailed cleaning for clinics requiring higher hygiene standards."
+            },
+
+            {
+                "name": "Custom Medical Facility Cleaning",
+                "price": "Contact",
+                "description": "Tailored cleaning solutions for larger healthcare facilities."
+            }
+
+        ],
+
+
+        "faqs": [
+
+            {
+                "q": "What does medical cleaning include?",
+                "a": "Medical cleaning includes sanitisation of high-touch areas, consultation rooms, waiting areas, bathrooms, floors and common spaces."
+            },
+
+            {
+                "q": "Do you provide cleaning for medical centres in Adelaide?",
+                "a": "Yes, we provide professional medical cleaning services for clinics, dental practices and healthcare facilities across Adelaide."
+            },
+
+            {
+                "q": "Why is professional healthcare cleaning important?",
+                "a": "Professional healthcare cleaning helps maintain hygiene standards, improve patient confidence and create a safer environment."
+            }
+
+        ],
+
+
+        "related_services": [
+            "commercial-cleaning",
+            "office-cleaning",
+            "deep-cleaning"
+        ],
+
+
+        "locations": [
+            "Adelaide CBD",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Burnside",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Mount Barker"
+        ]
+
+    },
+
+
+
+    "inspection-cleaning": {
+
+        "service_name": "Inspection Cleaning",
+
+
+        # SEO Fields
+        "meta_title": "Inspection Cleaning Adelaide | Rental Inspection Cleaners",
+
+        "meta_description": "Professional inspection cleaning Adelaide services helping tenants, landlords and property managers prepare properties for rental inspections.",
+
+
+        "keywords": [
+            "inspection cleaning Adelaide",
+            "rental inspection cleaning Adelaide",
+            "property inspection cleaners Adelaide",
+            "inspection cleaners Adelaide",
+            "tenant cleaning Adelaide",
+            "real estate cleaning Adelaide",
+            "rental property cleaning",
+            "vacate inspection cleaning",
+            "house inspection cleaning"
+        ],
+
+
+        "seo_heading": "Professional Rental Inspection Cleaning Adelaide",
+
+
+        "image_alt": "Professional cleaner preparing Adelaide rental property for inspection",
+
+
+        "title": "Inspection Cleaning",
+
+
+        "heading": "Rental Inspection Cleaning Services Adelaide",
+
+
+        "description": "Detailed inspection cleaning in {location} helping tenants, landlords and property managers prepare properties for successful rental inspections.",
+
+
+        "overview": "Our inspection cleaning service is designed for rental properties that require detailed preparation before landlord or property manager inspections. We focus on kitchens, bathrooms, floors, carpets, surfaces and areas commonly checked during rental inspections.",
+
+
+        "hero_image": "/static/images/services/inspection-cleaning.svg",
+
+
+        "gallery": [],
+
+
+        "problems": [
+            "Failed rental inspections",
+            "Missed cleaning checklist items",
+            "Kitchen grease and stains",
+            "Bathroom mould and soap residue",
+            "Dust build-up in corners and surfaces",
+            "Last-minute property preparation"
+        ],
+
+
+        "included": [
+            "Kitchen cleaning and appliance wipe-down",
+            "Bathroom sanitisation",
+            "Floor vacuuming and mopping",
+            "Carpet vacuuming and cleaning",
+            "Window and glass cleaning",
+            "Dusting of surfaces and fixtures",
+            "Skirting boards and corners cleaning",
+            "Final inspection preparation"
+        ],
+
+
+        "process": [
+            "Property assessment",
+            "Inspection checklist review",
+            "Detailed room-by-room cleaning",
+            "Quality inspection",
+            "Final customer walkthrough"
+        ],
+
+
+        "benefits": [
+            "Better preparation for rental inspections",
+            "Cleaner presentation for landlords",
+            "Reduced stress before inspection dates",
+            "Professional property appearance",
+            "Suitable for tenants and property managers"
+        ],
+
+
+        "ideal_for": [
+            "Tenants preparing rental inspections",
+            "Property managers",
+            "Real estate agencies",
+            "Landlords",
+            "Rental property owners"
+        ],
+
+
+        "industries": [
+            "Property Management",
+            "Real Estate",
+            "Residential Rentals",
+            "Landlords"
+        ],
+
+
+        "packages": [
+
+            {
+                "name": "Standard Inspection Clean",
+                "price": "$280",
+                "description": "Detailed cleaning for standard rental inspection preparation."
+            },
+
+            {
+                "name": "Premium Inspection Clean",
+                "price": "$420",
+                "description": "Complete inspection preparation including detailed kitchen and bathroom cleaning."
+            },
+
+            {
+                "name": "Inspection Ready Package",
+                "price": "$550",
+                "description": "Full property preparation with carpet and detailed surface cleaning."
+            }
+
+        ],
+
+
+        "faqs": [
+
+            {
+                "q": "What is inspection cleaning?",
+                "a": "Inspection cleaning prepares rental properties for landlord or property manager inspections by focusing on areas commonly checked during inspections."
+            },
+
+            {
+                "q": "Is inspection cleaning the same as bond cleaning?",
+                "a": "Inspection cleaning focuses on preparing properties for regular inspections, while bond cleaning is usually completed at the end of a tenancy."
+            },
+
+            {
+                "q": "Do you provide inspection cleaning across Adelaide?",
+                "a": "Yes, YD Commercial Cleaning Services provides inspection cleaning throughout Adelaide and surrounding suburbs."
+            }
+
+        ],
+
+
+        "related_services": [
+            "bond-cleaning",
+            "end-of-lease-cleaning",
+            "deep-cleaning",
+            "carpet-cleaning"
+        ],
+
+
+        "locations": [
+            "Adelaide CBD",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Glenelg",
+            "Unley",
+            "Burnside",
+            "Mawson Lakes",
+            "Salisbury",
+            "Mount Barker"
+        ]
+
+    },
+
+
+
+
+
+
+
     "exit-cleaning": {
         "service_name": "Exit Cleaning",
+        "meta_title": "Exit Cleaning Adelaide | Property Handover Cleaning",
+        "meta_description": "Exit cleaning Adelaide services for rental properties, sales and tenant handovers. Complete cleaning for inspection-ready results.",
+        "keywords": [
+            "exit cleaning Adelaide",
+            "exit cleaners Adelaide",
+            "property handover cleaning Adelaide",
+            "tenant exit cleaning",
+            "rental exit cleaning",
+            "pre sale cleaning Adelaide",
+            "vacate cleaning Adelaide"
+        ],
+
+        "seo_heading":"Exit Cleaning Services Adelaide",
+
+        "image_alt":"Exit cleaning professional preparing Adelaide property",
         "title": "Exit Cleaning",
         "heading": "Exit & Pre-Sale Cleaning",
         "description": "Exit cleaning in {location} to prepare properties for tenant moving or sale.",
@@ -485,7 +1353,19 @@ SERVICE_DEFINITIONS = {
             {"name": "Express Exit Clean", "price": "$420", "description": "Fast turnaround exit cleaning service."}
         ],
         "related_services": ["move-out-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     },
     "carpet-cleaning": {
         "service_name": "Carpet Cleaning",
@@ -510,7 +1390,19 @@ SERVICE_DEFINITIONS = {
             {"name": "Commercial Carpet Clean", "price": "$420", "description": "Large-scale carpet cleaning for commercial spaces."}
         ],
         "related_services": ["carpet-steam-cleaning"],
-        "locations": ["Adelaide"]
+        "locations": [
+            "Adelaide",
+            "North Adelaide",
+            "Prospect",
+            "Norwood",
+            "Unley",
+            "Glenelg",
+            "Mawson Lakes",
+            "Salisbury",
+            "Modbury",
+            "Golden Grove",
+            "Mount Barker"
+        ]
     }
 }
 
@@ -525,6 +1417,19 @@ SERVICE_DEFINITIONS.update({
         "heading": "Professional Kitchen Deep Cleaning in Adelaide",
         "description": "Kitchen deep cleaning Adelaide businesses and homes rely on to remove grease, food residues and hidden contaminants while restoring hygiene and sparkle.",
         "meta_description": "Kitchen Deep Cleaning Adelaide with food-safe products, commercial-grade equipment, and trusted local cleaners for restaurants, homes and commercial kitchens.",
+        "keywords":[
+            "kitchen deep cleaning Adelaide",
+            "deep kitchen cleaners Adelaide",
+            "commercial kitchen cleaning Adelaide",
+            "restaurant kitchen cleaning",
+            "oven degreasing Adelaide",
+            "rangehood cleaning Adelaide",
+            "food safe kitchen cleaning"
+            ],
+
+        "seo_heading":"Kitchen Deep Cleaning Services Adelaide",
+
+        "image_alt":"Professional kitchen deep cleaning team Adelaide",
         "introduction": "When Adelaide kitchens need more than a surface clean, our Kitchen Deep Cleaning service delivers a full hygiene refresh for ovens, rangehoods, splashbacks, floors and food prep areas. This service is ideal for busy households, hospitality venues and property managers who need a professional team to remove stubborn grease, grime, odours and hidden bacteria. Our crew works with food-safe solutions, steam cleaning, HEPA vacuuming and commercial-grade degreasers to bring every kitchen area back to a sanitary and polished finish. With a focus on Adelaide-specific conditions, we handle sandy tiles, baked-on oven residue, sticky cupboard doors and tight corners around appliances. The result is a healthier kitchen, stronger visual appeal, and a cleaner working environment for cooking, serving and entertaining.",
         "overview": "Our kitchen deep cleaning service tackles heavy grease, baked-on food, and hard-to-reach contamination using food-safe, commercial-grade methods to make kitchens hygienic, safe and inspection-ready.",
         "hero_image": "/static/images/services/kitchen-hero.svg",
@@ -589,9 +1494,20 @@ SERVICE_DEFINITIONS.update({
             {"name": "Custom Commercial Quote", "price": "Contact", "description": "Custom scope for hospitality and high-volume kitchens."}
         ],
         "faqs": [
-            {"q": "How much does Kitchen Deep Cleaning cost in Adelaide?", "a": "Costs vary by size and condition; our Basic package starts from $220 and a site assessment provides an accurate quote."},
-            {"q": "Do you use food-safe products?", "a": "Yes — all products used in kitchen areas are food-safe and suitable for food preparation zones."},
-            {"q": "How long will the service take?", "a": "Typical domestic kitchens take 2–4 hours; commercial sites depend on size and equipment — we provide time estimates in the quote."}
+            {
+            "q":"How much does house cleaning cost in Adelaide?",
+            "a":"The price depends on property size, cleaning frequency and required services. Contact YD Commercial Cleaning Services for a customised quote."
+            },
+
+            {
+            "q":"Do you provide weekly cleaning services?",
+            "a":"Yes, we provide weekly, fortnightly and one-off cleaning services across Adelaide."
+            },
+
+            {
+            "q":"Are your cleaners insured?",
+            "a":"Yes, YD Commercial Cleaning Services provides professional and reliable cleaning services with a focus on quality and customer satisfaction."
+            }
         ],
         "related_services": [
             "commercial-cleaning",
@@ -616,24 +1532,345 @@ SERVICE_DEFINITIONS.update({
     }
 })
 SERVICE_SLUG_ALIASES = {
-    "bathroom-deep-cleaning": "bathroom-cleaning",
-    "commercial-office-cleaning": "office-cleaning",
-    "inspection-cleaning": "bond-cleaning",
-    "kitchen-deep-cleaning": "kitchen-cleaning",
-    "medical-cleaning": "commercial-cleaning",
-    "medical-cleaning-adelaide": "commercial-cleaning",
-    "inspection-cleaning-adelaide": "bond-cleaning",
+    "medical-cleaning-adelaide": "medical-cleaning",
+    "inspection-cleaning-adelaide": "inspection-cleaning",
 }
 
 LOCATION_ALIASES = {
-    "adelaide": "Adelaide",
-    "prospect": "Prospect",
-    "mawson-lakes": "Mawson Lakes",
-    "salisbury": "Salisbury",
-    "north-adelaide": "North Adelaide",
-    "glenelg": "Glenelg",
-    "norwood": "Norwood",
-    "unley": "Unley",
-    "burnside": "Burnside",
-    "modbury": "Modbury"
+
+# CBD
+"adelaide": "Adelaide",
+"adelaide-cbd": "Adelaide CBD",
+"north-adelaide": "North Adelaide",
+"west-adelaide": "West Adelaide",
+"east-adelaide": "East Adelaide",
+"south-adelaide": "South Adelaide",
+
+
+# Inner East Adelaide
+
+"norwood": "Norwood",
+"kent-town": "Kent Town",
+"rose-park": "Rose Park",
+"parkside": "Parkside",
+"unley": "Unley",
+"unley-park": "Unley Park",
+"hyde-park": "Hyde Park",
+"malvern": "Malvern",
+"burnside": "Burnside",
+"beaumont": "Beaumont",
+"kensington": "Kensington",
+"kensington-gardens": "Kensington Gardens",
+"dulwich": "Dulwich",
+"toorak-gardens": "Toorak Gardens",
+
+
+# North Adelaide
+
+"prospect": "Prospect",
+"kilburn": "Kilburn",
+"pooraka": "Pooraka",
+"gepps-cross": "Gepps Cross",
+"sefton-park": "Sefton Park",
+"collinswood": "Collinswood",
+"enfield": "Enfield",
+"clearview": "Clearview",
+"greenacres": "Greenacres",
+"klemzig": "Klemzig",
+"holden-hill": "Holden Hill",
+"mawson-lakes": "Mawson Lakes",
+"parafield": "Parafield",
+"parafield-gardens": "Parafield Gardens",
+"salisbury": "Salisbury",
+"salisbury-east": "Salisbury East",
+
+
+# North East
+
+"modbury": "Modbury",
+"modbury-heights": "Modbury Heights",
+"tea-tree-gully": "Tea Tree Gully",
+"highbury": "Highbury",
+"vista": "Vista",
+"st-agnes": "St Agnes",
+"ridgehaven": "Ridgehaven",
+"redwood-park": "Redwood Park",
+"golden-grove": "Golden Grove",
+"fairview-park": "Fairview Park",
+
+
+# South
+
+"marion": "Marion",
+"oaklands-park": "Oaklands Park",
+"morphett-vale": "Morphett Vale",
+"brighton": "Brighton",
+"seacliff": "Seacliff",
+"hallett-cove": "Hallett Cove",
+"christies-beach": "Christies Beach",
+"noarlunga": "Noarlunga",
+"aldinga": "Aldinga",
+
+
+# West
+
+"glenelg": "Glenelg",
+"henley-beach": "Henley Beach",
+"grange": "Grange",
+"west-beach": "West Beach",
+"findon": "Findon",
+"kidman-park": "Kidman Park",
+"royal-park": "Royal Park",
+"semaphore": "Semaphore",
+"largs-bay": "Largs Bay",
+"port-adelaide": "Port Adelaide",
+
+
+# Hills
+
+"mount-barker": "Mount Barker",
+"hahndorf": "Hahndorf",
+"stirling": "Stirling",
+"aldgate": "Aldgate",
+"bridgewater": "Bridgewater",
+"gumeracha": "Gumeracha",
+
+
+# Outer areas
+
+"murray-bridge": "Murray Bridge",
+"victor-harbor": "Victor Harbor",
+"gawler": "Gawler",
+"mount-barker": "Mount Barker"
+
 }
+
+LOCATION_DEFINITIONS = {
+
+    "norwood": {
+
+        "name": "Norwood",
+
+        "meta_title":
+        "Cleaning Services Norwood Adelaide | Commercial & House Cleaners",
+
+        "meta_description":
+        "Professional cleaning services in Norwood Adelaide including commercial cleaning, office cleaning, house cleaning, carpet steam cleaning, bond cleaning, end of lease cleaning and deep cleaning. Get a free quote today.",
+
+        "keywords": [
+            "cleaners Norwood",
+            "cleaning services Norwood",
+            "commercial cleaning Norwood",
+            "office cleaning Norwood",
+            "house cleaning Norwood",
+            "bond cleaning Norwood",
+            "end of lease cleaning Norwood",
+            "deep cleaning Norwood",
+            "carpet steam cleaning Norwood",
+            "window cleaning Norwood"
+        ],
+
+        "hero_heading":
+        "Professional Cleaning Services in Norwood",
+
+        "intro":
+        """
+        YD Commercial Cleaning Services proudly provides professional cleaning
+        services throughout Norwood and nearby Adelaide suburbs. Our experienced
+        cleaning team delivers reliable residential and commercial cleaning
+        solutions for homes, offices, retail stores, medical centres, schools,
+        restaurants and rental properties. Whether you need a one-off deep clean
+        or ongoing scheduled cleaning, we tailor every service to your property
+        and cleaning requirements.
+        """,
+
+        "why_choose":
+        [
+            "Experienced local Adelaide cleaners",
+            "Fully insured and reliable service",
+            "Flexible booking times",
+            "Residential and commercial cleaning",
+            "Affordable upfront pricing",
+            "High customer satisfaction"
+        ],
+
+        "services": [
+            "Commercial Cleaning",
+            "Office Cleaning",
+            "House Cleaning",
+            "Deep Cleaning",
+            "Carpet Steam Cleaning",
+            "Bond Cleaning",
+            "End of Lease Cleaning",
+            "Move In Cleaning",
+            "Move Out Cleaning",
+            "Window Cleaning",
+            "Kitchen Deep Cleaning",
+            "Bathroom Cleaning",
+            "Medical Cleaning",
+            "Builders Cleaning",
+            "Pressure Washing"
+        ],
+
+        "nearby_suburbs": [
+            "Kent Town",
+            "Burnside",
+            "Rose Park",
+            "Kensington",
+            "Parkside",
+            "Unley"
+        ]
+    },
+
+    "glenelg": {
+
+        "name": "Glenelg",
+
+        "meta_title":
+        "Cleaning Services Glenelg Adelaide | Commercial & Home Cleaners",
+
+        "meta_description":
+        "Trusted cleaning services in Glenelg Adelaide including office cleaning, commercial cleaning, house cleaning, carpet steam cleaning, end of lease cleaning and deep cleaning.",
+
+        "keywords": [
+            "cleaners Glenelg",
+            "cleaning services Glenelg",
+            "commercial cleaning Glenelg",
+            "office cleaning Glenelg",
+            "house cleaning Glenelg",
+            "bond cleaning Glenelg",
+            "end of lease cleaning Glenelg",
+            "carpet cleaning Glenelg",
+            "deep cleaning Glenelg",
+            "window cleaning Glenelg"
+        ],
+
+        "hero_heading":
+        "Professional Cleaning Services in Glenelg",
+
+        "intro":
+        """
+        YD Commercial Cleaning Services provides reliable cleaning services
+        across Glenelg and surrounding coastal Adelaide suburbs. Our trained
+        cleaners deliver high-quality residential and commercial cleaning for
+        homes, offices, retail stores, holiday accommodation, restaurants and
+        rental properties. We focus on quality workmanship, flexible scheduling
+        and excellent customer service.
+        """,
+
+        "why_choose": [
+            "Local Glenelg cleaning specialists",
+            "Reliable and professional cleaners",
+            "Flexible appointments",
+            "Affordable cleaning solutions",
+            "Residential and commercial expertise",
+            "100% customer-focused service"
+        ],
+
+        "services": [
+            "Commercial Cleaning",
+            "Office Cleaning",
+            "House Cleaning",
+            "Carpet Steam Cleaning",
+            "Deep Cleaning",
+            "Bond Cleaning",
+            "End of Lease Cleaning",
+            "Window Cleaning",
+            "Move In Cleaning",
+            "Move Out Cleaning",
+            "Kitchen Deep Cleaning",
+            "Bathroom Cleaning",
+            "Pressure Washing"
+        ],
+
+        "nearby_suburbs": [
+            "Brighton",
+            "Somerton Park",
+            "West Beach",
+            "Henley Beach",
+            "Seacliff",
+            "Marion"
+        ]
+    }
+
+}
+
+# ----------------------------------------------------
+# Dynamic Location SEO Generator
+# ----------------------------------------------------
+
+def get_location_definition(slug):
+
+    # Return custom page if it exists
+    if slug in LOCATION_DEFINITIONS:
+        return LOCATION_DEFINITIONS[slug]
+
+    # Unknown suburb
+    if slug not in LOCATION_ALIASES:
+        return None
+
+    location = LOCATION_ALIASES[slug]
+
+    return {
+        "name": location,
+
+        "meta_title": f"Cleaning Services {location} Adelaide | YD Commercial Cleaning",
+
+        "meta_description": (
+            f"Professional cleaning services in {location}, Adelaide including "
+            "commercial cleaning, office cleaning, house cleaning, carpet steam "
+            "cleaning, bond cleaning, end of lease cleaning and deep cleaning."
+        ),
+
+        "keywords": [
+            f"cleaners {location}",
+            f"cleaning services {location}",
+            f"commercial cleaning {location}",
+            f"office cleaning {location}",
+            f"house cleaning {location}",
+            f"bond cleaning {location}",
+            f"end of lease cleaning {location}",
+            f"deep cleaning {location}",
+            f"carpet cleaning {location}",
+            f"window cleaning {location}",
+        ],
+
+        "hero_heading": f"Professional Cleaning Services in {location}",
+
+        "intro": (
+            f"YD Commercial Cleaning Services proudly provides professional "
+            f"cleaning services throughout {location}, Adelaide. We provide "
+            f"commercial cleaning, office cleaning, house cleaning, carpet "
+            f"steam cleaning, bond cleaning, end of lease cleaning and deep "
+            f"cleaning with reliable local cleaners."
+        ),
+
+        "why_choose": [
+            "Experienced local cleaners",
+            "Fully insured",
+            "Flexible booking",
+            "Residential & commercial cleaning",
+            "Affordable pricing",
+            "High-quality workmanship",
+        ],
+
+        "services": [
+            "Commercial Cleaning",
+            "Office Cleaning",
+            "House Cleaning",
+            "Carpet Steam Cleaning",
+            "Deep Cleaning",
+            "Bond Cleaning",
+            "End of Lease Cleaning",
+            "Move In Cleaning",
+            "Move Out Cleaning",
+            "Window Cleaning",
+            "Kitchen Deep Cleaning",
+            "Bathroom Cleaning",
+            "Medical Cleaning",
+            "Builders Cleaning",
+            "Pressure Washing",
+        ],
+
+        "nearby_suburbs": [],
+    }

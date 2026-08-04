@@ -603,8 +603,16 @@ def _normalize_service_slug(service_slug):
     slug = service_slug.lower().strip("-")
 
     # Remove full suburb names first (north-adelaide, glenelg, etc.)
+    location_slugs = set(LOCATION_ALIASES.keys())
+
+
+    for areas in ADELAIDE_SUBURBS.values():
+        for area in areas:
+            location_slugs.add(_slugify_area(area))
+
+
     location_slugs = sorted(
-        LOCATION_ALIASES.keys(),
+        location_slugs,
         key=len,
         reverse=True
     )
@@ -618,24 +626,62 @@ def _normalize_service_slug(service_slug):
     if slug.endswith("-adelaide"):
         slug = slug[:-len("-adelaide")]
 
-    return SERVICE_SLUG_ALIASES.get(slug, slug)
+    normalized = SERVICE_SLUG_ALIASES.get(slug, slug)
+
+    # Match existing service database slugs
+    if Service.objects.filter(slug=normalized).exists():
+        return normalized
+
+
+    # Try Adelaide suffix
+    adelaide_slug = f"{normalized}-adelaide"
+
+    if Service.objects.filter(slug=adelaide_slug).exists():
+        return adelaide_slug
+
+
+    return normalized
 
 
 def _get_location_from_slug(slug):
     """
     Extract suburb/location from SEO URL slug.
+
     Example:
-    bond-cleaning-adelaide-glenelg
-    returns:
-    Glenelg
+    carpet-steam-cleaning-north-adelaide
+    -> North Adelaide
     """
 
-    for location_slug, location_name in LOCATION_ALIASES.items():
+    slug = slug.lower().strip("-")
+
+
+    # 1. Check SEO aliases first
+    for location_slug, location_name in sorted(
+        LOCATION_ALIASES.items(),
+        key=lambda x: len(x[0]),
+        reverse=True
+    ):
         if slug.endswith(location_slug):
             return location_name
 
-    return "Adelaide"
 
+    # 2. Fallback: check ADELAIDE_SUBURBS database
+    for areas in ADELAIDE_SUBURBS.values():
+
+        for area in areas:
+
+            suburb_slug = _slugify_area(area)
+
+            if slug.endswith(suburb_slug):
+                return area["name"]
+
+
+    # 3. Remove Adelaide suffix
+    if slug.endswith("-adelaide"):
+        return "Adelaide"
+
+
+    return "Adelaide"
 
 
 def _normalize_related_services(related_services):

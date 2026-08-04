@@ -141,11 +141,103 @@ document.addEventListener('DOMContentLoaded', function(){
         <div class="service-content-card">
             
             <div class="service-overview-block">
-                <h2>About {{ service.title }}</h2>
-                <p>{{ service.overview }}</p>
+
+            <h2>
+            About {{ service.title }}
+            {% if location %}
+            {{ location }}
+            {% else %}
+            Adelaide
+            {% endif %}
+            </h2>
+
+
+            {% if service.introduction %}
+
+            <p>
+            {{ service.introduction }}
+            </p>
+
+            {% else %}
+
+            <p>
+            {{ service.overview }}
+            </p>
+
+            {% endif %}
+
+
             </div>
 
             <div class="service-section-block">
+
+                {% if service.ideal_for %}
+
+                <div class="service-section-block">
+
+                <h2>
+                Who Is This Service For?
+                </h2>
+
+
+                <div class="service-benefits-grid">
+
+                {% for item in service.ideal_for %}
+
+                <div class="service-benefit-card">
+
+                <span class="benefit-icon">
+                ✓
+                </span>
+
+                <p>
+                {{ item }}
+                </p>
+
+                </div>
+
+                {% endfor %}
+
+
+                </div>
+
+                </div>
+
+                {% endif %}
+
+
+                {% if service.industries %}
+
+                <div class="service-section-block">
+
+                <h2>
+                Industries We Serve
+                </h2>
+
+
+                <div class="service-benefits-grid">
+
+                {% for industry in service.industries %}
+
+                <div class="service-benefit-card">
+
+                <p>
+                {{ industry }}
+                </p>
+
+                </div>
+
+                {% endfor %}
+
+
+                </div>
+
+
+                </div>
+
+                {% endif %}
+
+
                 <h2>What's Included</h2>
                 <div class="service-benefits-grid">
                     {% for item in service.included %}
