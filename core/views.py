@@ -6,20 +6,32 @@
 
 import copy
 import os
-import string
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.text import slugify
 
+# Local app imports
 from .faq_data import FAQ_PAGE_CONFIG
 from .suburbs_data import ADELAIDE_SUBURBS
-from .seo_data import LOCATION_ALIASES, SERVICE_DEFINITIONS, SERVICE_SLUG_ALIASES
+from .seo_data import (
+    LOCATION_ALIASES,
+    SERVICE_DEFINITIONS,
+    SERVICE_SLUG_ALIASES,
+)
+from .forms import (
+    FAQSubmissionForm,
+    CareerApplicationForm,
+)
+from .models import FAQQuestion
+from django.core.cache import cache
 
+# External app imports
 from blog.models import BlogPost
 from gallery.models import GalleryItem
 from quotes.email_service import (
@@ -30,14 +42,14 @@ from quotes.forms import QuoteRequestForm
 from quotes.models import QuoteImage
 from reviews.models import Review
 from services.models import Service
+
 from google_reviews.review_utils import (
     get_google_reviews_api,
     get_public_google_reviews,
 )
 
-from .models import FAQQuestion
-
 from bookings.forms import BookingForm
+from notifications.models import Notification
 
 def _slugify_area(area):
     return slugify(f"{area['name']} {area['postcode']}")
@@ -140,7 +152,15 @@ def home(request):
     featured_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
     featured_services = list(Service.objects.filter(is_active=True).order_by("name")[:6])
 
-    google_reviews = get_public_google_reviews(limit=6)
+    google_reviews = cache.get("homepage_google_reviews")
+
+    if not google_reviews:
+        google_reviews = get_public_google_reviews(limit=6)
+        cache.set(
+            "homepage_google_reviews",
+            google_reviews,
+            3600
+        )
     if not google_reviews:
         google_reviews = get_google_reviews_api()
     if not google_reviews:
@@ -343,9 +363,7 @@ def resources(request):
     return render(request, "pages/resources.html", {"resources_list": resources_list})
 
 
-def testimonials(request):
-    from google_reviews.review_utils import get_google_reviews_api
-    
+def testimonials(request):    
     # Fetch live Google reviews from API
     google_reviews = get_google_reviews_api()
     
@@ -411,9 +429,6 @@ def case_studies(request):
 
 
 from .forms import FAQSubmissionForm
-from .models import FAQQuestion
-from django.utils import timezone
-from notifications.models import Notification
 
 
 def faq(request):
@@ -744,7 +759,7 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
     return {
         "title": definition.get("title", definition.get("service_name", "Cleaning Service")),
         "heading": definition.get("heading", definition.get("service_name", "Cleaning Service")),
-        "description": definition.get("description", definition.get("overview", "")).format(location=location_name) if definition.get("description") else "",
+        "description": definition.get("description", definition.get("overview", "")).format(location=location_name, suburb=location_name) if definition.get("description") else "",
         "overview": definition.get("overview", "").format(location=location_name) if definition.get("overview") else "",
         "meta_description": definition.get("meta_description", definition.get("description", "")).format(location=location_name) if definition.get("meta_description") or definition.get("description") else "",
         "introduction": definition.get("introduction", definition.get("overview", "")).format(location=location_name) if definition.get("introduction") or definition.get("overview") else "",
@@ -803,7 +818,7 @@ def service_page(request, service_slug):
         service = _service_context_from_definition(normalized_slug)
 
     if not service:
-        return redirect("home")
+        raise Http404("Service not found")
 
     service_url = f"{settings.SITE_URL}{request.path}"
     google_reviews = _get_service_google_reviews(limit=6)
@@ -850,10 +865,6 @@ def robots_txt(request):
 # ====================================================
 # Careers page & application handler
 # ====================================================
-from django.contrib.auth import get_user_model
-from dashboard.models import CareerApplication
-from notifications.models import Notification
-from .forms import CareerApplicationForm
 
 
 def careers(request):
