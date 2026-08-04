@@ -889,8 +889,6 @@ def careers(request):
                 except Exception:
                     pass
 
-            from django.contrib import messages
-
             messages.success(request, "✅ Thank you — your application has been received.")
             return redirect("/careers/#applied")
     else:
