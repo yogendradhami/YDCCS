@@ -14,6 +14,40 @@ class Service(models.Model):
     )
     description = models.TextField(help_text="Short service description for lists")
     overview = models.TextField(help_text="Longer overview for detail pages")
+    introduction = models.TextField(
+        blank=True,
+        help_text="SEO introduction content for service pages"
+    )
+
+    ideal_for = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Who this service is suitable for"
+    )
+
+    industries = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Industries served"
+    )
+
+    process = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Cleaning process steps"
+    )
+
+    faqs = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Frequently asked questions"
+    )
+
+    problems = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Common problems solved"
+    )
     hero_image = models.ImageField(
         help_text="Service hero image (recommended: 1200x800px)",
         upload_to="services/%Y/%m/",
