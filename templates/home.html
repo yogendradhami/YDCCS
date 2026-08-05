@@ -436,23 +436,6 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
     </div>
 </section>
 
-{% if google_review_count and average_rating %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "YD Commercial Cleaning Services",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": {{ average_rating }},
-    "reviewCount": {{ google_review_count }},
-    "bestRating": 5,
-    "worstRating": 1
-  }
-}
-</script>
-{% endif %}
-
 {% block default_faq_section %}
 <section class="home-promise-section reveal">
     <div class="container">
