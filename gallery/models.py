@@ -97,36 +97,54 @@ class GalleryItem(models.Model):
         return self.after_image or self.before_image
 
     def _media_entry(self, field):
-        if not field:
+        """
+        Safely return media information without forcing Cloudinary file access.
+        """
+
+        if not field or not field.name:
             return None
 
         file_name = Path(field.name).name
+
         content_type, _ = mimetypes.guess_type(file_name)
-        is_image = bool(content_type and content_type.startswith("image/"))
 
         return {
             "url": field.url,
             "name": file_name,
-            "is_image": is_image,
-            "field": field,
+            "is_image": (
+                content_type.startswith("image/")
+                if content_type
+                else True
+            ),
         }
 
     @property
     def gallery_media(self):
         media = []
-        for field in (self.image, self.before_image, self.after_image):
-            entry = self._media_entry(field)
-            if entry:
-                media.append(entry)
+
+        for field in [
+            self.image,
+            self.before_image,
+            self.after_image,
+        ]:
+            if field and field.name:
+                entry = self._media_entry(field)
+
+                if entry:
+                    media.append(entry)
+
         return media
 
     @property
     def gallery_images(self):
         images = []
-        if self.image:
-            images.append(self.image)
-        if self.before_image:
-            images.append(self.before_image)
-        if self.after_image:
-            images.append(self.after_image)
+
+        for img in [
+            self.image,
+            self.before_image,
+            self.after_image,
+        ]:
+            if img and img.name:
+                images.append(img)
+
         return images

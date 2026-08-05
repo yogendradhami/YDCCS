@@ -1470,9 +1470,12 @@ SERVICE_DEFINITIONS.update({
         "hero_image": "/static/images/services/kitchen-hero.svg",
         "image_alt": "Kitchen deep cleaning team working in Adelaide kitchen",
         "gallery": [
-            "kitchen-before.webp",
-            "kitchen-after.webp",
-            "kitchen-oven-clean.svg"
+            {
+                "url": "https://res.cloudinary.com/yd-commercial-cleaning/image/upload/deep-cleaning-before.jpg"
+            },
+            {
+                "url": "https://res.cloudinary.com/yd-commercial-cleaning/image/upload/deep-cleaning-after.jpg"
+            },
         ],
         "problems": [
             "Baked-on grease in ovens and rangehoods",
