@@ -484,22 +484,55 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                     <div class="gallery-card" data-group-index="{{ forloop.counter0 }}">
                         <div class="gallery-image-container">
                             {% with first_item=group.items|first %}
-                                {% if first_item.before_image and first_item.after_image %}
+
+                                {% if first_item.gallery_media|length > 1 %}
+
                                     <div class="gallery-image-split">
+
                                         <div class="gallery-split-pane">
-                                            <span class="gallery-split-label">Before</span>
-                                            <img src="{{ first_item.before_image.url }}" alt="{{ group.title }} before" class="gallery-image">
+                                            <span class="gallery-split-label">
+                                                Before
+                                            </span>
+
+                                            <img 
+                                            src="{{ first_item.gallery_media.0.url }}"
+                                            alt="{{ group.title }} before"
+                                            class="gallery-image">
                                         </div>
+
+
                                         <div class="gallery-split-pane">
-                                            <span class="gallery-split-label">After</span>
-                                            <img src="{{ first_item.after_image.url }}" alt="{{ group.title }} after" class="gallery-image">
+                                            <span class="gallery-split-label">
+                                                After
+                                            </span>
+
+                                            <img 
+                                            src="{{ first_item.gallery_media.1.url }}"
+                                            alt="{{ group.title }} after"
+                                            class="gallery-image">
                                         </div>
+
                                     </div>
-                                {% elif first_item.primary_image %}
-                                    <img src="{{ first_item.primary_image.url }}" alt="{{ group.title }}" class="gallery-image">
+
+
+                                {% elif first_item.gallery_media %}
+
+                                    <img 
+                                    src="{{ first_item.gallery_media.0.url }}"
+                                    alt="{{ group.title }}"
+                                    class="gallery-image">
+
+
                                 {% else %}
-                                    <img src="{% static 'images/placeholder.svg' %}" alt="Placeholder" class="gallery-image">
+
+                                    <img 
+                                    src="{% static 'images/placeholder.svg' %}"
+                                    alt="Placeholder"
+                                    class="gallery-image">
+
+
                                 {% endif %}
+
                             {% endwith %}
 
                             <span class="source-badge {{ group.items.0.source }}">
@@ -519,7 +552,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                             <div class="gallery-thumb-grid">
                                 {% for item in group.items %}
                                     {% for media in item.gallery_media %}
-                                        {% if media.is_image %}
+                                        {% if media and media.is_image %}
                                             <div class="gallery-thumb">
                                                 <img src="{{ media.url }}" alt="{{ group.title }} photo {{ forloop.counter }}">
                                             </div>
