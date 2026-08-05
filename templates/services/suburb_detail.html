@@ -123,6 +123,36 @@
     </div>
 </section>
 
+<!-- SEO STRUCTURED DATA -->
+
+<script type="application/ld+json">
+{
+ "@context":"https://schema.org",
+ "@type":"BreadcrumbList",
+ "@id":"{{ request.build_absolute_uri }}#breadcrumb",
+ "itemListElement":[
+   {
+    "@type":"ListItem",
+    "position":1,
+    "name":"Home",
+    "item":"https://ydcleaning.com.au/"
+   },
+   {
+    "@type":"ListItem",
+    "position":2,
+    "name":"Adelaide Cleaning Services",
+    "item":"https://ydcleaning.com.au/locations/"
+   },
+   {
+    "@type":"ListItem",
+    "position":3,
+    "name":"{{ suburb_name }} Cleaning Services",
+    "item":"{{ request.build_absolute_uri }}"
+   }
+ ]
+}
+</script>
+
 {% block default_why_choose_section %}{% endblock %}
 
 <style>

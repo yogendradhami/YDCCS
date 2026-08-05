@@ -150,69 +150,7 @@
               "opens": "08:00",
               "closes": "12:00"
             }
-          ],
-          "hasOfferCatalog": {
-            "@type": "OfferCatalog",
-            "name": "Cleaning Services",
-            "itemListElement": [
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Commercial Cleaning Adelaide"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Office Cleaning Adelaide"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "House Cleaning Adelaide"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "End of Lease Cleaning Adelaide"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Bond Cleaning Adelaide"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Window Cleaning Adelaide"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Carpet Steam Cleaning Adelaide"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Service",
-                  "name": "Deep Cleaning Services Adelaide"
-                }
-              }
-            ]
-          }
+          ]
         },
         {
           "@type": "WebSite",
@@ -223,29 +161,6 @@
           "publisher": {
             "@id": "https://ydcleaning.com.au/#organization"
           }
-        },
-
-        {
-          "@type": "Service",
-          "@id": "{{ request.build_absolute_uri }}#service",
-          "name": "{{ service.title }}{% if location %} {{ location }}{% endif %}",
-          "serviceType": "{% if service %}{{ service.title|escapejs }}{% else %}Cleaning Services{% endif %}",
-
-          "description": "{% if service and service.description %}{{ service.description|escapejs }}{% else %}Professional cleaning services in Adelaide by YD Commercial Cleaning Services.{% endif %}",
-
-          "url": "{{ request.build_absolute_uri }}",
-
-          "provider": {
-            "@id": "https://ydcleaning.com.au/#localbusiness"
-          },
-
-          "areaServed": {
-            "@type": "Place",
-            "name": "{% if location %}{{ location|escapejs }}{% else %}Adelaide, South Australia{% endif %}"
-          }
-
-
-
         }
       ]
     }
