@@ -1341,322 +1341,95 @@ Call 0430 049 865
 {% endblock %}
 
 
-
-
-
-
-
 <!-- ================================
      SEO STRUCTURED DATA
 ================================ -->
 
 
 <script type="application/ld+json">
-
 {
-
-"@context": "https://schema.org",
-
-"@graph": [
-
-
-
-{
-
-"@type": "BreadcrumbList",
-
-
-"itemListElement": [
-
-{
-
-"@type": "ListItem",
-
-"position": 1,
-
-"name": "Home",
-
-"item": "https://ydcleaning.com.au/"
-
-},
-
-
-{
-
-"@type": "ListItem",
-
-"position": 2,
-
-"name": "{{ service.title|escapejs }}",
-
-"item": "{{ service_url|escapejs }}"
-
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://ydcleaning.com.au/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "{{ service.title|escapejs }}",
+          "item": "{{ service_url|escapejs }}"
+        }
+      ]
+    },
+    {
+      "@type": "Service",
+      "serviceType": "{{ service.title|default:'Cleaning Service'|escapejs }}",
+      "name": "{{ service.heading|default:service.title|escapejs }}",
+      "description": "{{ service.description|default:'Professional cleaning services in Adelaide.'|escapejs }}",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "YD Commercial Cleaning Services",
+        "url": "https://ydcleaning.com.au",
+        "telephone": "+61 430 049 865",
+        "email": "info@ydcleaning.com.au",
+        "image": "{% if service.hero_image %}{{ service.hero_image.url }}{% else %}https://ydcleaning.com.au/static/images/logo.jpeg{% endif %}",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Adelaide",
+          "addressRegion": "SA",
+          "postalCode": "5000",
+          "addressCountry": "AU"
+        },
+        "areaServed": [
+          {% if location %}
+          "{{ location }}",
+          {% endif %}
+          "Adelaide",
+          "South Australia"
+        ],
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "08:00",
+          "closes": "12:00"
+        },
+        "sameAs": [
+          "https://www.facebook.com/ydcommercialcleaning",
+          "https://www.instagram.com/ydcommercialcleaning"
+        ]
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "{{ service.title|escapejs }} Packages",
+        "itemListElement": [
+          {% for package in service.packages %}
+          {
+            "@type": "Offer",
+            "name": "{{ package.name|escapejs }}",
+            "description": "{{ package.description|escapejs }}",
+            "priceCurrency": "AUD"
+          }
+          {% if not forloop.last %},{% endif %}
+          {% endfor %}
+        ]
+      }
+    }
+  ]
 }
-
-
-]
-
-
-},
-
-
-
-
-
-
-{
-
-"@type": "Service",
-
-
-"serviceType":
-"{{ service.title|default:'Cleaning Service'|escapejs }}",
-
-
-
-"name":
-"{{ service.heading|default:service.title|escapejs }}",
-
-
-
-"description":
-"{{ service.description|default:'Professional cleaning services in Adelaide.'|escapejs }}",
-
-
-
-
-
-
-{% if service_review_count %}
-
-"aggregateRating": {
-
-
-"@type": "AggregateRating",
-
-
-"ratingValue":
-"{{ service_average_rating|default:'5' }}",
-
-
-"reviewCount":
-"{{ service_review_count }}"
-
-
-},
-
-
-{% endif %}
-
-
-
-
-
-"provider": {
-
-
-"@type": "LocalBusiness",
-
-
-"name":
-"YD Commercial Cleaning Services",
-
-
-
-"url":
-"https://ydcleaning.com.au",
-
-
-
-"telephone":
-"+61 430 049 865",
-
-
-
-"email":
-"info@ydcleaning.com.au",
-
-
-
-"image":
-
-"{% if service.hero_image %}{{ service.hero_image.url }}{% else %}https://ydcleaning.com.au/static/images/logo.jpeg{% endif %}",
-
-
-
-
-"address": {
-
-
-"@type": "PostalAddress",
-
-
-"addressLocality":
-"Adelaide",
-
-
-"addressRegion":
-"SA",
-
-
-"postalCode":
-"5000",
-
-
-"addressCountry":
-"AU"
-
-
-},
-
-
-
-
-"areaServed": [
-
-{% if location %}
-
-"{{ location }}",
-
-{% endif %}
-
-
-"Adelaide",
-
-"South Australia"
-
-
-],
-
-
-
-
-
-"openingHoursSpecification": {
-
-
-"@type":
-"OpeningHoursSpecification",
-
-
-"dayOfWeek": [
-
-"Monday",
-
-"Tuesday",
-
-"Wednesday",
-
-"Thursday",
-
-"Friday",
-
-"Saturday",
-
-"Sunday"
-
-],
-
-
-"opens":
-"08:00",
-
-
-"closes":
-"12:00"
-
-
-},
-
-
-
-
-
-"sameAs": [
-
-"https://www.facebook.com/ydcommercialcleaning",
-
-"https://www.instagram.com/ydcommercialcleaning"
-
-]
-
-
-},
-
-
-
-
-
-
-"hasOfferCatalog": {
-
-
-"@type":
-"OfferCatalog",
-
-
-
-"name":
-"{{ service.title|escapejs }} Packages",
-
-
-
-
-"itemListElement": [
-
-
-
-{% for package in service.packages %}
-
-
-{
-
-"@type":
-"Offer",
-
-
-"name":
-"{{ package.name|escapejs }}",
-
-
-
-"description":
-"{{ package.description|escapejs }}",
-
-
-
-"priceCurrency":
-"AUD"
-
-
-}
-
-
-{% if not forloop.last %},{% endif %}
-
-
-{% endfor %}
-
-
-
-]
-
-
-}
-
-
-
-
-
-}
-
-
-]
-
-
-}
-
-
 </script>
 
 
