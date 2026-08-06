@@ -758,6 +758,10 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
     # Build a rich context merging available definition fields and sensible defaults
     return {
         "title": definition.get("title", definition.get("service_name", "Cleaning Service")),
+        "location_content": definition.get("location_content", {}).get(
+            location_name.lower().replace(" ", "-"),
+            ""
+        ),
         "heading": definition.get("heading", definition.get("service_name", "Cleaning Service")),
         "description": definition.get("description", definition.get("overview", "")).format(location=location_name, suburb=location_name) if definition.get("description") else "",
         "overview": definition.get("overview", "").format(location=location_name) if definition.get("overview") else "",
