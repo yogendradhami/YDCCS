@@ -795,6 +795,12 @@ def _get_service_google_reviews(limit=6):
         ]
     return google_reviews
 
+def legacy_service_redirect(request, service_slug):
+    return redirect(
+        f"/services/{service_slug}/",
+        permanent=True
+    )
+
 
 def service_page(request, service_slug):
 

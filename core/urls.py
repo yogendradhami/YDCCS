@@ -39,6 +39,8 @@ from .views import (
     legal,
     local_suburb_detail,
     booking,
+    legacy_service_redirect,
+
 )
 from .views_append import blog_detail
 
@@ -123,10 +125,10 @@ urlpatterns = [
         name="service_page"
     ),
 
-    # Legacy service URLs (keep existing indexed URLs working)
+    # Redirect old service URLs to canonical /services/ URLs
     path(
         "<slug:service_slug>/",
-        service_page,
-        name="legacy_service_page"
+        legacy_service_redirect,
+        name="legacy_service_redirect"
     ),
 ]
