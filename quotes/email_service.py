@@ -1,5 +1,8 @@
 from django.conf import settings
 from django.core.mail import send_mail
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_addons_text(quote):
@@ -54,16 +57,32 @@ Message:
 Thank you,
 YD Commercial Cleaning Services
 Phone: 0430 049 865
-Website: www.ydcleaning.com
+Website: https://ydcleaning.com.au
 """
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [quote.email],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [quote.email],
+            fail_silently=False,
+        )
+
+        logger.info(
+            "Customer quote email sent successfully to %s",
+            quote.email
+        )
+
+        return True
+
+    except Exception:
+        logger.exception(
+            "Failed to send customer quote email to %s",
+            quote.email
+        )
+
+        return False
 
 
 def send_admin_quote_email(quote):
@@ -90,10 +109,23 @@ Message:
 Login to Django Admin to view full details and uploaded images.
 """
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [settings.ADMIN_EMAIL],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.ADMIN_EMAIL],
+            fail_silently=False,
+        )
+
+        logger.info(
+            "Admin quote email sent successfully to %s",
+            settings.ADMIN_EMAIL
+        )
+
+        return True
+
+    except Exception:
+        logger.exception("Failed to send admin quote email")
+
+        return False

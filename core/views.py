@@ -235,11 +235,14 @@ def home(request):
                     for image in uploaded_images:
                         QuoteImage.objects.create(quote=quote, image=image)
 
-                try:
-                    send_customer_quote_email(quote)
-                    send_admin_quote_email(quote)
-                except Exception as error:
-                    print("Email sending failed:", error)
+                customer_email_sent = send_customer_quote_email(quote)
+                admin_email_sent = send_admin_quote_email(quote)
+
+                if not customer_email_sent:
+                    print("WARNING: Customer quote email was not sent.")
+
+                if not admin_email_sent:
+                    print("WARNING: Admin quote email was not sent.")
 
                 messages.success(
                     request,
