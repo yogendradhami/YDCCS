@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse
+from django.db import transaction
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
@@ -224,25 +225,34 @@ def home(request):
                 base_price += 60
 
             quote.estimated_price = base_price
-            quote.save(update_fields=None)
 
-            uploaded_images = request.FILES.getlist("property_images")
-
-            for image in uploaded_images:
-                QuoteImage.objects.create(quote=quote, image=image)
+            uploaded_images = form.cleaned_data.get("property_images", [])
 
             try:
-                send_customer_quote_email(quote)
-                send_admin_quote_email(quote)
+                with transaction.atomic():
+                    quote.save()
+
+                    for image in uploaded_images:
+                        QuoteImage.objects.create(quote=quote, image=image)
+
+                try:
+                    send_customer_quote_email(quote)
+                    send_admin_quote_email(quote)
+                except Exception as error:
+                    print("Email sending failed:", error)
+
+                messages.success(
+                    request,
+                    f"✅ Thank you! Your quote request has been submitted successfully. Estimated price: ${quote.estimated_price}. Our team will confirm the final price shortly.",
+                )
+
+                return redirect("/#quote")
+
             except Exception as error:
-                print("Email sending failed:", error)
-
-            messages.success(
-                request,
-                f"✅ Thank you! Your quote request has been submitted successfully. Estimated price: ${quote.estimated_price}. Our team will confirm the final price shortly.",
-            )
-
-            return redirect("/#quote")
+                form.add_error(
+                    "property_images",
+                    "One or more uploaded images could not be processed. Please try again with a valid image file.",
+                )
 
         messages.error(request, "❌ Please check the form and try again.")
 
