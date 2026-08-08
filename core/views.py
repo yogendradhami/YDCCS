@@ -23,6 +23,7 @@ from .seo_data import (
     LOCATION_ALIASES,
     SERVICE_DEFINITIONS,
     SERVICE_SLUG_ALIASES,
+    get_location_definition,
 )
 from .forms import (
     FAQSubmissionForm,
@@ -811,6 +812,22 @@ def service_page(request, service_slug):
     normalized_slug = _normalize_service_slug(service_slug)
     path_slug = service_slug.lower().strip("-")
     location = _get_location_from_slug(path_slug)
+    location_slug = None
+
+    for slug, name in sorted(
+        LOCATION_ALIASES.items(),
+        key=lambda x: len(x[0]),
+        reverse=True
+    ):
+        if path_slug.endswith(slug):
+            location_slug = slug
+            break
+
+    location_definition = (
+        get_location_definition(location_slug)
+        if location_slug
+        else get_location_definition("adelaide")
+    )
 
     slug_candidates = [normalized_slug]
     if path_slug != normalized_slug:
@@ -851,12 +868,15 @@ def service_page(request, service_slug):
             "service": service,
             "service_url": service_url,
             "location": location,
+            "location_definition": location_definition,
+
             "google_reviews": google_reviews,
             "service_review_count": service_review_count,
             "service_average_rating": service_average_rating,
+            "hide_default_faq": True,
             "faq_section": _get_faq_section(
                 "service_detail",
-                service_title=service["title"],
+                service_title=service["title"].replace(" Adelaide", ""),
                 location_name=location,
             ),
         }

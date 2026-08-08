@@ -319,7 +319,7 @@ FAQ_PAGE_CONFIG = {
     },
     "service_detail": {
         "title": "Frequently Asked Questions",
-        "description": "Answers to the most common questions about {service_title} in {location_name}.",
+        "description": "Answers to the most common questions about {service_title} services in {location_name}.",
         "section_class": "section faq-section",
         "item_class": "faq-box",
         "entries": [
