@@ -29,8 +29,55 @@ def get_addons_text(quote):
     return "\n".join(addons)
 
 
+def _send_email(subject, message, recipient):
+    """
+    Central email helper.
+
+    Returns True when the email is accepted by the configured
+    Django email backend, otherwise logs the error and returns False.
+    """
+
+    if not recipient:
+        logger.error(
+            "Email not sent: recipient address is empty."
+        )
+        return False
+
+    try:
+        sent = send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient],
+            fail_silently=False,
+        )
+
+        if sent:
+            logger.info(
+                "Email sent successfully to %s",
+                recipient,
+            )
+            return True
+
+        logger.warning(
+            "Email backend returned 0 for %s",
+            recipient,
+        )
+        return False
+
+    except Exception:
+        logger.exception(
+            "Email delivery failed to %s",
+            recipient,
+        )
+        return False
+
+
 def send_customer_quote_email(quote):
-    subject = "Thank you for your quote request - YD Commercial Cleaning"
+    subject = (
+        "Thank you for your quote request - "
+        "YD Commercial Cleaning"
+    )
 
     message = f"""
 Hi {quote.name},
@@ -60,29 +107,11 @@ Phone: 0430 049 865
 Website: https://ydcleaning.com.au
 """
 
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [quote.email],
-            fail_silently=False,
-        )
-
-        logger.info(
-            "Customer quote email sent successfully to %s",
-            quote.email
-        )
-
-        return True
-
-    except Exception:
-        logger.exception(
-            "Failed to send customer quote email to %s",
-            quote.email
-        )
-
-        return False
+    return _send_email(
+        subject,
+        message,
+        quote.email,
+    )
 
 
 def send_admin_quote_email(quote):
@@ -109,23 +138,8 @@ Message:
 Login to Django Admin to view full details and uploaded images.
 """
 
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [settings.ADMIN_EMAIL],
-            fail_silently=False,
-        )
-
-        logger.info(
-            "Admin quote email sent successfully to %s",
-            settings.ADMIN_EMAIL
-        )
-
-        return True
-
-    except Exception:
-        logger.exception("Failed to send admin quote email")
-
-        return False
+    return _send_email(
+        subject,
+        message,
+        settings.ADMIN_EMAIL,
+    )
