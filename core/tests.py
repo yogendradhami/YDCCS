@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from dashboard.models import CompanySettings
+from services.models import Service
 
 
 class SmokeTest(TestCase):
@@ -10,6 +11,17 @@ class SmokeTest(TestCase):
             business_name="YD Commercial Cleaning Services",
             phone="0430 049 865",
             email="ydcommercialcleaning@gmail.com",
+        )
+        Service.objects.create(
+            slug="carpet-steam-cleaning-adelaide",
+            name="Carpet Steam Cleaning",
+            description="Professional carpet steam cleaning in Adelaide.",
+            overview="Deep-clean carpet steam cleaning for homes and businesses.",
+            introduction="Carpet steam cleaning for Adelaide homes and offices.",
+            hero_image="services/carpet-steam-cleaning-adelaide.jpg",
+            included=["Deep carpet extraction", "Stain treatment"],
+            packages=[{"name": "Standard", "price": "$120"}],
+            is_active=True,
         )
 
     def test_root_url_resolves(self):
@@ -102,3 +114,43 @@ class SmokeTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
         self.assertIn("Commercial Cleaning", body)
+
+    def test_legacy_service_location_urls_redirect_to_adelaide_canonical(self):
+        legacy_cases = [
+            ("/services/carpet-steam-cleaning-glenelg/", "/services/carpet-steam-cleaning-adelaide-glenelg/"),
+            ("/services/carpet-steam-cleaning-norwood/", "/services/carpet-steam-cleaning-adelaide-norwood/"),
+            ("/services/carpet-steam-cleaning-prospect/", "/services/carpet-steam-cleaning-adelaide-prospect/"),
+            ("/services/carpet-steam-cleaning-modbury/", "/services/carpet-steam-cleaning-adelaide-modbury/"),
+        ]
+
+        for legacy_url, canonical_url in legacy_cases:
+            with self.subTest(legacy_url=legacy_url):
+                resp = self.client.get(legacy_url, follow=False)
+                self.assertEqual(resp.status_code, 301)
+                self.assertEqual(resp["Location"], canonical_url)
+
+    def test_canonical_service_urls_remain_200_and_self_referential(self):
+        canonical_urls = [
+            "/services/carpet-steam-cleaning-adelaide-glenelg/",
+            "/services/carpet-steam-cleaning-adelaide-norwood/",
+            "/services/carpet-steam-cleaning-adelaide-prospect/",
+            "/services/carpet-steam-cleaning-adelaide-modbury/",
+        ]
+
+        for canonical_url in canonical_urls:
+            with self.subTest(canonical_url=canonical_url):
+                resp = self.client.get(canonical_url, follow=False)
+                self.assertEqual(resp.status_code, 200)
+                self.assertIn(
+                    f'<link rel="canonical" href="http://testserver{canonical_url}">',
+                    resp.content.decode("utf-8"),
+                )
+
+                redirected = self.client.get(canonical_url, follow=True)
+                self.assertEqual(redirected.status_code, 200)
+                self.assertEqual(redirected.redirect_chain, [])
+
+    def test_sitemap_uses_adelaide_prefixed_local_service_urls(self):
+        sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
+        self.assertIn("/services/carpet-steam-cleaning-adelaide-glenelg/", sitemap)
+        self.assertNotIn("/services/carpet-steam-cleaning-glenelg/", sitemap)
