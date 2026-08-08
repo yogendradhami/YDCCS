@@ -23,7 +23,6 @@ from .seo_data import (
     LOCATION_ALIASES,
     SERVICE_DEFINITIONS,
     SERVICE_SLUG_ALIASES,
-    get_location_definition,
 )
 from .forms import (
     FAQSubmissionForm,
@@ -604,33 +603,6 @@ def local_suburb_detail(request, area_slug):
 # SEO Service Page View
 # ====================================================
 
-def _get_canonical_service_redirect_path(service_slug):
-    """
-    Redirect legacy /services/<service>-<location>/ URLs to the canonical
-    /services/<service>-adelaide-<location>/ form.
-    """
-    slug = (service_slug or "").lower().strip("-")
-    if not slug:
-        return None
-
-    if slug.endswith("-adelaide"):
-        return None
-
-    for location_slug in sorted(LOCATION_ALIASES, key=len, reverse=True):
-        if slug.endswith(f"-adelaide-{location_slug}"):
-            return None
-
-    for location_slug in sorted(LOCATION_ALIASES, key=len, reverse=True):
-        suffix = f"-{location_slug}"
-        if slug.endswith(suffix) and not slug.endswith(f"-adelaide-{location_slug}"):
-            base_slug = slug[: -len(suffix)]
-            canonical_slug = f"{base_slug}-adelaide-{location_slug}"
-            if canonical_slug:
-                return f"/services/{canonical_slug}/"
-
-    return None
-
-
 def _normalize_service_slug(service_slug):
     """
     Convert SEO location service URLs into base service slugs.
@@ -828,9 +800,6 @@ def _get_service_google_reviews(limit=6):
     return google_reviews
 
 def legacy_service_redirect(request, service_slug):
-    canonical_path = _get_canonical_service_redirect_path(service_slug)
-    if canonical_path:
-        return redirect(canonical_path, permanent=True)
     return redirect(
         f"/services/{service_slug}/",
         permanent=True
@@ -839,29 +808,9 @@ def legacy_service_redirect(request, service_slug):
 
 def service_page(request, service_slug):
 
-    canonical_redirect = _get_canonical_service_redirect_path(service_slug)
-    if canonical_redirect and request.path.rstrip("/") != canonical_redirect.rstrip("/"):
-        return redirect(canonical_redirect, permanent=True)
-
     normalized_slug = _normalize_service_slug(service_slug)
     path_slug = service_slug.lower().strip("-")
     location = _get_location_from_slug(path_slug)
-    location_slug = None
-
-    for slug, name in sorted(
-        LOCATION_ALIASES.items(),
-        key=lambda x: len(x[0]),
-        reverse=True
-    ):
-        if path_slug.endswith(slug):
-            location_slug = slug
-            break
-
-    location_definition = (
-        get_location_definition(location_slug)
-        if location_slug
-        else get_location_definition("adelaide")
-    )
 
     slug_candidates = [normalized_slug]
     if path_slug != normalized_slug:
@@ -902,8 +851,6 @@ def service_page(request, service_slug):
             "service": service,
             "service_url": service_url,
             "location": location,
-            "location_definition": location_definition,
-
             "google_reviews": google_reviews,
             "service_review_count": service_review_count,
             "service_average_rating": service_average_rating,
