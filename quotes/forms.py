@@ -7,7 +7,7 @@ class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
 
-class MultipleImageField(forms.FileField):
+class MultipleImageField(forms.ImageField):
     widget = MultipleFileInput
 
     def clean(self, data, initial=None):
