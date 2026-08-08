@@ -1873,94 +1873,467 @@ LOCATION_DEFINITIONS = {
 
 }
 
+LOCATION_REGION_DATA = {
+    "adelaide": {
+        "region": "Adelaide CBD",
+        "description": "central Adelaide and surrounding inner-city areas",
+        "nearby": ["North Adelaide", "Kent Town", "Norwood", "Unley"],
+    },
+
+    "north-adelaide": {
+        "region": "North Adelaide",
+        "description": "North Adelaide and nearby inner-northern suburbs",
+        "nearby": ["Prospect", "Collinswood", "Enfield", "Kilburn"],
+    },
+
+    "aldgate": {
+        "region": "Adelaide Hills",
+        "description": "Aldgate and surrounding Adelaide Hills communities",
+        "nearby": ["Stirling", "Bridgewater", "Hahndorf", "Mount Barker"],
+    },
+
+    "norwood": {
+        "region": "Inner East Adelaide",
+        "description": "Norwood and nearby eastern Adelaide suburbs",
+        "nearby": ["Kent Town", "Rose Park", "Kensington", "Burnside"],
+    },
+
+    "glenelg": {
+        "region": "Adelaide coastal area",
+        "description": "Glenelg and surrounding western coastal suburbs",
+        "nearby": ["Brighton", "Somerton Park", "West Beach", "Seacliff"],
+    },
+
+    "prospect": {
+        "region": "Inner North Adelaide",
+        "description": "Prospect and nearby northern Adelaide suburbs",
+        "nearby": ["North Adelaide", "Collinswood", "Kilburn", "Enfield"],
+    },
+
+    "unley": {
+        "region": "Inner South Adelaide",
+        "description": "Unley and nearby inner-southern suburbs",
+        "nearby": ["Unley Park", "Parkside", "Hyde Park", "Goodwood"],
+    },
+
+    "burnside": {
+        "region": "Eastern Adelaide",
+        "description": "Burnside and surrounding eastern Adelaide suburbs",
+        "nearby": ["Beaumont", "Kensington", "Toorak Gardens", "Dulwich"],
+    },
+}
+
+
 # ----------------------------------------------------
 # Dynamic Location SEO Generator
 # ----------------------------------------------------
-
 def get_location_definition(slug):
+    """
+    Return SEO/location data for a suburb.
 
-    # Return custom page if it exists
+    Custom LOCATION_DEFINITIONS always take priority.
+    All other known locations receive dynamically generated,
+    location-specific SEO content.
+    """
+
+    # ------------------------------------------------------------
+    # 1. Custom location definition takes priority
+    # ------------------------------------------------------------
     if slug in LOCATION_DEFINITIONS:
         return LOCATION_DEFINITIONS[slug]
 
-    # Unknown suburb
+    # ------------------------------------------------------------
+    # 2. Unknown location fallback
+    # ------------------------------------------------------------
     if slug not in LOCATION_ALIASES:
+        location = slug.replace("-", " ").title()
+
         return {
-            "name": slug.replace("-", " ").title(),
+            "name": location,
 
-            "meta_title":
-            f"Cleaning Services {slug.replace('-', ' ').title()} Adelaide",
+            "meta_title": (
+                f"Cleaning Services {location} Adelaide | "
+                "YD Commercial Cleaning"
+            ),
 
-            "meta_description":
-            f"Professional cleaning services in {slug.replace('-', ' ').title()} Adelaide including commercial cleaning, house cleaning, carpet cleaning and deep cleaning.",
+            "meta_description": (
+                f"Professional cleaning services in {location}, Adelaide "
+                "including commercial cleaning, office cleaning, house "
+                "cleaning, carpet cleaning, bond cleaning and deep cleaning."
+            ),
 
             "keywords": [
-                f"cleaners {slug}",
-                f"cleaning services {slug}",
+                f"cleaners {location}",
+                f"cleaning services {location}",
+                f"commercial cleaning {location}",
+                f"house cleaning {location}",
+                f"deep cleaning {location}",
             ],
 
             "hero_heading":
-            f"Professional Cleaning Services in {slug.replace('-', ' ').title()}",
+                f"Professional Cleaning Services in {location}",
 
-            "intro":
-            f"YD Commercial Cleaning Services provides professional cleaning services across Adelaide suburbs.",
+            "intro": (
+                f"YD Commercial Cleaning Services provides professional "
+                f"residential and commercial cleaning services in {location}, "
+                "Adelaide. Our cleaning team helps homeowners, tenants, "
+                "property managers and local businesses with reliable "
+                "one-off and scheduled cleaning services."
+            ),
 
             "why_choose": [
-                "Experienced cleaners",
-                "Reliable service",
-                "Flexible booking",
-                "Residential and commercial cleaning"
+                f"Local cleaning service in {location}",
+                "Experienced professional cleaners",
+                "Fully insured cleaning service",
+                "Residential and commercial cleaning",
+                "Flexible booking options",
+                "Clear and competitive pricing",
             ],
 
-            "services": list(SERVICE_DEFINITIONS.keys()),
+            "services": [
+                "Commercial Cleaning",
+                "Office Cleaning",
+                "House Cleaning",
+                "Carpet Steam Cleaning",
+                "Deep Cleaning",
+                "Bond Cleaning",
+                "End of Lease Cleaning",
+                "Move In Cleaning",
+                "Move Out Cleaning",
+                "Window Cleaning",
+                "Kitchen Deep Cleaning",
+                "Bathroom Cleaning",
+                "Medical Cleaning",
+                "Builders Cleaning",
+                "Pressure Washing",
+            ],
 
-            "nearby_suburbs": []
+            "nearby_suburbs": [],
         }
 
+    # ------------------------------------------------------------
+    # 3. Known location
+    # ------------------------------------------------------------
     location = LOCATION_ALIASES[slug]
 
+    # Get regional information when available
+    region_data = LOCATION_REGION_DATA.get(slug, {})
+
+    region = region_data.get("region", "Adelaide")
+
+    regional_description = region_data.get(
+        "description",
+        f"{location} and surrounding Adelaide suburbs"
+    )
+
+    nearby_suburbs = region_data.get("nearby", [])
+
+    # ------------------------------------------------------------
+    # 4. Regional fallback based on existing LOCATION_ALIASES
+    # ------------------------------------------------------------
+    if not nearby_suburbs:
+
+        regional_groups = {
+            "adelaide": [
+                "North Adelaide",
+                "Kent Town",
+                "Norwood",
+                "Unley",
+            ],
+
+            "adelaide-cbd": [
+                "North Adelaide",
+                "West Adelaide",
+                "East Adelaide",
+                "South Adelaide",
+            ],
+
+            "north-adelaide": [
+                "Prospect",
+                "Collinswood",
+                "Enfield",
+                "Kilburn",
+            ],
+
+            "west-adelaide": [
+                "Findon",
+                "West Beach",
+                "Henley Beach",
+                "Kidman Park",
+            ],
+
+            "east-adelaide": [
+                "Norwood",
+                "Burnside",
+                "Kensington",
+                "Toorak Gardens",
+            ],
+
+            "south-adelaide": [
+                "Unley",
+                "Marion",
+                "Oaklands Park",
+                "Morphett Vale",
+            ],
+
+            "norwood": [
+                "Kent Town",
+                "Rose Park",
+                "Kensington",
+                "Burnside",
+            ],
+
+            "kent-town": [
+                "Norwood",
+                "Rose Park",
+                "Adelaide",
+                "Kensington",
+            ],
+
+            "unley": [
+                "Unley Park",
+                "Parkside",
+                "Hyde Park",
+                "Goodwood",
+            ],
+
+            "burnside": [
+                "Beaumont",
+                "Kensington",
+                "Toorak Gardens",
+                "Dulwich",
+            ],
+
+            "prospect": [
+                "North Adelaide",
+                "Collinswood",
+                "Kilburn",
+                "Enfield",
+            ],
+
+            "kilburn": [
+                "Prospect",
+                "Gepps Cross",
+                "Enfield",
+                "Collinswood",
+            ],
+
+            "pooraka": [
+                "Gepps Cross",
+                "Parafield",
+                "Salisbury",
+                "Parafield Gardens",
+            ],
+
+            "glenelg": [
+                "Brighton",
+                "Somerton Park",
+                "West Beach",
+                "Seacliff",
+            ],
+
+            "brighton": [
+                "Glenelg",
+                "Seacliff",
+                "Marion",
+                "Oaklands Park",
+            ],
+
+            "henley-beach": [
+                "Grange",
+                "West Beach",
+                "Findon",
+                "Glenelg",
+            ],
+
+            "port-adelaide": [
+                "Semaphore",
+                "Largs Bay",
+                "Findon",
+                "West Beach",
+            ],
+
+            "aldgate": [
+                "Stirling",
+                "Bridgewater",
+                "Hahndorf",
+                "Mount Barker",
+            ],
+
+            "stirling": [
+                "Aldgate",
+                "Bridgewater",
+                "Hahndorf",
+                "Mount Barker",
+            ],
+
+            "hahndorf": [
+                "Aldgate",
+                "Stirling",
+                "Bridgewater",
+                "Mount Barker",
+            ],
+
+            "mount-barker": [
+                "Hahndorf",
+                "Aldgate",
+                "Bridgewater",
+                "Stirling",
+            ],
+
+            "modbury": [
+                "Modbury Heights",
+                "Tea Tree Gully",
+                "Highbury",
+                "Ridgehaven",
+            ],
+
+            "tea-tree-gully": [
+                "Modbury",
+                "Highbury",
+                "Vista",
+                "St Agnes",
+            ],
+
+            "golden-grove": [
+                "Fairview Park",
+                "Greenwith",
+                "Highbury",
+                "Tea Tree Gully",
+            ],
+
+            "marion": [
+                "Oaklands Park",
+                "Brighton",
+                "Morphett Vale",
+                "Hallett Cove",
+            ],
+
+            "morphett-vale": [
+                "Marion",
+                "Hallett Cove",
+                "Christies Beach",
+                "Noarlunga",
+            ],
+
+            "semaphore": [
+                "Largs Bay",
+                "Port Adelaide",
+                "West Beach",
+                "Grange",
+            ],
+
+            "gawler": [
+                "Salisbury",
+                "Parafield",
+                "Mawson Lakes",
+                "Pooraka",
+            ],
+
+            "murray-bridge": [
+                "Mount Barker",
+                "Hahndorf",
+                "Aldgate",
+                "Gawler",
+            ],
+
+            "victor-harbor": [
+                "Noarlunga",
+                "Christies Beach",
+                "Aldinga",
+                "Morphett Vale",
+            ],
+        }
+
+        nearby_suburbs = regional_groups.get(
+            slug,
+            []
+        )
+
+    # ------------------------------------------------------------
+    # 5. Determine regional wording
+    # ------------------------------------------------------------
+    if region == "Adelaide":
+        region_sentence = (
+            f"{location} and nearby Adelaide suburbs"
+        )
+    else:
+        region_sentence = (
+            f"{location} and surrounding {region.lower()} areas"
+        )
+
+    # ------------------------------------------------------------
+    # 6. Build location-specific introduction
+    # ------------------------------------------------------------
+    intro = (
+        f"YD Commercial Cleaning Services provides professional cleaning "
+        f"services throughout {location}, Adelaide. Our local cleaning team "
+        f"services homes, rental properties, offices, retail spaces and "
+        f"commercial premises across {regional_description}. "
+        f"We provide practical cleaning solutions for customers who need "
+        f"regular cleaning, one-off deep cleaning, end of lease cleaning "
+        f"or specialised cleaning for their property."
+    )
+
+    # ------------------------------------------------------------
+    # 7. Location-specific reasons to choose us
+    # ------------------------------------------------------------
+    why_choose = [
+        f"Local cleaners serving {location}",
+        f"Knowledge of {region} properties",
+        "Fully insured cleaning service",
+        "Residential and commercial cleaning",
+        "Flexible one-off and regular bookings",
+        "Professional equipment and cleaning products",
+    ]
+
+    # ------------------------------------------------------------
+    # 8. Location-specific metadata
+    # ------------------------------------------------------------
+    meta_title = (
+        f"Cleaning Services {location} Adelaide | "
+        "YD Commercial Cleaning"
+    )
+
+    meta_description = (
+        f"Professional cleaning services in {location}, Adelaide. "
+        f"Residential and commercial cleaners for homes, offices, "
+        f"rental properties and businesses across {region}. "
+        "Get a free cleaning quote from YD Commercial Cleaning Services."
+    )
+
+    keywords = [
+        f"cleaners {location}",
+        f"cleaning services {location}",
+        f"commercial cleaning {location}",
+        f"office cleaning {location}",
+        f"house cleaning {location}",
+        f"deep cleaning {location}",
+        f"bond cleaning {location}",
+        f"end of lease cleaning {location}",
+        f"carpet cleaning {location}",
+        f"window cleaning {location}",
+        f"move out cleaning {location}",
+    ]
+
+    # ------------------------------------------------------------
+    # 9. Final generated location definition
+    # ------------------------------------------------------------
     return {
         "name": location,
 
-        "meta_title": f"Cleaning Services {location} Adelaide | YD Commercial Cleaning",
+        "meta_title": meta_title,
 
-        "meta_description": (
-            f"Professional cleaning services in {location}, Adelaide including "
-            "commercial cleaning, office cleaning, house cleaning, carpet steam "
-            "cleaning, bond cleaning, end of lease cleaning and deep cleaning."
-        ),
+        "meta_description": meta_description,
 
-        "keywords": [
-            f"cleaners {location}",
-            f"cleaning services {location}",
-            f"commercial cleaning {location}",
-            f"office cleaning {location}",
-            f"house cleaning {location}",
-            f"bond cleaning {location}",
-            f"end of lease cleaning {location}",
-            f"deep cleaning {location}",
-            f"carpet cleaning {location}",
-            f"window cleaning {location}",
-        ],
+        "keywords": keywords,
 
-        "hero_heading": f"Professional Cleaning Services in {location}",
+        "hero_heading":
+            f"Professional Cleaning Services in {location}",
 
-        "intro": (
-            f"YD Commercial Cleaning Services proudly provides professional "
-            f"cleaning services throughout {location}, Adelaide. We provide "
-            f"commercial cleaning, office cleaning, house cleaning, carpet "
-            f"steam cleaning, bond cleaning, end of lease cleaning and deep "
-            f"cleaning with reliable local cleaners."
-        ),
+        "intro": intro,
 
-        "why_choose": [
-            "Experienced local cleaners",
-            "Fully insured",
-            "Flexible booking",
-            "Residential & commercial cleaning",
-            "Affordable pricing",
-            "High-quality workmanship",
-        ],
+        "why_choose": why_choose,
 
         "services": [
             "Commercial Cleaning",
@@ -1980,5 +2353,5 @@ def get_location_definition(slug):
             "Pressure Washing",
         ],
 
-        "nearby_suburbs": [],
+        "nearby_suburbs": nearby_suburbs,
     }

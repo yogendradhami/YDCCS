@@ -201,11 +201,13 @@
         {% endblock %}
 
         {% block default_faq_section %}
-            {% if faq_section %}
-                {% include 'shared/partials/faq.html' %}
-            {% else %}
-                {% include 'shared/partials/faq.html' %}
-            {% endif %}
+
+        {% if not hide_default_faq %}
+
+            {% include 'shared/partials/faq.html' %}
+
+        {% endif %}
+
         {% endblock %}
 
         {% include 'includes/footer.html' %}

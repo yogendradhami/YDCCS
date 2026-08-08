@@ -7,9 +7,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-{{ service.location_title|default:service.title }} | Professional Cleaning Services Adelaide | YD Commercial Cleaning
-{% endblock %}
+{% block title %}{{ service.title|cut:" Adelaide" }} in {{ location|default:"Adelaide" }} Adelaide | YD Commercial Cleaning{% endblock %}
 
 
 {% block scripts %}
@@ -41,19 +39,47 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 {% block meta_description %}
-{{ service.meta_description|default:service.description }}
+{% if location %}
+Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+{% else %}
+Professional {{ service.title }} Adelaide service by YD Commercial Cleaning Services.
+{% endif %}
 {% endblock %}
 
 
 
 {% block og_title %}
-{{ service.location_title|default:service.title }} | YD Commercial Cleaning Services
+{% if location %}
+{{ service.title|cut:" Adelaide" }} in {{ location }} Adelaide | YD Commercial Cleaning Services
+{% else %}
+{{ service.title }} Adelaide | YD Commercial Cleaning Services
+{% endif %}
 {% endblock %}
 
 
 
 {% block og_description %}
+{% if location %}
+Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses.
+{% else %}
 {{ service.meta_description|default:service.description }}
+{% endif %}
+{% endblock %}
+
+{% block twitter_title %}
+{% if location %}
+{{ service.title|cut:" Adelaide" }} in {{ location }} Adelaide | YD Commercial Cleaning Services
+{% else %}
+{{ service.title }} Adelaide | YD Commercial Cleaning Services
+{% endif %}
+{% endblock %}
+
+{% block twitter_description %}
+{% if location %}
+Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+{% else %}
+{{ service.meta_description|default:service.description }}
+{% endif %}
 {% endblock %}
 
 
@@ -80,6 +106,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
 {% block content %}
 
+{% with clean_title=service.title|cut:" Adelaide" %}
+
 
 <section class="page-hero service-hero">
 
@@ -93,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function(){
 {% if service.hero_image %}
 
 <img src="{{ service.hero_image.url }}"
-     alt="{{ service.title }}{% if location %} in {{ location }}{% endif %} - professional cleaning"
+     alt="{{ service.title|cut:' Adelaide' }} service in {{ location|default:'Adelaide' }} Adelaide"
      loading="lazy"
      decoding="async"
      width="1200"
@@ -120,16 +148,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <span class="hero-badge">
-Professional Cleaning Services
+Professional {{ service.title|cut:" Adelaide" }} Services
+{% if location %}
+in {{ location }}
+{% endif %}
 </span>
-
 
 
 <h1>
 {% if location %}
-{{ service.title|cut:" Adelaide" }} in {{ location }}
+{{ clean_title }} in {{ location }}
 {% else %}
-{{ service.title }}
+{{ clean_title }} Adelaide
 {% endif %}
 </h1>
 
@@ -138,9 +168,9 @@ Professional Cleaning Services
 
 {{ service.description }}
 
-{% if location %}
+{% if location and "nearby Adelaide suburbs" not in service.description %}
 
-Our {{ service.title|lower }} service is available in {{ location }}
+Our {{ clean_title|lower }} service is available in {{ location }}
 and nearby Adelaide suburbs.
 
 {% endif %}
@@ -226,13 +256,11 @@ Call 0430 049 865
 
 <h2>
 About {{ service.title|cut:" Adelaide" }}
-
 {% if location %}
-in {{ location }}
+ in {{ location }}
 {% else %}
-in Adelaide
+ in Adelaide
 {% endif %}
-
 </h2>
 
 
@@ -1294,7 +1322,7 @@ Ready For A Spotless Property?
 
 <p>
 
-Book your {{ service.title }} service today.
+Book your {{ service.title|cut:" Adelaide" }} service in {{ location|default:"Adelaide" }} today.
 Free quote available.
 
 </p>
@@ -1435,5 +1463,5 @@ Call 0430 049 865
 </script>
 
 
-
+{% endwith %}
 {% endblock %}
