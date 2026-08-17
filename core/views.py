@@ -32,6 +32,7 @@ from .forms import (
 )
 from .models import FAQQuestion
 from django.core.cache import cache
+from django.shortcuts import render
 
 # External app imports
 from blog.models import BlogPost
@@ -1024,3 +1025,8 @@ def booking(request):
         }
     )
 
+def cleaning_services_video(request):
+    return render(
+        request,
+        "videos/cleaning_services_adelaide.html"
+    )

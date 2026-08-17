@@ -20,8 +20,20 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 {% block content %}
 
 <section class="hero-section reveal">
-    <video class="hero-video" autoplay muted loop playsinline>
-        <source src="https://cdn.coverr.co/videos/coverr-cleaning-a-home-1562150754/1080p.mp4" type="video/mp4">
+    <video
+        class="hero-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster="{% static 'images/hero-cleaning-poster.webp' %}"
+        aria-hidden="true"
+    >
+        <source
+            src="{% static 'videos/cleaning-hero.mp4' %}"
+            type="video/mp4"
+        >
     </video>
     <div class="hero-overlay"></div>
     <div class="container hero-grid">

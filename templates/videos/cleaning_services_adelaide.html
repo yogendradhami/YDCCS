@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Professional Cleaning Services Adelaide Video | YD Commercial Cleaning
+{% endblock %}
+
+{% block meta_description %}
+Watch YD Commercial Cleaning Services provide professional residential and commercial cleaning services across Adelaide.
+{% endblock %}
+
+{% block meta_keywords %}
+cleaning services Adelaide video, professional cleaners Adelaide, commercial cleaning Adelaide, house cleaning Adelaide
+{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "@id": "https://ydcleaning.com.au/videos/cleaning-services-adelaide/#video",
+  "name": "Professional Cleaning Services in Adelaide",
+  "description": "Watch YD Commercial Cleaning Services provide professional residential and commercial cleaning services across Adelaide.",
+  "thumbnailUrl": [
+    "https://ydcleaning.com.au/static/images/hero-cleaning-poster.webp"
+  ],
+  "uploadDate": "2026-08-17",
+  "contentUrl": "https://ydcleaning.com.au/static/videos/cleaning-hero.mp4",
+  "embedUrl": "https://ydcleaning.com.au/videos/cleaning-services-adelaide/",
+  "publisher": {
+    "@type": "Organization",
+    "@id": "https://ydcleaning.com.au/#organization",
+    "name": "YD Commercial Cleaning Services",
+    "url": "https://ydcleaning.com.au/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://ydcleaning.com.au/static/images/logo.jpeg"
+    }
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<main class="video-watch-page">
+
+    <section class="video-watch-section">
+        <div class="container">
+
+            <div class="video-watch-header">
+                <span class="section-eyebrow">
+                    YD Commercial Cleaning Services
+                </span>
+
+                <h1>
+                    Professional Cleaning Services in Adelaide
+                </h1>
+
+                <p>
+                    Watch our cleaning services video to learn more about
+                    YD Commercial Cleaning Services and our professional
+                    cleaning solutions across Adelaide.
+                </p>
+            </div>
+
+            <div class="video-player-wrapper">
+                <video
+                    class="main-video"
+                    controls
+                    playsinline
+                    preload="metadata"
+                    poster="{% static 'images/hero-cleaning-poster.webp' %}"
+                    width="1280"
+                    height="720"
+                >
+                    <source
+                        src="{% static 'videos/cleaning-hero.mp4' %}"
+                        type="video/mp4"
+                    >
+
+                    Your browser does not support HTML5 video.
+                </video>
+            </div>
+
+            <div class="video-description">
+
+                <h2>
+                    Professional Cleaning Across Adelaide
+                </h2>
+
+                <p>
+                    YD Commercial Cleaning Services provides professional
+                    residential and commercial cleaning services across
+                    Adelaide and surrounding suburbs.
+                </p>
+
+                <p>
+                    Our services include house cleaning, deep cleaning,
+                    bond cleaning, office cleaning, commercial cleaning,
+                    carpet cleaning and window cleaning.
+                </p>
+
+                <p>
+                    Our fully insured local team focuses on reliable
+                    service, attention to detail and high-quality results
+                    for homes, offices, rental properties and commercial
+                    spaces.
+                </p>
+
+                <div class="video-actions">
+                    <a href="/#quote" class="btn-fill">
+                        Get a Free Quote
+                    </a>
+
+                    <a href="tel:0430049865" class="btn-light-outline">
+                        Call 0430 049 865
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+{% endblock %}

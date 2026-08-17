@@ -12,6 +12,7 @@ from .views import (
     about,
     booking_terms,
     blog,
+    cleaning_services_video,
     careers,
     case_studies,
     contact,
@@ -40,6 +41,7 @@ from .views import (
     local_suburb_detail,
     booking,
     legacy_service_redirect,
+    
 
 )
 from .views_append import blog_detail
@@ -130,5 +132,10 @@ urlpatterns = [
         "<slug:service_slug>/",
         legacy_service_redirect,
         name="legacy_service_redirect"
+    ),
+    path(
+        "videos/cleaning-services-adelaide/",
+        cleaning_services_video,
+        name="cleaning_services_video",
     ),
 ]
