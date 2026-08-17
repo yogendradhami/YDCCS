@@ -852,3 +852,50 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+
+.hero-sound-toggle {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    z-index: 20;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+
+    padding: 10px 16px;
+
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.hero-sound-toggle:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 0, 0, 0.82);
+}
+
+.hero-sound-toggle:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 3px;
+}
+
+@media (max-width: 767px) {
+    .hero-sound-toggle {
+        right: 16px;
+        bottom: 16px;
+        padding: 9px 13px;
+        font-size: 13px;
+    }
+}

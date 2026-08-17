@@ -83,3 +83,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateEstimate();
 });
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const heroVideo = document.getElementById("heroVideo");
+    const soundToggle = document.getElementById("heroSoundToggle");
+
+    if (!heroVideo || !soundToggle) {
+        return;
+    }
+
+    soundToggle.addEventListener("click", function () {
+        heroVideo.muted = !heroVideo.muted;
+
+        if (heroVideo.muted) {
+            soundToggle.textContent = "🔇 Sound Off";
+            soundToggle.setAttribute("aria-label", "Turn video sound on");
+            soundToggle.setAttribute("aria-pressed", "false");
+        } else {
+            soundToggle.textContent = "🔊 Sound On";
+            soundToggle.setAttribute("aria-label", "Turn video sound off");
+            soundToggle.setAttribute("aria-pressed", "true");
+
+            heroVideo.play().catch(function () {
+                console.log("Video playback requires user interaction.");
+            });
+        }
+    });
+});

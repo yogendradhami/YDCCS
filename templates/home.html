@@ -20,7 +20,9 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 {% block content %}
 
 <section class="hero-section reveal">
+
     <video
+        id="heroVideo"
         class="hero-video"
         autoplay
         muted
@@ -28,14 +30,20 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
         playsinline
         preload="metadata"
         poster="{% static 'images/hero-cleaning-poster.webp' %}"
-        aria-hidden="true"
+        aria-label="YD Commercial Cleaning Services cleaning demonstration video"
     >
         <source
             src="{% static 'videos/cleaning-hero.mp4' %}"
             type="video/mp4"
         >
+        Your browser does not support HTML5 video.
     </video>
+
+
+
     <div class="hero-overlay"></div>
+
+    <!-- your existing hero-grid continues here -->
     <div class="container hero-grid">
         <div class="hero-copy">
             <span class="hero-badge">Professional Cleaning Services Adelaide | Residential & Commercial Cleaners</span>
