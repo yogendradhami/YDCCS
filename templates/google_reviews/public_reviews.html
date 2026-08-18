@@ -2,47 +2,406 @@
 {% load static %}
 
 {% block title %}
-Google Reviews | YD Commercial Cleaning Services
+Google Reviews | YD Commercial Cleaning Services Adelaide
 {% endblock %}
 
 {% block meta_description %}
-Read recent Google reviews from Adelaide customers about YD Commercial Cleaning Services and our dependable residential and commercial cleaning work.
+Read genuine Google reviews from Adelaide customers about YD Commercial Cleaning Services. See why homes, offices and rental properties trust our professional cleaning services.
 {% endblock %}
 
 {% block content %}
-<section class="page-hero">
-    <div class="container">
-        <span class="section-eyebrow">Customer feedback</span>
-        <h1>What Adelaide customers are saying about YD Commercial Cleaning</h1>
-        <p>We’re proud to share recent Google reviews from homes, offices and rental properties across Adelaide.</p>
-    </div>
-</section>
 
-<section class="section">
-    <div class="container">
-        <div class="section-title">
-            <h2>Recent Google reviews</h2>
-            <p>Based on {{ review_count }} verified reviews with an average rating of {{ average_rating }}/5.</p>
+<link rel="stylesheet" href="{% static 'css/pages/reviews.css' %}">
+
+<!-- =========================================================
+     REVIEWS HERO
+========================================================= -->
+<section class="reviews-hero">
+    <div class="container reviews-hero-inner">
+
+        <span class="reviews-eyebrow">
+            ★ Customer Reviews
+        </span>
+
+        <h1>
+            Trusted by Adelaide Customers
+        </h1>
+
+        <p>
+            See what our customers have to say about their experience
+            with YD Commercial Cleaning Services.
+        </p>
+
+        <div class="reviews-hero-rating">
+
+            <div class="reviews-score">
+                {{ average_rating }}
+            </div>
+
+            <div class="reviews-stars" aria-label="{{ average_rating }} out of 5 stars">
+                ★★★★★
+            </div>
+
+            <div class="reviews-count">
+                Based on {{ review_count }} Google reviews
+            </div>
+
         </div>
 
-        {% if reviews %}
-            <div class="testimonial-grid">
-                {% for review in reviews %}
-                    <article class="testimonial-card">
-                        <div class="testimonial-rating">{{ review.rating }}</div>
-                        <p class="testimonial-text">“{{ review.comment }}”</p>
-                        <div class="testimonial-author">{{ review.reviewer_name }}</div>
-                        {% if review.created_at %}
-                            <div class="testimonial-title">{{ review.created_at|date:"d M Y" }}</div>
-                        {% endif %}
-                    </article>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-box">
-                <p>No public reviews are available right now. Please check back soon.</p>
-            </div>
-        {% endif %}
+        <div class="reviews-hero-actions">
+
+            <a href="/contact/" class="reviews-btn reviews-btn-primary">
+                Get a Free Quote
+            </a>
+
+            <a href="tel:0430049865" class="reviews-btn reviews-btn-secondary">
+                Call 0430 049 865
+            </a>
+
+        </div>
+
     </div>
 </section>
+
+
+<!-- =========================================================
+     TRUST STATS
+========================================================= -->
+<section class="reviews-trust">
+    <div class="container">
+
+        <div class="reviews-trust-grid">
+
+            <div class="reviews-trust-card">
+                <div class="reviews-trust-icon">★</div>
+                <strong>{{ average_rating }}/5</strong>
+                <span>Average Rating</span>
+            </div>
+
+            <div class="reviews-trust-card">
+                <div class="reviews-trust-icon">✓</div>
+                <strong>{{ review_count }}+</strong>
+                <span>Google Reviews</span>
+            </div>
+
+            <div class="reviews-trust-card">
+                <div class="reviews-trust-icon">🛡</div>
+                <strong>Fully Insured</strong>
+                <span>Professional Service</span>
+            </div>
+
+            <div class="reviews-trust-card">
+                <div class="reviews-trust-icon">📍</div>
+                <strong>Adelaide</strong>
+                <span>Local Cleaning Team</span>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- =========================================================
+     REVIEWS
+========================================================= -->
+<section class="reviews-section">
+
+    <div class="container">
+
+        <div class="reviews-header">
+
+            <div>
+                <span class="section-eyebrow">
+                    Google Reviews
+                </span>
+
+                <h2 class="reviews-title">
+                    What our customers say
+                </h2>
+
+                <p class="reviews-subtitle">
+                    Real feedback from customers who have experienced
+                    our residential and commercial cleaning services.
+                </p>
+            </div>
+
+            <div class="google-review-badge">
+                <span class="google-review-icon">G</span>
+
+                <div>
+                    <strong>Google Reviews</strong>
+                    <small>{{ review_count }} customer reviews</small>
+                </div>
+            </div>
+
+        </div>
+
+
+        {% if reviews %}
+
+            <!-- Featured/latest review -->
+            {% for review in reviews %}
+                {% if forloop.first %}
+
+                    <article class="featured-review">
+
+                        <div class="featured-review-top">
+
+                            <div class="featured-label">
+                                ★ Latest Review
+                            </div>
+
+                            <div class="featured-google">
+                                Google
+                            </div>
+
+                        </div>
+
+                        <div class="featured-review-content">
+
+                            <div class="featured-stars">
+                                ★★★★★
+                            </div>
+
+                            <blockquote>
+                                “{{ review.comment }}”
+                            </blockquote>
+
+                            <div class="featured-author">
+
+                                {% if review.reviewer_photo %}
+                                    <img
+                                        src="{{ review.reviewer_photo }}"
+                                        alt="{{ review.reviewer_name }} Google review"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <div class="review-avatar">
+                                        {{ review.reviewer_name|first|upper }}
+                                    </div>
+                                {% endif %}
+
+                                <div>
+                                    <strong>{{ review.reviewer_name }}</strong>
+
+                                    {% if review.review_date %}
+                                        <span>
+                                            {{ review.review_date|date:"d M Y" }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endif %}
+            {% endfor %}
+
+
+            <!-- Review cards -->
+            <div class="reviews-grid">
+
+                {% for review in reviews %}
+
+                    <article class="review-card">
+
+                        <div class="review-card-header">
+
+                            <div class="review-author">
+
+                                {% if review.reviewer_photo %}
+                                    <img
+                                        class="review-avatar-image"
+                                        src="{{ review.reviewer_photo }}"
+                                        alt="{{ review.reviewer_name }} Google review"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <div class="review-avatar">
+                                        {{ review.reviewer_name|first|upper }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="review-info">
+                                    <h3>
+                                        {{ review.reviewer_name }}
+                                    </h3>
+
+                                    {% if review.review_date %}
+                                        <p>
+                                            {{ review.review_date|date:"d M Y" }}
+                                        </p>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+
+                            <span class="google-mini-badge">
+                                G
+                            </span>
+
+                        </div>
+
+
+                        <div class="review-rating">
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                            <span>★</span>
+                        </div>
+
+
+                        {% if review.comment %}
+                            <p class="review-text">
+                                “{{ review.comment }}”
+                            </p>
+                        {% else %}
+                            <p class="review-text review-no-comment">
+                                This customer left a 5-star Google rating.
+                            </p>
+                        {% endif %}
+
+
+                        <div class="review-card-footer">
+                            <span>Verified Google Review</span>
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-box">
+                <div class="empty-icon">★</div>
+
+                <h3>No reviews available yet</h3>
+
+                <p>
+                    No public Google reviews are available right now.
+                    Please check back soon.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     WHY CHOOSE US
+========================================================= -->
+<section class="reviews-benefits">
+
+    <div class="container">
+
+        <div class="reviews-benefits-heading">
+
+            <span class="section-eyebrow">
+                Why Choose YD
+            </span>
+
+            <h2>
+                Professional cleaning you can trust
+            </h2>
+
+            <p>
+                We focus on reliable service, attention to detail and
+                consistently high cleaning standards for Adelaide homes
+                and businesses.
+            </p>
+
+        </div>
+
+
+        <div class="benefits-grid">
+
+            <div class="benefit-card">
+                <div class="benefit-icon">✓</div>
+                <h3>Fully Insured</h3>
+                <p>
+                    Professional cleaning services backed by appropriate
+                    insurance and responsible service.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">★</div>
+                <h3>Quality Focused</h3>
+                <p>
+                    We pay attention to the details that make a real
+                    difference to your space.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">⏱</div>
+                <h3>Reliable Service</h3>
+                <p>
+                    We aim to provide dependable communication and
+                    professional cleaning appointments.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">📍</div>
+                <h3>Adelaide Local</h3>
+                <p>
+                    Proudly providing residential and commercial cleaning
+                    services across Adelaide.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CTA
+========================================================= -->
+<section class="reviews-cta">
+
+    <div class="container">
+
+        <span class="reviews-cta-eyebrow">
+            Ready for a cleaner space?
+        </span>
+
+        <h2>
+            Join our happy Adelaide customers
+        </h2>
+
+        <p>
+            Get professional cleaning tailored to your home, office,
+            rental property or commercial space.
+        </p>
+
+        <div class="reviews-cta-actions">
+
+            <a href="/contact/" class="reviews-btn reviews-btn-light">
+                Get a Free Quote
+            </a>
+
+            <a href="tel:0430049865" class="reviews-btn reviews-btn-outline">
+                Call 0430 049 865
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
 {% endblock %}
