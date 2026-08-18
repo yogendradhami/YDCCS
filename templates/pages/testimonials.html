@@ -1,136 +1,761 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
-{% block title %}Testimonials | YD Commercial Cleaning Services{% endblock %}
 
-{% block meta_description %}Discover why Adelaide homeowners and businesses trust YD Commercial Cleaning with their most important cleaning jobs.{% endblock %}
+{% block title %}
+Testimonials | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block meta_description %}
+Read genuine Google reviews and watch real cleaning videos from YD Commercial Cleaning Services in Adelaide.
+{% endblock %}
 
 {% block extra_css %}
+
 <link rel="stylesheet" href="{% static 'css/pages/services.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="service-hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-        <span class="hero-badge">Customer Stories</span>
-        <h1>Trusted testimonials from Adelaide businesses and homes.</h1>
-        <p>See the real results of professional cleaning delivered with care, consistency and exceptional service.</p>
-        <div class="cta-buttons">
-            <a href="/contact/" class="btn btn-primary">Request a Free Quote</a>
-            <a href="/resources/" class="btn btn-outline">Explore Our Resources</a>
-        </div>
+
+<!-- =========================================================
+     HERO
+========================================================= -->
+
+<section class="service-hero testimonials-page-hero">
+
+
+<div class="hero-overlay"></div>
+
+<div class="hero-content">
+
+    <span class="hero-badge">
+        Customer Stories
+    </span>
+
+    <h1>
+        Trusted by Adelaide Customers
+    </h1>
+
+    <p>
+        Discover genuine customer experiences, watch our cleaning
+        videos and see why homes and businesses across Adelaide
+        choose YD Commercial Cleaning Services.
+    </p>
+
+    <div class="cta-buttons">
+
+        <a href="/contact/" class="btn btn-primary">
+            Request a Free Quote
+        </a>
+
+        <a href="#google-reviews" class="btn btn-outline">
+            Read Customer Reviews
+        </a>
+
     </div>
+
+</div>
+
+
 </section>
 
-<section class="service-list-section">
-    <div class="container">
-        <div class="section-title">
-            <h2>Why clients choose YD Commercial Cleaning</h2>
-            <p>Our Adelaide cleaning reviews show a high level of trust, reliability and satisfaction across residential and commercial bookings.</p>
-        </div>
-        <div class="service-list-grid">
-            <div class="service-card">
-                <span class="service-icon">⭐</span>
-                <h3>Professional Expertise</h3>
-                <p>Our team delivers consistent quality every time, backed by 5-star customer feedback.</p>
-            </div>
-            <div class="service-card">
-                <span class="service-icon">🤝</span>
-                <h3>Trusted Relationships</h3>
-                <p>Long-term Adelaide clients return for our reliable, friendly and detail-focused cleaning services.</p>
-            </div>
-            <div class="service-card">
-                <span class="service-icon">💡</span>
-                <h3>Smart Results</h3>
-                <p>We solve cleaning challenges quickly with intelligent solutions tailored to your space.</p>
-            </div>
-        </div>
+<!-- =========================================================
+     WHY CUSTOMERS CHOOSE US
+========================================================= -->
+
+<section class="service-list-section testimonials-trust-section">
+
+
+<div class="container">
+
+    <div class="section-title">
+
+        <span class="hero-badge">
+            Why Customers Choose Us
+        </span>
+
+        <h2>
+            Professional Cleaning With a Personal Touch
+        </h2>
+
+        <p>
+            We focus on quality, reliability and attention to detail
+            on every cleaning job we complete across Adelaide.
+        </p>
+
     </div>
+
+
+    <div class="service-list-grid testimonials-trust-grid">
+
+        <article class="service-card testimonial-trust-card">
+
+            <div class="testimonial-trust-icon">
+                ★
+            </div>
+
+            <h3>
+                5-Star Service
+            </h3>
+
+            <p>
+                Our customers appreciate our professional approach,
+                attention to detail and commitment to quality.
+            </p>
+
+        </article>
+
+
+        <article class="service-card testimonial-trust-card">
+
+            <div class="testimonial-trust-icon">
+                ✓
+            </div>
+
+            <h3>
+                Reliable Team
+            </h3>
+
+            <p>
+                We provide dependable cleaning services for homes,
+                businesses, rental properties and specialist jobs.
+            </p>
+
+        </article>
+
+
+        <article class="service-card testimonial-trust-card">
+
+            <div class="testimonial-trust-icon">
+                ✦
+            </div>
+
+            <h3>
+                Quality Results
+            </h3>
+
+            <p>
+                We don't just clean. We focus on the details that
+                make your property look fresh, clean and welcoming.
+            </p>
+
+        </article>
+
+    </div>
+
+</div>
+
+
 </section>
 
-<section class="service-list-section">
-    <div class="container">
-        <div class="section-title">
-            <h2>Featured testimonials</h2>
-            <p>Selected reviews from our latest Adelaide cleaning projects.</p>
-        </div>
-        <div class="service-list-grid">
-            {% for testimonial in testimonials %}
-            <div class="service-card">
-                <div class="testimonial-rating">{{ testimonial.rating }}</div>
-                <p class="testimonial-text">"{{ testimonial.review_text }}"</p>
-                <strong>{{ testimonial.reviewer_name }}</strong>
-                {% if testimonial.suburb %}
-                <span class="testimonial-badge">{{ testimonial.suburb }}</span>
-                {% endif %}
-            </div>
-            {% endfor %}
-            {% if testimonials|length == 0 %}
-            <div class="service-card">
-                <h3>No testimonials are available yet.</h3>
-                <p>We are updating this page with our latest customer reviews. Please check back soon.</p>
-            </div>
-            {% endif %}
-        </div>
+<!-- =========================================================
+     VIDEO TESTIMONIALS
+========================================================= -->
+
+<section class="service-list-section testimonial-videos-section">
+
+
+<div class="container">
+
+    <div class="section-title">
+
+        <span class="hero-badge">
+            Cleaning Videos
+        </span>
+
+        <h2>
+            See Our Cleaning Work
+        </h2>
+
+        <p>
+            Watch our cleaning videos and see the professional
+            care we bring to homes and businesses across Adelaide.
+        </p>
+
     </div>
-</section>
 
-<section class="service-list-section testimonials-live-section">
-    <div class="container">
-        <div class="testimonials-live-shell">
-            <div class="testimonial-summary-card">
-                <span class="hero-badge">Live Google Reviews</span>
-                <h2>Recent feedback from Adelaide customers</h2>
-                <p>Real-time reviews from our Google Business Profile, shared here so visitors can see the latest feedback from local customers.</p>
 
-                <div class="testimonial-summary-stats">
-                    <div>
-                        <strong>{{ average_rating|default:'5.0' }}</strong>
-                        <span>Average rating</span>
-                    </div>
-                    <div>
-                        <strong>{{ google_review_count|default:0 }}</strong>
-                        <span>Reviews</span>
-                    </div>
-                </div>
+    <!-- =====================================================
+         DYNAMIC TESTIMONIAL VIDEOS
+    ====================================================== -->
 
-                <a href="/google-reviews/" class="btn btn-primary">View All Reviews</a>
+    {% if testimonial_videos %}
+
+    <div class="testimonial-video-grid">
+
+        {% for video in testimonial_videos %}
+
+        <article class="testimonial-video-card">
+
+            <div class="testimonial-video-media">
+
+                <video
+                    controls
+                    playsinline
+                    preload="metadata"
+                    {% if video.thumbnail %}
+                    poster="{{ video.thumbnail.url }}"
+                    {% endif %}
+                >
+
+                    <source
+                        src="{{ video.video.url }}"
+                        type="video/mp4"
+                    >
+
+                    Your browser does not support HTML5 video.
+
+                </video>
+
             </div>
 
-            <div class="testimonial-review-stack">
-                {% if google_reviews %}
-                    {% for review in google_reviews %}
-                    <article class="testimonial-review-card">
-                        <div class="testimonial-rating">{{ review.rating|default:'⭐⭐⭐⭐⭐' }}</div>
-                        <p class="testimonial-text">"{% if review.comment %}{{ review.comment|truncatewords:35 }}{% else %}{{ review.review_text|truncatewords:35 }}{% endif %}"</p>
-                        <div class="testimonial-author-row">
-                            <strong>{% if review.reviewer_name %}{{ review.reviewer_name }}{% else %}Google Reviewer{% endif %}</strong>
-                            {% if review.created_at %}
-                            <span class="testimonial-badge">{{ review.created_at }}</span>
-                            {% endif %}
-                        </div>
-                    </article>
-                    {% endfor %}
+
+            <div class="testimonial-video-card-content">
+
+                <span class="testimonial-video-tag">
+                    YD Commercial Cleaning
+                </span>
+
+                <h3>
+                    {{ video.title }}
+                </h3>
+
+
+                {% if video.description %}
+
+                <p>
+                    {{ video.description }}
+                </p>
+
                 {% else %}
-                <div class="testimonial-review-card">
-                    <h3>No live Google reviews are available right now.</h3>
-                    <p>We’ll display the latest Google Business feedback here as soon as it’s available.</p>
-                </div>
+
+                <p>
+                    Professional cleaning work delivered with
+                    care, consistency and attention to detail.
+                </p>
+
                 {% endif %}
+
+
+                <div class="testimonial-video-card-footer">
+
+                    <span>
+                        ✓ Professional
+                    </span>
+
+                    <span>
+                        ✓ Adelaide
+                    </span>
+
+                </div>
+
             </div>
-        </div>
+
+        </article>
+
+        {% endfor %}
+
     </div>
+
+
+    {% else %}
+
+    <!-- =====================================================
+         FEATURED HERO VIDEO
+    ====================================================== -->
+
+    <div class="testimonial-feature-video">
+
+        <div class="testimonial-feature-video-media">
+
+            <video
+                controls
+                playsinline
+                preload="metadata"
+            >
+
+                <source
+                    src="{% static 'videos/cleaning-hero.mp4' %}"
+                    type="video/mp4"
+                >
+
+                Your browser does not support HTML5 video.
+
+            </video>
+
+        </div>
+
+
+        <div class="testimonial-feature-video-content">
+
+            <span class="testimonial-video-tag">
+                Featured Cleaning Video
+            </span>
+
+            <h2>
+                Professional Cleaning Services in Adelaide
+            </h2>
+
+            <p>
+                Take a look at our professional cleaning work and
+                discover how YD Commercial Cleaning Services helps
+                Adelaide homes and businesses stay clean, fresh
+                and welcoming.
+            </p>
+
+            <div class="testimonial-feature-video-points">
+
+                <span>
+                    ✓ Professional Cleaning
+                </span>
+
+                <span>
+                    ✓ Reliable Service
+                </span>
+
+                <span>
+                    ✓ Adelaide Local Team
+                </span>
+
+            </div>
+
+            <a href="/contact/" class="btn btn-primary">
+                Request a Free Quote
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         VIDEO TRUST BAR
+    ====================================================== -->
+
+    <div class="testimonial-video-trust">
+
+        <div class="testimonial-video-trust-item">
+
+            <strong>
+                Professional
+            </strong>
+
+            <span>
+                Detail-focused cleaning
+            </span>
+
+        </div>
+
+
+        <div class="testimonial-video-trust-item">
+
+            <strong>
+                Reliable
+            </strong>
+
+            <span>
+                Consistent service
+            </span>
+
+        </div>
+
+
+        <div class="testimonial-video-trust-item">
+
+            <strong>
+                Adelaide
+            </strong>
+
+            <span>
+                Local cleaning specialists
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 </section>
 
-<section class="service-cta">
-    <div class="container">
-        <h2>Ready to experience premium cleaning?</h2>
-        <p>Book Adelaide's trusted cleaning team today and join the many customers who recommend YD Commercial Cleaning.</p>
-        <div class="cta-buttons">
-            <a href="/contact/" class="btn btn-primary">Book Your Clean</a>
-            <a href="/about/" class="btn btn-outline">Learn More About Us</a>
-        </div>
+<!-- =========================================================
+     GOOGLE REVIEWS
+========================================================= -->
+
+<section
+    id="google-reviews"
+    class="service-list-section testimonial-google-section"
+>
+
+
+<div class="container">
+
+    <!-- GOOGLE HEADER -->
+
+    <div class="section-title">
+
+        <span class="hero-badge">
+            ★★★★★ Google Reviews
+        </span>
+
+        <h2>
+            What Our Customers Say
+        </h2>
+
+        <p>
+            Genuine feedback from customers who have trusted
+            YD Commercial Cleaning Services for residential,
+            commercial and specialist cleaning across Adelaide.
+        </p>
+
     </div>
+
+
+    <!-- =====================================================
+         GOOGLE RATING SUMMARY
+    ====================================================== -->
+
+    <div class="testimonial-google-summary">
+
+        <div class="testimonial-google-summary-left">
+
+            <div class="testimonial-google-brand">
+
+                <div class="testimonial-google-letter">
+                    G
+                </div>
+
+                <div>
+
+                    <strong>
+                        Google Reviews
+                    </strong>
+
+                    <span>
+                        Verified customer feedback
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="testimonial-google-score">
+
+            <strong>
+                {{ average_rating|default:"5.0" }}
+            </strong>
+
+            <div class="testimonial-google-stars">
+                ★★★★★
+            </div>
+
+            <span>
+                Based on
+                {{ google_review_count|default:"0" }}
+                customer reviews
+            </span>
+
+        </div>
+
+
+        <div class="testimonial-google-action">
+
+            <a
+                href="/google-reviews/"
+                class="btn btn-primary"
+            >
+                View All Reviews
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         REVIEW GRID
+    ====================================================== -->
+
+    {% if google_reviews %}
+
+    <div class="testimonial-review-heading">
+
+        <div>
+
+            <span class="hero-badge">
+                Real Customer Feedback
+            </span>
+
+            <h2>
+                Recent Google Reviews
+            </h2>
+
+        </div>
+
+        <span class="testimonial-review-count">
+
+            {{ google_review_count }}
+            Reviews
+
+        </span>
+
+    </div>
+
+
+    <div class="testimonial-review-grid">
+
+        {% for review in google_reviews %}
+
+        <article class="testimonial-review-card">
+
+            <!-- REVIEW HEADER -->
+
+            <div class="testimonial-review-card-header">
+
+                <div class="testimonial-review-person">
+
+                    {% if review.reviewer_photo %}
+
+                    <img
+                        src="{{ review.reviewer_photo }}"
+                        alt="{{ review.reviewer_name|default:'Google Customer' }}"
+                        class="testimonial-review-photo"
+                        loading="lazy"
+                    >
+
+                    {% else %}
+
+                    <div class="testimonial-review-avatar">
+
+                        {{ review.reviewer_name|default:"G"|first|upper }}
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <div class="testimonial-review-person-info">
+
+                        <strong>
+                            {{ review.reviewer_name|default:"Google Customer" }}
+                        </strong>
+
+                        <span>
+                            Verified Google Review
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="testimonial-google-small-logo">
+                    G
+                </div>
+
+            </div>
+
+
+            <!-- RATING -->
+
+            <div
+                class="testimonial-review-stars"
+                aria-label="Customer rating"
+            >
+
+                {% if review.rating %}
+
+                    {{ review.rating }}
+
+                {% else %}
+
+                    ⭐⭐⭐⭐⭐
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- FULL COMMENT -->
+
+            <div class="testimonial-review-comment">
+
+                {% if review.comment %}
+
+                <p>
+                    "{{ review.comment }}"
+                </p>
+
+                {% else %}
+
+                <p>
+                    This customer left a 5-star rating for
+                    YD Commercial Cleaning Services.
+                </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- DATE / GOOGLE -->
+
+            <div class="testimonial-review-card-footer">
+
+                {% if review.created_at %}
+
+                <time>
+
+                    {{ review.created_at|date:"d M Y" }}
+
+                </time>
+
+                {% endif %}
+
+
+                {% if review.review_url %}
+
+                <a
+                    href="{{ review.review_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    View on Google ↗
+                </a>
+
+                {% else %}
+
+                <span>
+                    ✓ Google Review
+                </span>
+
+                {% endif %}
+
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- =====================================================
+         REVIEWS CTA
+    ====================================================== -->
+
+    <div class="testimonial-reviews-cta">
+
+        <div>
+
+            <span class="hero-badge">
+                More Customer Feedback
+            </span>
+
+            <h3>
+                Want to see all our Google Reviews?
+            </h3>
+
+            <p>
+                Visit our dedicated Google Reviews page to
+                explore the complete collection of customer
+                feedback.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/google-reviews/"
+            class="btn btn-primary"
+        >
+            Read All Google Reviews
+        </a>
+
+    </div>
+
+
+    {% else %}
+
+    <div class="testimonial-no-reviews">
+
+        <div class="testimonial-no-reviews-icon">
+            G
+        </div>
+
+        <h3>
+            Google Reviews Are Temporarily Unavailable
+        </h3>
+
+        <p>
+            We are currently updating our customer review feed.
+            Please check back soon to see the latest feedback.
+        </p>
+
+        <a
+            href="/google-reviews/"
+            class="btn btn-primary"
+        >
+            Open Google Reviews
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+</section>
+
+<!-- =========================================================
+     FINAL CTA
+========================================================= -->
+
+<section class="service-cta testimonials-final-cta">
+
+
+<div class="container">
+
+    <span class="hero-badge">
+        Ready to Get Started?
+    </span>
+
+    <h2>
+        Experience the YD Commercial Cleaning Difference
+    </h2>
+
+    <p>
+        Join Adelaide customers who trust YD Commercial Cleaning
+        Services for professional, reliable and detailed cleaning.
+    </p>
+
+    <div class="cta-buttons">
+
+        <a
+            href="/contact/"
+            class="btn btn-primary"
+        >
+            Book Your Clean
+        </a>
+
+        <a
+            href="/about/"
+            class="btn btn-outline"
+        >
+            Learn More About Us
+        </a>
+
+    </div>
+
+</div>
+
+
 </section>
 
 {% endblock %}

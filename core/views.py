@@ -53,6 +53,7 @@ from google_reviews.review_utils import (
 
 from bookings.forms import BookingForm
 from notifications.models import Notification
+from .models import TestimonialVideo
 
 def _slugify_area(area):
     return slugify(f"{area['name']} {area['postcode']}")
@@ -377,23 +378,35 @@ def resources(request):
     ]
     return render(request, "pages/resources.html", {"resources_list": resources_list})
 
+def testimonials(request):
+    """
+    Testimonials page.
 
-def testimonials(request):    
-    # Fetch live Google reviews from API
-    google_reviews = get_google_reviews_api()
-    
-    # Fall back to featured DB reviews if no API reviews
-    featured_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:6]
+    Google reviews stored in the database are used as the
+    primary public source. The live Google API is used as
+    a fallback when no database reviews are available.
+    """
+
+    # ---------------------------------------------------------
+    # GOOGLE REVIEWS
+    # ---------------------------------------------------------
+
+    google_reviews = get_public_google_reviews(limit=100)
+
+    # If there are no stored reviews, try the live Google API.
     if not google_reviews:
-        google_reviews = [
-            {
-                "reviewer_name": review.customer_name,
-                "comment": review.review_text,
-                "rating": review.stars(),
-            }
-            for review in featured_reviews
-        ]
-    
+        google_reviews = get_google_reviews_api()
+
+    # ---------------------------------------------------------
+    # FEATURED TESTIMONIALS
+    # ---------------------------------------------------------
+
+    featured_reviews = (
+        Review.objects
+        .filter(featured=True)
+        .order_by("-created_at")
+    )
+
     testimonials = [
         {
             "reviewer_name": review.customer_name,
@@ -404,16 +417,51 @@ def testimonials(request):
         for review in featured_reviews
     ]
 
+    # ---------------------------------------------------------
+    # TESTIMONIAL VIDEOS
+    # ---------------------------------------------------------
+
+    testimonial_videos = (
+        TestimonialVideo.objects
+        .filter(active=True)
+        .order_by("-created_at")
+    )
+
+    # ---------------------------------------------------------
+    # GOOGLE RATING CALCULATION
+    # ---------------------------------------------------------
+
     rating_values = []
+
     for review in google_reviews:
-        rating = review.get("rating")
+        rating = review.get("rating", "")
+
         if isinstance(rating, str):
-            rating_values.append(rating.count("★") or rating.count("⭐"))
+            numeric_rating = (
+                rating.count("⭐")
+                or rating.count("★")
+            )
+
+            if numeric_rating:
+                rating_values.append(numeric_rating)
+
         elif isinstance(rating, (int, float)):
             rating_values.append(float(rating))
 
-    average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
+    average_rating = (
+        round(
+            sum(rating_values) / len(rating_values),
+            1
+        )
+        if rating_values
+        else 5.0
+    )
+
     google_review_count = len(google_reviews)
+
+    # ---------------------------------------------------------
+    # RENDER PAGE
+    # ---------------------------------------------------------
 
     return render(
         request,
@@ -423,6 +471,7 @@ def testimonials(request):
             "google_reviews": google_reviews,
             "google_review_count": google_review_count,
             "average_rating": average_rating,
+            "testimonial_videos": testimonial_videos,
         },
     )
 

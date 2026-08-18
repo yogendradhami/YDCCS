@@ -119,7 +119,7 @@ def google_callback(request):
         )
 
 def public_google_reviews(request):
-    reviews = get_public_google_reviews(limit=12)
+    reviews = get_public_google_reviews(limit=100)
     review_count = len(reviews)
     average_rating = 5.0
 

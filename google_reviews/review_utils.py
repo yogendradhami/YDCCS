@@ -67,9 +67,16 @@ def _format_rating(rating):
     return "⭐" * max(1, min(5, numeric_value))
 
 
-def get_public_google_reviews(limit=6):
-    """Return a public-friendly list of Google reviews from the database."""
-    reviews = GoogleReview.objects.order_by("-review_date", "-created_at")[:limit]
+def get_public_google_reviews(limit=None):
+    """Return public-friendly Google reviews from the database."""
+
+    reviews = GoogleReview.objects.order_by(
+        "-review_date",
+        "-created_at"
+    )
+
+    if limit:
+        reviews = reviews[:limit]
 
     return [
         {
@@ -163,7 +170,7 @@ def get_google_reviews_api():
         reviews_data = reviews_response.json().get("reviews", [])
 
         google_reviews = []
-        for review in reviews_data[:6]:
+        for review in reviews_data:
             star_count = _normalize_star_rating(review.get("starRating", 5))
             google_reviews.append(
                 {
@@ -171,6 +178,17 @@ def get_google_reviews_api():
                     "comment": review.get("reviewReply", {}).get("comment", review.get("comment", "")),
                     "rating": "⭐" * star_count,
                     "created_at": review.get("createTime", ""),
+                    "review_url": review.get(
+                        "reviewUrl",
+                        ""
+                    ),
+                    "reviewer_photo": review.get(
+                        "reviewer",
+                        {}
+                    ).get(
+                        "profilePhotoUrl",
+                        ""
+                    ),
                 }
             )
 
