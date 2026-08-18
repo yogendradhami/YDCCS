@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from dashboard.models import CompanySettings
 from services.models import Service
@@ -28,6 +28,18 @@ class SmokeTest(TestCase):
         response = self.client.get("/")
         # Expect 200 or 302 depending on auth/redirects; assert no server error
         self.assertLess(response.status_code, 500)
+
+    @override_settings(
+        STORAGES={
+            "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+            "staticfiles": {
+                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            },
+        }
+    )
+    def test_home_page_renders_without_missing_manifest_entries(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
 
     def test_public_resource_pages(self):
         public_urls = [
