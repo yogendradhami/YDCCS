@@ -117,7 +117,11 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
     },
 }
 
@@ -244,14 +248,7 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
-# Use plain static file storage in development so static assets resolve without collectstatic.
-if DEBUG:
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-else:
-    STATICFILES_STORAGE = env.str(
-        "DJANGO_STATICFILES_STORAGE",
-        default="whitenoise.storage.CompressedManifestStaticFilesStorage",
-    )
+
 
 # Media files are stored in Cloudinary
 # No local MEDIA_ROOT required
