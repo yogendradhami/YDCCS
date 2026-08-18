@@ -526,7 +526,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                                 {% else %}
 
                                     <img 
-                                    src="{% static 'images/placeholder.svg' %}"
+                                    src="{% static 'images/services/placeholder.svg' %}"
                                     alt="Placeholder"
                                     class="gallery-image">
 
@@ -665,19 +665,6 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
         if (!modal || !modalImage || !modalCaption) {
             return;
         }
-
-        modalImage.src = group.images[activeImageIndex];
-        modalImage.alt = group.title;
-
-        modalCaption.textContent =
-            `${group.title} – ${group.service_type} (${activeImageIndex + 1} of ${group.images.length})`;
-
-        modal.style.display = 'block';
-    }
-
-        const modal = document.getElementById('imageModal');
-        const modalImage = document.getElementById('modalImage');
-        const modalCaption = document.getElementById('modalCaption');
 
         modalImage.src = group.images[activeImageIndex];
         modalImage.alt = group.title;
