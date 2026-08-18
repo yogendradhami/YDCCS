@@ -54,11 +54,17 @@ class GoogleReviewAdmin(admin.ModelAdmin):
 
         from .views import sync_google_reviews
 
-        sync_google_reviews(request)
+        response = sync_google_reviews(request)
 
-        messages.success(
-            request,
-            "✅ Google reviews synced successfully"
-        )
+        if response.status_code == 200:
+            messages.success(
+                request,
+                response.content.decode()
+            )
+        else:
+            messages.error(
+                request,
+                response.content.decode()
+            )
 
         return redirect("../")

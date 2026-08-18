@@ -15,6 +15,11 @@ from googleapiclient.discovery import build
 from .models import GoogleAccount, GoogleReview
 from .review_utils import get_public_google_reviews
 from django.utils.dateparse import parse_datetime
+
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request as GoogleAuthRequest
+
+
 SCOPES = [
     "https://www.googleapis.com/auth/business.manage",
     "https://www.googleapis.com/auth/calendar",
@@ -185,51 +190,90 @@ def google_reviews(request):
         response.text,
         content_type="application/json"
     )
+    
+
 def sync_google_reviews(request):
 
     google_account = GoogleAccount.objects.first()
 
     if not google_account:
         return HttpResponse(
-            "Google not connected"
+            "Google not connected",
+            status=400
         )
 
+    # ---------------------------------------------------------
+    # Refresh Google access token
+    # ---------------------------------------------------------
+
+    credentials = Credentials(
+        token=google_account.access_token,
+        refresh_token=google_account.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=settings.GOOGLE_CLIENT_ID,
+        client_secret=settings.GOOGLE_CLIENT_SECRET,
+        scopes=SCOPES,
+    )
+
+    try:
+        credentials.refresh(GoogleAuthRequest())
+
+        # Save the fresh access token
+        google_account.access_token = credentials.token
+        google_account.save(update_fields=["access_token", "updated_at"])
+
+    except Exception as e:
+        return HttpResponse(
+            f"❌ Google authentication refresh failed: {e}",
+            status=401
+        )
+
+    # ---------------------------------------------------------
+    # Google Business Profile Reviews API
+    # ---------------------------------------------------------
 
     headers = {
-        "Authorization": f"Bearer {google_account.access_token}",
+        "Authorization": f"Bearer {credentials.token}",
         "Accept": "application/json",
     }
 
-
     account_id = "103743515012926700887"
     location_id = "1982958555522724329"
-
 
     url = (
         f"https://mybusiness.googleapis.com/v4/"
         f"accounts/{account_id}/locations/{location_id}/reviews"
     )
 
-
-    response = requests.get(
-        url,
-        headers=headers
-    )
-
-
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            params={
+                "orderBy": "updateTime desc",
+            },
+            timeout=30,
+        )
+    except requests.RequestException as e:
+        return HttpResponse(
+            f"❌ Google Reviews API request failed: {e}",
+            status=502
+        )
 
     if response.status_code != 200:
         return HttpResponse(
-            response.text,
+            f"❌ Google Reviews API error ({response.status_code}): "
+            f"{response.text}",
             status=response.status_code
         )
 
-
     data = response.json()
-
 
     saved = 0
 
+    # ---------------------------------------------------------
+    # Save / update reviews
+    # ---------------------------------------------------------
 
     for review in data.get("reviews", []):
 
@@ -240,15 +284,18 @@ def sync_google_reviews(request):
             {}
         )
 
-
         create_time = review.get("createTime")
 
         reply_time = review_reply.get("updateTime")
 
+        review_id = review.get("reviewId")
+
+        if not review_id:
+            continue
 
         GoogleReview.objects.update_or_create(
 
-            review_id=review.get("reviewId"),
+            review_id=review_id,
 
             defaults={
 
@@ -281,19 +328,16 @@ def sync_google_reviews(request):
                     if isinstance(create_time, str)
                     else None,
 
-
                 "reply":
                     review_reply.get(
                         "comment",
                         ""
                     ),
 
-
                 "reply_date":
                     parse_datetime(reply_time)
                     if isinstance(reply_time, str)
                     else None,
-
 
                 "review_url":
                     review.get(
@@ -305,10 +349,17 @@ def sync_google_reviews(request):
 
         saved += 1
 
+    total_google_reviews = data.get(
+        "totalReviewCount",
+        "unknown"
+    )
 
     return HttpResponse(
-        f"✅ Google reviews synced successfully. Saved {saved} reviews."
+        f"✅ Google reviews synced successfully. "
+        f"Google has {total_google_reviews} reviews. "
+        f"Processed {saved} reviews."
     )
+
 
 def get_google_reviews(request):
 
