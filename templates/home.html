@@ -374,7 +374,7 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                         {% if item.primary_image %}
                             <img src="{{ item.primary_image.url }}" alt="{{ item.title }}">
                         {% else %}
-                            <img src="{% static 'images/placeholder.svg' %}" alt="{{ item.title }}">
+                            <img src="{% static 'images/services/placeholder.svg' %}" alt="{{ item.title }}">
                         {% endif %}
                         <h4>{{ item.title }}</h4>
                         <p>{{ item.service_type }}</p>

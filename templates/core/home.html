@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 YD Commercial Cleaning Services Adelaide
@@ -128,7 +129,7 @@ YD Commercial Cleaning Services Adelaide
                         {% if item.primary_image %}
                             <img src="{{ item.primary_image.url }}" alt="{{ item.title }}" loading="lazy">
                         {% else %}
-                            <img src="{% static 'images/placeholder.svg' %}" alt="{{ item.title }}" loading="lazy">
+                            <img src="{% static 'images/services/placeholder.svg' %}" alt="{{ item.title }}" loading="lazy">
                         {% endif %}
                         <h3>{{ item.title }}</h3>
                         <p>{{ item.service_type }}</p>

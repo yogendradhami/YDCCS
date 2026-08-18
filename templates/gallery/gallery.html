@@ -624,6 +624,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
     }
 
     const galleryGroups = [];
+
     {% for group in gallery_groups %}
         galleryGroups.push({
             title: "{{ group.title|escapejs }}",
@@ -631,9 +632,11 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
             suburb: "{{ group.suburb|escapejs }}",
             images: [
                 {% for item in group.items %}
-                    {% if item.before_image %}"{{ item.before_image.url }}",{% endif %}
-                    {% if item.after_image %}"{{ item.after_image.url }}",{% endif %}
-                    {% if item.image %}"{{ item.image.url }}",{% endif %}
+                    {% for media in item.gallery_media %}
+                        {% if media and media.is_image %}
+                            "{{ media.url|escapejs }}",
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
             ].filter(Boolean)
         });
@@ -650,9 +653,27 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
 
     function updateGalleryModal() {
         const group = galleryGroups[activeGalleryIndex];
-        if (!group || !group.images.length) {
+
+        if (!group || !group.images || !group.images.length) {
             return;
         }
+
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalCaption = document.getElementById('modalCaption');
+
+        if (!modal || !modalImage || !modalCaption) {
+            return;
+        }
+
+        modalImage.src = group.images[activeImageIndex];
+        modalImage.alt = group.title;
+
+        modalCaption.textContent =
+            `${group.title} – ${group.service_type} (${activeImageIndex + 1} of ${group.images.length})`;
+
+        modal.style.display = 'block';
+    }
 
         const modal = document.getElementById('imageModal');
         const modalImage = document.getElementById('modalImage');

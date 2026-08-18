@@ -136,6 +136,19 @@ class GalleryItem(models.Model):
         return media
 
     @property
+    def before_media(self):
+        if self.before_image and self.before_image.name:
+            return self._media_entry(self.before_image)
+        return None
+
+
+    @property
+    def after_media(self):
+        if self.after_image and self.after_image.name:
+            return self._media_entry(self.after_image)
+        return None
+
+    @property
     def gallery_images(self):
         images = []
 
