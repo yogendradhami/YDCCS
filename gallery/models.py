@@ -11,6 +11,8 @@ except Exception:
     pass
 
 from django.db import models
+from django.conf import settings
+import logging
 
 class GalleryItem(models.Model):
     SERVICE_CHOICES = [
@@ -107,14 +109,25 @@ class GalleryItem(models.Model):
         file_name = Path(field.name).name
 
         content_type, _ = mimetypes.guess_type(file_name)
+        # Accessing `field.url` can raise when the storage backend is
+        # misconfigured or remote provider is unavailable (eg. Cloudinary).
+        # Guard that call and fall back to a local placeholder so templates
+        # do not error in production.
+        try:
+            url = field.url
+        except Exception:
+            logger = logging.getLogger(__name__)
+            try:
+                logger.exception("GalleryItem: failed to resolve field.url for %s (id=%s)", file_name, getattr(self, 'id', None))
+            except Exception:
+                logger.exception("GalleryItem: failed to resolve field.url and failed to log details")
+            url = getattr(settings, 'STATIC_URL', '/static/') + 'images/placeholder.svg'
 
         return {
-            "url": field.url,
+            "url": url,
             "name": file_name,
             "is_image": (
-                content_type.startswith("image/")
-                if content_type
-                else True
+                content_type.startswith("image/") if content_type else True
             ),
         }
 
