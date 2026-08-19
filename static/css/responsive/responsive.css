@@ -1,18 +1,25 @@
-/* Responsive CSS Overrides
-   Mobile-first responsive breakpoints for all pages and components
-   This consolidates media queries and responsive adjustments
-*/
+/* =========================================================
+   RESPONSIVE CSS
+   YD Commercial Cleaning
+   Mobile-first header + page responsiveness
+   ========================================================= */
+
+
+/* =========================================================
+   TABLET / MOBILE
+   ========================================================= */
 
 @media (max-width: 768px) {
+
+    /* -------------------------
+       General grids
+       ------------------------- */
+
     .hero-grid,
     .quote-grid,
     .why-grid {
         grid-template-columns: 1fr;
         gap: 30px;
-    }
-
-    .hero-section h1 {
-        font-size: var(--font-size-h2);
     }
 
     .service-list-grid {
@@ -24,6 +31,316 @@
         grid-template-columns: 1fr;
     }
 
+
+    /* -------------------------
+       Hero
+       ------------------------- */
+
+    .hero-section h1 {
+        font-size: var(--font-size-h2);
+    }
+
+
+    /* =====================================================
+       MAIN PUBLIC HEADER
+       ===================================================== */
+
+    .yd-header {
+        position: sticky;
+        top: 0;
+        z-index: 5000;
+
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+
+        gap: 8px;
+        padding: 12px 4%;
+
+        background: rgba(255, 255, 255, 0.97);
+
+        box-shadow:
+            0 6px 20px rgba(15, 23, 42, 0.08);
+
+        backdrop-filter: blur(12px);
+    }
+
+
+    /* -------------------------
+       Logo
+       ------------------------- */
+
+    .yd-logo {
+        flex: 1 1 auto;
+        min-width: 0;
+
+        display: flex;
+        align-items: center;
+    }
+
+    .yd-logo img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+
+    .yd-logo-title {
+        font-size: 15px;
+        line-height: 1.15;
+    }
+
+    .yd-logo-subtitle {
+        font-size: 10px;
+    }
+
+
+    /* -------------------------
+       Header actions
+       ------------------------- */
+
+    .yd-header-actions {
+        margin-left: auto;
+
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        flex: 0 0 auto;
+    }
+
+    .yd-search-btn {
+        width: 42px;
+        height: 42px;
+    }
+
+
+    /* -------------------------
+       Mobile menu button
+       ------------------------- */
+
+    .yd-menu-btn {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        width: 42px;
+        height: 42px;
+
+        padding: 0;
+
+        border: none;
+        border-radius: 10px;
+
+        background: #f0fdfa;
+        color: #0f172a;
+
+        font-size: 22px;
+
+        cursor: pointer;
+    }
+
+
+    /* =====================================================
+       MOBILE NAVIGATION
+       ===================================================== */
+
+    .yd-menu {
+        display: none;
+
+        position: absolute;
+
+        top: 100%;
+        left: 0;
+        right: 0;
+
+        width: 100%;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        margin: 0;
+        padding: 12px;
+
+        background: #ffffff;
+
+        border-top: 1px solid #e5e7eb;
+
+        box-shadow:
+            0 15px 35px rgba(15, 23, 42, 0.12);
+
+        z-index: 4999;
+
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    /* JavaScript adds .active */
+
+    .yd-menu.active {
+        display: flex;
+    }
+
+
+    /* -------------------------
+       Main menu links
+       ------------------------- */
+
+    .yd-menu > a,
+    .yd-menu .yd-mega-parent > a,
+    .yd-menu .yd-dropdown-parent > a {
+
+        width: 100%;
+        max-width: none;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 13px 14px;
+
+        font-size: 15px;
+        font-weight: 700;
+
+        line-height: 1.4;
+
+        color: #111827;
+
+        border-radius: 10px;
+    }
+
+    .yd-menu > a:hover,
+    .yd-menu .yd-mega-parent > a:hover,
+    .yd-menu .yd-dropdown-parent > a:hover {
+        background: #f0fdfa;
+        color: #0ea5a8;
+    }
+
+
+    /* =====================================================
+       DROPDOWN / MEGA MENU
+       ===================================================== */
+
+    .yd-mega-menu,
+    .yd-dropdown-menu {
+
+        position: static;
+
+        width: 100%;
+        min-width: 0;
+
+        margin: 0;
+
+        padding: 4px 0 8px 14px;
+
+        background: transparent;
+
+        box-shadow: none;
+
+        border-radius: 0;
+
+        display: none;
+    }
+
+
+    /* Dropdown opened by JS / focus */
+
+    .yd-mega-parent.active .yd-mega-menu,
+    .yd-dropdown-parent.active .yd-dropdown-menu,
+
+    .yd-mega-parent:focus-within .yd-mega-menu,
+    .yd-dropdown-parent:focus-within .yd-dropdown-menu {
+
+        display: block;
+    }
+
+
+    /* -------------------------
+       Dropdown links
+       ------------------------- */
+
+    .yd-dropdown-menu a {
+        display: block;
+
+        width: 100%;
+
+        padding: 11px 14px;
+
+        font-size: 14px;
+
+        color: #374151;
+
+        background: #f8fafc;
+
+        border-radius: 8px;
+
+        margin-bottom: 4px;
+    }
+
+    .yd-dropdown-menu a:hover {
+        background: #ecfeff;
+        color: #0ea5a8;
+    }
+
+
+    /* -------------------------
+       Mega menu
+       ------------------------- */
+
+    .yd-mega-menu {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+
+    .yd-mega-card {
+        min-height: auto;
+
+        padding: 16px;
+
+        background: #f8fafc;
+
+        border: 1px solid #e5e7eb;
+    }
+
+    .yd-mega-card div {
+        width: 48px;
+        height: 48px;
+
+        font-size: 22px;
+
+        margin-bottom: 10px;
+    }
+
+    .yd-mega-card h4 {
+        font-size: 16px;
+    }
+
+    .yd-mega-card p {
+        font-size: 13px;
+    }
+
+    .yd-mega-footer {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 12px;
+    }
+
+    .yd-mega-footer a {
+        text-align: center;
+    }
+
+
+    /* =====================================================
+       GENERAL NAVBAR
+       ===================================================== */
+
     .navbar {
         padding: 15px 4%;
     }
@@ -32,76 +349,63 @@
         display: none;
     }
 
-    /* Mobile navigation: hidden by default, revealed via .active class from JS */
-    .yd-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        flex-direction: column;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        z-index: 999;
-        max-height: calc(100vh - 64px); /* keep menu within viewport */
-        overflow-y: auto; /* enable scrolling when menu is long */
+
+    /* =====================================================
+       PAGE CONTENT
+       ===================================================== */
+
+    .section {
+        padding: 45px 0;
+    }
+
+    .page-hero {
+        padding: 45px 0;
+        text-align: center;
+    }
+
+    .page-hero h1 {
+        font-size: 30px;
+    }
+
+
+    /* =====================================================
+       FORMS
+       ===================================================== */
+
+    input,
+    select,
+    textarea,
+    .form-control {
+        font-size: 16px;
+    }
+
+
+    /* =====================================================
+       TABLES
+       ===================================================== */
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
 
-    /* When JS toggles the menu, the .active class should reveal it */
-    .yd-menu.active {
-        display: flex;
-    }
-
-    /* Ensure dropdowns / mega menus expand inline on mobile instead of overlapping */
-    .yd-mega-menu,
-    .yd-dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: transparent;
-        min-width: 0;
-        margin: 0;
-        padding: 0 0 0 12px;
-        display: none; /* hidden by default, expanded when parent is focused / toggled */
-    }
-
-    /* Show dropdown contents as regular block items when the parent is inside the mobile menu */
-    .yd-mega-parent > a,
-    .yd-dropdown-parent > a {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-    }
-
-    .yd-mega-parent .yd-mega-menu,
-    .yd-dropdown-parent .yd-dropdown-menu {
-        display: block;
+    .dashboard-table {
+        min-width: 760px;
     }
 }
-    /* Keep header controls (search, book buttons) in the same row as logo/menu */
-    .yd-header {
-        flex-wrap: nowrap;
-        gap: 8px;
-        align-items: center;
-    }
 
-    .yd-logo {
-        flex: 0 0 auto;
-    }
 
-    .yd-menu {
-        flex: 1 1 auto;
-    }
-
-    .yd-header-actions {
-        margin-left: auto;
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
 
 @media (max-width: 480px) {
+
+    /* -------------------------
+       Hero
+       ------------------------- */
+
     .hero-section {
         padding: 60px 0;
     }
@@ -119,9 +423,63 @@
         text-align: center;
     }
 
+
+    /* -------------------------
+       Container
+       ------------------------- */
+
     .container {
         width: 95%;
     }
+
+
+    /* -------------------------
+       Header
+       ------------------------- */
+
+    .yd-header {
+        padding: 10px 3%;
+    }
+
+    .yd-logo img {
+        width: 44px;
+        height: 44px;
+    }
+
+    .yd-logo-title {
+        font-size: 14px;
+    }
+
+    .yd-logo-subtitle {
+        font-size: 9px;
+    }
+
+    .yd-search-btn,
+    .yd-menu-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+
+    /* -------------------------
+       Mobile menu
+       ------------------------- */
+
+    .yd-menu {
+        padding: 10px;
+    }
+
+    .yd-menu > a,
+    .yd-menu .yd-mega-parent > a,
+    .yd-menu .yd-dropdown-parent > a {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+
+    /* -------------------------
+       FAQ
+       ------------------------- */
 
     .faq-items {
         max-width: 100%;

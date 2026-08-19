@@ -1,38 +1,60 @@
-/* Modern Design System - Color & Typography
-   Updated: July 2026
-   Beautiful, modern design with cohesive color palette
-*/
+/* =========================================================
+   YD COMMERCIAL CLEANING
+   Modern Design System - Variables & Base Typography
+   Updated: August 2026
+   ========================================================= */
 
 :root {
-    /* Primary Colors */
+
+    /* =====================================================
+       PRIMARY COLORS
+       ===================================================== */
+
     --primary: #2563eb;
     --primary-dark: #1e40af;
     --primary-light: #3b82f6;
-    /* Backwards-compatible blue variants used across page styles */
+
+    /* Backwards-compatible blue variants */
     --primary-blue: #2563eb;
     --primary-blue-dark: #1e40af;
     --primary-blue-light: #60a5fa;
-    
-    /* Secondary/Accent Colors */
+
+
+    /* =====================================================
+       SECONDARY / ACCENT COLORS
+       ===================================================== */
+
     --secondary: #10b981;
     --accent: #f59e0b;
     --accent-light: #fbbf24;
-    
-    /* Neutrals */
-    --dark: #000000;
-    --dark-gray: #000000;
-    --gray: #374151; /* updated neutral for readable paragraphs */
+
+
+    /* =====================================================
+       NEUTRAL COLORS
+       ===================================================== */
+
+    --dark: #0f172a;
+    --dark-gray: #1f2937;
+    --gray: #374151;
     --light-gray: #e5e7eb;
     --lighter-gray: #f3f4f6;
     --white: #ffffff;
-    
-    /* Status Colors */
+
+
+    /* =====================================================
+       STATUS COLORS
+       ===================================================== */
+
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
     --info: #3b82f6;
-    
-    /* Spacing */
+
+
+    /* =====================================================
+       SPACING
+       ===================================================== */
+
     --spacing-xs: 4px;
     --spacing-sm: 8px;
     --spacing-md: 16px;
@@ -40,34 +62,97 @@
     --spacing-xl: 32px;
     --spacing-2xl: 48px;
     --spacing-3xl: 64px;
-    
-    /* Border Radius */
+
+
+    /* =====================================================
+       BORDER RADIUS
+       ===================================================== */
+
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
     --radius-xl: 16px;
-    
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    
-    /* Transitions */
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Typography variables (responsive using clamp) */
-    --font-family-base: 'Inter', 'Segoe UI', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-family-display: 'Inter', 'Segoe UI', 'Arial', sans-serif;
-    --font-size-base: clamp(0.95rem, 0.9rem + 0.2vw, 1rem);
-    --font-size-p: clamp(0.97rem, 0.95rem + 0.25vw, 1.08rem);
-    --font-size-h1: clamp(2rem, 2.6rem + 1.2vw, 3.5rem);
-    --font-size-h2: clamp(1.4rem, 1.8rem + 0.9vw, 2.4rem);
-    --font-size-h3: clamp(1.15rem, 1.35rem + 0.6vw, 1.9rem);
-    --font-size-h4: clamp(1rem, 1.05rem + 0.4vw, 1.25rem);
-    --font-size-small: clamp(0.9rem, 0.85rem + 0.2vw, 1rem);
-    --font-size-xsmall: clamp(0.8rem, 0.75rem + 0.15vw, 0.95rem);
+
+    /* =====================================================
+       SHADOWS
+       ===================================================== */
+
+    --shadow-sm:
+        0 1px 2px 0 rgba(15, 23, 42, 0.05);
+
+    --shadow-md:
+        0 4px 6px -1px rgba(15, 23, 42, 0.10);
+
+    --shadow-lg:
+        0 10px 15px -3px rgba(15, 23, 42, 0.10);
+
+    --shadow-xl:
+        0 20px 25px -5px rgba(15, 23, 42, 0.10);
+
+
+    /* =====================================================
+       TRANSITIONS
+       ===================================================== */
+
+    --transition:
+        all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+
+    /* =====================================================
+       TYPOGRAPHY
+       ===================================================== */
+
+    --font-family-base:
+        'Inter',
+        'Segoe UI',
+        'Roboto',
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+
+    --font-family-display:
+        'Inter',
+        'Segoe UI',
+        'Arial',
+        sans-serif;
+
+
+    /* Base text */
+
+    --font-size-base:
+        clamp(0.95rem, 0.9rem + 0.2vw, 1rem);
+
+    --font-size-p:
+        clamp(0.97rem, 0.95rem + 0.25vw, 1.08rem);
+
+
+    /* Headings */
+
+    --font-size-h1:
+        clamp(2rem, 2.4rem + 1vw, 3.5rem);
+
+    --font-size-h2:
+        clamp(1.4rem, 1.8rem + 0.9vw, 2.4rem);
+
+    --font-size-h3:
+        clamp(1.15rem, 1.35rem + 0.6vw, 1.9rem);
+
+    --font-size-h4:
+        clamp(1rem, 1.05rem + 0.4vw, 1.25rem);
+
+    --font-size-small:
+        clamp(0.9rem, 0.85rem + 0.2vw, 1rem);
+
+    --font-size-xsmall:
+        clamp(0.8rem, 0.75rem + 0.15vw, 0.95rem);
 }
+
+
+/* =========================================================
+   GLOBAL RESET
+   ========================================================= */
 
 * {
     margin: 0;
@@ -75,9 +160,11 @@
     box-sizing: border-box;
 }
 
+
 html {
     scroll-behavior: smooth;
 }
+
 
 body {
     font-family: var(--font-family-base);
@@ -85,12 +172,38 @@ body {
     background: var(--white);
     line-height: 1.68;
     font-size: var(--font-size-base);
+
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+
+    overflow-x: hidden;
 }
 
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
+
+/* =========================================================
+   GLOBAL IMAGES / MEDIA
+   ========================================================= */
+
+img,
+svg,
+video,
+iframe,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: var(--font-family-display);
     font-weight: 800;
     line-height: 1.15;
@@ -98,13 +211,31 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.03em;
 }
 
-/* Centralised heading sizes */
-h1 { font-size: var(--font-size-h1) !important; }
-h2 { font-size: var(--font-size-h2) !important; }
-h3 { font-size: var(--font-size-h3) !important; }
-h4 { font-size: var(--font-size-h4) !important; }
-h5 { font-size: var(--font-size-small) !important; }
-h6 { font-size: var(--font-size-xsmall) !important; }
+
+h1 {
+    font-size: var(--font-size-h1) !important;
+}
+
+h2 {
+    font-size: var(--font-size-h2) !important;
+}
+
+h3 {
+    font-size: var(--font-size-h3) !important;
+}
+
+h4 {
+    font-size: var(--font-size-h4) !important;
+}
+
+h5 {
+    font-size: var(--font-size-small) !important;
+}
+
+h6 {
+    font-size: var(--font-size-xsmall) !important;
+}
+
 
 p {
     color: var(--gray);
@@ -112,22 +243,99 @@ p {
     font-size: var(--font-size-p) !important;
 }
 
-/* Strong global fallback overrides to ensure the design system controls sizes
-   across compiled bundles and page-specific styles. These use !important so
-   the central scale takes precedence; update cautiously if you need
-   exceptions. */
-h1, .page-hero h1, .hero-section h1, .employee-hero-box h1, .customer-hero-box h1 { font-size: var(--font-size-h1) !important; }
-h2, .section-title h2, .why-section h2, .quote-section h2 { font-size: var(--font-size-h2) !important; }
-h3, .card h3, .service-card h4, .service-card-content h3, .dashboard-card h3 { font-size: var(--font-size-h3) !important; }
-p, .hero-section p, .page-hero p, .hero-card p, .service-card p, .review-card p { font-size: var(--font-size-p) !important; }
 
-/* Form controls, buttons and small text */
-input, select, textarea, .form-control, button, .btn, .btn-fill, .btn-outline { font-size: var(--font-size-base) !important; }
-small, .small-text, .muted { font-size: var(--font-size-xsmall) !important; }
+/* =========================================================
+   HEADING SCALE OVERRIDES
+   ========================================================= */
 
-/* Navigation and footer */
-.menu a, .yd-menu > a, .navbar .menu a { font-size: var(--font-size-base) !important; }
-.footer-title { font-size: clamp(1.05rem, 1.1rem + 0.6vw, 2rem) !important; }
+h1,
+.page-hero h1,
+.hero-section h1,
+.employee-hero-box h1,
+.customer-hero-box h1,
+.auth-brand h1 {
+    font-size: var(--font-size-h1) !important;
+}
+
+
+h2,
+.section-title h2,
+.why-section h2,
+.quote-section h2,
+.section h2 {
+    font-size: var(--font-size-h2) !important;
+}
+
+
+h3,
+.card h3,
+.service-card h4,
+.service-card-content h3,
+.dashboard-card h3 {
+    font-size: var(--font-size-h3) !important;
+}
+
+
+p,
+.hero-section p,
+.page-hero p,
+.hero-card p,
+.service-card p,
+.review-card p {
+    font-size: var(--font-size-p) !important;
+}
+
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+input,
+select,
+textarea,
+.form-control,
+button,
+.btn,
+.btn-fill,
+.btn-outline {
+    font-size: var(--font-size-base) !important;
+}
+
+
+input,
+select,
+textarea,
+.form-control {
+    font-family: var(--font-family-base);
+}
+
+
+small,
+.small-text,
+.muted {
+    font-size: var(--font-size-xsmall) !important;
+}
+
+
+/* =========================================================
+   NAVIGATION TYPOGRAPHY
+   IMPORTANT:
+   All public navigation items now use the same font size.
+   ========================================================= */
+
+.menu a,
+.navbar .menu a,
+.yd-menu > a,
+.yd-menu .yd-mega-parent > a,
+.yd-menu .yd-dropdown-parent > a {
+    font-size: var(--font-size-base) !important;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   NAVIGATION LINKS
+   ========================================================= */
 
 a {
     color: var(--primary);
@@ -135,9 +343,15 @@ a {
     transition: var(--transition);
 }
 
+
 a:hover {
     color: var(--primary-dark);
 }
+
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
 
 .container {
     width: 90%;
@@ -145,7 +359,11 @@ a:hover {
     margin: 0 auto;
 }
 
-/* Utility Classes */
+
+/* =========================================================
+   UTILITY CLASSES
+   ========================================================= */
+
 .text-center {
     text-align: center;
 }
@@ -162,37 +380,102 @@ a:hover {
     color: var(--secondary);
 }
 
-.mt-xs { margin-top: var(--spacing-xs); }
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mt-xl { margin-top: var(--spacing-xl); }
-.mt-2xl { margin-top: var(--spacing-2xl); }
-.mt-3xl { margin-top: var(--spacing-3xl); }
 
-.mb-xs { margin-bottom: var(--spacing-xs); }
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
-.mb-xl { margin-bottom: var(--spacing-xl); }
-.mb-2xl { margin-bottom: var(--spacing-2xl); }
-.mb-3xl { margin-bottom: var(--spacing-3xl); }
+/* =========================================================
+   MARGIN UTILITIES
+   ========================================================= */
 
-.py-lg { padding: var(--spacing-lg) 0; }
-.py-xl { padding: var(--spacing-xl) 0; }
-.py-2xl { padding: var(--spacing-2xl) 0; }
-.py-3xl { padding: var(--spacing-3xl) 0; }
+.mt-xs {
+    margin-top: var(--spacing-xs);
+}
 
-/* Component-specific overrides to ensure central scale is applied even when
-   page styles set explicit sizes. These are intentionally loaded last via
-   canonical.css so they can override earlier bundles if needed. */
+.mt-sm {
+    margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+    margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mt-xl {
+    margin-top: var(--spacing-xl);
+}
+
+.mt-2xl {
+    margin-top: var(--spacing-2xl);
+}
+
+.mt-3xl {
+    margin-top: var(--spacing-3xl);
+}
+
+
+.mb-xs {
+    margin-bottom: var(--spacing-xs);
+}
+
+.mb-sm {
+    margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
+
+.mb-xl {
+    margin-bottom: var(--spacing-xl);
+}
+
+.mb-2xl {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.mb-3xl {
+    margin-bottom: var(--spacing-3xl);
+}
+
+
+/* =========================================================
+   PADDING UTILITIES
+   ========================================================= */
+
+.py-lg {
+    padding: var(--spacing-lg) 0;
+}
+
+.py-xl {
+    padding: var(--spacing-xl) 0;
+}
+
+.py-2xl {
+    padding: var(--spacing-2xl) 0;
+}
+
+.py-3xl {
+    padding: var(--spacing-3xl) 0;
+}
+
+
+/* =========================================================
+   COMPONENT TYPOGRAPHY
+   ========================================================= */
+
 .hero-section h1,
 .page-hero h1,
 .employee-hero-box h1,
 .customer-hero-box h1,
 .auth-brand h1 {
-    font-size: var(--font-size-h1);
+    font-size: var(--font-size-h1) !important;
 }
+
 
 .hero-section p,
 .page-hero p,
@@ -201,27 +484,43 @@ a:hover {
 .hero-card p,
 .service-card p,
 .review-card p {
-    font-size: var(--font-size-p);
+    font-size: var(--font-size-p) !important;
 }
+
 
 .section-title h2,
 .why-section h2,
 .quote-section h2,
 .section h2,
 .section-title h3 {
-    font-size: var(--font-size-h2);
+    font-size: var(--font-size-h2) !important;
 }
+
 
 .service-card h4,
 .service-card-content h3,
 .card h3,
 .dashboard-card h3,
 .crm-card h2 {
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-h3) !important;
 }
 
-.footer-title { font-size: clamp(1.05rem, 1.1rem + 0.6vw, 2rem); }
 
-/* Small print / helper text */
-.muted, .small-text, small { font-size: var(--font-size-xsmall); }
+.footer-title {
+    font-size: clamp(
+        1.05rem,
+        1.1rem + 0.6vw,
+        2rem
+    ) !important;
+}
 
+
+/* =========================================================
+   SMALL PRINT
+   ========================================================= */
+
+.muted,
+.small-text,
+small {
+    font-size: var(--font-size-xsmall) !important;
+}
