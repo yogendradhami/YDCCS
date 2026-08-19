@@ -1,59 +1,715 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Emergency Cleaning | YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Need fast emergency cleaning in Adelaide? Our rapid-response team handles urgent commercial cleaning after incidents, events, or unexpected messes.{% endblock %}
+{% block title %}Emergency Cleaning Adelaide | Rapid Response Cleaning | YD Commercial Cleaning{% endblock %}
+
+{% block meta_description %}
+Need urgent emergency cleaning in Adelaide? YD Commercial Cleaning provides professional rapid-response cleaning for spills, accidents, hygiene issues, property turnovers, offices, retail and commercial spaces.
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/emergency.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="modern-landing-page">
-    <section class="modern-landing-hero">
-        <div class="container">
-            <span class="eyebrow">Rapid response cleaning</span>
-            <h1>Emergency cleaning when every minute matters.</h1>
-            <p>From spills and urgent sanitisation to post-event recovery, our Adelaide team responds quickly and professionally.</p>
-        </div>
-    </section>
 
-    <section class="modern-landing-section">
+<main class="emergency-page">
+
+    <!-- HERO -->
+    <section class="emergency-hero">
         <div class="container">
-            <div class="modern-landing-grid">
-                <div class="modern-landing-card">
-                    <h2>Rapid response for urgent needs</h2>
-                    <ul class="modern-landing-list">
-                        <li>Post-event cleanup for offices, retail and hospitality venues.</li>
-                        <li>Spill, accident and hygiene response for busy operations.</li>
-                        <li>Move-out, maintenance and turnover cleans completed fast.</li>
-                    </ul>
+            <div class="emergency-hero-content">
+
+                <span class="emergency-eyebrow">
+                    Emergency Cleaning Adelaide
+                </span>
+
+                <h1>
+                    Professional cleaning when you need it most.
+                </h1>
+
+                <p class="emergency-hero-text">
+                    Unexpected spills, accidents, hygiene concerns, property
+                    emergencies or urgent cleanup can disrupt your day.
+                    YD Commercial Cleaning provides responsive cleaning
+                    support to help restore your space quickly, safely and professionally.
+                </p>
+
+                <div class="emergency-hero-actions">
+                    <a href="{% url 'contact' %}" class="emergency-btn emergency-btn-primary">
+                        Request Emergency Cleaning
+                    </a>
+
+                    <a href="tel:0430049865" class="emergency-btn emergency-btn-secondary">
+                        Call 0430 049 865
+                    </a>
                 </div>
-                <div class="modern-landing-card">
-                    <h3>Why clients rely on us</h3>
-                    <div class="modern-landing-inline-list">
-                        <div><strong>Fast mobilisation</strong><span>Same-day or next-day support</span></div>
-                        <div><strong>Professional team</strong><span>Experienced cleaners with safety focus</span></div>
-                        <div><strong>Complete recovery</strong><span>From debris removal to sanitisation</span></div>
-                        <div><strong>Business-ready</strong><span>Minimise downtime and restore confidence</span></div>
-                    </div>
+
+                <div class="emergency-trust">
+                    <span>✓ Adelaide-based service</span>
+                    <span>✓ Professional cleaning team</span>
+                    <span>✓ Residential & commercial</span>
                 </div>
+
             </div>
         </div>
     </section>
 
-    <section class="modern-landing-cta">
+
+    <!-- INTRO -->
+    <section class="emergency-section">
         <div class="container">
-            <div class="modern-landing-cta-card">
+
+            <div class="emergency-intro">
+
                 <div>
-                    <h2>Need urgent cleaning now?</h2>
-                    <p>Contact us immediately and we will help you restore the space quickly.</p>
+                    <span class="emergency-label">
+                        Urgent cleaning support
+                    </span>
+
+                    <h2>
+                        When an unexpected mess cannot wait.
+                    </h2>
                 </div>
-                <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us Immediately</a>
+
+                <div class="emergency-intro-content">
+
+                    <p>
+                        Cleaning emergencies can happen at any time. A major
+                        spill, unexpected mess, hygiene issue, property turnover
+                        or post-event cleanup can quickly affect your home,
+                        workplace or business.
+                    </p>
+
+                    <p>
+                        Our team provides practical cleaning support designed
+                        around the situation. We assess the area, identify the
+                        cleaning requirements and work efficiently to return
+                        the space to a clean, presentable condition.
+                    </p>
+
+                    <p>
+                        Tell us what has happened, where the cleaning is
+                        required and when you need assistance. We can then
+                        discuss the appropriate cleaning solution and availability.
+                    </p>
+
+                </div>
+
             </div>
+
         </div>
     </section>
-</div>
-{% endblock %}
 
+
+    <!-- SERVICES -->
+    <section class="emergency-section emergency-section-light">
+
+        <div class="container">
+
+            <div class="emergency-heading">
+                <span class="emergency-label">
+                    Emergency cleaning services
+                </span>
+
+                <h2>
+                    Cleaning support for unexpected situations
+                </h2>
+
+                <p>
+                    We can assist with a range of urgent cleaning requirements
+                    across homes, offices, commercial properties and other
+                    business environments.
+                </p>
+            </div>
+
+
+            <div class="emergency-service-grid">
+
+                <article class="emergency-service-card">
+
+                    <div class="emergency-icon">🧽</div>
+
+                    <h3>Spill & accident cleanup</h3>
+
+                    <p>
+                        Prompt cleaning for unexpected spills, messes and
+                        accidents that require attention before normal
+                        operations can continue.
+                    </p>
+
+                </article>
+
+
+                <article class="emergency-service-card">
+
+                    <div class="emergency-icon">🧹</div>
+
+                    <h3>Urgent deep cleaning</h3>
+
+                    <p>
+                        Detailed cleaning for spaces that need additional
+                        attention after an unexpected incident or sudden
+                        cleaning requirement.
+                    </p>
+
+                </article>
+
+
+                <article class="emergency-service-card">
+
+                    <div class="emergency-icon">🧴</div>
+
+                    <h3>Hygiene & sanitisation</h3>
+
+                    <p>
+                        Cleaning and sanitisation support for areas where
+                        maintaining a clean and hygienic environment is
+                        particularly important.
+                    </p>
+
+                </article>
+
+
+                <article class="emergency-service-card">
+
+                    <div class="emergency-icon">🏢</div>
+
+                    <h3>Commercial emergencies</h3>
+
+                    <p>
+                        Cleaning support for offices, retail spaces,
+                        workplaces, facilities and commercial premises.
+                    </p>
+
+                </article>
+
+
+                <article class="emergency-service-card">
+
+                    <div class="emergency-icon">🏠</div>
+
+                    <h3>Residential emergencies</h3>
+
+                    <p>
+                        Urgent cleaning assistance for homes that require
+                        professional help following unexpected messes or
+                        cleaning situations.
+                    </p>
+
+                </article>
+
+
+                <article class="emergency-service-card">
+
+                    <div class="emergency-icon">📦</div>
+
+                    <h3>Property turnover cleaning</h3>
+
+                    <p>
+                        Fast cleaning support for rental properties,
+                        inspections, maintenance periods and unexpected
+                        property turnover requirements.
+                    </p>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- WHY US -->
+    <section class="emergency-section">
+
+        <div class="container">
+
+            <div class="emergency-two-column">
+
+                <div>
+
+                    <span class="emergency-label">
+                        Why choose YD Commercial Cleaning
+                    </span>
+
+                    <h2>
+                        A professional response focused on getting your space back in order.
+                    </h2>
+
+                    <p>
+                        During an unexpected cleaning situation, you need a
+                        team that communicates clearly and works efficiently.
+                        We focus on understanding the problem first and then
+                        providing a practical cleaning solution.
+                    </p>
+
+                    <a href="{% url 'contact' %}" class="emergency-text-link">
+                        Contact our cleaning team →
+                    </a>
+
+                </div>
+
+
+                <div class="emergency-feature-box">
+
+                    <div class="emergency-feature">
+                        <span class="emergency-feature-icon">01</span>
+
+                        <div>
+                            <h3>Fast communication</h3>
+
+                            <p>
+                                Tell us what happened and what type of property
+                                requires cleaning so we can understand your
+                                requirements.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <div class="emergency-feature">
+                        <span class="emergency-feature-icon">02</span>
+
+                        <div>
+                            <h3>Professional assessment</h3>
+
+                            <p>
+                                We consider the size, condition and type of
+                                cleaning required before recommending the
+                                appropriate service.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <div class="emergency-feature">
+                        <span class="emergency-feature-icon">03</span>
+
+                        <div>
+                            <h3>Efficient cleaning</h3>
+
+                            <p>
+                                Our cleaners work systematically to remove
+                                visible mess, clean affected surfaces and
+                                improve the overall condition of the area.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <div class="emergency-feature">
+                        <span class="emergency-feature-icon">04</span>
+
+                        <div>
+                            <h3>Ready for normal use</h3>
+
+                            <p>
+                                Our goal is to help you return the space to a
+                                clean, organised and presentable condition.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- SITUATIONS -->
+    <section class="emergency-section emergency-section-soft">
+
+        <div class="container">
+
+            <div class="emergency-heading">
+                <span class="emergency-label">
+                    When you may need emergency cleaning
+                </span>
+
+                <h2>
+                    Common situations we can help with
+                </h2>
+            </div>
+
+
+            <div class="emergency-situation-grid">
+
+                <div class="emergency-situation">
+                    <strong>Unexpected spills</strong>
+                    <p>
+                        Cleaning after food, drink, liquid or other accidental spills.
+                    </p>
+                </div>
+
+                <div class="emergency-situation">
+                    <strong>Post-event cleanup</strong>
+                    <p>
+                        Returning venues and workplaces to a clean condition after events.
+                    </p>
+                </div>
+
+                <div class="emergency-situation">
+                    <strong>Sudden hygiene concerns</strong>
+                    <p>
+                        Additional cleaning and sanitisation when hygiene becomes a priority.
+                    </p>
+                </div>
+
+                <div class="emergency-situation">
+                    <strong>Property emergencies</strong>
+                    <p>
+                        Urgent cleaning requirements following unexpected property issues.
+                    </p>
+                </div>
+
+                <div class="emergency-situation">
+                    <strong>Business disruption</strong>
+                    <p>
+                        Cleaning support when an unexpected mess affects normal operations.
+                    </p>
+                </div>
+
+                <div class="emergency-situation">
+                    <strong>Last-minute cleaning</strong>
+                    <p>
+                        Short-notice cleaning requirements subject to team availability.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PROCESS -->
+    <section class="emergency-section emergency-dark">
+
+        <div class="container">
+
+            <div class="emergency-heading emergency-heading-light">
+
+                <span class="emergency-label">
+                    Our emergency cleaning process
+                </span>
+
+                <h2>
+                    Simple, clear and focused on your situation.
+                </h2>
+
+                <p>
+                    We keep the process straightforward so you know what to
+                    expect when you contact us.
+                </p>
+
+            </div>
+
+
+            <div class="emergency-process-grid">
+
+                <div class="emergency-process">
+                    <span>01</span>
+                    <h3>Contact us</h3>
+                    <p>
+                        Call or send an enquiry with details about the
+                        situation and property.
+                    </p>
+                </div>
+
+                <div class="emergency-process">
+                    <span>02</span>
+                    <h3>Discuss the requirement</h3>
+                    <p>
+                        We discuss the cleaning required, location, timing
+                        and any important access information.
+                    </p>
+                </div>
+
+                <div class="emergency-process">
+                    <span>03</span>
+                    <h3>Cleaning response</h3>
+                    <p>
+                        Subject to availability, our team attends and
+                        completes the agreed cleaning work.
+                    </p>
+                </div>
+
+                <div class="emergency-process">
+                    <span>04</span>
+                    <h3>Restore the space</h3>
+                    <p>
+                        We work toward leaving the affected area clean,
+                        organised and ready for use.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- IMPORTANT INFORMATION -->
+    <section class="emergency-section">
+
+        <div class="container">
+
+            <div class="emergency-info-box">
+
+                <span class="emergency-label">
+                    Important information
+                </span>
+
+                <h2>
+                    Tell us as much as possible about the situation.
+                </h2>
+
+                <p>
+                    When requesting emergency cleaning, providing accurate
+                    information helps us understand the work involved and
+                    determine the appropriate service.
+                </p>
+
+                <ul class="emergency-check-list">
+
+                    <li>
+                        <span>✓</span>
+                        Location of the property
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Type of cleaning emergency
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Approximate size of the affected area
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Preferred cleaning time
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Building access information
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Photos where they can help explain the situation
+                    </li>
+
+                </ul>
+
+                <p class="emergency-note">
+                    <strong>Please note:</strong>
+                    Emergency cleaning availability depends on the situation,
+                    location, scope of work and our team's availability.
+                    For dangerous situations, hazardous materials, major
+                    flooding, fire damage or other specialist emergencies,
+                    contact the appropriate emergency or specialist service first.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ADELAIDE -->
+    <section class="emergency-section emergency-section-light">
+
+        <div class="container">
+
+            <div class="emergency-heading">
+
+                <span class="emergency-label">
+                    Adelaide cleaning services
+                </span>
+
+                <h2>
+                    Emergency cleaning across Adelaide
+                </h2>
+
+                <p>
+                    We provide professional cleaning services across Adelaide
+                    and surrounding suburbs, subject to availability and the
+                    requirements of the job.
+                </p>
+
+            </div>
+
+
+            <div class="emergency-area-list">
+
+                <span>Adelaide CBD</span>
+                <span>North Adelaide</span>
+                <span>Norwood</span>
+                <span>Unley</span>
+                <span>Prospect</span>
+                <span>Burnside</span>
+                <span>Glenelg</span>
+                <span>Henley Beach</span>
+                <span>West Lakes</span>
+                <span>Marion</span>
+                <span>Brighton</span>
+                <span>Campbelltown</span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FAQ -->
+    <section class="emergency-section">
+
+        <div class="container">
+
+            <div class="emergency-heading">
+
+                <span class="emergency-label">
+                    Emergency cleaning FAQ
+                </span>
+
+                <h2>
+                    Frequently asked questions
+                </h2>
+
+            </div>
+
+
+            <div class="emergency-faq">
+
+                <details>
+                    <summary>Do you provide same-day emergency cleaning?</summary>
+
+                    <p>
+                        Same-day emergency cleaning may be available depending
+                        on the time of the request, location, scope of work and
+                        our team's schedule. Contact us as soon as possible so
+                        we can discuss availability.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>What types of emergency cleaning do you handle?</summary>
+
+                    <p>
+                        We can assist with many urgent cleaning situations,
+                        including spills, unexpected messes, post-event
+                        cleaning, hygiene-related cleaning, commercial
+                        disruptions and property turnover cleaning.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>Do you provide emergency cleaning for businesses?</summary>
+
+                    <p>
+                        Yes. We provide cleaning support for offices, retail
+                        environments, workplaces and other commercial
+                        properties, subject to the requirements of the job.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>Can I send photos before the cleaner arrives?</summary>
+
+                    <p>
+                        Yes. Photos can be useful when explaining the size or
+                        nature of a cleaning requirement and may help us better
+                        understand what equipment or cleaning approach may be
+                        appropriate.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>Do you clean hazardous materials?</summary>
+
+                    <p>
+                        Specialist hazardous-material incidents may require
+                        appropriately licensed specialist contractors. Please
+                        tell us about the situation before booking so we can
+                        determine whether the requested cleaning is suitable
+                        for our service.
+                    </p>
+                </details>
+
+
+                <details>
+                    <summary>How do I request emergency cleaning?</summary>
+
+                    <p>
+                        Contact YD Commercial Cleaning by phone or through our
+                        online contact form. Provide the property location,
+                        cleaning issue and preferred timing, and we will
+                        discuss the available options with you.
+                    </p>
+                </details>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FINAL CTA -->
+    <section class="emergency-cta">
+
+        <div class="container">
+
+            <div class="emergency-cta-content">
+
+                <span class="emergency-label">
+                    Need urgent cleaning?
+                </span>
+
+                <h2>
+                    Let us help you get your space back under control.
+                </h2>
+
+                <p>
+                    Contact YD Commercial Cleaning with the details of your
+                    cleaning situation. We will discuss your requirements and
+                    available options as quickly as possible.
+                </p>
+
+                <div class="emergency-cta-actions">
+
+                    <a href="{% url 'contact' %}" class="emergency-btn emergency-btn-light">
+                        Request Emergency Cleaning
+                    </a>
+
+                    <a href="tel:0430049865" class="emergency-btn emergency-btn-outline">
+                        Call 0430 049 865
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+{% endblock %}

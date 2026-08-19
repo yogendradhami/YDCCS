@@ -1,39 +1,808 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Terms of Service - YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Read the Terms of Service for YD Commercial Cleaning. Learn about our website use, service bookings, estimates, and payment terms.{% endblock %}
+
+{% block title %}
+Terms & Conditions | YD Commercial Cleaning Services
+{% endblock %}
+
+{% block meta_description %}
+Read the terms and conditions for YD Commercial Cleaning Services. Learn about bookings, quotes, payments, cancellations, access, cleaning services, customer responsibilities and our service policies across Adelaide.
+{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/terms.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="modern-landing-page">
-    <section class="modern-landing-hero">
-        <div class="container">
-            <span class="eyebrow">Terms & conditions</span>
-            <h1>Clear terms for a smooth cleaning experience.</h1>
-            <p>These terms outline how our website and services work together so you know what to expect when booking with us.</p>
-        </div>
-    </section>
 
-    <section class="modern-landing-section">
-        <div class="container">
-            <div class="modern-landing-grid">
-                <div class="modern-landing-card">
-                    <h2>Key points</h2>
-                    <ul class="modern-landing-list">
-                        <li>Website use must remain lawful and respectful.</li>
-                        <li>Service details, pricing and availability may change, so confirm directly.</li>
-                        <li>Quotes are indicative and may vary based on property conditions.</li>
-                    </ul>
-                </div>
-                <div class="modern-landing-card">
-                    <h3>Booking & payments</h3>
-                    <p>Payment terms are determined by each booking, and invoices are issued according to our standard process. We recommend contacting us directly for any questions before confirming a service.</p>
-                </div>
+<!-- HERO -->
+<section class="terms-hero">
+    <div class="container">
+        <div class="terms-hero-content">
+
+            <span class="terms-eyebrow">
+                Legal information
+            </span>
+
+            <h1>
+                Terms & Conditions
+            </h1>
+
+            <p>
+                Clear and transparent terms designed to make your experience
+                with YD Commercial Cleaning Services simple, professional
+                and predictable.
+            </p>
+
+            <div class="terms-meta">
+                <span>✓ Clear service terms</span>
+                <span>✓ Transparent pricing</span>
+                <span>✓ Adelaide cleaning services</span>
             </div>
+
         </div>
-    </section>
-</div>
+    </div>
+</section>
+
+
+<!-- INTRO -->
+<section class="terms-intro section">
+    <div class="container">
+
+        <div class="terms-intro-grid">
+
+            <div>
+                <span class="section-eyebrow">
+                    Our commitment
+                </span>
+
+                <h2>
+                    Professional cleaning with clear expectations
+                </h2>
+
+                <p>
+                    These Terms & Conditions explain how YD Commercial
+                    Cleaning Services provides cleaning services and how
+                    bookings, payments, cancellations and customer
+                    responsibilities are handled.
+                </p>
+
+                <p>
+                    We believe good communication creates better cleaning
+                    experiences. If anything is unclear before you book,
+                    please contact our team and we will be happy to explain
+                    the relevant terms.
+                </p>
+            </div>
+
+            <div class="terms-update-card">
+                <span class="terms-update-label">
+                    Terms information
+                </span>
+
+                <strong>
+                    Last updated
+                </strong>
+
+                <span>
+                    August 2026
+                </span>
+
+                <p>
+                    These terms apply to services provided by
+                    YD Commercial Cleaning Services unless a different
+                    written agreement has been made.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- QUICK SUMMARY -->
+<section class="terms-summary">
+    <div class="container">
+
+        <div class="section-heading-center">
+            <span class="section-eyebrow">
+                At a glance
+            </span>
+
+            <h2>
+                Important things to know
+            </h2>
+
+            <p>
+                A quick overview before you book a cleaning service.
+            </p>
+        </div>
+
+        <div class="terms-summary-grid">
+
+            <div class="terms-summary-card">
+                <span class="summary-icon">📅</span>
+                <h3>Bookings</h3>
+                <p>
+                    A booking is confirmed once the required details,
+                    service requirements and appointment time have been
+                    confirmed with you.
+                </p>
+            </div>
+
+            <div class="terms-summary-card">
+                <span class="summary-icon">💳</span>
+                <h3>Payments</h3>
+                <p>
+                    Payment arrangements are confirmed before or as part
+                    of your booking depending on the service.
+                </p>
+            </div>
+
+            <div class="terms-summary-card">
+                <span class="summary-icon">🔑</span>
+                <h3>Property access</h3>
+                <p>
+                    Customers are responsible for providing safe and
+                    reasonable access at the agreed service time.
+                </p>
+            </div>
+
+            <div class="terms-summary-card">
+                <span class="summary-icon">💬</span>
+                <h3>Communication</h3>
+                <p>
+                    Please notify us as soon as possible about changes,
+                    access issues or special cleaning requirements.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- TERMS CONTENT -->
+<section class="terms-content-section section">
+    <div class="container">
+
+        <div class="terms-layout">
+
+            <!-- SIDEBAR -->
+            <aside class="terms-sidebar">
+
+                <div class="terms-sidebar-inner">
+
+                    <span>
+                        On this page
+                    </span>
+
+                    <a href="#website-use">
+                        01. Website use
+                    </a>
+
+                    <a href="#services">
+                        02. Cleaning services
+                    </a>
+
+                    <a href="#quotes">
+                        03. Quotes & pricing
+                    </a>
+
+                    <a href="#bookings">
+                        04. Bookings
+                    </a>
+
+                    <a href="#customer-responsibilities">
+                        05. Customer responsibilities
+                    </a>
+
+                    <a href="#access">
+                        06. Property access
+                    </a>
+
+                    <a href="#payments">
+                        07. Payments
+                    </a>
+
+                    <a href="#cancellations">
+                        08. Cancellations
+                    </a>
+
+                    <a href="#cleaning-scope">
+                        09. Cleaning scope
+                    </a>
+
+                    <a href="#satisfaction">
+                        10. Satisfaction
+                    </a>
+
+                    <a href="#liability">
+                        11. Liability
+                    </a>
+
+                    <a href="#commercial">
+                        12. Commercial services
+                    </a>
+
+                    <a href="#privacy">
+                        13. Privacy
+                    </a>
+
+                    <a href="#changes">
+                        14. Changes
+                    </a>
+
+                </div>
+
+            </aside>
+
+
+            <!-- MAIN -->
+            <main class="terms-main">
+
+                <article id="website-use" class="terms-block">
+
+                    <span class="terms-number">01</span>
+
+                    <h2>
+                        Website use
+                    </h2>
+
+                    <p>
+                        This website is operated by YD Commercial Cleaning
+                        Services. By using this website, you agree to use it
+                        lawfully and respectfully.
+                    </p>
+
+                    <p>
+                        Website information is provided for general
+                        information and may be updated from time to time.
+                        Service availability, pricing, promotional offers
+                        and service descriptions may change without notice.
+                    </p>
+
+                    <ul>
+                        <li>Do not misuse or attempt to disrupt the website.</li>
+                        <li>Do not use website content for unlawful purposes.</li>
+                        <li>Do not submit misleading or fraudulent information.</li>
+                        <li>Do not attempt unauthorised access to website systems.</li>
+                    </ul>
+
+                </article>
+
+
+                <article id="services" class="terms-block">
+
+                    <span class="terms-number">02</span>
+
+                    <h2>
+                        Cleaning services
+                    </h2>
+
+                    <p>
+                        YD Commercial Cleaning Services provides residential,
+                        commercial and specialised cleaning services across
+                        Adelaide and surrounding areas.
+                    </p>
+
+                    <p>
+                        The exact cleaning tasks included in a service depend
+                        on the service selected, property condition, size,
+                        access and the agreed scope of work.
+                    </p>
+
+                    <div class="terms-note">
+                        <strong>Important:</strong>
+                        Please tell us about any unusual conditions,
+                        hazardous materials, heavy soiling, renovation
+                        debris, mould, pests or other specialist requirements
+                        before the booking.
+                    </div>
+
+                </article>
+
+
+                <article id="quotes" class="terms-block">
+
+                    <span class="terms-number">03</span>
+
+                    <h2>
+                        Quotes and pricing
+                    </h2>
+
+                    <p>
+                        Quotes are based on the information available to us
+                        at the time of enquiry. The final price may depend on
+                        the actual condition, size and requirements of the
+                        property.
+                    </p>
+
+                    <p>
+                        Where the scope of work changes significantly from
+                        the information originally provided, we may contact
+                        you before carrying out additional work.
+                    </p>
+
+                    <ul>
+                        <li>Quotes may be subject to property conditions.</li>
+                        <li>Additional services may attract additional charges.</li>
+                        <li>Specialist cleaning may require a separate quote.</li>
+                        <li>Promotional discounts are subject to their stated conditions.</li>
+                    </ul>
+
+                </article>
+
+
+                <article id="bookings" class="terms-block">
+
+                    <span class="terms-number">04</span>
+
+                    <h2>
+                        Booking confirmation
+                    </h2>
+
+                    <p>
+                        A cleaning appointment is considered confirmed when
+                        the required customer information has been received
+                        and YD Commercial Cleaning Services has confirmed the
+                        agreed service time.
+                    </p>
+
+                    <p>
+                        Customers should provide accurate information about
+                        the property, service required, access arrangements
+                        and any special requirements.
+                    </p>
+
+                </article>
+
+
+                <article id="customer-responsibilities" class="terms-block">
+
+                    <span class="terms-number">05</span>
+
+                    <h2>
+                        Customer responsibilities
+                    </h2>
+
+                    <p>
+                        Customers are responsible for providing accurate
+                        information and preparing the property where
+                        reasonably necessary for the agreed cleaning service.
+                    </p>
+
+                    <ul>
+                        <li>Provide accurate booking information.</li>
+                        <li>Provide safe access to the property.</li>
+                        <li>Inform us of pets or relevant property conditions.</li>
+                        <li>Remove valuable or fragile personal items where appropriate.</li>
+                        <li>Notify us of hazards before the cleaning begins.</li>
+                        <li>Provide access to necessary areas included in the booking.</li>
+                    </ul>
+
+                </article>
+
+
+                <article id="access" class="terms-block">
+
+                    <span class="terms-number">06</span>
+
+                    <h2>
+                        Property access
+                    </h2>
+
+                    <p>
+                        Customers must provide safe and reasonable access to
+                        the property at the agreed appointment time.
+                    </p>
+
+                    <p>
+                        If our cleaners cannot access the property, cannot
+                        safely enter the premises or are required to wait for
+                        an extended period, the appointment may need to be
+                        rescheduled.
+                    </p>
+
+                    <div class="terms-note warning">
+                        <strong>Access reminder:</strong>
+                        Please provide keys, access codes, parking information
+                        or other entry instructions before the appointment
+                        where required.
+                    </div>
+
+                </article>
+
+
+                <article id="payments" class="terms-block">
+
+                    <span class="terms-number">07</span>
+
+                    <h2>
+                        Payments and invoices
+                    </h2>
+
+                    <p>
+                        Payment arrangements are confirmed as part of the
+                        booking process. Depending on the service, payment
+                        may be requested before, during or after the service.
+                    </p>
+
+                    <p>
+                        Where an invoice is issued, payment is expected
+                        according to the payment terms stated on that invoice.
+                    </p>
+
+                    <p>
+                        Customers should contact us promptly if they believe
+                        an invoice contains an error or if they have a
+                        question about a charge.
+                    </p>
+
+                </article>
+
+
+                <article id="cancellations" class="terms-block">
+
+                    <span class="terms-number">08</span>
+
+                    <h2>
+                        Cancellations and rescheduling
+                    </h2>
+
+                    <p>
+                        We understand that plans can change. Customers should
+                        contact us as early as possible if they need to
+                        cancel or reschedule a cleaning appointment.
+                    </p>
+
+                    <p>
+                        Reasonable notice helps us manage our cleaning
+                        schedule and offer the appointment time to another
+                        customer.
+                    </p>
+
+                    <p>
+                        Any cancellation or rescheduling charges, where
+                        applicable, will be communicated according to the
+                        booking arrangement and service type.
+                    </p>
+
+                </article>
+
+
+                <article id="cleaning-scope" class="terms-block">
+
+                    <span class="terms-number">09</span>
+
+                    <h2>
+                        Cleaning scope and exclusions
+                    </h2>
+
+                    <p>
+                        Cleaning results can vary depending on the condition
+                        and age of surfaces, existing damage, stains,
+                        deterioration and the nature of the cleaning required.
+                    </p>
+
+                    <p>
+                        Some substances or conditions may require specialist
+                        treatment and may not be included in a standard
+                        cleaning service.
+                    </p>
+
+                    <div class="terms-grid-list">
+
+                        <div>
+                            <strong>Included according to service</strong>
+                            <p>
+                                Standard cleaning tasks agreed as part of
+                                your selected service.
+                            </p>
+                        </div>
+
+                        <div>
+                            <strong>Specialist requirements</strong>
+                            <p>
+                                Certain hazardous, extreme or specialist
+                                conditions may require separate assessment.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </article>
+
+
+                <article id="satisfaction" class="terms-block">
+
+                    <span class="terms-number">10</span>
+
+                    <h2>
+                        Cleaning quality and satisfaction
+                    </h2>
+
+                    <p>
+                        We aim to deliver a professional and consistent
+                        cleaning service. If you believe an agreed cleaning
+                        task has not been completed satisfactorily, please
+                        contact us promptly.
+                    </p>
+
+                    <p>
+                        We will review the concern and, where appropriate,
+                        arrange a reasonable resolution based on the original
+                        scope of work.
+                    </p>
+
+                </article>
+
+
+                <article id="liability" class="terms-block">
+
+                    <span class="terms-number">11</span>
+
+                    <h2>
+                        Property, damage and liability
+                    </h2>
+
+                    <p>
+                        Customers should advise us before the service of any
+                        fragile surfaces, delicate materials, pre-existing
+                        damage or special care requirements.
+                    </p>
+
+                    <p>
+                        We take reasonable care while performing cleaning
+                        services. Any concerns regarding damage should be
+                        reported as soon as reasonably possible so the matter
+                        can be reviewed.
+                    </p>
+
+                    <p>
+                        Nothing in these terms is intended to exclude,
+                        restrict or modify any rights or protections that
+                        cannot legally be excluded under applicable
+                        Australian law.
+                    </p>
+
+                </article>
+
+
+                <article id="commercial" class="terms-block">
+
+                    <span class="terms-number">12</span>
+
+                    <h2>
+                        Commercial cleaning services
+                    </h2>
+
+                    <p>
+                        Commercial cleaning arrangements may include
+                        additional requirements relating to access,
+                        operating hours, security, site inductions,
+                        workplace requirements and agreed cleaning schedules.
+                    </p>
+
+                    <p>
+                        Where a commercial customer has a separate written
+                        service agreement, that agreement may contain
+                        additional terms specific to the business relationship.
+                    </p>
+
+                </article>
+
+
+                <article id="privacy" class="terms-block">
+
+                    <span class="terms-number">13</span>
+
+                    <h2>
+                        Privacy and customer information
+                    </h2>
+
+                    <p>
+                        Information supplied through our website, enquiry
+                        forms and booking processes is handled in accordance
+                        with our privacy practices.
+                    </p>
+
+                    <p>
+                        Please refer to our
+                        <a href="/privacy/">
+                            Privacy Policy
+                        </a>
+                        for more information about how personal information
+                        is handled.
+                    </p>
+
+                </article>
+
+
+                <article id="changes" class="terms-block">
+
+                    <span class="terms-number">14</span>
+
+                    <h2>
+                        Changes to these terms
+                    </h2>
+
+                    <p>
+                        YD Commercial Cleaning Services may update these
+                        Terms & Conditions from time to time to reflect
+                        changes to our services, business processes or legal
+                        requirements.
+                    </p>
+
+                    <p>
+                        The latest version published on this website will
+                        apply to future website use and bookings, subject to
+                        any separate written agreement.
+                    </p>
+
+                </article>
+
+            </main>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- FAQ -->
+<section class="terms-faq section">
+
+    <div class="container">
+
+        <div class="section-heading-center">
+
+            <span class="section-eyebrow">
+                Frequently asked questions
+            </span>
+
+            <h2>
+                Terms questions?
+            </h2>
+
+            <p>
+                Here are some common questions customers ask before booking.
+            </p>
+
+        </div>
+
+
+        <div class="faq-list">
+
+            <details>
+                <summary>
+                    When is my cleaning booking confirmed?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Your booking is confirmed once we have received the
+                    required information and confirmed the appointment
+                    time and service details with you.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Can I change my cleaning appointment?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Yes. Please contact us as early as possible if you need
+                    to reschedule so we can review availability and update
+                    the appointment.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Do I need to be home during the cleaning?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Not necessarily. Alternative access arrangements may be
+                    possible, provided they are safe and agreed with us in
+                    advance.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    What happens if the property is more difficult to clean
+                    than expected?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    If the actual condition differs significantly from the
+                    information provided during the booking, we may discuss
+                    the available options and any additional work before
+                    proceeding.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    What if I am unhappy with the cleaning?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Contact us promptly and explain the concern. We will
+                    review the issue against the agreed scope of work and
+                    work with you toward a reasonable resolution.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Where can I ask about these terms?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Contact YD Commercial Cleaning Services before booking
+                    if you need clarification about any service or term.
+                </p>
+            </details>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- CTA -->
+<section class="terms-cta">
+
+    <div class="container">
+
+        <div class="terms-cta-content">
+
+            <span class="terms-eyebrow">
+                Ready for a cleaner space?
+            </span>
+
+            <h2>
+                Book professional cleaning with confidence.
+            </h2>
+
+            <p>
+                Tell us what you need cleaned and we'll help you find the
+                right cleaning service for your home, office or property.
+            </p>
+
+            <div class="terms-cta-actions">
+
+                <a href="/booking/" class="terms-btn terms-btn-primary">
+                    Book a Cleaning
+                </a>
+
+                <a href="/contact/" class="terms-btn terms-btn-secondary">
+                    Contact Our Team
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
 {% endblock %}

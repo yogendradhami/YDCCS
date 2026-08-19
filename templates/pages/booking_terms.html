@@ -1,50 +1,943 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% load static %}
 
-
 {% block title %}
-Booking Terms | YD Commercial Cleaning Services Adelaide
+Booking Terms | YD Commercial Cleaning Services
 {% endblock %}
 
-{% block extra_css %}
-
-<link rel="stylesheet"
-href="{% static 'css/pages/booking_terms.css' %}">
-
+{% block meta_description %}
+Read the booking terms and conditions for YD Commercial Cleaning Services, including bookings, cancellations, payments, access, cleaning requirements and customer responsibilities across Adelaide.
 {% endblock %}
-
-{% block meta_description %}Read YD Commercial Cleaning Services booking terms, cancellation policy, payment conditions, and service agreement information.{% endblock %}
 
 
 
 {% block content %}
-<div class="modern-landing-page">
-    <section class="modern-landing-hero">
-        <div class="container">
-            <span class="eyebrow">Booking terms</span>
-            <h1>Everything you need to know before your booking is confirmed.</h1>
-            <p>These terms explain the booking process, access expectations, payments and how we support a smooth service experience.</p>
-        </div>
-    </section>
 
-    <section class="modern-landing-section">
-        <div class="container">
-            <div class="modern-landing-grid">
-                <div class="modern-landing-card">
-                    <h2>What to expect</h2>
-                    <ul class="modern-landing-list">
-                        <li>Bookings are confirmed once the required details are received.</li>
-                        <li>Accurate customer information helps us prepare properly.</li>
-                        <li>Additional work may require extra charges after the visit.</li>
-                    </ul>
-                </div>
-                <div class="modern-landing-card">
-                    <h3>Payments, access and cancellations</h3>
-                    <p>Pricing depends on the property size, service type and scope of work. Please provide safe access and reasonable notice for cancellations or rescheduling so we can plan effectively.</p>
+<link rel="stylesheet" href="{% static 'css/pages/booking_terms.css' %}">
+
+<!-- =========================================================
+     HERO
+========================================================= -->
+
+<section class="booking-terms-hero">
+
+    <div class="container">
+
+        <div class="booking-hero-content">
+
+            <span class="booking-eyebrow">
+                Booking Information
+            </span>
+
+            <h1>
+                Booking Terms &amp;<br>
+                Service Information
+            </h1>
+
+            <p>
+                Everything you need to know before your cleaning
+                appointment is confirmed — from booking details and
+                access requirements to pricing, payments and
+                rescheduling.
+            </p>
+
+            <div class="booking-hero-actions">
+
+                <a href="/contact/" class="booking-btn booking-btn-primary">
+                    Get a Free Quote
+                </a>
+
+                <a href="tel:0430049865" class="booking-btn booking-btn-secondary">
+                    Call 0430 049 865
+                </a>
+
+            </div>
+
+            <div class="booking-hero-trust">
+
+                <span>✓ Adelaide Local</span>
+                <span>✓ Fully Insured</span>
+                <span>✓ Professional Service</span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     QUICK SUMMARY
+========================================================= -->
+
+<section class="booking-summary">
+
+    <div class="container">
+
+        <div class="booking-summary-grid">
+
+            <div class="booking-summary-card">
+                <div class="booking-summary-icon">✓</div>
+                <div>
+                    <strong>Booking Confirmation</strong>
+                    <span>Confirmed once required details and service time are agreed.</span>
                 </div>
             </div>
+
+            <div class="booking-summary-card">
+                <div class="booking-summary-icon">$</div>
+                <div>
+                    <strong>Clear Pricing</strong>
+                    <span>Quotes are based on property size, service type and scope.</span>
+                </div>
+            </div>
+
+            <div class="booking-summary-card">
+                <div class="booking-summary-icon">⌂</div>
+                <div>
+                    <strong>Safe Access</strong>
+                    <span>Customers are responsible for providing safe access.</span>
+                </div>
+            </div>
+
+            <div class="booking-summary-card">
+                <div class="booking-summary-icon">↻</div>
+                <div>
+                    <strong>Flexible Communication</strong>
+                    <span>Contact us as early as possible if your plans change.</span>
+                </div>
+            </div>
+
         </div>
-    </section>
-</div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     INTRO
+========================================================= -->
+
+<section class="booking-intro">
+
+    <div class="container booking-intro-grid">
+
+        <div>
+
+            <span class="booking-section-eyebrow">
+                Before You Book
+            </span>
+
+            <h2>
+                A smoother booking starts with clear expectations
+            </h2>
+
+        </div>
+
+        <div>
+
+            <p>
+                At YD Commercial Cleaning Services, we want every
+                customer to understand what happens before, during and
+                after a cleaning appointment.
+            </p>
+
+            <p>
+                These booking terms explain the information we need,
+                how appointments are confirmed, how pricing works and
+                what customers can do to help us deliver an efficient
+                service.
+            </p>
+
+            <p>
+                If you are unsure about any part of your booking,
+                our team is happy to discuss your requirements before
+                the appointment is confirmed.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     BOOKING PROCESS
+========================================================= -->
+
+<section class="booking-process">
+
+    <div class="container">
+
+        <div class="booking-heading">
+
+            <span class="booking-section-eyebrow">
+                Simple Booking Process
+            </span>
+
+            <h2>
+                How your cleaning booking works
+            </h2>
+
+            <p>
+                We keep the process straightforward so you know what
+                to expect from your first enquiry through to completion.
+            </p>
+
+        </div>
+
+
+        <div class="booking-process-grid">
+
+            <div class="booking-step">
+
+                <div class="booking-step-number">
+                    01
+                </div>
+
+                <h3>
+                    Request a quote
+                </h3>
+
+                <p>
+                    Tell us about your property, cleaning requirements,
+                    preferred service and any important instructions.
+                </p>
+
+            </div>
+
+
+            <div class="booking-step">
+
+                <div class="booking-step-number">
+                    02
+                </div>
+
+                <h3>
+                    Discuss your requirements
+                </h3>
+
+                <p>
+                    We may ask questions about the property size,
+                    condition, access and specific areas that require
+                    attention.
+                </p>
+
+            </div>
+
+
+            <div class="booking-step">
+
+                <div class="booking-step-number">
+                    03
+                </div>
+
+                <h3>
+                    Confirm the booking
+                </h3>
+
+                <p>
+                    Your appointment is confirmed once the required
+                    details have been received and the service time
+                    has been agreed.
+                </p>
+
+            </div>
+
+
+            <div class="booking-step">
+
+                <div class="booking-step-number">
+                    04
+                </div>
+
+                <h3>
+                    Cleaning service
+                </h3>
+
+                <p>
+                    Our team attends the property and completes the
+                    agreed cleaning service according to the confirmed
+                    scope of work.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     DETAILED TERMS
+========================================================= -->
+
+<section class="booking-details">
+
+    <div class="container">
+
+        <div class="booking-details-header">
+
+            <span class="booking-section-eyebrow">
+                Important Information
+            </span>
+
+            <h2>
+                Booking terms explained
+            </h2>
+
+            <p>
+                Please review the following information before
+                confirming your cleaning appointment.
+            </p>
+
+        </div>
+
+
+        <div class="booking-details-grid">
+
+
+            <!-- Booking confirmation -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    1. Booking confirmation
+                </h3>
+
+                <p>
+                    A cleaning request is not considered confirmed
+                    until the required customer information has been
+                    received and the scheduled service time has been
+                    agreed.
+                </p>
+
+                <p>
+                    Providing accurate information helps us prepare
+                    the appropriate service and allocate enough time
+                    for your requirements.
+                </p>
+
+            </article>
+
+
+            <!-- Customer information -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    i
+                </div>
+
+                <h3>
+                    2. Customer information
+                </h3>
+
+                <p>
+                    Please provide accurate information about the
+                    property and cleaning requirements when requesting
+                    a booking.
+                </p>
+
+                <p>
+                    Important details may include the property type,
+                    approximate size, number of rooms, condition of the
+                    property and any areas requiring special attention.
+                </p>
+
+            </article>
+
+
+            <!-- Pricing -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    $
+                </div>
+
+                <h3>
+                    3. Pricing &amp; scope of work
+                </h3>
+
+                <p>
+                    Cleaning prices depend on factors such as property
+                    size, service type, cleaning condition and the
+                    scope of work requested.
+                </p>
+
+                <p>
+                    If the actual condition or requested work is
+                    significantly different from the information
+                    provided when the booking was arranged, additional
+                    work or charges may apply.
+                </p>
+
+            </article>
+
+
+            <!-- Access -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    ⌂
+                </div>
+
+                <h3>
+                    4. Property access
+                </h3>
+
+                <p>
+                    Customers are responsible for providing safe and
+                    reasonable access to the property at the agreed
+                    appointment time.
+                </p>
+
+                <p>
+                    Please provide any access instructions, keys,
+                    entry codes or other information required for our
+                    team to enter safely.
+                </p>
+
+            </article>
+
+
+            <!-- Preparation -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    +
+                </div>
+
+                <h3>
+                    5. Preparing for your cleaning
+                </h3>
+
+                <p>
+                    Customers can help make the service more efficient
+                    by removing personal valuables and providing clear
+                    access to areas that need cleaning.
+                </p>
+
+                <p>
+                    Please let us know in advance about fragile items,
+                    restricted areas, pets or other special requirements.
+                </p>
+
+            </article>
+
+
+            <!-- Cancellations -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    ↻
+                </div>
+
+                <h3>
+                    6. Cancellations &amp; rescheduling
+                </h3>
+
+                <p>
+                    If you need to cancel or reschedule your appointment,
+                    please contact us as soon as possible.
+                </p>
+
+                <p>
+                    Reasonable notice allows our team to reorganise the
+                    schedule and offer the appointment time to another
+                    customer. Additional charges may apply where
+                    circumstances require additional time or work.
+                </p>
+
+            </article>
+
+
+            <!-- Payment -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    $
+                </div>
+
+                <h3>
+                    7. Payments
+                </h3>
+
+                <p>
+                    Payment arrangements depend on the agreed service,
+                    quotation and customer arrangement.
+                </p>
+
+                <p>
+                    Payment details and any applicable requirements
+                    will be communicated before or as part of confirming
+                    the service.
+                </p>
+
+            </article>
+
+
+            <!-- Additional work -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    +
+                </div>
+
+                <h3>
+                    8. Additional work
+                </h3>
+
+                <p>
+                    Some properties may require additional cleaning
+                    beyond the original scope discussed during booking.
+                </p>
+
+                <p>
+                    Where additional work is required, we will discuss
+                    the situation with the customer and explain any
+                    applicable additional charges where practical.
+                </p>
+
+            </article>
+
+
+            <!-- Special requirements -->
+
+            <article class="booking-detail-card">
+
+                <div class="booking-detail-icon">
+                    ★
+                </div>
+
+                <h3>
+                    9. Special requirements
+                </h3>
+
+                <p>
+                    Please tell us before the appointment if your
+                    property has special cleaning requirements,
+                    restricted areas or other circumstances that may
+                    affect the service.
+                </p>
+
+                <p>
+                    This helps our team prepare appropriately and
+                    provide a safer, more efficient service.
+                </p>
+
+            </article>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CUSTOMER RESPONSIBILITIES
+========================================================= -->
+
+<section class="booking-responsibilities">
+
+    <div class="container">
+
+        <div class="booking-responsibilities-grid">
+
+            <div class="booking-responsibility-content">
+
+                <span class="booking-section-eyebrow">
+                    Before Our Team Arrives
+                </span>
+
+                <h2>
+                    How you can help us deliver a great clean
+                </h2>
+
+                <p>
+                    A little preparation can help our team spend more
+                    time cleaning and less time dealing with avoidable
+                    access or preparation issues.
+                </p>
+
+                <a href="/contact/" class="booking-text-link">
+                    Ask us about your cleaning requirements →
+                </a>
+
+            </div>
+
+
+            <div class="booking-checklist">
+
+                <div>
+                    <span>✓</span>
+                    Provide safe property access
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Share important access instructions
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Tell us about special requirements
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Secure valuable or fragile personal items
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Make sure required areas are accessible
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Contact us early if plans change
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     SERVICE STANDARDS
+========================================================= -->
+
+<section class="booking-standards">
+
+    <div class="container">
+
+        <div class="booking-heading">
+
+            <span class="booking-section-eyebrow">
+                Our Service Standards
+            </span>
+
+            <h2>
+                Why customers choose YD Commercial Cleaning
+            </h2>
+
+            <p>
+                We aim to provide dependable communication, professional
+                cleaning and a straightforward customer experience.
+            </p>
+
+        </div>
+
+
+        <div class="booking-standards-grid">
+
+            <div class="booking-standard-card">
+
+                <span class="booking-standard-icon">✓</span>
+
+                <h3>
+                    Fully Insured
+                </h3>
+
+                <p>
+                    Professional cleaning services with appropriate
+                    business and liability protection.
+                </p>
+
+            </div>
+
+
+            <div class="booking-standard-card">
+
+                <span class="booking-standard-icon">★</span>
+
+                <h3>
+                    Quality Focused
+                </h3>
+
+                <p>
+                    We pay attention to the details that make your home,
+                    office or property feel cleaner and more comfortable.
+                </p>
+
+            </div>
+
+
+            <div class="booking-standard-card">
+
+                <span class="booking-standard-icon">⌂</span>
+
+                <h3>
+                    Adelaide Local
+                </h3>
+
+                <p>
+                    Providing residential and commercial cleaning
+                    services across Adelaide and surrounding areas.
+                </p>
+
+            </div>
+
+
+            <div class="booking-standard-card">
+
+                <span class="booking-standard-icon">♥</span>
+
+                <h3>
+                    Customer Focused
+                </h3>
+
+                <p>
+                    We listen to your requirements and aim to deliver
+                    a service that matches the agreed scope.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     FAQ
+========================================================= -->
+
+<section class="booking-faq">
+
+    <div class="container">
+
+        <div class="booking-heading">
+
+            <span class="booking-section-eyebrow">
+                Frequently Asked Questions
+            </span>
+
+            <h2>
+                Booking questions answered
+            </h2>
+
+            <p>
+                If you cannot find the answer you need, contact our team
+                and we will be happy to help.
+            </p>
+
+        </div>
+
+
+        <div class="booking-faq-list">
+
+            <details>
+                <summary>
+                    How is my booking confirmed?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Your booking is confirmed once we receive the
+                    required customer details and confirm the scheduled
+                    service time with you.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    How is the cleaning price determined?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Pricing depends on factors such as property size,
+                    service type, condition and the scope of work
+                    requested.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Can I request additional cleaning?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Yes. If you require additional areas or services,
+                    please discuss them with us. Additional work may
+                    require additional charges depending on the scope.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    What happens if I need to reschedule?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Please contact us as soon as possible. Reasonable
+                    notice helps us rearrange the schedule and manage
+                    your booking efficiently.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Do I need to provide access?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Yes. Customers are responsible for providing safe
+                    access to the property at the agreed appointment
+                    time.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    What if nobody is home?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Please arrange an agreed access method with our team
+                    before the appointment if you will not be present.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Should I tell you about pets?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Yes. Please let us know about pets or other
+                    circumstances that may affect safe access or the
+                    cleaning service.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    How are payments handled?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Payment arrangements depend on the agreed quotation
+                    and service. Payment details are communicated as
+                    part of the booking arrangement.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    What happens if the property needs more work?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    If the actual condition or requested scope is
+                    significantly different from what was discussed,
+                    additional work may be required. We will discuss
+                    this with you where practical.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Who can I contact if I have questions?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Contact YD Commercial Cleaning Services on
+                    0430 049 865 or use our online contact form.
+                    We are happy to discuss your cleaning requirements
+                    before confirming your booking.
+                </p>
+            </details>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     FINAL CTA
+========================================================= -->
+
+<section class="booking-final-cta">
+
+    <div class="container">
+
+        <div class="booking-final-content">
+
+            <span>
+                Ready to get started?
+            </span>
+
+            <h2>
+                Let's make your space cleaner
+            </h2>
+
+            <p>
+                Tell us what you need cleaned and we'll help you find
+                the right cleaning solution for your property.
+            </p>
+
+            <div class="booking-hero-actions">
+
+                <a href="/contact/" class="booking-btn booking-btn-primary">
+                    Get a Free Quote
+                </a>
+
+                <a href="tel:0430049865" class="booking-btn booking-btn-secondary">
+                    0430 049 865
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
 {% endblock %}

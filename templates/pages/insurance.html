@@ -1,59 +1,551 @@
+html
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Insurance, Guarantees & Safety | YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Learn about our insurance coverage, risk-free guarantees and safety commitment for every cleaning service in Adelaide.{% endblock %}
+{% block title %}Fully Insured Cleaning Services Adelaide | YD Commercial Cleaning{% endblock %}
+
+{% block meta_description %}
+YD Commercial Cleaning provides professional, fully insured cleaning services across Adelaide for homes, offices and commercial properties. Book with confidence.
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/insurance.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="modern-landing-page">
-    <section class="modern-landing-hero">
-        <div class="container">
-            <span class="eyebrow">Protected service</span>
-            <h1>Insurance-backed cleaning with confidence built in.</h1>
-            <p>From public liability to satisfaction guarantees, we make it simple to book a safe, reliable clean.</p>
-        </div>
-    </section>
 
-    <section class="modern-landing-section">
+<div class="insurance-page">
+
+    <!-- HERO -->
+    <section class="insurance-hero">
         <div class="container">
-            <div class="modern-landing-grid">
-                <div class="modern-landing-card">
-                    <h2>Our insurance & guarantee promise</h2>
-                    <ul class="modern-landing-list">
-                        <li>Public liability and professional indemnity cover for each job.</li>
-                        <li>Rapid response if accidental damage or concerns arise.</li>
-                        <li>Guaranteed follow-up support if the standard is not met.</li>
-                    </ul>
+            <div class="insurance-hero-content">
+
+                <div class="insurance-eyebrow">
+                    <span class="insurance-eyebrow-icon">✓</span>
+                    Fully Insured Cleaning Services
                 </div>
-                <div class="modern-landing-card">
-                    <h3>Why it matters</h3>
-                    <div class="modern-landing-inline-list">
-                        <div><strong>Vetted team</strong><span>Trained and trusted professionals</span></div>
-                        <div><strong>Property protection</strong><span>Careful handling throughout the visit</span></div>
-                        <div><strong>Quality assurance</strong><span>We stand behind our workmanship</span></div>
-                        <div><strong>Peace of mind</strong><span>Confidence for homes and businesses</span></div>
+
+                <h1>
+                    Cleaning you can trust,
+                    <span>with confidence built in.</span>
+                </h1>
+
+                <p class="insurance-hero-text">
+                    Choosing a cleaning company means trusting someone with your
+                    home, workplace or commercial property. At YD Commercial
+                    Cleaning, we take that responsibility seriously.
+                </p>
+
+                <p class="insurance-hero-text">
+                    We provide professional cleaning services across Adelaide
+                    with a strong focus on care, reliability, professionalism
+                    and customer peace of mind.
+                </p>
+
+                <div class="insurance-hero-actions">
+                    <a href="{% url 'contact' %}" class="insurance-btn insurance-btn-primary">
+                        Request a Free Quote
+                    </a>
+
+                    <a href="tel:0430049865" class="insurance-btn insurance-btn-secondary">
+                        Call 0430 049 865
+                    </a>
+                </div>
+
+                <div class="insurance-trust-row">
+                    <div class="insurance-trust-item">
+                        <strong>Fully Insured</strong>
+                        <span>Professional cleaning business</span>
+                    </div>
+
+                    <div class="insurance-trust-item">
+                        <strong>Adelaide Wide</strong>
+                        <span>Residential & commercial</span>
+                    </div>
+
+                    <div class="insurance-trust-item">
+                        <strong>Free Quotes</strong>
+                        <span>Clear and tailored pricing</span>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
 
-    <section class="modern-landing-cta">
+
+    <!-- INTRODUCTION -->
+    <section class="insurance-section insurance-intro">
         <div class="container">
-            <div class="modern-landing-cta-card">
-                <div>
-                    <h2>Safe, reliable cleaning for Adelaide homes and businesses</h2>
-                    <p>Ask about coverage and let us tailor the right service for your property.</p>
+            <div class="insurance-two-column">
+
+                <div class="insurance-section-heading">
+                    <span class="insurance-label">PEACE OF MIND</span>
+
+                    <h2>
+                        Why choosing an insured cleaning company matters
+                    </h2>
+
+                    <div class="insurance-heading-line"></div>
                 </div>
-                <a href="{% url 'contact' %}" class="btn btn-primary">Ask About Coverage</a>
+
+                <div class="insurance-intro-content">
+                    <p>
+                        Professional cleaning involves working inside homes,
+                        offices, workplaces and commercial properties. A
+                        responsible cleaning company should take the care and
+                        protection of customer property seriously.
+                    </p>
+
+                    <p>
+                        YD Commercial Cleaning is committed to providing
+                        dependable cleaning services while treating every
+                        property with respect and care.
+                    </p>
+
+                    <p>
+                        Our goal is simple: deliver a professional cleaning
+                        experience that gives our customers confidence from
+                        the first enquiry through to completion of the job.
+                    </p>
+                </div>
+
             </div>
         </div>
     </section>
+
+
+    <!-- TRUST CARDS -->
+    <section class="insurance-section insurance-trust-section">
+        <div class="container">
+
+            <div class="insurance-centered-heading">
+                <span class="insurance-label">OUR COMMITMENT</span>
+
+                <h2>
+                    More than just a clean
+                </h2>
+
+                <p>
+                    We focus on professionalism, communication and care at
+                    every stage of your cleaning service.
+                </p>
+            </div>
+
+            <div class="insurance-card-grid">
+
+                <article class="insurance-card">
+                    <div class="insurance-card-icon">✓</div>
+
+                    <h3>Fully Insured</h3>
+
+                    <p>
+                        We operate as a professional cleaning business with
+                        appropriate insurance in place for our services.
+                    </p>
+                </article>
+
+                <article class="insurance-card">
+                    <div class="insurance-card-icon">⌂</div>
+
+                    <h3>Property Care</h3>
+
+                    <p>
+                        We treat your home, workplace, furniture, fixtures and
+                        surfaces with care while carrying out cleaning work.
+                    </p>
+                </article>
+
+                <article class="insurance-card">
+                    <div class="insurance-card-icon">★</div>
+
+                    <h3>Professional Service</h3>
+
+                    <p>
+                        We aim to provide reliable communication, professional
+                        presentation and consistent cleaning standards.
+                    </p>
+                </article>
+
+                <article class="insurance-card">
+                    <div class="insurance-card-icon">♥</div>
+
+                    <h3>Customer Peace of Mind</h3>
+
+                    <p>
+                        From your first enquiry to the finished clean, our
+                        priority is making your experience straightforward and
+                        dependable.
+                    </p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- RESIDENTIAL / COMMERCIAL -->
+    <section class="insurance-section insurance-services-section">
+        <div class="container">
+
+            <div class="insurance-centered-heading">
+                <span class="insurance-label">WHO WE SERVE</span>
+
+                <h2>
+                    Cleaning for homes and businesses
+                </h2>
+
+                <p>
+                    Professional cleaning solutions designed around the
+                    needs of Adelaide customers.
+                </p>
+            </div>
+
+            <div class="insurance-service-grid">
+
+                <article class="insurance-service-card">
+                    <div class="insurance-service-image residential-image">
+                        <span>Residential Cleaning</span>
+                    </div>
+
+                    <div class="insurance-service-content">
+                        <h3>Residential Cleaning</h3>
+
+                        <p>
+                            Give your home the care it deserves with reliable
+                            professional cleaning services tailored to your
+                            property.
+                        </p>
+
+                        <ul>
+                            <li>Regular house cleaning</li>
+                            <li>Deep cleaning</li>
+                            <li>End of lease cleaning</li>
+                            <li>Kitchen and bathroom cleaning</li>
+                            <li>Window cleaning</li>
+                            <li>One-off cleaning services</li>
+                        </ul>
+
+                        <a href="{% url 'contact' %}">
+                            Get a residential cleaning quote →
+                        </a>
+                    </div>
+                </article>
+
+
+                <article class="insurance-service-card">
+                    <div class="insurance-service-image commercial-image">
+                        <span>Commercial Cleaning</span>
+                    </div>
+
+                    <div class="insurance-service-content">
+                        <h3>Commercial Cleaning</h3>
+
+                        <p>
+                            Keep your workplace clean, professional and
+                            welcoming with dependable commercial cleaning
+                            services.
+                        </p>
+
+                        <ul>
+                            <li>Office cleaning</li>
+                            <li>Retail cleaning</li>
+                            <li>Workplace cleaning</li>
+                            <li>Commercial premises</li>
+                            <li>Bathroom sanitisation</li>
+                            <li>Floor and surface cleaning</li>
+                        </ul>
+
+                        <a href="{% url 'contact' %}">
+                            Get a commercial cleaning quote →
+                        </a>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- PROFESSIONAL STANDARDS -->
+    <section class="insurance-section insurance-standards-section">
+        <div class="container">
+
+            <div class="insurance-two-column">
+
+                <div class="insurance-section-heading">
+                    <span class="insurance-label">OUR STANDARD</span>
+
+                    <h2>
+                        A professional approach from start to finish
+                    </h2>
+
+                    <div class="insurance-heading-line"></div>
+                </div>
+
+                <div class="insurance-standards">
+
+                    <div class="insurance-standard">
+                        <span class="insurance-standard-number">01</span>
+
+                        <div>
+                            <h3>Understand your requirements</h3>
+
+                            <p>
+                                We discuss your property, cleaning needs and
+                                preferred schedule before the service begins.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="insurance-standard">
+                        <span class="insurance-standard-number">02</span>
+
+                        <div>
+                            <h3>Work with care</h3>
+
+                            <p>
+                                Our approach focuses on careful cleaning and
+                                respectful treatment of your property.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="insurance-standard">
+                        <span class="insurance-standard-number">03</span>
+
+                        <div>
+                            <h3>Maintain communication</h3>
+
+                            <p>
+                                We aim to keep communication clear before,
+                                during and after your cleaning service.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="insurance-standard">
+                        <span class="insurance-standard-number">04</span>
+
+                        <div>
+                            <h3>Focus on quality</h3>
+
+                            <p>
+                                We work to deliver a thorough, professional
+                                cleaning result that meets your agreed
+                                requirements.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- INSURANCE INFORMATION -->
+    <section class="insurance-section insurance-information">
+        <div class="container">
+
+            <div class="insurance-information-box">
+
+                <div class="insurance-information-icon">
+                    🛡
+                </div>
+
+                <div>
+                    <span class="insurance-label">INSURANCE INFORMATION</span>
+
+                    <h2>
+                        Need proof of insurance?
+                    </h2>
+
+                    <p>
+                        If you are a property manager, business owner,
+                        building manager or commercial customer who requires
+                        insurance documentation, please contact our team to
+                        discuss your requirements.
+                    </p>
+
+                    <p>
+                        Insurance coverage is subject to the terms,
+                        conditions and exclusions of the applicable policy.
+                        If you have specific insurance requirements for your
+                        property or contract, let us know before booking.
+                    </p>
+
+                    <a href="{% url 'contact' %}" class="insurance-text-link">
+                        Contact us about insurance documentation →
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- FAQ -->
+    <section class="insurance-section insurance-faq-section">
+        <div class="container">
+
+            <div class="insurance-centered-heading">
+                <span class="insurance-label">FAQ</span>
+
+                <h2>
+                    Insurance & cleaning FAQs
+                </h2>
+
+                <p>
+                    Common questions about choosing an insured professional
+                    cleaning company.
+                </p>
+            </div>
+
+            <div class="insurance-faq">
+
+                <details>
+                    <summary>
+                        Are YD Commercial Cleaning Services insured?
+                        <span>+</span>
+                    </summary>
+
+                    <div class="insurance-faq-answer">
+                        <p>
+                            Yes. YD Commercial Cleaning Services is a fully
+                            insured cleaning business providing professional
+                            residential and commercial cleaning services
+                            across Adelaide.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Why is cleaning insurance important?
+                        <span>+</span>
+                    </summary>
+
+                    <div class="insurance-faq-answer">
+                        <p>
+                            Cleaning professionals work inside homes,
+                            workplaces and commercial properties. Appropriate
+                            insurance is an important part of operating a
+                            responsible cleaning business and provides
+                            customers with additional peace of mind.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Can I request proof of insurance?
+                        <span>+</span>
+                    </summary>
+
+                    <div class="insurance-faq-answer">
+                        <p>
+                            Yes. If your property, business or building
+                            management company requires insurance
+                            documentation, contact us and we can discuss your
+                            requirements.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Does insurance cover every type of damage?
+                        <span>+</span>
+                    </summary>
+
+                    <div class="insurance-faq-answer">
+                        <p>
+                            Insurance coverage depends on the applicable
+                            policy, circumstances and policy terms and
+                            conditions. If you have a specific concern,
+                            contact us before booking so we can discuss it
+                            with you.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Do you provide commercial cleaning?
+                        <span>+</span>
+                    </summary>
+
+                    <div class="insurance-faq-answer">
+                        <p>
+                            Yes. We provide professional commercial cleaning
+                            services for offices, workplaces, retail
+                            premises and other business environments across
+                            Adelaide.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        What areas of Adelaide do you service?
+                        <span>+</span>
+                    </summary>
+
+                    <div class="insurance-faq-answer">
+                        <p>
+                            We provide cleaning services across Adelaide and
+                            surrounding suburbs. Contact us with your suburb
+                            and cleaning requirements to confirm availability.
+                        </p>
+                    </div>
+                </details>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- FINAL CTA -->
+    <section class="insurance-final-cta">
+        <div class="container">
+
+            <div class="insurance-final-content">
+
+                <span class="insurance-label">
+                    CLEAN WITH CONFIDENCE
+                </span>
+
+                <h2>
+                    Choose a cleaning company you can trust.
+                </h2>
+
+                <p>
+                    Professional cleaning, careful service and peace of mind
+                    for Adelaide homes and businesses.
+                </p>
+
+                <div class="insurance-hero-actions">
+
+                    <a href="{% url 'contact' %}" class="insurance-btn insurance-btn-primary">
+                        Request a Free Quote
+                    </a>
+
+                    <a href="tel:0430049865" class="insurance-btn insurance-btn-secondary">
+                        0430 049 865
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
 </div>
+
 {% endblock %}
 

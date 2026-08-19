@@ -1,31 +1,503 @@
 {% extends 'base.html' %}
-{% block title %}Legal Overview - YD Commercial Cleaning{% endblock %}
+{% load static %}
+
+{% block title %}Legal & Policies | YD Commercial Cleaning Services{% endblock %}
+
+{% block meta_description %}
+Review the legal information, terms, booking policies and privacy practices that apply to YD Commercial Cleaning Services and our website.
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/legal.css' %}">
+{% endblock %}
 
 {% block content %}
-<section class="legal-page">
+
+<!-- Legal Hero -->
+<section class="legal-hero">
     <div class="container">
-        <h1>Legal Overview</h1>
-        <p>This page provides an overview of the legal guidelines that apply to YD Commercial Cleaning and how our website and services are managed.</p>
+        <div class="legal-hero-content">
+            <span class="legal-eyebrow">YD Commercial Cleaning Services</span>
 
-        <div class="legal-section">
-            <h2>1. Terms and Conditions</h2>
-            <p>Our <a href="/terms/">Terms of Service</a> set the rules for using this website and booking our services.</p>
-        </div>
+            <h1>Legal &amp; Policies</h1>
 
-        <div class="legal-section">
-            <h2>2. Privacy</h2>
-            <p>Our <a href="/privacy/">Privacy Policy</a> explains how we collect, use, and protect your personal information.</p>
-        </div>
+            <p>
+                Clear and transparent information about our website, cleaning
+                services, bookings, privacy practices and customer policies.
+            </p>
 
-        <div class="legal-section">
-            <h2>3. Booking Terms</h2>
-            <p>Additional booking details are covered in our <a href="{% url 'booking_terms' %}">Booking Terms</a> page, including service scope and invoicing.</p>
-        </div>
+            <div class="legal-hero-actions">
+                <a href="/contact/" class="legal-btn legal-btn-primary">
+                    Contact Us
+                </a>
 
-        <div class="legal-section">
-            <h2>4. Contact</h2>
-            <p>If you have questions about our legal policies, please <a href="/contact/">contact us</a> and we will respond promptly.</p>
+                <a href="/booking/" class="legal-btn legal-btn-secondary">
+                    Book a Cleaning
+                </a>
+            </div>
         </div>
     </div>
 </section>
+
+
+<!-- Introduction -->
+<section class="legal-intro">
+    <div class="container">
+        <div class="legal-intro-grid">
+
+            <div class="legal-intro-main">
+                <span class="legal-section-label">Important information</span>
+
+                <h2>Our commitment to clear and fair policies</h2>
+
+                <p>
+                    At YD Commercial Cleaning Services, we want our customers
+                    to understand what to expect before booking a cleaning
+                    service with us.
+                </p>
+
+                <p>
+                    This legal information hub brings together the main
+                    policies and documents that apply to our website,
+                    cleaning services, bookings and interactions with
+                    customers.
+                </p>
+
+                <p>
+                    Please review the relevant policy before making a booking.
+                    If you have any questions about our policies or your
+                    booking, our team is happy to help.
+                </p>
+            </div>
+
+            <div class="legal-info-card">
+                <div class="legal-info-icon">✓</div>
+
+                <h3>Transparent information</h3>
+
+                <p>
+                    We aim to provide straightforward information about our
+                    services, bookings and customer responsibilities.
+                </p>
+
+                <a href="/contact/">Have a question? Contact us →</a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- Policy Cards -->
+<section class="legal-policies">
+    <div class="container">
+
+        <div class="legal-heading">
+            <span class="legal-section-label">Policies &amp; documents</span>
+
+            <h2>Explore our policies</h2>
+
+            <p>
+                Use the links below to find detailed information relevant to
+                your cleaning service or website use.
+            </p>
+        </div>
+
+
+        <div class="legal-policy-grid">
+
+            <!-- Terms -->
+            <article class="legal-policy-card">
+                <div class="legal-card-number">01</div>
+
+                <div class="legal-card-icon">📄</div>
+
+                <h3>Terms of Service</h3>
+
+                <p>
+                    Learn about the general terms that apply when using our
+                    website and engaging YD Commercial Cleaning Services.
+                </p>
+
+                <a href="/terms/" class="legal-card-link">
+                    Read Terms of Service →
+                </a>
+            </article>
+
+
+            <!-- Privacy -->
+            <article class="legal-policy-card">
+                <div class="legal-card-number">02</div>
+
+                <div class="legal-card-icon">🔒</div>
+
+                <h3>Privacy Policy</h3>
+
+                <p>
+                    Find out what personal information we may collect, how it
+                    is used and how we handle information submitted through
+                    our website.
+                </p>
+
+                <a href="/privacy/" class="legal-card-link">
+                    Read Privacy Policy →
+                </a>
+            </article>
+
+
+            <!-- Booking Terms -->
+            <article class="legal-policy-card">
+                <div class="legal-card-number">03</div>
+
+                <div class="legal-card-icon">📅</div>
+
+                <h3>Booking Terms</h3>
+
+                <p>
+                    Review important information about cleaning bookings,
+                    service arrangements, customer responsibilities and
+                    invoicing.
+                </p>
+
+                <a href="{% url 'booking_terms' %}" class="legal-card-link">
+                    Read Booking Terms →
+                </a>
+            </article>
+
+
+            <!-- Website -->
+            <article class="legal-policy-card">
+                <div class="legal-card-number">04</div>
+
+                <div class="legal-card-icon">🌐</div>
+
+                <h3>Website Information</h3>
+
+                <p>
+                    Information about using the YD Commercial Cleaning
+                    website, including website content, links and general
+                    website conditions.
+                </p>
+
+                <a href="/terms/" class="legal-card-link">
+                    View Website Terms →
+                </a>
+            </article>
+
+
+            <!-- Customer Responsibilities -->
+            <article class="legal-policy-card">
+                <div class="legal-card-number">05</div>
+
+                <div class="legal-card-icon">🤝</div>
+
+                <h3>Customer Responsibilities</h3>
+
+                <p>
+                    Important information customers should understand before
+                    a cleaning appointment, including access and preparation
+                    requirements.
+                </p>
+
+                <a href="{% url 'booking_terms' %}" class="legal-card-link">
+                    View Booking Information →
+                </a>
+            </article>
+
+
+            <!-- Contact -->
+            <article class="legal-policy-card">
+                <div class="legal-card-number">06</div>
+
+                <div class="legal-card-icon">💬</div>
+
+                <h3>Questions &amp; Complaints</h3>
+
+                <p>
+                    If you have a question about our policies, service or
+                    booking, contact our team and we will help you understand
+                    the relevant information.
+                </p>
+
+                <a href="/contact/" class="legal-card-link">
+                    Contact YD Cleaning →
+                </a>
+            </article>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- Customer Information -->
+<section class="legal-information">
+    <div class="container">
+
+        <div class="legal-heading">
+            <span class="legal-section-label">Before your booking</span>
+
+            <h2>What customers should know</h2>
+
+            <p>
+                A successful cleaning appointment starts with clear
+                communication between the customer and our team.
+            </p>
+        </div>
+
+
+        <div class="legal-information-grid">
+
+            <div class="legal-information-item">
+                <span>01</span>
+                <div>
+                    <h3>Service scope</h3>
+                    <p>
+                        Cleaning requirements can vary depending on the
+                        property, service type, condition and areas that need
+                        attention. Please provide accurate information when
+                        requesting a service.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="legal-information-item">
+                <span>02</span>
+                <div>
+                    <h3>Booking information</h3>
+                    <p>
+                        Please provide accurate contact details and relevant
+                        information about the property when making a booking
+                        or requesting a quote.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="legal-information-item">
+                <span>03</span>
+                <div>
+                    <h3>Property access</h3>
+                    <p>
+                        Where access arrangements are required, customers
+                        should make sure our cleaning team can safely access
+                        the agreed areas at the scheduled time.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="legal-information-item">
+                <span>04</span>
+                <div>
+                    <h3>Communication</h3>
+                    <p>
+                        If anything changes before your appointment, please
+                        contact us as soon as possible so appropriate
+                        arrangements can be discussed.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="legal-information-item">
+                <span>05</span>
+                <div>
+                    <h3>Payments &amp; invoices</h3>
+                    <p>
+                        Payment and invoicing arrangements may depend on the
+                        service and booking. Refer to the applicable booking
+                        terms for more information.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="legal-information-item">
+                <span>06</span>
+                <div>
+                    <h3>Questions about our policies</h3>
+                    <p>
+                        If you are unsure which policy applies to your
+                        situation, please contact us before booking so we can
+                        provide the appropriate information.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- Privacy & Trust -->
+<section class="legal-trust">
+    <div class="container">
+
+        <div class="legal-trust-inner">
+
+            <div class="legal-trust-content">
+                <span class="legal-section-label">Your information matters</span>
+
+                <h2>Privacy and responsible handling of information</h2>
+
+                <p>
+                    When you contact YD Commercial Cleaning Services or use
+                    our website, you may provide information such as your
+                    name, contact details and service requirements.
+                </p>
+
+                <p>
+                    Our Privacy Policy provides more information about how
+                    personal information is handled.
+                </p>
+
+                <a href="/privacy/" class="legal-btn legal-btn-primary">
+                    Read our Privacy Policy
+                </a>
+            </div>
+
+            <div class="legal-trust-checklist">
+
+                <div class="trust-check">
+                    <span>✓</span>
+                    <p>Clear information about our policies</p>
+                </div>
+
+                <div class="trust-check">
+                    <span>✓</span>
+                    <p>Accessible customer support</p>
+                </div>
+
+                <div class="trust-check">
+                    <span>✓</span>
+                    <p>Transparent booking information</p>
+                </div>
+
+                <div class="trust-check">
+                    <span>✓</span>
+                    <p>Privacy information available</p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- FAQ -->
+<section class="legal-faq">
+    <div class="container">
+
+        <div class="legal-heading">
+            <span class="legal-section-label">Common questions</span>
+
+            <h2>Legal &amp; policy FAQs</h2>
+
+            <p>
+                Here are some common questions about our policies and
+                customer information.
+            </p>
+        </div>
+
+
+        <div class="legal-faq-list">
+
+            <details>
+                <summary>
+                    Where can I find your Terms of Service?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    You can read our full Terms of Service on our
+                    <a href="/terms/">Terms page</a>.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Where can I find the Booking Terms?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Our Booking Terms contain additional information relevant
+                    to cleaning appointments, service arrangements and
+                    invoicing.
+                </p>
+
+                <a href="{% url 'booking_terms' %}">
+                    Read the Booking Terms →
+                </a>
+            </details>
+
+
+            <details>
+                <summary>
+                    How do you handle my personal information?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Please refer to our
+                    <a href="/privacy/">Privacy Policy</a>
+                    for information about personal information and how it is
+                    handled.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    What should I do if I have a question about a policy?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    If you have questions about our legal information,
+                    booking terms or services, please
+                    <a href="/contact/">contact our team</a>.
+                </p>
+            </details>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- Final CTA -->
+<section class="legal-cta">
+    <div class="container">
+
+        <div class="legal-cta-inner">
+
+            <span class="legal-section-label">Need assistance?</span>
+
+            <h2>Have a question before you book?</h2>
+
+            <p>
+                Our team is happy to help with questions about our cleaning
+                services, bookings or policies.
+            </p>
+
+            <div class="legal-hero-actions">
+
+                <a href="/contact/" class="legal-btn legal-btn-primary">
+                    Contact Us
+                </a>
+
+                <a href="/booking/" class="legal-btn legal-btn-secondary">
+                    Request a Booking
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
 {% endblock %}

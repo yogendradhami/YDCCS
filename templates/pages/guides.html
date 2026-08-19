@@ -1,8 +1,13 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Free Cleaning Guides & Resources | YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Download our professional cleaning guides and checklists. Free resources created by cleaning experts for Adelaide homes and offices.{% endblock %}
+{% block title %}
+Cleaning Guides & Checklists | YD Commercial Cleaning Adelaide
+{% endblock %}
+
+{% block meta_description %}
+Explore practical cleaning guides and checklists from YD Commercial Cleaning Services. Get useful office, residential, end-of-lease, post-construction, maintenance and window cleaning advice for Adelaide properties.
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
@@ -10,185 +15,644 @@
 
 {% block content %}
 
-<!-- Hero Section -->
+<!-- HERO -->
 <section class="guides-hero">
     <div class="container">
-        <h1>Free Cleaning Guides & Resources</h1>
-        <p>Download our professional cleaning checklists and guides to maintain spotless spaces. Created by experts with years of cleaning experience.</p>
+        <div class="guides-hero-content">
+
+            <span class="guides-eyebrow">
+                Cleaning resources
+            </span>
+
+            <h1>
+                Practical Cleaning Guides & Checklists
+            </h1>
+
+            <p class="guides-hero-text">
+                Helpful cleaning resources from YD Commercial Cleaning Services
+                to help Adelaide homes, offices, businesses and property managers
+                keep their spaces cleaner, healthier and better maintained.
+            </p>
+
+            <div class="guides-hero-actions">
+                <a href="#cleaning-guides" class="guides-btn guides-btn-primary">
+                    Explore Our Guides
+                </a>
+
+                <a href="{% url 'contact' %}" class="guides-btn guides-btn-secondary">
+                    Talk to Our Cleaning Team
+                </a>
+            </div>
+
+        </div>
     </div>
 </section>
 
-<!-- Guides Grid Section -->
-<section class="guides-section">
+
+<!-- INTRO / TRUST -->
+<section class="guides-intro">
     <div class="container">
-        
+
+        <div class="guides-intro-grid">
+
+            <div class="guides-intro-content">
+                <span class="guides-section-label">
+                    Helpful advice for Adelaide properties
+                </span>
+
+                <h2>
+                    Make cleaning easier with practical resources
+                </h2>
+
+                <p>
+                    Keeping a property clean is easier when you have a clear
+                    plan. Our guides are designed to provide simple,
+                    practical information that you can use before, during
+                    and after your cleaning routine.
+                </p>
+
+                <p>
+                    Whether you manage an office, prepare a rental property
+                    for inspection, maintain a family home or need help
+                    after construction work, these resources can help you
+                    understand what needs attention.
+                </p>
+
+                <p>
+                    When you need professional support, the YD Commercial
+                    Cleaning team can take care of the hard work for you.
+                </p>
+            </div>
+
+
+            <div class="guides-intro-card">
+
+                <div class="guides-intro-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    Why use our guides?
+                </h3>
+
+                <ul>
+                    <li>
+                        <span>✓</span>
+                        Easy-to-follow cleaning checklists
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Practical advice for different property types
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Useful preparation tips
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Professional cleaning insights
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Resources designed for Adelaide properties
+                    </li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- GUIDES -->
+<section class="guides-section" id="cleaning-guides">
+    <div class="container">
+
+        <div class="guides-section-heading">
+
+            <span class="guides-section-label">
+                Our resources
+            </span>
+
+            <h2>
+                Cleaning Guides & Checklists
+            </h2>
+
+            <p>
+                Choose a guide below for practical cleaning information,
+                preparation tips and useful checklists.
+            </p>
+
+        </div>
+
+
         <div class="guides-grid">
-            
-            <!-- Guide 1 -->
-            <div class="guide-card">
-                <div class="guide-icon">📋</div>
-                <div class="guide-image">
-                    <img src="{% static 'images/guide-office-checklist.png' %}" alt="Office cleaning checklist" loading="lazy">
-                </div>
-                <h3>Office Cleaning Checklist</h3>
-                <p>Comprehensive daily, weekly, and monthly office cleaning checklist. Covers desks, kitchens, restrooms, flooring, and common areas.</p>
-                <div class="guide-meta">
-                    <span class="format">PDF Download</span>
-                    <span class="pages">8 pages</span>
-                </div>
-                <a href="{% url 'guide_detail' guide_slug='office-checklist' %}" class="btn btn-primary btn-sm">View & Download</a>
-            </div>
 
-            <!-- Guide 2 -->
-            <div class="guide-card">
-                <div class="guide-icon">🏠</div>
-                <div class="guide-image">
-                    <img src="{% static 'images/guide-residential-checklist.png' %}" alt="Residential cleaning checklist" loading="lazy">
-                </div>
-                <h3>Residential Cleaning Checklist</h3>
-                <p>Complete home cleaning guide covering all rooms. Includes room-by-room checklists, decluttering tips, and maintenance schedules.</p>
-                <div class="guide-meta">
-                    <span class="format">PDF Download</span>
-                    <span class="pages">12 pages</span>
-                </div>
-                <a href="{% url 'guide_detail' guide_slug='residential-checklist' %}" class="btn btn-primary btn-sm">View & Download</a>
-            </div>
 
-            <!-- Guide 3 -->
-            <div class="guide-card">
-                <div class="guide-icon">🔑</div>
-                <div class="guide-image">
-                    <img src="{% static 'images/guide-eol-checklist.png' %}" alt="End-of-lease cleaning guide" loading="lazy">
-                </div>
-                <h3>End-of-Lease Cleaning Guide</h3>
-                <p>Complete checklist for bond recovery. Covers inspection requirements, problem areas, and professional cleaning standards for rental properties.</p>
-                <div class="guide-meta">
-                    <span class="format">PDF Download</span>
-                    <span class="pages">10 pages</span>
-                </div>
-                <a href="{% url 'guide_detail' guide_slug='end-of-lease-checklist' %}" class="btn btn-primary btn-sm">View & Download</a>
-            </div>
+            <!-- OFFICE -->
+            <a
+                href="{% url 'guide_detail' guide_slug='office-checklist' %}"
+                class="guide-card-link"
+            >
+                <article class="guide-card">
 
-            <!-- Guide 4 -->
-            <div class="guide-card">
-                <div class="guide-icon">🏗️</div>
-                <div class="guide-image">
-                    <img src="{% static 'images/guide-post-construction.png' %}" alt="Post-construction cleaning guide" loading="lazy">
-                </div>
-                <h3>Post-Construction Cleaning Guide</h3>
-                <p>Professional guide for cleaning new construction. Covers dust removal, disposal, surface cleaning, and final inspection checklist.</p>
-                <div class="guide-meta">
-                    <span class="format">PDF Download</span>
-                    <span class="pages">9 pages</span>
-                </div>
-                <a href="{% url 'guide_detail' guide_slug='post-construction-checklist' %}" class="btn btn-primary btn-sm">View & Download</a>
-            </div>
+                    <div class="guide-card-image">
+                        <img
+                            src="{% static 'images/guide-office-checklist.png' %}"
+                            alt="Office cleaning checklist for Adelaide businesses"
+                            loading="lazy"
+                        >
 
-            <!-- Guide 5 -->
-            <div class="guide-card">
-                <div class="guide-icon">🪟</div>
-                <div class="guide-image">
-                    <img src="{% static 'images/guide-window-cleaning.png' %}" alt="Window and glass cleaning guide" loading="lazy">
-                </div>
-                <h3>Window & Glass Cleaning Guide</h3>
-                <p>Professional window and glass cleaning techniques. Includes tools needed, step-by-step instructions, and tips for streak-free results.</p>
-                <div class="guide-meta">
-                    <span class="format">PDF Download</span>
-                    <span class="pages">6 pages</span>
-                </div>
-                <a href="{% url 'guide_detail' guide_slug='window-glass-guide' %}" class="btn btn-primary btn-sm">View & Download</a>
-            </div>
+                        <span class="guide-card-badge">
+                            Commercial
+                        </span>
+                    </div>
 
-            <!-- Guide 6 -->
-            <div class="guide-card">
-                <div class="guide-icon">📅</div>
-                <div class="guide-image">
-                    <img src="{% static 'images/guide-maintenance-schedule.png' %}" alt="Weekly maintenance schedule" loading="lazy">
-                </div>
-                <h3>Weekly Maintenance Schedule</h3>
-                <p>Organized schedule to keep your office spotless year-round. Daily tasks, weekly deep cleans, and monthly maintenance calendar.</p>
-                <div class="guide-meta">
-                    <span class="format">PDF Download</span>
-                    <span class="pages">7 pages</span>
-                </div>
-                <a href="{% url 'guide_detail' guide_slug='maintenance-schedule' %}" class="btn btn-primary btn-sm">View & Download</a>
-            </div>
+                    <div class="guide-card-content">
+
+                        <span class="guide-card-category">
+                            Office Cleaning
+                        </span>
+
+                        <h3>
+                            Office Cleaning Checklist
+                        </h3>
+
+                        <p>
+                            A practical checklist to help businesses maintain
+                            cleaner, healthier and more professional office
+                            environments.
+                        </p>
+
+                        <span class="guide-card-action">
+                            Read Guide
+                            <span>→</span>
+                        </span>
+
+                    </div>
+
+                </article>
+            </a>
+
+
+            <!-- RESIDENTIAL -->
+            <a
+                href="{% url 'guide_detail' guide_slug='residential-checklist' %}"
+                class="guide-card-link"
+            >
+                <article class="guide-card">
+
+                    <div class="guide-card-image">
+                        <img
+                            src="{% static 'images/guide-residential-checklist.png' %}"
+                            alt="Residential cleaning checklist for Adelaide homes"
+                            loading="lazy"
+                        >
+
+                        <span class="guide-card-badge">
+                            Residential
+                        </span>
+                    </div>
+
+                    <div class="guide-card-content">
+
+                        <span class="guide-card-category">
+                            Home Cleaning
+                        </span>
+
+                        <h3>
+                            Residential Cleaning Checklist
+                        </h3>
+
+                        <p>
+                            A useful room-by-room checklist to help keep your
+                            home fresh, hygienic and properly maintained.
+                        </p>
+
+                        <span class="guide-card-action">
+                            Read Guide
+                            <span>→</span>
+                        </span>
+
+                    </div>
+
+                </article>
+            </a>
+
+
+            <!-- END OF LEASE -->
+            <a
+                href="{% url 'guide_detail' guide_slug='end-of-lease-checklist' %}"
+                class="guide-card-link"
+            >
+                <article class="guide-card">
+
+                    <div class="guide-card-image">
+                        <img
+                            src="{% static 'images/guide-eol-checklist.png' %}"
+                            alt="End of lease cleaning checklist for Adelaide rental properties"
+                            loading="lazy"
+                        >
+
+                        <span class="guide-card-badge">
+                            Rental
+                        </span>
+                    </div>
+
+                    <div class="guide-card-content">
+
+                        <span class="guide-card-category">
+                            End of Lease
+                        </span>
+
+                        <h3>
+                            End-of-Lease Cleaning Guide
+                        </h3>
+
+                        <p>
+                            Prepare your rental property for inspection and
+                            handover with a practical end-of-lease cleaning
+                            checklist.
+                        </p>
+
+                        <span class="guide-card-action">
+                            Read Guide
+                            <span>→</span>
+                        </span>
+
+                    </div>
+
+                </article>
+            </a>
+
+
+            <!-- POST CONSTRUCTION -->
+            <a
+                href="{% url 'guide_detail' guide_slug='post-construction-checklist' %}"
+                class="guide-card-link"
+            >
+                <article class="guide-card">
+
+                    <div class="guide-card-image">
+                        <img
+                            src="{% static 'images/guide-post-construction.png' %}"
+                            alt="Post construction cleaning checklist for Adelaide properties"
+                            loading="lazy"
+                        >
+
+                        <span class="guide-card-badge">
+                            Construction
+                        </span>
+                    </div>
+
+                    <div class="guide-card-content">
+
+                        <span class="guide-card-category">
+                            Post-Construction
+                        </span>
+
+                        <h3>
+                            Post-Construction Cleaning Checklist
+                        </h3>
+
+                        <p>
+                            A useful guide for removing construction dust,
+                            debris and residue before a newly built or
+                            renovated space is occupied.
+                        </p>
+
+                        <span class="guide-card-action">
+                            Read Guide
+                            <span>→</span>
+                        </span>
+
+                    </div>
+
+                </article>
+            </a>
+
+
+            <!-- MAINTENANCE -->
+            <a
+                href="{% url 'guide_detail' guide_slug='maintenance-schedule' %}"
+                class="guide-card-link"
+            >
+                <article class="guide-card">
+
+                    <div class="guide-card-image">
+                        <img
+                            src="{% static 'images/guide-maintenance-schedule.png' %}"
+                            alt="Property cleaning maintenance schedule"
+                            loading="lazy"
+                        >
+
+                        <span class="guide-card-badge">
+                            Maintenance
+                        </span>
+                    </div>
+
+                    <div class="guide-card-content">
+
+                        <span class="guide-card-category">
+                            Cleaning Maintenance
+                        </span>
+
+                        <h3>
+                            Cleaning Maintenance Schedule
+                        </h3>
+
+                        <p>
+                            Plan regular cleaning tasks with a simple
+                            maintenance schedule for homes, offices and
+                            commercial properties.
+                        </p>
+
+                        <span class="guide-card-action">
+                            Read Guide
+                            <span>→</span>
+                        </span>
+
+                    </div>
+
+                </article>
+            </a>
+
+
+            <!-- WINDOWS -->
+            <a
+                href="{% url 'guide_detail' guide_slug='window-glass-guide' %}"
+                class="guide-card-link"
+            >
+                <article class="guide-card">
+
+                    <div class="guide-card-image">
+                        <img
+                            src="{% static 'images/guide-window-cleaning.png' %}"
+                            alt="Window and glass cleaning guide for Adelaide properties"
+                            loading="lazy"
+                        >
+
+                        <span class="guide-card-badge">
+                            Windows
+                        </span>
+                    </div>
+
+                    <div class="guide-card-content">
+
+                        <span class="guide-card-category">
+                            Window Cleaning
+                        </span>
+
+                        <h3>
+                            Window & Glass Cleaning Guide
+                        </h3>
+
+                        <p>
+                            Learn useful ways to maintain clearer windows,
+                            glass surfaces and a cleaner appearance around
+                            your property.
+                        </p>
+
+                        <span class="guide-card-action">
+                            Read Guide
+                            <span>→</span>
+                        </span>
+
+                    </div>
+
+                </article>
+            </a>
+
 
         </div>
 
     </div>
 </section>
 
-<!-- How to Use Guides Section -->
-<section class="guides-help-section">
+
+<!-- PROFESSIONAL CLEANING -->
+<section class="guides-professional">
     <div class="container">
-        <h2>How to Use These Guides</h2>
-        
-        <div class="guides-steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3>Download</h3>
-                <p>Select the guide that matches your cleaning needs and download the PDF to your device.</p>
+
+        <div class="guides-professional-grid">
+
+            <div class="guides-professional-content">
+
+                <span class="guides-section-label">
+                    Professional cleaning support
+                </span>
+
+                <h2>
+                    Need more than a checklist?
+                </h2>
+
+                <p>
+                    Cleaning guides are useful for planning and maintenance,
+                    but some properties require professional equipment,
+                    experience and a more detailed cleaning process.
+                </p>
+
+                <p>
+                    YD Commercial Cleaning Services provides professional
+                    cleaning solutions for residential and commercial
+                    properties across Adelaide.
+                </p>
+
+                <ul class="guides-check-list">
+
+                    <li>
+                        <span>✓</span>
+                        Regular commercial cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Residential cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Deep cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        End-of-lease cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Window and glass cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Emergency cleaning support
+                    </li>
+
+                </ul>
+
             </div>
-            
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3>Print or Review</h3>
-                <p>Print the guide for easy reference during cleaning, or review it digitally on your device.</p>
+
+
+            <div class="guides-professional-card">
+
+                <div class="guides-professional-icon">
+                    ★
+                </div>
+
+                <h3>
+                    Let our team handle the cleaning
+                </h3>
+
+                <p>
+                    Tell us about your property and cleaning requirements.
+                    We'll help you find a suitable cleaning solution.
+                </p>
+
+                <a
+                    href="{% url 'contact' %}"
+                    class="guides-btn guides-btn-primary"
+                >
+                    Get in Touch
+                </a>
+
             </div>
-            
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3>Follow Checklist</h3>
-                <p>Work through each item systematically to ensure comprehensive, professional-level cleaning.</p>
-            </div>
-            
-            <div class="step">
-                <div class="step-number">4</div>
-                <h3>Track Progress</h3>
-                <p>Check off items as you complete them and track your cleaning progress and schedule.</p>
-            </div>
+
         </div>
+
     </div>
 </section>
 
-<!-- Additional Resources Section -->
-<section class="guides-additional">
+
+<!-- FAQ -->
+<section class="guides-faq">
     <div class="container">
-        <h2>Additional Cleaning Resources</h2>
-        
-        <div class="resources-grid">
-            <div class="resource-card">
-                <h3>Blog - Cleaning Tips</h3>
-                <p>Read our expert blog posts for detailed cleaning advice, seasonal tips, and industry insights.</p>
-                <a href="{% url 'blog' %}" class="btn btn-outline">Read Blog →</a>
-            </div>
-            
-            <div class="resource-card">
-                <h3>FAQ - Common Questions</h3>
-                <p>Find answers to frequently asked questions about our services, pricing, and cleaning methods.</p>
-                <a href="{% url 'faq' %}" class="btn btn-outline">View FAQ →</a>
-            </div>
-            
-            <div class="resource-card">
-                <h3>Case Studies - Real Results</h3>
-                <p>Explore detailed case studies showing how we've transformed properties across Adelaide.</p>
-                <a href="{% url 'case_studies' %}" class="btn btn-outline">View Case Studies →</a>
-            </div>
+
+        <div class="guides-section-heading">
+
+            <span class="guides-section-label">
+                Frequently asked questions
+            </span>
+
+            <h2>
+                About our cleaning guides
+            </h2>
+
         </div>
+
+
+        <div class="guides-faq-grid">
+
+            <details class="guides-faq-item">
+                <summary>
+                    Are these guides suitable for businesses?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Yes. Several of our guides are specifically designed
+                    for offices, commercial properties and businesses,
+                    while others can be adapted to different property types.
+                </p>
+            </details>
+
+
+            <details class="guides-faq-item">
+                <summary>
+                    Can I use these checklists for my home?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Yes. Our residential cleaning resources are designed
+                    to help homeowners and tenants organise regular
+                    cleaning and property maintenance.
+                </p>
+            </details>
+
+
+            <details class="guides-faq-item">
+                <summary>
+                    Do you provide professional cleaning services?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Yes. YD Commercial Cleaning Services provides a range
+                    of professional cleaning services for residential,
+                    commercial and other properties across Adelaide.
+                </p>
+            </details>
+
+
+            <details class="guides-faq-item">
+                <summary>
+                    Can I request a cleaning quote?
+                    <span>+</span>
+                </summary>
+
+                <p>
+                    Absolutely. Contact our team with your property details,
+                    preferred service and cleaning requirements and we can
+                    discuss the next steps.
+                </p>
+            </details>
+
+        </div>
+
     </div>
 </section>
 
-<!-- CTA Section -->
+
+<!-- FINAL CTA -->
 <section class="guides-cta">
+
     <div class="container">
-        <h2>Need Professional Help?</h2>
-        <p>Our expert cleaning team is ready to handle all your cleaning needs. Let us transform your space into spotless perfection.</p>
-        <div class="cta-buttons">
-            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Get a Free Quote</a>
-            <a href="tel:0430049865" class="btn btn-outline btn-lg">Call Us Now</a>
+
+        <div class="guides-cta-content">
+
+            <span class="guides-eyebrow">
+                Professional cleaning in Adelaide
+            </span>
+
+            <h2>
+                Ready for a cleaner, healthier space?
+            </h2>
+
+            <p>
+                Use our guides to plan your cleaning or contact YD Commercial
+                Cleaning Services for professional help with your property.
+            </p>
+
+            <div class="guides-cta-actions">
+
+                <a
+                    href="{% url 'contact' %}"
+                    class="guides-btn guides-btn-primary"
+                >
+                    Request a Quote
+                </a>
+
+                <a
+                    href="{% url 'booking' %}"
+                    class="guides-btn guides-btn-secondary"
+                >
+                    Book a Cleaning
+                </a>
+
+            </div>
+
         </div>
+
     </div>
+
 </section>
 
 {% endblock %}

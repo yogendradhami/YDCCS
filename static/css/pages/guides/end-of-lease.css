@@ -1,0 +1,830 @@
+/* =========================================================
+   YD COMMERCIAL CLEANING
+   END-OF-LEASE CHECKLIST
+   PAGE-SPECIFIC STYLES
+   ========================================================= */
+
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
+.eol-container {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+}
+
+.eol-hero *,
+.eol-intro *,
+.eol-checklist-section *,
+.eol-cta * {
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.eol-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 92px 0 88px;
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(184, 216, 197, 0.14),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            #14231c 0%,
+            #22372c 55%,
+            #30483b 100%
+        );
+    color: #ffffff;
+}
+
+.eol-hero-pattern {
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    right: -220px;
+    top: -280px;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 50%;
+}
+
+.eol-hero-pattern::after {
+    content: "";
+    position: absolute;
+    inset: 55px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 50%;
+}
+
+.eol-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 920px;
+}
+
+.eol-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 34px;
+    color: rgba(255,255,255,0.62);
+    font-size: 0.82rem;
+}
+
+.eol-breadcrumb a {
+    color: #c3dccb;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.eol-breadcrumb a:hover {
+    color: #ffffff;
+}
+
+.eol-eyebrow,
+.eol-section-label {
+    color: #b9d8c5;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.eol-eyebrow {
+    margin-bottom: 16px;
+}
+
+.eol-hero h1 {
+    max-width: 850px;
+    margin: 0 0 24px;
+    color: #ffffff;
+    font-size: clamp(2.7rem, 6vw, 5rem);
+    line-height: 1.02;
+    font-weight: 850;
+    letter-spacing: -0.045em;
+}
+
+.eol-hero h1 span {
+    display: block;
+    color: #b9d8c5;
+}
+
+.eol-hero-text {
+    max-width: 720px;
+    margin: 0;
+    color: rgba(255,255,255,0.82);
+    font-size: 1.12rem;
+    line-height: 1.8;
+}
+
+.eol-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 34px;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.eol-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 50px;
+    padding: 13px 22px;
+    border-radius: 9px;
+    font-size: 0.91rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.eol-btn:hover {
+    transform: translateY(-2px);
+}
+
+.eol-btn-light {
+    background: #ffffff;
+    border: 1px solid #ffffff;
+    color: #263b31;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.eol-btn-light:hover {
+    background: #edf5ef;
+    color: #1e3028;
+}
+
+.eol-btn-outline {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.28);
+    color: #ffffff;
+}
+
+.eol-btn-outline:hover {
+    background: rgba(255,255,255,0.14);
+}
+
+
+/* =========================================================
+   INTRO
+   ========================================================= */
+
+.eol-intro {
+    padding: 88px 0;
+    background: #f5f7f5;
+}
+
+.eol-intro-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+    gap: 70px;
+    align-items: center;
+}
+
+.eol-intro-main h2 {
+    max-width: 720px;
+    margin: 12px 0 22px;
+    color: #25332d;
+    font-size: clamp(2rem, 4vw, 3.15rem);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+}
+
+.eol-intro-main h2 span {
+    color: #557763;
+}
+
+.eol-intro-main p {
+    max-width: 740px;
+    margin: 0 0 16px;
+    color: #606b65;
+    font-size: 1rem;
+    line-height: 1.85;
+}
+
+.eol-summary-card {
+    padding: 34px;
+    background: #ffffff;
+    border: 1px solid #e0e7e2;
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(36,53,44,0.08);
+}
+
+.eol-summary-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 20px;
+    border-radius: 13px;
+    background: #e5efe8;
+    color: #456653;
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.eol-summary-card h3 {
+    margin: 0 0 20px;
+    color: #293a32;
+    font-size: 1.3rem;
+}
+
+.eol-summary-card ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.eol-summary-card li {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 0;
+    color: #5c6861;
+    border-bottom: 1px solid #edf1ee;
+    font-size: 0.93rem;
+}
+
+.eol-summary-card li:last-child {
+    border-bottom: 0;
+}
+
+.eol-summary-card li span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 21px;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: #e5efe8;
+    color: #456653;
+    font-size: 0.65rem;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   CHECKLIST SECTION
+   ========================================================= */
+
+.eol-checklist-section {
+    padding: 100px 0;
+    background: #ffffff;
+}
+
+.eol-section-heading {
+    max-width: 700px;
+    margin: 0 auto 55px;
+    text-align: center;
+}
+
+.eol-section-heading h2 {
+    margin: 11px 0 15px;
+    color: #25332d;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+}
+
+.eol-section-heading p {
+    margin: 0;
+    color: #69746e;
+    line-height: 1.75;
+}
+
+
+/* =========================================================
+   CHECKLIST CARD
+   ========================================================= */
+
+.eol-checklist-card {
+    max-width: 920px;
+    margin: 0 auto 28px;
+    padding: 34px;
+    background: #ffffff;
+    border: 1px solid #dfe6e1;
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgba(36,53,44,0.055);
+}
+
+.eol-card-header {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    margin-bottom: 28px;
+    padding-bottom: 23px;
+    border-bottom: 1px solid #e7ece9;
+}
+
+.eol-card-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    background: #263b31;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.eol-card-label {
+    margin-bottom: 4px;
+    color: #6b826f;
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.eol-card-header h3 {
+    margin: 0;
+    color: #26372f;
+    font-size: 1.55rem;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   CHECKLIST GROUPS
+   ========================================================= */
+
+.eol-checklist-group {
+    margin-top: 30px;
+}
+
+.eol-checklist-group:first-of-type {
+    margin-top: 0;
+}
+
+.eol-checklist-group h4 {
+    margin: 0 0 9px;
+    color: #3e5d4a;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   CHECKBOX ROW
+   ========================================================= */
+
+.eol-checklist {
+    width: 100%;
+}
+
+.eol-check {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    align-items: start;
+    column-gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 12px 4px;
+    border-bottom: 1px solid #edf1ee;
+    color: #56625c;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    cursor: pointer;
+    transition:
+        background 0.18s ease,
+        color 0.18s ease;
+}
+
+.eol-check:last-child {
+    border-bottom: 0;
+}
+
+.eol-check:hover {
+    color: #293a32;
+    background: #fafcfb;
+}
+
+.eol-check input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    padding: 0;
+    border: 1.5px solid #aab9af;
+    border-radius: 4px;
+    background: #ffffff;
+    cursor: pointer;
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.eol-check input[type="checkbox"]:hover {
+    border-color: #557763;
+}
+
+.eol-check input[type="checkbox"]:focus-visible {
+    outline: 3px solid rgba(85,119,99,0.18);
+    outline-offset: 2px;
+}
+
+.eol-check input[type="checkbox"]:checked {
+    background: #557763;
+    border-color: #557763;
+}
+
+.eol-check input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 9px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(42deg);
+}
+
+.eol-check input[type="checkbox"]:checked + span {
+    color: #77817c;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+}
+
+
+/* =========================================================
+   FINAL CARD
+   ========================================================= */
+
+.eol-final-card {
+    background: #f7faf8;
+    border-color: #d9e5dc;
+}
+
+.eol-final-card .eol-card-number {
+    background: #557763;
+}
+
+
+/* =========================================================
+   TIPS
+   ========================================================= */
+
+.eol-tips-card {
+    max-width: 920px;
+    margin: 45px auto 0;
+    padding: 36px;
+    background: #f3f7f4;
+    border: 1px solid #dce7df;
+    border-radius: 18px;
+}
+
+.eol-tips-heading {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    margin-bottom: 30px;
+}
+
+.eol-tips-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    background: #263b31;
+    color: #d8eadf;
+    font-size: 0.9rem;
+}
+
+.eol-tips-heading h3 {
+    margin: 0;
+    color: #293a32;
+    font-size: 1.45rem;
+}
+
+.eol-tips-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    border: 1px solid #dfe8e2;
+    border-radius: 12px;
+    background: #dfe8e2;
+}
+
+.eol-tip {
+    display: grid;
+    grid-template-columns: 35px minmax(0, 1fr);
+    gap: 13px;
+    padding: 22px;
+    background: #ffffff;
+}
+
+.eol-tip > strong {
+    color: #6c8573;
+    font-size: 0.75rem;
+}
+
+.eol-tip h4 {
+    margin: 0 0 5px;
+    color: #30473a;
+    font-size: 0.98rem;
+}
+
+.eol-tip p {
+    margin: 0;
+    color: #68736d;
+    font-size: 0.88rem;
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   CTA
+   ========================================================= */
+
+.eol-cta {
+    max-width: 920px;
+    margin: 60px auto 0;
+    padding: 55px 45px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 20px;
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(255,255,255,0.09),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            #17251f 0%,
+            #263b31 100%
+        );
+    color: #ffffff;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(36,53,44,0.14);
+}
+
+.eol-cta-content {
+    position: relative;
+    z-index: 2;
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.eol-cta .eol-section-label {
+    color: #b9d8c5;
+}
+
+.eol-cta h2 {
+    margin: 12px 0 16px;
+    color: #ffffff;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    line-height: 1.15;
+}
+
+.eol-cta p {
+    margin: 0;
+    color: rgba(255,255,255,0.79);
+    line-height: 1.8;
+}
+
+.eol-cta-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .eol-intro-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .eol-container {
+        width: min(100% - 30px, 600px);
+    }
+
+    .eol-hero {
+        padding: 65px 0 68px;
+    }
+
+    .eol-breadcrumb {
+        margin-bottom: 25px;
+    }
+
+    .eol-hero h1 {
+        font-size: 2.7rem;
+    }
+
+    .eol-hero-text {
+        font-size: 1rem;
+    }
+
+    .eol-intro,
+    .eol-checklist-section {
+        padding: 70px 0;
+    }
+
+    .eol-checklist-card {
+        padding: 25px 20px;
+        border-radius: 15px;
+    }
+
+    .eol-card-header {
+        gap: 13px;
+        margin-bottom: 22px;
+    }
+
+    .eol-card-number {
+        flex-basis: 42px;
+        width: 42px;
+        height: 42px;
+    }
+
+    .eol-card-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .eol-tips-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .eol-tips-card {
+        padding: 25px 20px;
+    }
+
+    .eol-cta {
+        padding: 42px 24px;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .eol-container {
+        width: calc(100% - 24px);
+    }
+
+    .eol-hero {
+        padding: 52px 0 58px;
+    }
+
+    .eol-hero h1 {
+        font-size: 2.25rem;
+    }
+
+    .eol-hero h1 span {
+        display: inline;
+    }
+
+    .eol-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .eol-btn {
+        width: 100%;
+    }
+
+    .eol-summary-card {
+        padding: 25px;
+    }
+
+    .eol-checklist-section {
+        padding: 58px 0;
+    }
+
+    .eol-section-heading {
+        margin-bottom: 35px;
+    }
+
+    .eol-section-heading h2 {
+        font-size: 2rem;
+    }
+
+    .eol-checklist-card {
+        padding: 21px 16px;
+    }
+
+    .eol-check {
+        grid-template-columns: 19px minmax(0, 1fr);
+        column-gap: 10px;
+        padding: 11px 2px;
+        font-size: 0.92rem;
+    }
+
+    .eol-check input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+    }
+
+    .eol-check input[type="checkbox"]:checked::after {
+        left: 4px;
+        top: 2px;
+        width: 5px;
+        height: 8px;
+    }
+
+    .eol-tips-heading {
+        align-items: flex-start;
+    }
+
+    .eol-tip {
+        grid-template-columns: 30px minmax(0, 1fr);
+        padding: 18px;
+    }
+
+    .eol-cta {
+        margin-top: 45px;
+        padding: 38px 20px;
+        border-radius: 16px;
+    }
+
+}
+
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+
+    .eol-hero {
+        padding: 25px 0;
+        background: none;
+        color: #000000;
+    }
+
+    .eol-hero h1,
+    .eol-hero h1 span,
+    .eol-hero-text {
+        color: #000000;
+    }
+
+    .eol-breadcrumb,
+    .eol-hero-actions,
+    .eol-cta {
+        display: none !important;
+    }
+
+    .eol-intro,
+    .eol-checklist-section {
+        padding: 20px 0;
+        background: #ffffff;
+    }
+
+    .eol-summary-card,
+    .eol-checklist-card,
+    .eol-tips-card {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+    .eol-check input[type="checkbox"] {
+        appearance: auto;
+        -webkit-appearance: auto;
+    }
+
+}

@@ -1,0 +1,507 @@
+/* =========================================================
+   YD COMMERCIAL CLEANING
+   OFFICE CLEANING CHECKLIST
+   ========================================================= */
+
+
+/* =========================================================
+   PAGE CONTENT
+   ========================================================= */
+
+.office-checklist-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 75px 20px 100px;
+}
+
+
+/* =========================================================
+   INTRO BOX
+   ========================================================= */
+
+.office-checklist-intro {
+    margin-bottom: 30px;
+    padding: 30px 32px;
+
+    background: #f3f7f4;
+    border: 1px solid #dfe9e2;
+    border-left: 5px solid #557763;
+    border-radius: 14px;
+}
+
+.office-checklist-intro h2 {
+    margin: 0 0 12px;
+
+    color: #263b31;
+    font-size: 1.5rem;
+    line-height: 1.25;
+    font-weight: 800;
+}
+
+.office-checklist-intro p {
+    margin: 0;
+
+    color: #5d6963;
+    font-size: 0.98rem;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   CHECKLIST BOX
+   ========================================================= */
+
+.office-checklist-box {
+    margin-bottom: 28px;
+    padding: 32px;
+
+    background: #ffffff;
+    border: 1px solid #e1e7e3;
+    border-radius: 16px;
+
+    box-shadow: 0 8px 28px rgba(36, 53, 44, 0.055);
+}
+
+.office-checklist-box h2 {
+    margin: 0 0 18px;
+
+    color: #263b31;
+    font-size: 1.65rem;
+    line-height: 1.25;
+    font-weight: 800;
+}
+
+.office-checklist-box h3 {
+    margin: 30px 0 10px;
+
+    color: #3d5b49;
+    font-size: 1.08rem;
+    line-height: 1.35;
+    font-weight: 750;
+}
+
+.office-checklist-box h3:first-child {
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   CHECKLIST LIST RESET
+   ========================================================= */
+
+.office-checklist-box ul {
+    margin: 14px 0 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.office-checklist-box li {
+    position: static;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+    border: 0;
+}
+
+
+/* =========================================================
+   CHECKLIST ROW
+   ========================================================= */
+
+.office-checklist-box .checklist-item {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    gap: 12px;
+
+    margin: 0;
+    padding: 13px 4px;
+
+    color: #4f5d56;
+
+    font-size: 0.97rem;
+    font-weight: 500;
+    line-height: 1.55;
+
+    cursor: pointer;
+
+    border-bottom: 1px solid #edf1ee;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+
+/* =========================================================
+   REMOVE OLD DECORATIVE CHECKMARK
+   ========================================================= */
+
+.office-checklist-box .checklist-item::before {
+    content: none !important;
+    display: none !important;
+}
+
+
+/* =========================================================
+   LAST CHECKLIST ITEM
+   ========================================================= */
+
+.office-checklist-box li:last-child .checklist-item {
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   REAL CHECKBOX
+   ========================================================= */
+
+.office-checklist-box
+.checklist-item
+input[type="checkbox"] {
+
+    appearance: auto;
+    -webkit-appearance: checkbox;
+
+    flex: 0 0 18px;
+
+    width: 18px;
+    height: 18px;
+
+    min-width: 18px;
+    min-height: 18px;
+
+    margin: 0;
+    padding: 0;
+
+    accent-color: #557763;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   CHECKLIST TEXT
+   ========================================================= */
+
+.office-checklist-box
+.checklist-item
+span {
+
+    display: block;
+
+    flex: 1 1 auto;
+    min-width: 0;
+
+    margin: 0;
+    padding: 0;
+
+    color: inherit;
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.office-checklist-box
+.checklist-item:hover {
+
+    color: #293a32;
+}
+
+
+/* =========================================================
+   CHECKED STATE
+   ========================================================= */
+
+.office-checklist-box
+.checklist-item
+input[type="checkbox"]:checked
++ span {
+
+    color: #7a8580;
+
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+
+    opacity: 0.7;
+}
+
+
+/* =========================================================
+   NORMAL INFORMATION LIST
+   Professional Cleaning Tips
+   ========================================================= */
+
+.office-checklist-box
+ul
+li:not(:has(.checklist-item)) {
+
+    padding: 12px 0;
+
+    color: #56625c;
+
+    font-size: 0.97rem;
+    line-height: 1.7;
+
+    border-bottom: 1px solid #edf1ee;
+}
+
+.office-checklist-box
+ul
+li:not(:has(.checklist-item)):last-child {
+
+    border-bottom: none;
+}
+
+.office-checklist-box
+ul
+li
+strong {
+
+    color: #35483e;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   PROFESSIONAL CTA
+   ========================================================= */
+
+.office-checklist-cta {
+    margin-top: 50px;
+    padding: 42px;
+
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(255,255,255,0.08),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #263b31,
+            #34483d
+        );
+
+    border-radius: 18px;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 20px 45px rgba(36, 53, 44, 0.14);
+}
+
+.office-checklist-cta h2 {
+    margin: 0 0 12px;
+
+    color: #ffffff;
+
+    font-size: 1.8rem;
+    line-height: 1.25;
+    font-weight: 800;
+}
+
+.office-checklist-cta p {
+    max-width: 720px;
+
+    margin: 0 0 22px;
+
+    color: rgba(255,255,255,0.82);
+
+    line-height: 1.75;
+}
+
+
+/* =========================================================
+   CTA CONTACT LINKS
+   ========================================================= */
+
+.office-checklist-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.office-checklist-contact a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+
+    padding: 10px 18px;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #263b31;
+
+    text-decoration: none;
+
+    font-size: 0.9rem;
+    font-weight: 750;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.office-checklist-contact a:hover {
+    transform: translateY(-2px);
+    background: #edf5ef;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .office-checklist-page {
+        padding: 55px 16px 70px;
+    }
+
+    .office-checklist-intro {
+        padding: 24px 20px;
+    }
+
+    .office-checklist-box {
+        padding: 24px 20px;
+        border-radius: 14px;
+    }
+
+    .office-checklist-box h2 {
+        font-size: 1.4rem;
+    }
+
+    .office-checklist-box .checklist-item {
+        align-items: flex-start;
+
+        gap: 11px;
+
+        padding: 12px 2px;
+
+        font-size: 0.94rem;
+        line-height: 1.55;
+    }
+
+    .office-checklist-box
+    .checklist-item
+    input[type="checkbox"] {
+
+        flex: 0 0 17px;
+
+        width: 17px;
+        height: 17px;
+
+        min-width: 17px;
+        min-height: 17px;
+
+        margin-top: 2px;
+    }
+
+    .office-checklist-cta {
+        padding: 30px 24px;
+    }
+
+    .office-checklist-contact {
+        flex-direction: column;
+    }
+
+    .office-checklist-contact a {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .office-checklist-page {
+        padding: 45px 14px 60px;
+    }
+
+    .office-checklist-box {
+        padding: 22px 17px;
+    }
+
+    .office-checklist-box h2 {
+        font-size: 1.3rem;
+    }
+
+    .office-checklist-box h3 {
+        font-size: 1rem;
+    }
+
+    .office-checklist-box .checklist-item {
+        gap: 10px;
+
+        padding: 11px 0;
+
+        font-size: 0.92rem;
+    }
+
+    .office-checklist-box
+    .checklist-item
+    input[type="checkbox"] {
+
+        flex-basis: 17px;
+
+        width: 17px;
+        height: 17px;
+
+        min-width: 17px;
+    }
+
+    .office-checklist-cta {
+        padding: 25px 19px;
+    }
+
+    .office-checklist-cta h2 {
+        font-size: 1.5rem;
+    }
+}
+
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+
+    .office-checklist-page {
+        max-width: none;
+        padding: 20px;
+    }
+
+    .office-checklist-box {
+        box-shadow: none;
+        break-inside: avoid;
+        border: 1px solid #ccc;
+    }
+
+    .office-checklist-cta {
+        background: none;
+        color: #000;
+        border: 1px solid #ccc;
+        box-shadow: none;
+    }
+
+    .office-checklist-cta h2,
+    .office-checklist-cta p {
+        color: #000;
+    }
+
+}

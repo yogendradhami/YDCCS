@@ -1,0 +1,665 @@
+/* =========================================================
+   YD COMMERCIAL CLEANING
+   RESIDENTIAL CLEANING GUIDE
+========================================================= */
+
+.residential-guide-hero {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            135deg,
+            #102f46 0%,
+            #174968 55%,
+            #216581 100%
+        );
+    color: #ffffff;
+    padding: 72px 0 68px;
+}
+
+.residential-guide-hero::before {
+    content: "";
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    top: -220px;
+    right: -120px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.residential-guide-hero::after {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    bottom: -190px;
+    left: -100px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.residential-guide-hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+.residential-guide-hero-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 45px;
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.residential-guide-heading {
+    max-width: 760px;
+}
+
+.residential-guide-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #d9edf7;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.residential-guide-heading h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(2.25rem, 5vw, 3.8rem);
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+}
+
+.residential-guide-subtitle {
+    max-width: 720px;
+    margin: 22px 0 0;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 1.12rem;
+    line-height: 1.75;
+}
+
+.residential-guide-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    margin-top: 24px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.residential-guide-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.residential-guide-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 0 0 auto;
+    min-width: 205px;
+}
+
+.residential-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 48px;
+    padding: 12px 19px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 700;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.residential-btn:hover {
+    transform: translateY(-2px);
+}
+
+.residential-btn-primary {
+    background: #ffffff;
+    color: #174968;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.16);
+}
+
+.residential-btn-primary:hover {
+    background: #f4f9fb;
+    color: #123d58;
+}
+
+.residential-btn-outline {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+}
+
+.residential-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.residential-guide-content {
+    background: #f5f8fa;
+    padding: 60px 20px 80px;
+}
+
+.residential-guide-content > .container {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   INTRO
+========================================================= */
+
+.residential-intro-card {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 24px;
+    align-items: start;
+    padding: 32px;
+    margin-bottom: 28px;
+    border: 1px solid #e1e8ed;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 30px rgba(20, 55, 75, 0.06);
+}
+
+.residential-intro-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: #eaf4f8;
+    font-size: 1.8rem;
+}
+
+.residential-section-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #24718f;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.residential-intro-card h2,
+.residential-checklist-card h2,
+.residential-tips-card h2,
+.residential-guide-cta h2 {
+    margin: 0;
+    color: #17384d;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.residential-intro-card h2 {
+    font-size: 1.75rem;
+    line-height: 1.25;
+}
+
+.residential-intro-card p {
+    margin: 14px 0 0;
+    color: #5d6d77;
+    font-size: 1rem;
+    line-height: 1.75;
+}
+
+
+/* =========================================================
+   CHECKLIST CARDS
+========================================================= */
+
+.residential-checklist-card {
+    padding: 34px;
+    margin-bottom: 28px;
+    border: 1px solid #e0e7eb;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 30px rgba(20, 55, 75, 0.055);
+}
+
+.residential-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #edf1f3;
+}
+
+.residential-card-header h2 {
+    font-size: 1.75rem;
+    line-height: 1.25;
+}
+
+.residential-frequency-badge {
+    flex: 0 0 auto;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #edf6f9;
+    color: #24637b;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.residential-card-intro {
+    margin: 20px 0 0;
+    color: #65747d;
+    line-height: 1.7;
+}
+
+.residential-task-section {
+    margin-top: 30px;
+}
+
+.residential-task-section + .residential-task-section {
+    padding-top: 27px;
+    border-top: 1px solid #edf1f3;
+}
+
+.residential-task-section h3 {
+    margin: 0 0 14px;
+    color: #225d78;
+    font-size: 1.05rem;
+    font-weight: 750;
+}
+
+
+/* =========================================================
+   CHECKLIST
+========================================================= */
+
+.residential-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.residential-checklist li {
+    margin: 0;
+    padding: 0;
+}
+
+.residential-checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    min-height: 46px;
+    margin: 2px 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #43545e;
+    font-size: 0.96rem;
+    line-height: 1.5;
+    transition:
+        background 0.18s ease,
+        color 0.18s ease;
+}
+
+.residential-checklist-item:hover {
+    background: #f4f8fa;
+    color: #173f54;
+}
+
+.residential-checklist-item input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    accent-color: #24718f;
+    cursor: pointer;
+}
+
+.residential-checklist-item span {
+    display: block;
+    flex: 1;
+    min-width: 0;
+}
+
+.residential-checklist-item input[type="checkbox"]:checked + span {
+    color: #7b878d;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+}
+
+
+/* =========================================================
+   TIPS
+========================================================= */
+
+.residential-tips-card {
+    padding: 34px;
+    margin-bottom: 28px;
+    border-radius: 16px;
+    background: #eef6f8;
+    border: 1px solid #dcebef;
+}
+
+.residential-tips-header {
+    margin-bottom: 28px;
+}
+
+.residential-tips-card h2 {
+    font-size: 1.75rem;
+}
+
+.residential-tips-header p {
+    max-width: 700px;
+    margin: 12px 0 0;
+    color: #60727c;
+    line-height: 1.7;
+}
+
+.residential-tips-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.residential-tip {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid #dce7eb;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.residential-tip:last-child {
+    grid-column: 1 / -1;
+}
+
+.residential-tip-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eaf4f7;
+    color: #24718f;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.residential-tip h3 {
+    margin: 1px 0 6px;
+    color: #24485c;
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.residential-tip p {
+    margin: 0;
+    color: #687780;
+    font-size: 0.91rem;
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   CTA
+========================================================= */
+
+.residential-guide-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 35px;
+    padding: 38px;
+    border-radius: 18px;
+    background:
+        linear-gradient(
+            135deg,
+            #153c55,
+            #205e77
+        );
+    color: #ffffff;
+    box-shadow: 0 12px 35px rgba(19, 57, 78, 0.14);
+}
+
+.residential-guide-cta .residential-section-label {
+    color: #b8dce8;
+}
+
+.residential-guide-cta h2 {
+    color: #ffffff;
+    font-size: 1.8rem;
+}
+
+.residential-cta-content {
+    max-width: 620px;
+}
+
+.residential-cta-content p {
+    margin: 14px 0 0;
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.7;
+}
+
+.residential-contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 220px;
+}
+
+.residential-contact-links a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 700;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.residential-contact-links a:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   BOTTOM NAVIGATION
+========================================================= */
+
+.residential-bottom-navigation {
+    padding-top: 30px;
+    text-align: center;
+}
+
+.residential-bottom-navigation a {
+    color: #28657d;
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.residential-bottom-navigation a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .residential-guide-hero {
+        padding: 55px 0;
+    }
+
+    .residential-guide-hero-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 30px;
+    }
+
+    .residential-guide-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+
+    .residential-btn {
+        min-width: 170px;
+    }
+
+    .residential-guide-cta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .residential-contact-links {
+        width: 100%;
+        max-width: 360px;
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .residential-guide-content {
+        padding: 40px 15px 60px;
+    }
+
+    .residential-guide-heading h1 {
+        font-size: 2.35rem;
+    }
+
+    .residential-guide-subtitle {
+        font-size: 1rem;
+    }
+
+    .residential-guide-meta {
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .residential-intro-card {
+        grid-template-columns: 1fr;
+        padding: 25px;
+    }
+
+    .residential-intro-icon {
+        width: 54px;
+        height: 54px;
+        font-size: 1.5rem;
+    }
+
+    .residential-checklist-card,
+    .residential-tips-card {
+        padding: 25px;
+    }
+
+    .residential-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .residential-card-header h2,
+    .residential-tips-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .residential-tips-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .residential-tip:last-child {
+        grid-column: auto;
+    }
+
+    .residential-guide-cta {
+        padding: 28px 24px;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .residential-guide-hero {
+        padding: 45px 0;
+    }
+
+    .residential-guide-heading h1 {
+        font-size: 2rem;
+    }
+
+    .residential-guide-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .residential-btn {
+        width: 100%;
+    }
+
+    .residential-intro-card,
+    .residential-checklist-card,
+    .residential-tips-card {
+        border-radius: 12px;
+    }
+
+    .residential-checklist-item {
+        align-items: flex-start;
+        padding: 8px 5px;
+    }
+
+    .residential-checklist-item input[type="checkbox"] {
+        margin-top: 3px;
+    }
+
+    .residential-tip {
+        grid-template-columns: 36px 1fr;
+        padding: 16px;
+    }
+
+    .residential-tip-number {
+        width: 34px;
+        height: 34px;
+    }
+}

@@ -1,89 +1,818 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Eco-Friendly Cleaning | YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Discover our eco-friendly commercial cleaning solutions in Adelaide. Safe, sustainable cleaning for your workplace and shared spaces.{% endblock %}
+{% block title %}
+Eco-Friendly Cleaning Adelaide | Sustainable Cleaning Services | YD Commercial Cleaning
+{% endblock %}
+
+{% block meta_description %}
+Eco-friendly cleaning services in Adelaide for homes, offices and commercial properties. YD Commercial Cleaning uses environmentally conscious cleaning products and practical sustainable cleaning methods.
+{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/eco.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/eco-friendly-cleaning.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="eco-page">
-    <section class="eco-hero">
-        <div class="container">
-            <span class="eyebrow">Sustainable cleaning in Adelaide</span>
-            <h1>Cleaner spaces, lower impact.</h1>
-            <p>Protect your team, your clients and the environment with professional cleaning that uses safer products, smarter systems and responsible practices.</p>
+
+<!-- HERO -->
+<section class="eco-hero">
+    <div class="container">
+        <div class="eco-hero-content">
+
+            <span class="eco-eyebrow">
+                🌿 Sustainable Cleaning in Adelaide
+            </span>
+
+            <h1>
+                Eco-Friendly Cleaning for Healthier Homes & Workplaces
+            </h1>
+
+            <p class="eco-hero-text">
+                Professional cleaning that puts cleanliness, comfort and
+                environmental responsibility first. YD Commercial Cleaning
+                provides eco-conscious cleaning solutions for homes, offices,
+                businesses and commercial properties across Adelaide.
+            </p>
+
             <div class="eco-hero-actions">
-                <a href="{% url 'contact' %}" class="btn btn-primary">Request an Eco Clean</a>
-                <a href="/services/commercial-cleaning-adelaide/" class="btn btn-outline">Explore Commercial Services</a>
-            </div>
-        </div>
-    </section>
+                <a href="/booking/" class="eco-btn eco-btn-primary">
+                    Get a Free Quote
+                </a>
 
-    <section class="eco-section">
-        <div class="container">
-            <div class="eco-grid two-up">
-                <div class="eco-card">
-                    <h2>Why businesses choose our eco approach</h2>
-                    <p>We blend high-performance cleaning with sustainability, so your workplace stays fresh without compromising on comfort, safety or presentation.</p>
-                    <ul class="eco-list">
-                        <li>Non-toxic, biodegradable products chosen for sensitive environments.</li>
-                        <li>Reduced water usage, waste and unnecessary chemical exposure.</li>
-                        <li>Efficient workflows that create exceptional results with lower environmental impact.</li>
-                    </ul>
-                    <div class="eco-pill-row">
-                        <span class="eco-pill">🌿 Safer products</span>
-                        <span class="eco-pill">🧼 Low-impact methods</span>
-                        <span class="eco-pill">📍 Adelaide service</span>
-                    </div>
+                <a href="tel:0430049865" class="eco-btn eco-btn-secondary">
+                    📞 Call 0430 049 865
+                </a>
+            </div>
+
+            <div class="eco-trust-row">
+                <span>✓ Eco-conscious products</span>
+                <span>✓ Fully insured</span>
+                <span>✓ Adelaide-wide service</span>
+                <span>✓ Flexible scheduling</span>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- INTRO -->
+<section class="eco-section">
+    <div class="container">
+
+        <div class="eco-intro">
+
+            <div class="eco-section-heading">
+                <span class="eco-label">A cleaner approach</span>
+
+                <h2>
+                    Cleaning your property while being mindful of the environment
+                </h2>
+            </div>
+
+            <div class="eco-intro-content">
+                <p>
+                    A clean property should feel fresh, comfortable and
+                    welcoming without relying unnecessarily on harsh cleaning
+                    practices.
+                </p>
+
+                <p>
+                    At YD Commercial Cleaning, we take a practical approach to
+                    environmentally conscious cleaning. Where appropriate,
+                    we use eco-friendly cleaning products and efficient
+                    cleaning methods while maintaining the professional
+                    standards our residential and commercial customers expect.
+                </p>
+
+                <p>
+                    Our goal is simple: deliver excellent cleaning results while
+                    making thoughtful choices about the products, materials and
+                    processes used during your service.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- BENEFITS -->
+<section class="eco-section eco-light">
+    <div class="container">
+
+        <div class="eco-heading-center">
+            <span class="eco-label">Why choose eco-friendly cleaning?</span>
+
+            <h2>
+                A better cleaning experience for your space
+            </h2>
+
+            <p>
+                Sustainable cleaning is about more than choosing a different
+                bottle of cleaning product. It can involve smarter product
+                selection, efficient application, reusable materials and
+                reducing unnecessary waste.
+            </p>
+        </div>
+
+        <div class="eco-card-grid">
+
+            <article class="eco-card">
+                <div class="eco-icon">🌿</div>
+
+                <h3>Environmentally conscious products</h3>
+
+                <p>
+                    Where suitable for the job, we select cleaning products
+                    with environmental considerations in mind while still
+                    delivering effective cleaning results.
+                </p>
+            </article>
+
+
+            <article class="eco-card">
+                <div class="eco-icon">🏠</div>
+
+                <h3>Comfortable indoor spaces</h3>
+
+                <p>
+                    A well-maintained home or workplace can feel fresher,
+                    cleaner and more comfortable for the people using it every
+                    day.
+                </p>
+            </article>
+
+
+            <article class="eco-card">
+                <div class="eco-icon">♻️</div>
+
+                <h3>Less unnecessary waste</h3>
+
+                <p>
+                    We aim to use cleaning materials responsibly and avoid
+                    unnecessary product use wherever practical.
+                </p>
+            </article>
+
+
+            <article class="eco-card">
+                <div class="eco-icon">💧</div>
+
+                <h3>Thoughtful resource use</h3>
+
+                <p>
+                    Efficient cleaning techniques can help reduce unnecessary
+                    use of water, products and disposable cleaning materials.
+                </p>
+            </article>
+
+
+            <article class="eco-card">
+                <div class="eco-icon">🏢</div>
+
+                <h3>Suitable for workplaces</h3>
+
+                <p>
+                    Eco-conscious cleaning can be incorporated into regular
+                    office, retail and commercial cleaning programs.
+                </p>
+            </article>
+
+
+            <article class="eco-card">
+                <div class="eco-icon">❤️</div>
+
+                <h3>Cleaning with care</h3>
+
+                <p>
+                    We believe professional cleaning should consider the
+                    property, the people using it and the wider environment.
+                </p>
+            </article>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- WHAT WE DO -->
+<section class="eco-section">
+    <div class="container">
+
+        <div class="eco-two-column">
+
+            <div>
+                <span class="eco-label">
+                    Our approach
+                </span>
+
+                <h2>
+                    What does eco-friendly cleaning mean?
+                </h2>
+
+                <p>
+                    Eco-friendly cleaning is not simply about replacing every
+                    cleaning product with a product labelled "green".
+                </p>
+
+                <p>
+                    A responsible cleaning approach considers how products are
+                    selected, how much is used, what cleaning materials are
+                    required and how the cleaning process can be completed
+                    efficiently.
+                </p>
+
+                <p>
+                    We assess the requirements of each property and select
+                    appropriate cleaning methods based on the surfaces,
+                    environment and level of cleaning required.
+                </p>
+            </div>
+
+
+            <div class="eco-feature-box">
+
+                <h3>
+                    Our practical green cleaning principles
+                </h3>
+
+                <ul class="eco-check-list">
+                    <li>
+                        <span>✓</span>
+                        Use environmentally conscious products where appropriate
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Avoid unnecessary use of cleaning chemicals
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Use cleaning products according to their intended purpose
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Make practical use of reusable cleaning materials
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Focus on efficient cleaning processes
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Tailor cleaning methods to the property
+                    </li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- RESIDENTIAL -->
+<section class="eco-section eco-light">
+    <div class="container">
+
+        <div class="eco-heading-center">
+
+            <span class="eco-label">
+                Residential cleaning
+            </span>
+
+            <h2>
+                Eco-friendly cleaning for Adelaide homes
+            </h2>
+
+            <p>
+                Keep your home fresh and well maintained with a cleaning
+                approach that considers both cleanliness and the products used
+                throughout the service.
+            </p>
+
+        </div>
+
+
+        <div class="eco-service-grid">
+
+            <div class="eco-service-card">
+                <h3>Regular House Cleaning</h3>
+
+                <p>
+                    Ongoing cleaning for kitchens, bathrooms, living areas,
+                    bedrooms and other frequently used spaces.
+                </p>
+            </div>
+
+
+            <div class="eco-service-card">
+                <h3>Deep Cleaning</h3>
+
+                <p>
+                    Detailed cleaning for properties that need additional
+                    attention to built-up dirt, dust and high-use areas.
+                </p>
+            </div>
+
+
+            <div class="eco-service-card">
+                <h3>Move-Out Cleaning</h3>
+
+                <p>
+                    Detailed cleaning for tenants, landlords and property
+                    owners preparing a property for its next occupant.
+                </p>
+            </div>
+
+
+            <div class="eco-service-card">
+                <h3>Kitchen & Bathroom Cleaning</h3>
+
+                <p>
+                    Focused cleaning of surfaces and high-use areas where
+                    hygiene and presentation matter most.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- COMMERCIAL -->
+<section class="eco-section">
+    <div class="container">
+
+        <div class="eco-two-column reverse-mobile">
+
+            <div class="eco-feature-box eco-commercial-box">
+
+                <span class="eco-small-heading">
+                    COMMERCIAL CLEANING
+                </span>
+
+                <h2>
+                    Sustainable cleaning for Adelaide businesses
+                </h2>
+
+                <p>
+                    Your workplace represents your business. A clean,
+                    organised environment can create a more welcoming
+                    experience for employees, customers and visitors.
+                </p>
+
+                <ul class="eco-check-list">
+
+                    <li>
+                        <span>✓</span>
+                        Office cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Retail cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Workplace cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Commercial property cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Kitchen and staff areas
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Bathroom cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Floor and surface cleaning
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        High-touch area cleaning
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div>
+
+                <span class="eco-label">
+                    Built around your business
+                </span>
+
+                <h2>
+                    Flexible cleaning without unnecessary disruption
+                </h2>
+
+                <p>
+                    We understand that every workplace operates differently.
+                    Cleaning can be scheduled around your business hours and
+                    property requirements.
+                </p>
+
+                <p>
+                    Whether you need regular office cleaning or a one-off
+                    commercial deep clean, we can develop a practical cleaning
+                    schedule around your needs.
+                </p>
+
+                <a href="/booking/" class="eco-text-link">
+                    Request a commercial cleaning quote →
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- PROCESS -->
+<section class="eco-section eco-dark">
+    <div class="container">
+
+        <div class="eco-heading-center eco-heading-light">
+
+            <span class="eco-label">
+                Our process
+            </span>
+
+            <h2>
+                A simple approach to greener cleaning
+            </h2>
+
+            <p>
+                We keep the process straightforward and adapt our cleaning
+                methods to your property.
+            </p>
+
+        </div>
+
+
+        <div class="eco-process-grid">
+
+            <div class="eco-process-step">
+
+                <div class="eco-number">
+                    01
                 </div>
 
-                <div class="eco-card">
-                    <h3>What we use</h3>
-                    <p>Our team focuses on practical green cleaning choices that are easy to maintain and effective in real-world spaces.</p>
-                    <ul class="eco-list">
-                        <li>Plant-based cleaners for daily surfaces and shared areas.</li>
-                        <li>Microfibre tools that reduce water and product waste.</li>
-                        <li>Targeted methods that avoid over-application and unnecessary residue.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
+                <h3>
+                    Understand your property
+                </h3>
 
-    <section class="eco-section">
-        <div class="container">
-            <h2 style="text-align:center; margin-bottom:24px;">Benefits for your business</h2>
-            <div class="eco-benefits-grid">
-                <div class="eco-benefit-card">
-                    <h3>Healthier workspace</h3>
-                    <p>Reduce irritants, odours and harsh chemical exposure for staff, visitors and clients.</p>
-                </div>
-                <div class="eco-benefit-card">
-                    <h3>Lower environmental footprint</h3>
-                    <p>Support your sustainability goals with smarter cleaning routines and responsible products.</p>
-                </div>
-                <div class="eco-benefit-card">
-                    <h3>Professional finish</h3>
-                    <p>Enjoy a polished, dependable result without sacrificing quality or consistency.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+                <p>
+                    We learn about your property, cleaning requirements and
+                    preferred schedule.
+                </p>
 
-    <section class="eco-cta">
-        <div class="container">
-            <div class="eco-cta-card">
-                <div>
-                    <h2>Switch to greener cleaning today</h2>
-                    <p>Let us create a tailored eco-friendly cleaning plan for your workspace or property.</p>
-                </div>
-                <a href="{% url 'contact' %}" class="btn btn-primary">Book Your Eco Clean</a>
             </div>
+
+
+            <div class="eco-process-step">
+
+                <div class="eco-number">
+                    02
+                </div>
+
+                <h3>
+                    Choose suitable methods
+                </h3>
+
+                <p>
+                    We select appropriate products and cleaning methods for the
+                    surfaces and cleaning requirements.
+                </p>
+
+            </div>
+
+
+            <div class="eco-process-step">
+
+                <div class="eco-number">
+                    03
+                </div>
+
+                <h3>
+                    Clean efficiently
+                </h3>
+
+                <p>
+                    Our team completes the cleaning carefully while avoiding
+                    unnecessary product and material use.
+                </p>
+
+            </div>
+
+
+            <div class="eco-process-step">
+
+                <div class="eco-number">
+                    04
+                </div>
+
+                <h3>
+                    Leave it fresh
+                </h3>
+
+                <p>
+                    We finish with attention to detail so your property is
+                    clean, comfortable and ready to use.
+                </p>
+
+            </div>
+
         </div>
-    </section>
-</div>
+
+    </div>
+</section>
+
+
+<!-- BENEFITS -->
+<section class="eco-section">
+    <div class="container">
+
+        <div class="eco-heading-center">
+
+            <span class="eco-label">
+                Benefits
+            </span>
+
+            <h2>
+                Why Adelaide customers choose a more thoughtful cleaning approach
+            </h2>
+
+        </div>
+
+
+        <div class="eco-benefit-grid">
+
+            <div>
+                <h3>🌱 Environmental responsibility</h3>
+
+                <p>
+                    Making thoughtful choices about cleaning products and
+                    materials can help reduce unnecessary environmental impact.
+                </p>
+            </div>
+
+
+            <div>
+                <h3>✨ Fresh, professional results</h3>
+
+                <p>
+                    Eco-conscious cleaning does not mean compromising on
+                    cleanliness. Our focus remains on achieving a thorough,
+                    professional result.
+                </p>
+            </div>
+
+
+            <div>
+                <h3>🏢 Better workplace presentation</h3>
+
+                <p>
+                    A clean and well-maintained workplace helps create a
+                    professional environment for staff and visitors.
+                </p>
+            </div>
+
+
+            <div>
+                <h3>🔄 Flexible cleaning plans</h3>
+
+                <p>
+                    Choose regular, occasional or one-off cleaning depending on
+                    your property's requirements.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- AREAS -->
+<section class="eco-section eco-light">
+    <div class="container">
+
+        <div class="eco-heading-center">
+
+            <span class="eco-label">
+                Adelaide-wide cleaning
+            </span>
+
+            <h2>
+                Eco-friendly cleaning across Adelaide
+            </h2>
+
+            <p>
+                YD Commercial Cleaning provides residential and commercial
+                cleaning services across Adelaide and surrounding suburbs.
+            </p>
+
+        </div>
+
+
+        <div class="eco-area-list">
+
+            <span>Adelaide CBD</span>
+            <span>North Adelaide</span>
+            <span>Unley</span>
+            <span>Norwood</span>
+            <span>Glenelg</span>
+            <span>Burnside</span>
+            <span>Prospect</span>
+            <span>Mawson Lakes</span>
+            <span>Modbury</span>
+            <span>Campbelltown</span>
+            <span>Marion</span>
+            <span>Surrounding Adelaide suburbs</span>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- FAQ -->
+<section class="eco-section">
+    <div class="container">
+
+        <div class="eco-heading-center">
+
+            <span class="eco-label">
+                Frequently asked questions
+            </span>
+
+            <h2>
+                Eco-friendly cleaning FAQs
+            </h2>
+
+        </div>
+
+
+        <div class="eco-faq">
+
+            <details>
+                <summary>
+                    What is eco-friendly cleaning?
+                </summary>
+
+                <p>
+                    Eco-friendly cleaning is an approach that considers the
+                    environmental impact of cleaning products, materials and
+                    processes while still focusing on effective cleaning
+                    results.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Do you use eco-friendly cleaning products?
+                </summary>
+
+                <p>
+                    Yes. Where appropriate, we use eco-conscious cleaning
+                    products as part of our cleaning services. Product
+                    selection depends on the property, surface and cleaning
+                    requirements.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Is eco-friendly cleaning suitable for offices?
+                </summary>
+
+                <p>
+                    Yes. Eco-conscious cleaning can be incorporated into
+                    regular office, retail and commercial cleaning programs.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Can I request eco-friendly products for my home?
+                </summary>
+
+                <p>
+                    Yes. Let us know your preferences when requesting a quote
+                    and we can discuss suitable cleaning options for your
+                    property.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Does eco-friendly cleaning cost more?
+                </summary>
+
+                <p>
+                    Pricing depends on the size of the property, cleaning
+                    requirements, frequency and scope of work. Contact us for a
+                    tailored quote based on your property.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Do you provide regular eco-friendly cleaning?
+                </summary>
+
+                <p>
+                    Yes. We can arrange recurring residential or commercial
+                    cleaning schedules based on your needs and availability.
+                </p>
+            </details>
+
+
+            <details>
+                <summary>
+                    Do you service my Adelaide suburb?
+                </summary>
+
+                <p>
+                    We service Adelaide and surrounding metropolitan suburbs.
+                    Contact us with your suburb and property details and we can
+                    confirm availability.
+                </p>
+            </details>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- CTA -->
+<section class="eco-cta">
+
+    <div class="container">
+
+        <div class="eco-cta-content">
+
+            <span class="eco-label">
+                Ready for a cleaner, greener space?
+            </span>
+
+            <h2>
+                Get a professional eco-friendly cleaning quote
+            </h2>
+
+            <p>
+                Tell us about your home, office or commercial property and
+                we'll help you choose a cleaning solution that fits your needs.
+            </p>
+
+            <div class="eco-cta-actions">
+
+                <a href="/booking/" class="eco-btn eco-btn-light">
+                    Request a Free Quote
+                </a>
+
+                <a href="tel:0430049865" class="eco-btn eco-btn-outline">
+                    Call 0430 049 865
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
 {% endblock %}
-

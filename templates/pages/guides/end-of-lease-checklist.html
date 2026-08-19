@@ -1,158 +1,710 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}End-of-Lease Cleaning Checklist | YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Comprehensive end-of-lease cleaning checklist to maximize bond recovery. Inspection-ready tasks and professional tips.{% endblock %}
+{% block title %}End-of-Lease Cleaning Checklist Adelaide | YD Commercial Cleaning{% endblock %}
+
+{% block meta_description %}
+Use our comprehensive end-of-lease cleaning checklist for Adelaide properties. Cover kitchens, bathrooms, bedrooms, floors, windows and final inspection tasks to help prepare your property for a professional bond inspection.
+{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
-<style>
-.guide-detail-content { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-.guide-detail-content h2 { margin-top: 30px; margin-bottom: 15px; color: #1a3a52; font-size: 1.5rem; font-weight: 700; }
-.guide-detail-content h3 { margin-top: 20px; margin-bottom: 10px; color: #2c5aa0; font-size: 1.1rem; font-weight: 600; }
-.guide-detail-content ul { margin: 15px 0; padding-left: 25px; }
-.guide-detail-content li { margin: 8px 0; line-height: 1.6; color: #555; }
-.guide-actions { margin-bottom: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
-.guide-actions .btn { display: inline-block; text-decoration: none; font-weight: 600; }
-.btn-primary { background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }
-.btn-outline { border: 2px solid #007bff; color: #007bff; padding: 8px 18px; border-radius: 5px; }
-</style>
+<link rel="stylesheet" href="{% static 'css/pages/guides/end-of-lease.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="guide-detail-hero">
-    <div class="container">
-        <div class="guide-detail-header">
-            <div class="guide-detail-header-left">
-                <h1>End-of-Lease Cleaning Checklist</h1>
-                <p class="guide-detail-subtitle">Professional End-of-Lease Cleaning Checklist From YD Commercial Cleaning Services, Adelaide</p>
+
+<!-- =========================================================
+     HERO
+     ========================================================= -->
+
+<section class="eol-hero">
+    <div class="eol-hero-pattern"></div>
+
+    <div class="container eol-container">
+        <div class="eol-hero-content">
+
+            <div class="eol-breadcrumb">
+                <a href="{% url 'guides' %}">Guides</a>
+                <span>›</span>
+                <span>End-of-Lease Checklist</span>
             </div>
-            <div class="guide-actions">
-                <a href="{% static 'pdf/guides/end-of-lease-checklist.pdf' %}" class="btn btn-primary" download>📥 Print / Save as PDF</a>
-                <a href="{% url 'guides' %}" class="btn btn-outline">← Back to Guides</a>
+
+            <div class="eol-eyebrow">
+                END-OF-LEASE CLEANING GUIDE
             </div>
+
+            <h1>
+                End-of-Lease Cleaning
+                <span>Checklist</span>
+            </h1>
+
+            <p class="eol-hero-text">
+                A practical, room-by-room checklist to help prepare your Adelaide
+                rental property for its final inspection and bond assessment.
+            </p>
+
+            <div class="eol-hero-actions">
+
+                <a
+                    href="{% static 'pdf/guides/end-of-lease-checklist.pdf' %}"
+                    class="eol-btn eol-btn-light"
+                    download
+                >
+                    <span>↓</span>
+                    Download Checklist
+                </a>
+
+                <a
+                    href="{% url 'guides' %}"
+                    class="eol-btn eol-btn-outline"
+                >
+                    ← All Cleaning Guides
+                </a>
+
+            </div>
+
         </div>
     </div>
 </section>
 
-<section class="guide-detail-content">
-    <div class="guide-checklist-box">
-<h2>Living & Bedrooms</h2>
-<h3>Walls & Paintwork</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Fill nail holes with spackling compound</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Touch up scuffs and marks</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe down walls (especially around light switches)</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Remove any stickers or tape residue</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Repaint if walls are marked (check lease agreement)</label></li>
-    </ul>
 
-    <h3>Floors</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Vacuum all carpets thoroughly</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Steam clean or shampoo carpets</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Spot-treat stains (professional grade)</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Strip, wax, and buff hard floors if needed</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize tile floors</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean baseboards</label></li>
-    </ul>
+<!-- =========================================================
+     INTRO / QUICK INFO
+     ========================================================= -->
 
-    <h3>Windows & Doors</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Clean interior and exterior windows</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean window sills and frames</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Remove any window coverings (if required)</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean all door frames and doors</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Remove any damage marks or scuffs</label></li>
-    </ul>
+<section class="eol-intro">
+    <div class="container eol-container">
 
-    <h3>Light Fixtures & Switches</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Clean or replace light fixtures</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe and clean all light switches</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Replace burnt-out bulbs</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Ensure all lights are working properly</label></li>
-    </ul>
+        <div class="eol-intro-grid">
 
-    <h3>Miscellaneous</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Dust ceiling fans and vents</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe door handles and hinges</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean or replace air filters</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Kitchen</h2>
-<ul>
-        <li><label class="checklist-item"><input type="checkbox"> Deep clean stovetop and oven (inside and out)</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean range hood and filter</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean inside and outside of refrigerator</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Defrost and clean freezer</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean microwave inside and out</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean dishwasher inside and out</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Scrub sink and faucet (remove all stains)</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe down all cabinet fronts and handles</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean inside cabinets if required</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize floor thoroughly</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Remove all items and personal belongings</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Bathrooms</h2>
-<ul>
-        <li><label class="checklist-item"><input type="checkbox"> Scrub toilet bowl inside and out</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean bathtub and shower thoroughly</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Remove soap scum and mildew</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean and polish tile grout</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Scrub sink and faucet</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean mirror and remove water spots</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe all fixtures and handles</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Mop and sanitize floor</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean exhaust fan</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Remove any items and personal belongings</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Entryway & Outdoor Areas</h2>
-<ul>
-        <li><label class="checklist-item"><input type="checkbox"> Sweep and mop entry area</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean front door and surrounds</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean mailbox area</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Sweep patio or balcony</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Remove any external items (garden beds, etc.)</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Leave property empty and accessible</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Final Inspection Checklist</h2>
-<ul>
-        <li><label class="checklist-item"><input type="checkbox"> Property is empty of all personal items</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> All windows are closed and locked</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> All doors are closed and locked</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> All lights are off</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> All appliances are turned off</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Property is clean and ready for inspection</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Document property condition with photos</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Bond Recovery Tips</h2>
-<ul>
-        <li>✓ <strong>Professional Cleaning</strong>: Consider hiring professionals for best results. The cost is often less than losing bond money.</li>
-        <li>✓ <strong>Document Everything</strong>: Take photos/videos before, during, and after cleaning to prove condition.</li>
-        <li>✓ <strong>Check Your Lease</strong>: Review your lease agreement for specific cleaning requirements.</li>
-        <li>✓ <strong>Act Quickly</strong>: Clean as soon as possible after move-out for best results.</li>
-        <li>✓ <strong>Use Professional Products</strong>: Commercial-grade cleaners work better than household products.</li>
-    </ul>
-</div>
-<hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+            <div class="eol-intro-main">
 
-    <h3>Need professional end-of-lease cleaning?</h3>
-    <p style="font-size: 1.05rem; margin: 20px 0;">Contact YD Commercial Cleaning Services</p>
-    <p style="color: #666;">
-        📞 <a href="tel:0430049865">0430 049 865</a> | 📧 <a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a><br>
-        Adelaide, South Australia | Professional Cleaning, Every Time
-    </p>
+                <div class="eol-section-label">
+                    BEFORE YOUR FINAL INSPECTION
+                </div>
+
+                <h2>
+                    Work through the property
+                    <span>room by room.</span>
+                </h2>
+
+                <p>
+                    End-of-lease cleaning requires more than a quick tidy-up.
+                    Property managers and landlords may inspect areas that are
+                    easily overlooked during a normal clean.
+                </p>
+
+                <p>
+                    Use this checklist to systematically work through the
+                    property and make sure the important cleaning tasks have
+                    been completed before your final inspection.
+                </p>
+
+            </div>
+
+            <div class="eol-summary-card">
+
+                <div class="eol-summary-icon">✓</div>
+
+                <h3>Inspection-ready checklist</h3>
+
+                <ul>
+                    <li>
+                        <span>✓</span>
+                        Living areas & bedrooms
+                    </li>
+                    <li>
+                        <span>✓</span>
+                        Kitchen deep cleaning
+                    </li>
+                    <li>
+                        <span>✓</span>
+                        Bathroom cleaning
+                    </li>
+                    <li>
+                        <span>✓</span>
+                        Entry & outdoor areas
+                    </li>
+                    <li>
+                        <span>✓</span>
+                        Final inspection checks
+                    </li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- =========================================================
+     CHECKLIST
+     ========================================================= -->
+
+<section class="eol-checklist-section">
+    <div class="container eol-container">
+
+        <div class="eol-section-heading">
+
+            <div class="eol-section-label">
+                COMPLETE YOUR CHECKLIST
+            </div>
+
+            <h2>
+                End-of-Lease Cleaning Tasks
+            </h2>
+
+            <p>
+                Tick each task as you complete it. The checklist is designed
+                to work on desktop and mobile devices.
+            </p>
+
+        </div>
+
+
+        <!-- =====================================================
+             LIVING & BEDROOMS
+             ===================================================== -->
+
+        <article class="eol-checklist-card">
+
+            <div class="eol-card-header">
+
+                <div class="eol-card-number">01</div>
+
+                <div>
+                    <div class="eol-card-label">ROOM-BY-ROOM</div>
+                    <h3>Living Areas & Bedrooms</h3>
+                </div>
+
+            </div>
+
+
+            <div class="eol-checklist-group">
+
+                <h4>Walls & Paintwork</h4>
+
+                <div class="eol-checklist">
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Fill nail holes with suitable filler or spackling compound</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Remove scuffs, marks and visible wall stains</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Wipe down walls, particularly around light switches</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Remove stickers, tape and adhesive residue</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Touch up or repaint marked areas where permitted</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="eol-checklist-group">
+
+                <h4>Floors</h4>
+
+                <div class="eol-checklist">
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Vacuum carpets thoroughly, including corners and edges</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Steam clean or professionally clean carpets where required</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Spot-treat visible carpet stains</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Clean and mop hard floors thoroughly</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Clean skirting boards and floor edges</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="eol-checklist-group">
+
+                <h4>Windows & Doors</h4>
+
+                <div class="eol-checklist">
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Clean interior windows and glass</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Clean window frames, tracks and sills</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Clean doors and door frames</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Remove visible marks from doors and handles</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="eol-checklist-group">
+
+                <h4>Fixtures & General Cleaning</h4>
+
+                <div class="eol-checklist">
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Dust ceiling fans and vents</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Clean light fittings and switches</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Clean door handles and accessible hardware</span>
+                    </label>
+
+                    <label class="eol-check">
+                        <input type="checkbox">
+                        <span>Check air-conditioning vents and accessible filters</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- =====================================================
+             KITCHEN
+             ===================================================== -->
+
+        <article class="eol-checklist-card">
+
+            <div class="eol-card-header">
+
+                <div class="eol-card-number">02</div>
+
+                <div>
+                    <div class="eol-card-label">DEEP CLEAN</div>
+                    <h3>Kitchen</h3>
+                </div>
+
+            </div>
+
+            <div class="eol-checklist">
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Deep clean the stovetop and cooktop surfaces</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean the oven inside and outside</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean rangehood, filters and surrounding surfaces</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean refrigerator inside and outside</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Defrost and clean freezer where applicable</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean microwave inside and outside</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean dishwasher inside and outside</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Scrub and sanitise sink and tapware</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean cabinet doors, handles and accessible interiors</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean splashbacks and remove grease build-up</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Mop and sanitise the kitchen floor</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Remove all personal belongings and food items</span>
+                </label>
+
+            </div>
+
+        </article>
+
+
+        <!-- =====================================================
+             BATHROOMS
+             ===================================================== -->
+
+        <article class="eol-checklist-card">
+
+            <div class="eol-card-header">
+
+                <div class="eol-card-number">03</div>
+
+                <div>
+                    <div class="eol-card-label">SANITISE</div>
+                    <h3>Bathrooms & Toilets</h3>
+                </div>
+
+            </div>
+
+            <div class="eol-checklist">
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean and disinfect toilet bowl, seat and exterior</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Deep clean shower walls, screen and fittings</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Remove soap scum, grime and visible mildew</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean bath and surrounding surfaces</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean tiles and grout</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean basin, vanity and tapware</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean mirrors and remove water marks</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean accessible fixtures, handles and shelves</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean exhaust fan and accessible vents</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Mop and sanitise bathroom floors</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Remove personal items from the bathroom</span>
+                </label>
+
+            </div>
+
+        </article>
+
+
+        <!-- =====================================================
+             ENTRY & OUTDOOR
+             ===================================================== -->
+
+        <article class="eol-checklist-card">
+
+            <div class="eol-card-header">
+
+                <div class="eol-card-number">04</div>
+
+                <div>
+                    <div class="eol-card-label">FINAL AREAS</div>
+                    <h3>Entry & Outdoor Areas</h3>
+                </div>
+
+            </div>
+
+            <div class="eol-checklist">
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Sweep and mop the entry area</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean front door and surrounding areas</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Clean accessible mailbox areas</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Sweep and clean patios, balconies or accessible outdoor areas</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Remove rubbish and unwanted items</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Leave the property clear and accessible for inspection</span>
+                </label>
+
+            </div>
+
+        </article>
+
+
+        <!-- =====================================================
+             FINAL INSPECTION
+             ===================================================== -->
+
+        <article class="eol-checklist-card eol-final-card">
+
+            <div class="eol-card-header">
+
+                <div class="eol-card-number">05</div>
+
+                <div>
+                    <div class="eol-card-label">BEFORE YOU LEAVE</div>
+                    <h3>Final Inspection Checklist</h3>
+                </div>
+
+            </div>
+
+            <div class="eol-checklist">
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Property is completely empty of personal belongings</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>All windows are clean, closed and secured</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>All doors are clean, closed and secured</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>All appliances have been switched off</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Lights are switched off where appropriate</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Rubbish and unwanted items have been removed</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Property is clean and ready for final inspection</span>
+                </label>
+
+                <label class="eol-check">
+                    <input type="checkbox">
+                    <span>Photos have been taken to document the property's condition</span>
+                </label>
+
+            </div>
+
+        </article>
+
+
+        <!-- =====================================================
+             BOND TIPS
+             ===================================================== -->
+
+        <article class="eol-tips-card">
+
+            <div class="eol-tips-heading">
+                <div class="eol-tips-icon">★</div>
+
+                <div>
+                    <div class="eol-card-label">HELPFUL TIPS</div>
+                    <h3>Preparing for your bond inspection</h3>
+                </div>
+            </div>
+
+            <div class="eol-tips-grid">
+
+                <div class="eol-tip">
+                    <strong>01</strong>
+                    <div>
+                        <h4>Check your lease</h4>
+                        <p>
+                            Review your tenancy agreement for specific cleaning
+                            requirements before starting.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="eol-tip">
+                    <strong>02</strong>
+                    <div>
+                        <h4>Document the property</h4>
+                        <p>
+                            Take clear photos after cleaning so you have a record
+                            of the property's condition.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="eol-tip">
+                    <strong>03</strong>
+                    <div>
+                        <h4>Don't overlook details</h4>
+                        <p>
+                            Window tracks, skirting boards, light switches and
+                            appliance interiors are commonly missed.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="eol-tip">
+                    <strong>04</strong>
+                    <div>
+                        <h4>Allow enough time</h4>
+                        <p>
+                            Start early enough to address any areas that need
+                            additional cleaning before the inspection.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- =====================================================
+             PROFESSIONAL CTA
+             ===================================================== -->
+
+        <section class="eol-cta">
+
+            <div class="eol-cta-content">
+
+                <div class="eol-section-label">
+                    NEED A HAND?
+                </div>
+
+                <h2>
+                    Let a professional handle
+                    the end-of-lease clean.
+                </h2>
+
+                <p>
+                    Save time and prepare your property with a professional
+                    end-of-lease cleaning service from YD Commercial Cleaning
+                    Services in Adelaide.
+                </p>
+
+                <div class="eol-cta-actions">
+
+                    <a href="tel:0430049865" class="eol-btn eol-btn-light">
+                        📞 0430 049 865
+                    </a>
+
+                    <a href="mailto:ydcommercialcleaning@gmail.com" class="eol-btn eol-btn-outline">
+                        ✉ Contact Us
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
 </section>
 
 {% endblock %}

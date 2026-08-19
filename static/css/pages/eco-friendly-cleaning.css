@@ -1,0 +1,1232 @@
+/* =========================================================
+   YD COMMERCIAL CLEANING
+   ECO-FRIENDLY CLEANING PAGE
+   Premium Natural / Sustainable Design
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   VARIABLES
+   --------------------------------------------------------- */
+
+:root {
+    --eco-green: #47705a;
+    --eco-green-dark: #2f4d3d;
+    --eco-green-deep: #233b30;
+    --eco-green-soft: #e7efe9;
+
+    --eco-sage: #78947f;
+    --eco-mint: #dfeae2;
+
+    --eco-cream: #f8f6f0;
+    --eco-warm: #f2efe7;
+
+    --eco-white: #ffffff;
+    --eco-text: #27332c;
+    --eco-muted: #69736d;
+    --eco-border: #dfe4df;
+
+    --eco-shadow: 0 18px 45px rgba(35, 59, 48, 0.08);
+    --eco-shadow-hover: 0 24px 55px rgba(35, 59, 48, 0.14);
+
+    --eco-radius: 18px;
+    --eco-radius-lg: 28px;
+
+    --eco-transition: all 0.3s ease;
+}
+
+
+/* ---------------------------------------------------------
+   GLOBAL PAGE
+   --------------------------------------------------------- */
+
+.eco-section {
+    padding: 100px 0;
+    background: var(--eco-white);
+}
+
+.eco-section.eco-light {
+    background: var(--eco-cream);
+}
+
+.eco-section p {
+    color: var(--eco-muted);
+    line-height: 1.8;
+}
+
+.eco-section h2 {
+    color: var(--eco-green-deep);
+    line-height: 1.2;
+}
+
+.eco-section h3 {
+    color: var(--eco-green-dark);
+}
+
+.eco-label {
+    display: inline-block;
+    margin-bottom: 16px;
+
+    color: var(--eco-green);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.eco-small-heading {
+    display: block;
+    margin-bottom: 15px;
+
+    color: var(--eco-sage);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+
+/* ---------------------------------------------------------
+   HERO
+   --------------------------------------------------------- */
+
+.eco-hero {
+    position: relative;
+    overflow: hidden;
+
+    padding: 120px 0 105px;
+
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(120, 148, 127, 0.22),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 10% 90%,
+            rgba(223, 234, 226, 0.65),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #f7f6f0 0%,
+            #edf2ed 55%,
+            #e3ece5 100%
+        );
+}
+
+.eco-hero::before {
+    content: "";
+    position: absolute;
+
+    width: 480px;
+    height: 480px;
+
+    right: -180px;
+    top: -180px;
+
+    border: 1px solid rgba(71, 112, 90, 0.12);
+    border-radius: 50%;
+}
+
+.eco-hero::after {
+    content: "";
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    left: -160px;
+    bottom: -160px;
+
+    border: 1px solid rgba(71, 112, 90, 0.1);
+    border-radius: 50%;
+}
+
+.eco-hero-content {
+    position: relative;
+    z-index: 2;
+
+    max-width: 900px;
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+.eco-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 9px 16px;
+
+    margin-bottom: 24px;
+
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(71, 112, 90, 0.15);
+
+    border-radius: 999px;
+
+    color: var(--eco-green-dark);
+
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    box-shadow: 0 8px 25px rgba(35, 59, 48, 0.05);
+}
+
+.eco-hero h1 {
+    max-width: 850px;
+    margin: 0 auto 24px;
+
+    color: var(--eco-green-deep);
+
+    font-size: clamp(2.6rem, 5vw, 4.7rem);
+    line-height: 1.04;
+    letter-spacing: -0.045em;
+    font-weight: 800;
+}
+
+.eco-hero-text {
+    max-width: 720px;
+    margin: 0 auto;
+
+    color: #59665e;
+
+    font-size: 1.12rem;
+    line-height: 1.8;
+}
+
+.eco-hero-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 14px;
+
+    margin-top: 34px;
+}
+
+
+/* ---------------------------------------------------------
+   BUTTONS
+   --------------------------------------------------------- */
+
+.eco-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 52px;
+
+    padding: 0 25px;
+
+    border-radius: 12px;
+
+    font-size: 0.92rem;
+    font-weight: 800;
+
+    text-decoration: none;
+
+    transition: var(--eco-transition);
+}
+
+.eco-btn-primary {
+    background: var(--eco-green);
+    color: var(--eco-white);
+
+    box-shadow: 0 12px 25px rgba(71, 112, 90, 0.2);
+}
+
+.eco-btn-primary:hover {
+    background: var(--eco-green-dark);
+    color: var(--eco-white);
+
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(71, 112, 90, 0.25);
+}
+
+.eco-btn-secondary {
+    background: rgba(255, 255, 255, 0.75);
+
+    border: 1px solid var(--eco-border);
+
+    color: var(--eco-green-dark);
+}
+
+.eco-btn-secondary:hover {
+    background: var(--eco-white);
+
+    border-color: var(--eco-green);
+
+    color: var(--eco-green);
+
+    transform: translateY(-2px);
+}
+
+.eco-btn-light {
+    background: var(--eco-white);
+    color: var(--eco-green-dark);
+}
+
+.eco-btn-light:hover {
+    background: var(--eco-cream);
+    color: var(--eco-green-dark);
+
+    transform: translateY(-2px);
+}
+
+.eco-btn-outline {
+    background: transparent;
+
+    border: 1px solid rgba(255, 255, 255, 0.45);
+
+    color: var(--eco-white);
+}
+
+.eco-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+
+    border-color: var(--eco-white);
+
+    color: var(--eco-white);
+
+    transform: translateY(-2px);
+}
+
+
+/* ---------------------------------------------------------
+   HERO TRUST ROW
+   --------------------------------------------------------- */
+
+.eco-trust-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 10px 24px;
+
+    margin-top: 38px;
+
+    color: #647169;
+
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.eco-trust-row span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.eco-trust-row span::first-letter {
+    color: var(--eco-green);
+}
+
+
+/* ---------------------------------------------------------
+   INTRO
+   --------------------------------------------------------- */
+
+.eco-intro {
+    display: grid;
+
+    grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+
+    gap: 80px;
+
+    align-items: start;
+}
+
+.eco-section-heading h2 {
+    margin: 0;
+
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800;
+
+    letter-spacing: -0.035em;
+}
+
+.eco-intro-content {
+    padding-top: 4px;
+}
+
+.eco-intro-content p {
+    margin: 0 0 18px;
+
+    font-size: 1.03rem;
+}
+
+.eco-intro-content p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ---------------------------------------------------------
+   CENTERED HEADINGS
+   --------------------------------------------------------- */
+
+.eco-heading-center {
+    max-width: 760px;
+
+    margin: 0 auto 55px;
+
+    text-align: center;
+}
+
+.eco-heading-center h2 {
+    margin: 0 0 18px;
+
+    font-size: clamp(2rem, 4vw, 3.1rem);
+
+    font-weight: 800;
+
+    letter-spacing: -0.035em;
+}
+
+.eco-heading-center p {
+    max-width: 680px;
+
+    margin: 0 auto;
+
+    font-size: 1rem;
+}
+
+
+/* ---------------------------------------------------------
+   ECO CARDS
+   --------------------------------------------------------- */
+
+.eco-card-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 24px;
+}
+
+.eco-card {
+    padding: 32px;
+
+    background: var(--eco-white);
+
+    border: 1px solid var(--eco-border);
+
+    border-radius: var(--eco-radius);
+
+    box-shadow: 0 8px 30px rgba(35, 59, 48, 0.04);
+
+    transition: var(--eco-transition);
+}
+
+.eco-card:hover {
+    transform: translateY(-6px);
+
+    border-color: rgba(71, 112, 90, 0.25);
+
+    box-shadow: var(--eco-shadow-hover);
+}
+
+.eco-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+
+    margin-bottom: 22px;
+
+    background: var(--eco-green-soft);
+
+    border-radius: 14px;
+
+    font-size: 1.5rem;
+}
+
+.eco-card h3 {
+    margin: 0 0 12px;
+
+    font-size: 1.2rem;
+
+    font-weight: 800;
+}
+
+.eco-card p {
+    margin: 0;
+
+    font-size: 0.94rem;
+}
+
+
+/* ---------------------------------------------------------
+   TWO COLUMN
+   --------------------------------------------------------- */
+
+.eco-two-column {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 70px;
+
+    align-items: center;
+}
+
+.eco-two-column > div > h2 {
+    margin: 0 0 20px;
+
+    font-size: clamp(2rem, 4vw, 3.1rem);
+
+    letter-spacing: -0.035em;
+}
+
+.eco-two-column > div > p {
+    margin-bottom: 18px;
+}
+
+.eco-two-column > div > p:last-of-type {
+    margin-bottom: 25px;
+}
+
+
+/* ---------------------------------------------------------
+   FEATURE BOX
+   --------------------------------------------------------- */
+
+.eco-feature-box {
+    padding: 42px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f0f5f1,
+            #e5eee7
+        );
+
+    border: 1px solid #d8e3da;
+
+    border-radius: var(--eco-radius-lg);
+
+    box-shadow: var(--eco-shadow);
+}
+
+.eco-feature-box h3 {
+    margin: 0 0 28px;
+
+    font-size: 1.35rem;
+
+    font-weight: 800;
+}
+
+.eco-check-list {
+    list-style: none;
+
+    margin: 0;
+    padding: 0;
+}
+
+.eco-check-list li {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-bottom: 16px;
+
+    color: #536159;
+
+    font-size: 0.94rem;
+    line-height: 1.6;
+}
+
+.eco-check-list li:last-child {
+    margin-bottom: 0;
+}
+
+.eco-check-list li span {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 22px;
+    height: 22px;
+
+    margin-top: 2px;
+
+    background: var(--eco-green);
+
+    border-radius: 50%;
+
+    color: white;
+
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+
+/* ---------------------------------------------------------
+   TEXT LINK
+   --------------------------------------------------------- */
+
+.eco-text-link {
+    display: inline-flex;
+    align-items: center;
+
+    color: var(--eco-green);
+
+    font-weight: 800;
+
+    text-decoration: none;
+
+    transition: var(--eco-transition);
+}
+
+.eco-text-link:hover {
+    color: var(--eco-green-dark);
+
+    transform: translateX(3px);
+}
+
+
+/* ---------------------------------------------------------
+   COMMERCIAL BOX
+   --------------------------------------------------------- */
+
+.eco-commercial-box {
+    background:
+        linear-gradient(
+            145deg,
+            #294438,
+            #3d5f4c
+        );
+
+    border: none;
+
+    color: white;
+}
+
+.eco-commercial-box h2,
+.eco-commercial-box h3 {
+    color: white;
+}
+
+.eco-commercial-box p {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.eco-commercial-box .eco-check-list li {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.eco-commercial-box .eco-check-list li span {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+
+/* ---------------------------------------------------------
+   SERVICE GRID
+   --------------------------------------------------------- */
+
+.eco-service-grid {
+    display: grid;
+
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+.eco-service-card {
+    padding: 28px;
+
+    background: var(--eco-white);
+
+    border: 1px solid var(--eco-border);
+
+    border-radius: var(--eco-radius);
+
+    transition: var(--eco-transition);
+}
+
+.eco-service-card:hover {
+    transform: translateY(-5px);
+
+    border-color: rgba(71, 112, 90, 0.3);
+
+    box-shadow: var(--eco-shadow);
+}
+
+.eco-service-card h3 {
+    margin: 0 0 12px;
+
+    font-size: 1.08rem;
+
+    font-weight: 800;
+}
+
+.eco-service-card p {
+    margin: 0;
+
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+
+/* ---------------------------------------------------------
+   DARK PROCESS SECTION
+   --------------------------------------------------------- */
+
+.eco-dark {
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(120, 148, 127, 0.18),
+            transparent 30%
+        ),
+        var(--eco-green-deep);
+
+    color: white;
+}
+
+.eco-heading-light .eco-label {
+    color: #b7d0bd;
+}
+
+.eco-heading-light h2 {
+    color: white;
+}
+
+.eco-heading-light p {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.eco-process-grid {
+    display: grid;
+
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 25px;
+}
+
+.eco-process-step {
+    position: relative;
+
+    padding: 30px;
+
+    background: rgba(255, 255, 255, 0.055);
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: var(--eco-radius);
+
+    transition: var(--eco-transition);
+}
+
+.eco-process-step:hover {
+    background: rgba(255, 255, 255, 0.09);
+
+    transform: translateY(-5px);
+}
+
+.eco-number {
+    margin-bottom: 25px;
+
+    color: #a9c5af;
+
+    font-size: 0.78rem;
+
+    font-weight: 900;
+
+    letter-spacing: 0.1em;
+}
+
+.eco-process-step h3 {
+    margin: 0 0 12px;
+
+    color: white;
+
+    font-size: 1.08rem;
+}
+
+.eco-process-step p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.68);
+
+    font-size: 0.9rem;
+}
+
+
+/* ---------------------------------------------------------
+   BENEFIT GRID
+   --------------------------------------------------------- */
+
+.eco-benefit-grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 20px 60px;
+
+    max-width: 1000px;
+
+    margin: 0 auto;
+}
+
+.eco-benefit-grid > div {
+    padding: 25px 0;
+
+    border-bottom: 1px solid var(--eco-border);
+}
+
+.eco-benefit-grid h3 {
+    margin: 0 0 9px;
+
+    font-size: 1.05rem;
+
+    font-weight: 800;
+}
+
+.eco-benefit-grid p {
+    margin: 0;
+
+    font-size: 0.92rem;
+}
+
+
+/* ---------------------------------------------------------
+   SERVICE AREA
+   --------------------------------------------------------- */
+
+.eco-area-list {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    max-width: 950px;
+
+    margin: 0 auto;
+}
+
+.eco-area-list span {
+    padding: 11px 17px;
+
+    background: var(--eco-white);
+
+    border: 1px solid var(--eco-border);
+
+    border-radius: 999px;
+
+    color: var(--eco-green-dark);
+
+    font-size: 0.83rem;
+
+    font-weight: 700;
+
+    transition: var(--eco-transition);
+}
+
+.eco-area-list span:hover {
+    background: var(--eco-green);
+
+    border-color: var(--eco-green);
+
+    color: white;
+
+    transform: translateY(-2px);
+}
+
+
+/* ---------------------------------------------------------
+   FAQ
+   --------------------------------------------------------- */
+
+.eco-faq {
+    max-width: 850px;
+
+    margin: 0 auto;
+}
+
+.eco-faq details {
+    margin-bottom: 12px;
+
+    background: var(--eco-white);
+
+    border: 1px solid var(--eco-border);
+
+    border-radius: 14px;
+
+    overflow: hidden;
+
+    transition: var(--eco-transition);
+}
+
+.eco-faq details:hover {
+    border-color: rgba(71, 112, 90, 0.3);
+}
+
+.eco-faq summary {
+    position: relative;
+
+    padding: 22px 55px 22px 24px;
+
+    cursor: pointer;
+
+    list-style: none;
+
+    color: var(--eco-green-dark);
+
+    font-size: 0.98rem;
+
+    font-weight: 800;
+}
+
+.eco-faq summary::-webkit-details-marker {
+    display: none;
+}
+
+.eco-faq summary::after {
+    content: "+";
+
+    position: absolute;
+
+    right: 22px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: var(--eco-green);
+
+    font-size: 1.4rem;
+
+    font-weight: 400;
+
+    transition: var(--eco-transition);
+}
+
+.eco-faq details[open] summary::after {
+    content: "−";
+}
+
+.eco-faq details p {
+    margin: 0;
+
+    padding: 0 24px 24px;
+
+    color: var(--eco-muted);
+
+    font-size: 0.93rem;
+    line-height: 1.8;
+}
+
+
+/* ---------------------------------------------------------
+   CTA
+   --------------------------------------------------------- */
+
+.eco-cta {
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 100px 0;
+
+    background:
+        radial-gradient(
+            circle at 90% 20%,
+            rgba(173, 204, 180, 0.18),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #2b4738,
+            #456851
+        );
+
+    color: white;
+}
+
+.eco-cta::before {
+    content: "";
+
+    position: absolute;
+
+    width: 500px;
+    height: 500px;
+
+    right: -250px;
+    bottom: -300px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 50%;
+}
+
+.eco-cta-content {
+    position: relative;
+
+    z-index: 2;
+
+    max-width: 760px;
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+.eco-cta .eco-label {
+    color: #c3d8c8;
+}
+
+.eco-cta h2 {
+    margin: 0 0 18px;
+
+    color: white;
+
+    font-size: clamp(2rem, 4vw, 3.2rem);
+
+    font-weight: 800;
+
+    letter-spacing: -0.035em;
+}
+
+.eco-cta p {
+    max-width: 650px;
+
+    margin: 0 auto;
+
+    color: rgba(255, 255, 255, 0.75);
+
+    font-size: 1rem;
+
+    line-height: 1.8;
+}
+
+.eco-cta-actions {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 14px;
+
+    margin-top: 32px;
+}
+
+
+/* ---------------------------------------------------------
+   ACCESSIBILITY
+   --------------------------------------------------------- */
+
+.eco-btn:focus-visible,
+.eco-text-link:focus-visible,
+.eco-faq summary:focus-visible {
+    outline: 3px solid rgba(71, 112, 90, 0.35);
+
+    outline-offset: 4px;
+}
+
+
+/* ---------------------------------------------------------
+   TABLET
+   --------------------------------------------------------- */
+
+@media (max-width: 1000px) {
+
+    .eco-section {
+        padding: 80px 0;
+    }
+
+    .eco-hero {
+        padding: 100px 0 85px;
+    }
+
+    .eco-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .eco-service-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .eco-process-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .eco-intro {
+        gap: 50px;
+    }
+
+    .eco-two-column {
+        gap: 45px;
+    }
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+    .eco-section {
+        padding: 65px 0;
+    }
+
+    .eco-hero {
+        padding: 80px 0 70px;
+    }
+
+    .eco-hero h1 {
+        font-size: 2.45rem;
+
+        letter-spacing: -0.04em;
+    }
+
+    .eco-hero-text {
+        font-size: 1rem;
+    }
+
+    .eco-hero-actions {
+        flex-direction: column;
+
+        width: 100%;
+    }
+
+    .eco-btn {
+        width: 100%;
+    }
+
+    .eco-trust-row {
+        flex-direction: column;
+
+        gap: 9px;
+
+        align-items: center;
+    }
+
+    .eco-intro,
+    .eco-two-column {
+        grid-template-columns: 1fr;
+
+        gap: 35px;
+    }
+
+    .eco-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .eco-service-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .eco-process-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .eco-benefit-grid {
+        grid-template-columns: 1fr;
+
+        gap: 0 30px;
+    }
+
+    .eco-feature-box {
+        padding: 30px 24px;
+    }
+
+    .eco-heading-center {
+        margin-bottom: 40px;
+    }
+
+    .eco-section-heading h2,
+    .eco-heading-center h2,
+    .eco-two-column > div > h2 {
+        font-size: 2rem;
+    }
+
+    .eco-area-list {
+        justify-content: flex-start;
+    }
+
+    .eco-area-list span {
+        font-size: 0.78rem;
+    }
+
+    .eco-cta {
+        padding: 75px 0;
+    }
+
+    .eco-cta h2 {
+        font-size: 2.1rem;
+    }
+
+    .eco-cta-actions {
+        flex-direction: column;
+    }
+}
+
+
+/* ---------------------------------------------------------
+   SMALL MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 420px) {
+
+    .eco-hero {
+        padding: 65px 0 60px;
+    }
+
+    .eco-hero h1 {
+        font-size: 2.15rem;
+    }
+
+    .eco-card,
+    .eco-service-card,
+    .eco-process-step {
+        padding: 24px;
+    }
+
+    .eco-feature-box {
+        padding: 25px 20px;
+    }
+
+    .eco-faq summary {
+        padding: 19px 48px 19px 19px;
+    }
+
+    .eco-faq details p {
+        padding: 0 19px 20px;
+    }
+}
+
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .eco-card,
+    .eco-service-card,
+    .eco-process-step,
+    .eco-btn,
+    .eco-area-list span,
+    .eco-text-link,
+    .eco-faq details {
+        transition: none;
+    }
+}

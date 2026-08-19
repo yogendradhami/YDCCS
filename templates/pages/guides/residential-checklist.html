@@ -2,139 +2,777 @@
 {% load static %}
 
 {% block title %}Residential Cleaning Checklist | YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Complete home cleaning checklist with daily, weekly and monthly tasks. Room-by-room guide for residential cleaning.{% endblock %}
+
+{% block meta_description %}
+Complete residential cleaning checklist with daily, weekly and monthly tasks. Use this room-by-room home cleaning guide to keep your Adelaide home clean, comfortable and organised.
+{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/guides.css' %}">
-<style>
-.guide-detail-content { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-.guide-detail-content h2 { margin-top: 30px; margin-bottom: 15px; color: #1a3a52; font-size: 1.5rem; font-weight: 700; }
-.guide-detail-content h3 { margin-top: 20px; margin-bottom: 10px; color: #2c5aa0; font-size: 1.1rem; font-weight: 600; }
-.guide-detail-content ul { margin: 15px 0; padding-left: 25px; }
-.guide-detail-content li { margin: 8px 0; line-height: 1.6; color: #555; }
-.guide-actions { margin-bottom: 40px; display: flex; gap: 15px; flex-wrap: wrap; }
-.guide-actions .btn { display: inline-block; text-decoration: none; font-weight: 600; }
-.btn-primary { background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }
-.btn-outline { border: 2px solid #007bff; color: #007bff; padding: 8px 18px; border-radius: 5px; }
-</style>
+<link rel="stylesheet" href="{% static 'css/guides/residential.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="guide-detail-hero">
+
+<!-- =========================================================
+     HERO
+========================================================= -->
+
+<section class="residential-guide-hero">
     <div class="container">
-        <div class="guide-detail-header">
-            <div class="guide-detail-header-left">
-                <h1>Residential Cleaning Checklist</h1>
-                <p class="guide-detail-subtitle">Professional Residential Cleaning Checklist From YD Commercial Cleaning Services, Adelaide</p>
+
+        <div class="residential-guide-hero-inner">
+
+            <div class="residential-guide-heading">
+
+                <span class="residential-guide-eyebrow">
+                    Residential Cleaning Guide
+                </span>
+
+                <h1>
+                    Residential Cleaning Checklist
+                </h1>
+
+                <p class="residential-guide-subtitle">
+                    A practical daily, weekly and monthly cleaning checklist
+                    to help keep your home clean, comfortable and organised.
+                </p>
+
+                <div class="residential-guide-meta">
+                    <span>✓ Room-by-room checklist</span>
+                    <span>✓ Daily &amp; weekly routines</span>
+                    <span>✓ Monthly deep cleaning</span>
+                </div>
+
             </div>
-            <div class="guide-actions">
-                <a href="{% static 'pdf/guides/residential-checklist.pdf' %}" class="btn btn-primary" download>📥 Print / Save as PDF</a>
-                <a href="{% url 'guides' %}" class="btn btn-outline">← Back to Guides</a>
+
+            <div class="residential-guide-actions">
+
+                <a
+                    href="{% static 'pdf/guides/residential-checklist.pdf' %}"
+                    class="residential-btn residential-btn-primary"
+                    download
+                >
+                    <span>📥</span>
+                    <span>Download PDF</span>
+                </a>
+
+                <a
+                    href="{% url 'guides' %}"
+                    class="residential-btn residential-btn-outline"
+                >
+                    <span>←</span>
+                    <span>All Guides</span>
+                </a>
+
             </div>
+
         </div>
+
     </div>
 </section>
 
-<section class="guide-detail-content">
-    <div class="guide-checklist-box">
-<h2>Daily Quick Clean (15-30 minutes)</h2>
-<h3>Kitchen</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Wash dishes or load dishwasher</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe down counters</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Sweep floor</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Empty trash bin</label></li>
-    </ul>
 
-    <h3>Living Areas</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Tidy up and put items in place</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Quick vacuum high-traffic areas</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Fluff pillows and fold throws</label></li>
-    </ul>
+<!-- =========================================================
+     CONTENT
+========================================================= -->
 
-    <h3>Bathrooms</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe sink and mirror</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Quick toilet clean</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Empty trash</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Weekly Deep Clean</h2>
-<h3>Kitchen</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Deep clean stovetop and oven</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean inside microwave</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Scrub sink and faucet</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe cabinet fronts</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Mop floor</label></li>
-    </ul>
+<section class="residential-guide-content">
 
-    <h3>Bathrooms</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Scrub toilet, tub, and shower</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean tile grout</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Sanitize counters and sink</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wash mirrors and fixtures</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Mop floors</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Refill soap and towels</label></li>
-    </ul>
+    <div class="container">
 
-    <h3>Bedrooms</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Change bed sheets</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Vacuum carpets and under bed</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Dust surfaces and shelves</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe light switches</label></li>
-    </ul>
 
-    <h3>Living Areas</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Vacuum all carpets and rugs</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Dust all surfaces and picture frames</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean windows and sills</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe light switches and door handles</label></li>
-    </ul>
+        <!-- INTRO -->
 
-    <h3>Entryways & Hallways</h3>
-    <ul>
-        <li><label class="checklist-item"><input type="checkbox"> Sweep and mop entry area</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean door and windows</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Dust baseboards</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Monthly Deep Clean</h2>
-<ul>
-        <li><label class="checklist-item"><input type="checkbox"> Clean inside refrigerator</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Deep clean oven</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean under sofa and furniture</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wash window blinds/curtains</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Deep clean carpets</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean ceiling fans</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Wipe down baseboards</label></li>
-        <li><label class="checklist-item"><input type="checkbox"> Clean light fixtures</label></li>
-    </ul>
-</div>
-<div class="guide-checklist-box">
-<h2>Home Cleaning Tips</h2>
-<ul>
-        <li>✓ <strong>Declutter First</strong>: Remove items before cleaning for easier access and faster work.</li>
-        <li>✓ <strong>Work Top to Bottom</strong>: Start from ceiling and work downward to avoid re-cleaning.</li>
-        <li>✓ <strong>Use Timers</strong>: Set time limits to stay focused and motivated.</li>
-        <li>✓ <strong>Keep Supplies Handy</strong>: Have all cleaning products ready before starting.</li>
-        <li>✓ <strong>Use Right Products</strong>: Different surfaces need different cleaners for best results.</li>
-    </ul>
-</div>
-<hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+        <div class="residential-intro-card">
 
-    <h3>Prefer professional help?</h3>
-    <p style="font-size: 1.05rem; margin: 20px 0;">Contact YD Commercial Cleaning Services</p>
-    <p style="color: #666;">
-        📞 <a href="tel:0430049865">0430 049 865</a> | 📧 <a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a><br>
-        Adelaide, South Australia | Professional Cleaning, Every Time
-    </p>
+            <div class="residential-intro-icon">
+                🏠
+            </div>
+
+            <div>
+
+                <span class="residential-section-label">
+                    Getting Started
+                </span>
+
+                <h2>
+                    A simple routine for a cleaner home
+                </h2>
+
+                <p>
+                    Keeping your home clean does not have to mean spending
+                    hours cleaning every day. A consistent routine can help
+                    prevent dirt and clutter from building up and make deeper
+                    cleaning easier.
+                </p>
+
+                <p>
+                    Use this checklist to work through essential daily tasks,
+                    weekly cleaning and monthly deep-cleaning jobs. Tick each
+                    task as you complete it and adjust the frequency to suit
+                    your household and lifestyle.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- DAILY -->
+
+        <div class="residential-checklist-card">
+
+            <div class="residential-card-header">
+
+                <div>
+                    <span class="residential-section-label">
+                        Every Day
+                    </span>
+
+                    <h2>
+                        Daily Quick Clean
+                    </h2>
+                </div>
+
+                <span class="residential-frequency-badge">
+                    15–30 minutes
+                </span>
+
+            </div>
+
+
+            <p class="residential-card-intro">
+                Focus on the areas that are used most frequently to keep your
+                home fresh between deeper cleaning sessions.
+            </p>
+
+
+            <div class="residential-task-section">
+
+                <h3>Kitchen</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Wash dishes or load the dishwasher.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Wipe down kitchen counters.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Sweep the kitchen floor.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Empty the kitchen rubbish bin when required.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="residential-task-section">
+
+                <h3>Living Areas</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Tidy rooms and return items to their places.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Quick-vacuum high-traffic areas.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Fluff cushions and fold blankets or throws.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="residential-task-section">
+
+                <h3>Bathrooms</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Wipe the bathroom sink and basin.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Clean the bathroom mirror.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Give the toilet a quick clean.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Empty bathroom rubbish bins when required.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+
+        <!-- WEEKLY -->
+
+        <div class="residential-checklist-card">
+
+            <div class="residential-card-header">
+
+                <div>
+
+                    <span class="residential-section-label">
+                        Once a Week
+                    </span>
+
+                    <h2>
+                        Weekly Deep Clean
+                    </h2>
+
+                </div>
+
+                <span class="residential-frequency-badge">
+                    Deep clean
+                </span>
+
+            </div>
+
+
+            <p class="residential-card-intro">
+                Weekly cleaning covers the surfaces and rooms that need more
+                detailed attention than a daily quick clean.
+            </p>
+
+
+            <div class="residential-task-section">
+
+                <h3>Kitchen</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Deep clean the stovetop and oven.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Clean the inside of the microwave.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Scrub the sink and clean the faucet.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Wipe kitchen cabinet fronts.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Mop the kitchen floor.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="residential-task-section">
+
+                <h3>Bathrooms</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Scrub the toilet, bath and shower.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Clean tile grout and corners.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Sanitise bathroom counters and sink.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Clean mirrors and bathroom fixtures.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Mop and sanitise bathroom floors.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Refill soap, toilet paper and towels.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="residential-task-section">
+
+                <h3>Bedrooms</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Change bed sheets.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Vacuum carpets and underneath the bed.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Dust bedroom surfaces and shelves.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Wipe light switches and door handles.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="residential-task-section">
+
+                <h3>Living Areas</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Vacuum carpets and rugs.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Dust surfaces and picture frames.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Clean windows and accessible window sills.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Wipe light switches and door handles.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="residential-task-section">
+
+                <h3>Entryways &amp; Hallways</h3>
+
+                <ul class="residential-checklist">
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Sweep and mop entry areas.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Clean doors and accessible glass.</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="residential-checklist-item">
+                            <input type="checkbox">
+                            <span>Dust skirting boards and baseboards.</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+
+        <!-- MONTHLY -->
+
+        <div class="residential-checklist-card">
+
+            <div class="residential-card-header">
+
+                <div>
+
+                    <span class="residential-section-label">
+                        Once a Month
+                    </span>
+
+                    <h2>
+                        Monthly Deep Cleaning
+                    </h2>
+
+                </div>
+
+                <span class="residential-frequency-badge">
+                    Detailed clean
+                </span>
+
+            </div>
+
+
+            <p class="residential-card-intro">
+                These less-frequent tasks help reach areas that may be missed
+                during everyday cleaning.
+            </p>
+
+
+            <ul class="residential-checklist">
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Clean the inside of the refrigerator.</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Deep clean the oven.</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Clean underneath sofas and furniture.</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Wash or clean window blinds and curtains as appropriate.</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Deep clean carpets where required.</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Clean ceiling fans.</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Wipe skirting boards and baseboards.</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="residential-checklist-item">
+                        <input type="checkbox">
+                        <span>Clean accessible light fixtures.</span>
+                    </label>
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <!-- TIPS -->
+
+        <div class="residential-tips-card">
+
+            <div class="residential-tips-header">
+
+                <span class="residential-section-label">
+                    Helpful Advice
+                </span>
+
+                <h2>
+                    Home Cleaning Tips
+                </h2>
+
+                <p>
+                    A few simple habits can make regular household cleaning
+                    faster, easier and more effective.
+                </p>
+
+            </div>
+
+
+            <div class="residential-tips-grid">
+
+                <div class="residential-tip">
+
+                    <span class="residential-tip-number">
+                        01
+                    </span>
+
+                    <div>
+                        <h3>Declutter First</h3>
+
+                        <p>
+                            Remove unnecessary items before cleaning so that
+                            surfaces and floors are easier to access.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="residential-tip">
+
+                    <span class="residential-tip-number">
+                        02
+                    </span>
+
+                    <div>
+                        <h3>Work Top to Bottom</h3>
+
+                        <p>
+                            Start with higher surfaces and work downwards to
+                            avoid putting dust back onto areas you have already
+                            cleaned.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="residential-tip">
+
+                    <span class="residential-tip-number">
+                        03
+                    </span>
+
+                    <div>
+                        <h3>Use a Timer</h3>
+
+                        <p>
+                            Short, focused cleaning sessions can make routine
+                            household cleaning easier to manage.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="residential-tip">
+
+                    <span class="residential-tip-number">
+                        04
+                    </span>
+
+                    <div>
+                        <h3>Keep Supplies Handy</h3>
+
+                        <p>
+                            Keep your commonly used cleaning products and
+                            equipment together so you can start quickly.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="residential-tip">
+
+                    <span class="residential-tip-number">
+                        05
+                    </span>
+
+                    <div>
+                        <h3>Use the Right Products</h3>
+
+                        <p>
+                            Choose cleaning products that are suitable for the
+                            specific surface and always follow manufacturer
+                            instructions.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CTA -->
+
+        <div class="residential-guide-cta">
+
+            <div class="residential-cta-content">
+
+                <span class="residential-section-label">
+                    Professional Cleaning
+                </span>
+
+                <h2>
+                    Prefer professional help?
+                </h2>
+
+                <p>
+                    YD Commercial Cleaning Services provides professional
+                    cleaning solutions for homes and properties across
+                    Adelaide. If you need help with regular cleaning, deep
+                    cleaning or a customised cleaning service, our team can
+                    help.
+                </p>
+
+            </div>
+
+
+            <div class="residential-contact-links">
+
+                <a href="tel:0430049865">
+                    <span>📞</span>
+                    <span>0430 049 865</span>
+                </a>
+
+                <a href="mailto:info@ydcleaning.com.au">
+                    <span>✉</span>
+                    <span>Email YD Cleaning</span>
+                </a>
+
+                <a href="{% url 'contact' %}">
+                    <span>→</span>
+                    <span>Request a Cleaning Quote</span>
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- BACK TO GUIDES -->
+
+        <div class="residential-bottom-navigation">
+
+            <a href="{% url 'guides' %}">
+                ← Back to Cleaning Guides
+            </a>
+
+        </div>
+
+    </div>
 </section>
 
 {% endblock %}

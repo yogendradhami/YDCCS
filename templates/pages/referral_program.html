@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Referral Program | YD Commercial Cleaning{% endblock %}
-{% block meta_description %}Earn rewards when you refer friends and businesses to YD Commercial Cleaning. Learn how our referral program works and get cleaning discounts.{% endblock %}
+{% block title %}Referral Program | YD Commercial Cleaning Adelaide{% endblock %}
+
+{% block meta_description %}
+Refer friends, family, landlords and businesses to YD Commercial Cleaning Services in Adelaide. Learn how our referral program works and how successful referrals can earn you cleaning rewards.
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/referral.css' %}">
@@ -10,50 +13,677 @@
 {% endblock %}
 
 {% block content %}
-<div class="modern-landing-page">
-    <section class="modern-landing-hero">
+
+<div class="modern-landing-page referral-page">
+
+    <!-- HERO -->
+    <section class="modern-landing-hero referral-hero">
         <div class="container">
-            <span class="eyebrow">Referral rewards</span>
-            <h1>Share our service and enjoy rewards for every successful referral.</h1>
-            <p>Recommend YD Commercial Cleaning to friends, family or local businesses and receive a reward for each booking that comes through.</p>
+            <span class="eyebrow">YD Referral Program</span>
+
+            <h1>
+                Refer someone you trust.
+                <span>Get rewarded for helping them find great cleaning.</span>
+            </h1>
+
+            <p>
+                Know a homeowner, tenant, landlord, property manager or local business
+                that needs reliable cleaning? Refer them to YD Commercial Cleaning
+                Services and enjoy rewards when your referral becomes a successful booking.
+            </p>
+
+            <div class="referral-hero-actions">
+                <a href="{% url 'contact' %}" class="btn btn-primary">
+                    Make a Referral
+                </a>
+
+                <a href="#how-it-works" class="btn btn-secondary">
+                    How It Works
+                </a>
+            </div>
+
+            <div class="referral-trust-row">
+                <div>
+                    <strong>Local</strong>
+                    <span>Adelaide cleaning services</span>
+                </div>
+
+                <div>
+                    <strong>Reliable</strong>
+                    <span>Professional service</span>
+                </div>
+
+                <div>
+                    <strong>Simple</strong>
+                    <span>Easy referral process</span>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="modern-landing-section">
+
+    <!-- INTRO -->
+    <section class="modern-landing-section referral-intro">
         <div class="container">
+
+            <div class="referral-section-heading">
+                <span class="section-label">Share the experience</span>
+
+                <h2>
+                    Good cleaning is worth recommending.
+                </h2>
+
+                <p>
+                    If you've had a positive experience with YD Commercial Cleaning,
+                    you can help someone else discover dependable cleaning services
+                    while receiving a reward for your successful referral.
+                </p>
+            </div>
+
             <div class="modern-landing-grid">
-                <div class="modern-landing-card">
-                    <h2>How the program works</h2>
-                    <ul class="modern-landing-list">
-                        <li>Refer a friend, neighbour or business to YD Commercial Cleaning.</li>
-                        <li>They book a service and mention your referral.</li>
-                        <li>You receive a reward or discount on your next clean.</li>
-                    </ul>
+
+                <div class="modern-landing-card referral-feature-card">
+                    <div class="referral-icon">01</div>
+
+                    <h3>Recommend someone</h3>
+
+                    <p>
+                        Tell a friend, family member, neighbour, landlord or business
+                        owner about YD Commercial Cleaning.
+                    </p>
                 </div>
-                <div class="modern-landing-card">
-                    <h3>Why people love it</h3>
-                    <div class="modern-landing-inline-list">
-                        <div><strong>Simple process</strong><span>Easy to start with a quick introduction</span></div>
-                        <div><strong>Flexible rewards</strong><span>Choose discounts or future service credits</span></div>
-                        <div><strong>Trusted brand</strong><span>Support a service people already rely on</span></div>
-                        <div><strong>Local impact</strong><span>Help more Adelaide clients discover us</span></div>
+
+                <div class="modern-landing-card referral-feature-card">
+                    <div class="referral-icon">02</div>
+
+                    <h3>They contact us</h3>
+
+                    <p>
+                        Your referral contacts our team, discusses their cleaning
+                        requirements and requests a quote or booking.
+                    </p>
+                </div>
+
+                <div class="modern-landing-card referral-feature-card">
+                    <div class="referral-icon">03</div>
+
+                    <h3>They book a service</h3>
+
+                    <p>
+                        Once the referred customer completes an eligible booking,
+                        the referral can qualify for the applicable reward.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- HOW IT WORKS -->
+    <section class="modern-landing-section referral-process" id="how-it-works">
+        <div class="container">
+
+            <div class="referral-section-heading">
+                <span class="section-label">Simple process</span>
+
+                <h2>
+                    How our referral program works
+                </h2>
+
+                <p>
+                    We keep the process straightforward so you can focus on
+                    recommending our services to people who genuinely need them.
+                </p>
+            </div>
+
+            <div class="referral-steps">
+
+                <div class="referral-step">
+                    <span class="step-number">1</span>
+
+                    <div>
+                        <h3>Choose someone to refer</h3>
+
+                        <p>
+                            Think of someone who may need residential, commercial,
+                            end-of-lease, deep cleaning, regular cleaning or another
+                            professional cleaning service.
+                        </p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="modern-landing-cta">
-        <div class="container">
-            <div class="modern-landing-cta-card">
-                <div>
-                    <h2>Ready to save on your next service?</h2>
-                    <p>Start a referral today and reward your network with a simple, worthwhile exchange.</p>
+
+                <div class="referral-step">
+                    <span class="step-number">2</span>
+
+                    <div>
+                        <h3>Introduce them to YD Commercial Cleaning</h3>
+
+                        <p>
+                            Share our website or contact details and ask the person
+                            to mention your name when they contact our team.
+                        </p>
+                    </div>
                 </div>
-                <a href="{% url 'contact' %}" class="btn btn-primary">Start a Referral</a>
+
+
+                <div class="referral-step">
+                    <span class="step-number">3</span>
+
+                    <div>
+                        <h3>They request a quote or booking</h3>
+
+                        <p>
+                            We discuss their requirements, service location and
+                            cleaning needs before arranging the appropriate service.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="referral-step">
+                    <span class="step-number">4</span>
+
+                    <div>
+                        <h3>Successful referral</h3>
+
+                        <p>
+                            When the referred customer completes an eligible booking,
+                            your referral may qualify for the applicable reward.
+                        </p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
-</div>
-{% endblock %}
 
+
+    <!-- WHO CAN REFER -->
+    <section class="modern-landing-section referral-who">
+        <div class="container">
+
+            <div class="modern-landing-grid">
+
+                <div>
+                    <span class="section-label">Who can participate?</span>
+
+                    <h2>
+                        Anyone who knows someone who needs reliable cleaning.
+                    </h2>
+
+                    <p>
+                        Our referral program is suitable for existing customers,
+                        local residents and people connected with Adelaide homes,
+                        businesses and property services.
+                    </p>
+
+                    <p>
+                        You don't need to be a cleaning professional. If you know
+                        someone who could benefit from our services, you can introduce
+                        them to YD Commercial Cleaning.
+                    </p>
+                </div>
+
+
+                <div class="modern-landing-card referral-audience-card">
+
+                    <h3>People you can refer</h3>
+
+                    <ul class="modern-landing-list">
+
+                        <li>
+                            Homeowners looking for regular or deep cleaning
+                        </li>
+
+                        <li>
+                            Tenants preparing for an end-of-lease clean
+                        </li>
+
+                        <li>
+                            Landlords preparing rental properties
+                        </li>
+
+                        <li>
+                            Property managers and real estate professionals
+                        </li>
+
+                        <li>
+                            Offices and commercial businesses
+                        </li>
+
+                        <li>
+                            Retail, hospitality and other local businesses
+                        </li>
+
+                        <li>
+                            Friends, neighbours and family members
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SERVICES -->
+    <section class="modern-landing-section referral-services">
+        <div class="container">
+
+            <div class="referral-section-heading">
+                <span class="section-label">What can they book?</span>
+
+                <h2>
+                    Refer customers for a range of cleaning services.
+                </h2>
+
+                <p>
+                    Depending on their requirements, your referral may be suitable
+                    for a variety of residential and commercial cleaning services
+                    available through YD Commercial Cleaning.
+                </p>
+            </div>
+
+
+            <div class="referral-service-grid">
+
+                <div class="modern-landing-card">
+                    <h3>Regular Cleaning</h3>
+                    <p>
+                        Ongoing cleaning support for homes, offices and workplaces
+                        that need a consistent cleaning routine.
+                    </p>
+                </div>
+
+
+                <div class="modern-landing-card">
+                    <h3>Deep Cleaning</h3>
+                    <p>
+                        Detailed cleaning for spaces that need additional attention
+                        beyond a standard maintenance clean.
+                    </p>
+                </div>
+
+
+                <div class="modern-landing-card">
+                    <h3>End of Lease Cleaning</h3>
+                    <p>
+                        Professional cleaning support for tenants, landlords and
+                        property managers preparing a property for its next stage.
+                    </p>
+                </div>
+
+
+                <div class="modern-landing-card">
+                    <h3>Commercial Cleaning</h3>
+                    <p>
+                        Cleaning solutions for offices, workplaces, retail spaces
+                        and other commercial environments.
+                    </p>
+                </div>
+
+
+                <div class="modern-landing-card">
+                    <h3>Window Cleaning</h3>
+                    <p>
+                        Professional window cleaning to help maintain a cleaner,
+                        brighter and more presentable property.
+                    </p>
+                </div>
+
+
+                <div class="modern-landing-card">
+                    <h3>Specialised Cleaning</h3>
+                    <p>
+                        For specific cleaning requirements, our team can discuss
+                        the property and recommend the most suitable service.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- BENEFITS -->
+    <section class="modern-landing-section referral-benefits">
+        <div class="container">
+
+            <div class="modern-landing-grid">
+
+                <div class="modern-landing-card">
+
+                    <span class="section-label">Why refer?</span>
+
+                    <h2>
+                        Turn a recommendation into something worthwhile.
+                    </h2>
+
+                    <p>
+                        Referrals are a simple way to help people you know find a
+                        professional local cleaning service while giving you the
+                        opportunity to receive a reward when your referral becomes
+                        an eligible customer.
+                    </p>
+
+                    <ul class="modern-landing-list">
+
+                        <li>
+                            Help someone find a cleaning service they can rely on.
+                        </li>
+
+                        <li>
+                            Support a local Adelaide cleaning business.
+                        </li>
+
+                        <li>
+                            Receive an applicable referral reward after a qualifying booking.
+                        </li>
+
+                        <li>
+                            Recommend services you already know and trust.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <div class="referral-benefit-highlight">
+
+                    <span class="benefit-small">
+                        REFERRAL REWARD
+                    </span>
+
+                    <strong>
+                        Refer. Book. Reward.
+                    </strong>
+
+                    <p>
+                        Successful referrals may qualify for a cleaning discount,
+                        service credit or other applicable reward.
+                    </p>
+
+                    <small>
+                        Reward eligibility and conditions apply.
+                    </small>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- RESPONSIBLE REFERRALS -->
+    <section class="modern-landing-section referral-guidelines">
+        <div class="container">
+
+            <div class="referral-section-heading">
+                <span class="section-label">A better way to refer</span>
+
+                <h2>
+                    Please make referrals with permission.
+                </h2>
+
+                <p>
+                    We want the referral experience to be comfortable for everyone.
+                    Whenever possible, introduce our business directly or make sure
+                    the person you're referring is happy for us to be contacted.
+                </p>
+            </div>
+
+
+            <div class="modern-landing-grid">
+
+                <div class="modern-landing-card">
+
+                    <h3>Recommended</h3>
+
+                    <ul class="modern-landing-list">
+
+                        <li>
+                            Share our website with someone who needs cleaning.
+                        </li>
+
+                        <li>
+                            Introduce the person directly to our team.
+                        </li>
+
+                        <li>
+                            Ask them to mention your name when contacting us.
+                        </li>
+
+                        <li>
+                            Make sure your referral understands that they are
+                            contacting a cleaning business.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <div class="modern-landing-card">
+
+                    <h3>Please avoid</h3>
+
+                    <ul class="modern-landing-list">
+
+                        <li>
+                            Sending unsolicited messages on our behalf.
+                        </li>
+
+                        <li>
+                            Providing private contact information without permission.
+                        </li>
+
+                        <li>
+                            Misrepresenting our services or referral rewards.
+                        </li>
+
+                        <li>
+                            Making duplicate or misleading referrals.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- FAQ -->
+    <section class="modern-landing-section referral-faq">
+        <div class="container">
+
+            <div class="referral-section-heading">
+                <span class="section-label">Frequently asked questions</span>
+
+                <h2>
+                    Referral program FAQs
+                </h2>
+            </div>
+
+
+            <div class="referral-faq-grid">
+
+                <details class="referral-faq-item">
+                    <summary>Who can I refer?</summary>
+
+                    <p>
+                        You can refer friends, family members, neighbours,
+                        homeowners, tenants, landlords, property managers and
+                        local businesses that may require cleaning services.
+                    </p>
+                </details>
+
+
+                <details class="referral-faq-item">
+                    <summary>How does the referred customer identify my referral?</summary>
+
+                    <p>
+                        Ask the person you refer to mention your name when they
+                        contact YD Commercial Cleaning or request their quote.
+                        This helps us identify the referral correctly.
+                    </p>
+                </details>
+
+
+                <details class="referral-faq-item">
+                    <summary>When do I receive my reward?</summary>
+
+                    <p>
+                        Referral rewards are generally associated with a qualifying
+                        completed booking. Eligibility may depend on the service,
+                        booking status and applicable referral conditions.
+                    </p>
+                </details>
+
+
+                <details class="referral-faq-item">
+                    <summary>Can I refer more than one person?</summary>
+
+                    <p>
+                        Yes. You can recommend our services to multiple people.
+                        Each referral is assessed according to the applicable
+                        referral program conditions.
+                    </p>
+                </details>
+
+
+                <details class="referral-faq-item">
+                    <summary>Can businesses participate?</summary>
+
+                    <p>
+                        Yes. Local businesses, property professionals and other
+                        organisations can recommend YD Commercial Cleaning to
+                        suitable customers or business contacts.
+                    </p>
+                </details>
+
+
+                <details class="referral-faq-item">
+                    <summary>Is there a cash reward?</summary>
+
+                    <p>
+                        Referral rewards may be provided as an applicable discount,
+                        service credit or another approved reward. Please contact
+                        us for the current referral offer and eligibility requirements.
+                    </p>
+                </details>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- TERMS -->
+    <section class="modern-landing-section referral-terms">
+        <div class="container">
+
+            <div class="referral-terms-card">
+
+                <span class="section-label">Referral conditions</span>
+
+                <h2>
+                    A few important things to know.
+                </h2>
+
+                <p>
+                    Referral rewards are subject to eligibility and the current
+                    YD Commercial Cleaning referral offer. A referral must be
+                    identifiable before or during the referred customer's booking
+                    process.
+                </p>
+
+                <ul>
+
+                    <li>
+                        The referred customer must be a new or otherwise eligible
+                        customer where required by the current offer.
+                    </li>
+
+                    <li>
+                        A referral reward may only apply after an eligible booking
+                        has been completed.
+                    </li>
+
+                    <li>
+                        Duplicate, fraudulent or self-referrals may not qualify.
+                    </li>
+
+                    <li>
+                        Referral rewards cannot necessarily be combined with other
+                        promotional offers.
+                    </li>
+
+                    <li>
+                        Referral rewards, eligibility requirements and program
+                        conditions may change from time to time.
+                    </li>
+
+                </ul>
+
+                <p class="referral-note">
+                    For the latest referral reward and eligibility requirements,
+                    please contact YD Commercial Cleaning before making a referral.
+                </p>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- FINAL CTA -->
+    <section class="modern-landing-cta referral-final-cta">
+
+        <div class="container">
+
+            <div class="modern-landing-cta-card">
+
+                <div>
+
+                    <span class="section-label">
+                        Ready to refer?
+                    </span>
+
+                    <h2>
+                        Know someone who needs a cleaner?
+                    </h2>
+
+                    <p>
+                        Introduce them to YD Commercial Cleaning Services and
+                        help them find professional cleaning support in Adelaide.
+                    </p>
+
+                </div>
+
+                <div class="referral-cta-buttons">
+
+                    <a href="{% url 'contact' %}" class="btn btn-primary">
+                        Make a Referral
+                    </a>
+
+                    <a href="/" class="btn btn-secondary">
+                        Explore Our Services
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

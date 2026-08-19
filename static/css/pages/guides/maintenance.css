@@ -1,0 +1,800 @@
+/* =========================================================
+   YD COMMERCIAL CLEANING
+   OFFICE CLEANING MAINTENANCE SCHEDULE
+   ========================================================= */
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.maintenance-page .guide-detail-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 88px 0 78px;
+    background:
+        radial-gradient(circle at 88% 15%, rgba(255,255,255,0.09), transparent 30%),
+        linear-gradient(135deg, #17251f 0%, #263b31 55%, #34483d 100%);
+    color: #fff;
+}
+
+.maintenance-page .guide-detail-hero::before {
+    content: "";
+    position: absolute;
+    width: 430px;
+    height: 430px;
+    right: -190px;
+    top: -220px;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 50%;
+}
+
+.maintenance-page .guide-detail-hero::after {
+    content: "";
+    position: absolute;
+    width: 270px;
+    height: 270px;
+    left: -140px;
+    bottom: -190px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 50%;
+}
+
+.maintenance-page .guide-detail-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 45px;
+}
+
+.maintenance-page .guide-detail-header-left {
+    max-width: 850px;
+}
+
+.maintenance-page .guide-detail-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 15px;
+    color: #b8d8c5;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.maintenance-page .guide-detail-header h1 {
+    margin: 0 0 19px;
+    color: #fff;
+    font-size: clamp(2.35rem, 5vw, 4.15rem);
+    line-height: 1.06;
+    font-weight: 800;
+    letter-spacing: -0.038em;
+}
+
+.maintenance-page .guide-detail-subtitle {
+    max-width: 780px;
+    margin: 0;
+    color: rgba(255,255,255,0.84);
+    font-size: 1.08rem;
+    line-height: 1.78;
+}
+
+
+/* =========================================================
+   HERO ACTIONS
+   ========================================================= */
+
+.maintenance-page .guide-actions {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.maintenance-page .guide-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 47px;
+    padding: 11px 19px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 750;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.maintenance-page .guide-actions .btn:hover {
+    transform: translateY(-2px);
+}
+
+.maintenance-page .guide-actions .btn-primary {
+    background: #fff;
+    color: #263b31;
+    border: 1px solid #fff;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.maintenance-page .guide-actions .btn-primary:hover {
+    background: #edf5ef;
+}
+
+.maintenance-page .guide-actions .btn-outline {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.28);
+}
+
+.maintenance-page .guide-actions .btn-outline:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+.maintenance-page .guide-detail-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 76px 20px 105px;
+    color: #4f5d56;
+}
+
+
+/* =========================================================
+   INTRODUCTION
+   ========================================================= */
+
+.maintenance-page .guide-intro-box {
+    position: relative;
+    margin-bottom: 30px;
+    padding: 32px 34px;
+    background: linear-gradient(135deg, #f3f7f4, #f8faf8);
+    border: 1px solid #dfe9e2;
+    border-left: 5px solid #557763;
+    border-radius: 14px;
+}
+
+.maintenance-page .guide-intro-box h2 {
+    margin: 0 0 14px;
+    color: #263b31;
+    font-size: 1.55rem;
+    line-height: 1.25;
+    font-weight: 800;
+}
+
+.maintenance-page .guide-intro-box p {
+    margin: 0 0 14px;
+    color: #5e6a64;
+    line-height: 1.8;
+}
+
+.maintenance-page .guide-intro-box p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   CHECKLIST CARDS
+   ========================================================= */
+
+.maintenance-page .guide-checklist-box {
+    margin-bottom: 28px;
+    padding: 34px;
+    background: #fff;
+    border: 1px solid #e1e7e3;
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(36,53,44,0.055);
+}
+
+.maintenance-page .guide-checklist-box h2 {
+    margin: 0 0 15px;
+    color: #263b31;
+    font-size: 1.65rem;
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+}
+
+.maintenance-page .guide-checklist-box h3 {
+    margin: 31px 0 11px;
+    padding-bottom: 9px;
+    color: #3d5b49;
+    font-size: 1.08rem;
+    line-height: 1.35;
+    font-weight: 800;
+    border-bottom: 1px solid #e8eeea;
+}
+
+.maintenance-page .guide-checklist-box h3:first-child {
+    margin-top: 0;
+}
+
+.maintenance-page .guide-checklist-box p {
+    margin: 0 0 18px;
+    color: #626d67;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   CHECKLIST LIST
+   ========================================================= */
+
+.maintenance-page .guide-checklist-box ul {
+    margin: 15px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.maintenance-page .guide-checklist-box li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+
+/* =========================================================
+   CHECKBOX + TEXT
+   ========================================================= */
+
+.maintenance-page .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 13px 4px;
+    color: #56625c;
+    font-size: 0.96rem;
+    line-height: 1.55;
+    cursor: pointer;
+    border-bottom: 1px solid #edf0ee;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.maintenance-page .guide-checklist-box li:last-child .checklist-item {
+    border-bottom: none;
+}
+
+.maintenance-page .checklist-item:hover {
+    color: #293a32;
+}
+
+.maintenance-page .checklist-item input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    padding: 0;
+    accent-color: #557763;
+    cursor: pointer;
+}
+
+.maintenance-page .checklist-item span {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.maintenance-page .checklist-item input[type="checkbox"]:checked + span {
+    color: #6f7974;
+    text-decoration: line-through;
+    opacity: 0.58;
+}
+
+
+/* =========================================================
+   TIPS / STRONG TEXT
+   ========================================================= */
+
+.maintenance-page .guide-checklist-box li strong {
+    color: #35483e;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.maintenance-page .guide-table-wrapper {
+    width: 100%;
+    margin: 22px 0 0;
+    overflow-x: auto;
+    border: 1px solid #dfe5e1;
+    border-radius: 12px;
+}
+
+.maintenance-page .guide-table {
+    width: 100%;
+    min-width: 650px;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+.maintenance-page .guide-table th {
+    padding: 15px 16px;
+    background: #eef3ef;
+    color: #30483b;
+    border-bottom: 1px solid #d8e0da;
+    text-align: left;
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.maintenance-page .guide-table td {
+    padding: 15px 16px;
+    color: #5d6862;
+    border-bottom: 1px solid #edf0ee;
+    line-height: 1.5;
+    font-size: 0.91rem;
+}
+
+.maintenance-page .guide-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.maintenance-page .guide-table tbody tr:nth-child(even) td {
+    background: #fafcfb;
+}
+
+
+/* =========================================================
+   PROFESSIONAL CTA
+   ========================================================= */
+
+.maintenance-page .guide-professional-cta {
+    margin-top: 50px;
+    padding: 43px;
+    background:
+        radial-gradient(circle at 90% 10%, rgba(255,255,255,0.08), transparent 30%),
+        linear-gradient(135deg, #263b31, #34483d);
+    border-radius: 18px;
+    color: #fff;
+    box-shadow: 0 20px 45px rgba(36,53,44,0.14);
+}
+
+.maintenance-page .guide-professional-cta h2 {
+    margin: 0 0 13px;
+    color: #fff;
+    font-size: 1.8rem;
+    line-height: 1.25;
+}
+
+.maintenance-page .guide-professional-cta p {
+    max-width: 750px;
+    margin: 0 0 24px;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.75;
+}
+
+.maintenance-page .guide-contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.maintenance-page .guide-contact-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: #fff;
+    color: #263b31;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 750;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.maintenance-page .guide-contact-links a:hover {
+    transform: translateY(-2px);
+    background: #edf5ef;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .maintenance-page .guide-detail-header {
+        display: block;
+    }
+
+    .maintenance-page .guide-actions {
+        margin-top: 28px;
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .maintenance-page .guide-detail-hero {
+        padding: 70px 0 60px;
+    }
+
+    .maintenance-page .guide-detail-content {
+        padding: 60px 16px 75px;
+    }
+
+    .maintenance-page .guide-checklist-box {
+        padding: 26px 21px;
+        border-radius: 14px;
+    }
+
+    .maintenance-page .guide-intro-box {
+        padding: 26px 22px;
+    }
+
+    .maintenance-page .guide-professional-cta {
+        padding: 31px 24px;
+    }
+
+    .maintenance-page .checklist-item {
+        padding: 12px 2px;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .maintenance-page .guide-detail-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .maintenance-page .guide-detail-subtitle {
+        font-size: 0.98rem;
+    }
+
+    .maintenance-page .guide-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .maintenance-page .guide-actions .btn {
+        width: 100%;
+    }
+
+    .maintenance-page .guide-checklist-box {
+        padding: 23px 17px;
+    }
+
+    .maintenance-page .guide-checklist-box h2 {
+        font-size: 1.4rem;
+    }
+
+    .maintenance-page .guide-checklist-box h3 {
+        font-size: 1.03rem;
+    }
+
+    .maintenance-page .checklist-item {
+        gap: 10px;
+        font-size: 0.93rem;
+        line-height: 1.5;
+    }
+
+    .maintenance-page .checklist-item input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        margin-top: 2px;
+    }
+
+    .maintenance-page .guide-professional-cta {
+        padding: 27px 19px;
+    }
+
+    .maintenance-page .guide-contact-links {
+        flex-direction: column;
+    }
+
+    .maintenance-page .guide-contact-links a {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+
+    .maintenance-page .guide-detail-hero {
+        padding: 25px 0;
+        background: none;
+        color: #000;
+    }
+
+    .maintenance-page .guide-detail-header h1,
+    .maintenance-page .guide-detail-subtitle {
+        color: #000;
+    }
+
+    .maintenance-page .guide-actions,
+    header,
+    footer,
+    nav {
+        display: none !important;
+    }
+
+    .maintenance-page .guide-detail-content {
+        max-width: none;
+        padding: 20px;
+    }
+
+    .maintenance-page .guide-checklist-box {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+    }
+
+    .maintenance-page .guide-professional-cta {
+        background: none;
+        color: #000;
+        border: 1px solid #ccc;
+        box-shadow: none;
+    }
+
+    .maintenance-page .guide-professional-cta h2,
+    .maintenance-page .guide-professional-cta p {
+        color: #000;
+    }
+}
+
+/* =========================================================
+   YD COMMERCIAL CLEANING
+   OFFICE CLEANING MAINTENANCE SCHEDULE
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   CHECKLIST RESET
+   --------------------------------------------------------- */
+
+.guide-checklist-box ul {
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.guide-checklist-box li {
+    position: static;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 0;
+}
+
+
+/* ---------------------------------------------------------
+   CHECKLIST ROW
+   --------------------------------------------------------- */
+
+.guide-checklist-box .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    margin: 0;
+    padding: 13px 4px;
+
+    color: #4f5d56;
+    font-size: 0.97rem;
+    font-weight: 500;
+    line-height: 1.55;
+
+    cursor: pointer;
+
+    border-bottom: 1px solid #edf1ee;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+
+/* Remove the old decorative checkmark */
+.guide-checklist-box .checklist-item::before {
+    content: none !important;
+    display: none !important;
+}
+
+
+/* Last item has no divider */
+.guide-checklist-box li:last-child .checklist-item {
+    border-bottom: none;
+}
+
+
+/* ---------------------------------------------------------
+   REAL CHECKBOX
+   --------------------------------------------------------- */
+
+.guide-checklist-box .checklist-item input[type="checkbox"] {
+    appearance: auto;
+    -webkit-appearance: checkbox;
+
+    flex: 0 0 18px;
+
+    width: 18px;
+    height: 18px;
+
+    min-width: 18px;
+    min-height: 18px;
+
+    margin: 0;
+    padding: 0;
+
+    accent-color: #557763;
+
+    cursor: pointer;
+}
+
+
+/* ---------------------------------------------------------
+   CHECKLIST TEXT
+   --------------------------------------------------------- */
+
+.guide-checklist-box .checklist-item span {
+    display: block;
+
+    flex: 1 1 auto;
+    min-width: 0;
+
+    margin: 0;
+    padding: 0;
+
+    color: inherit;
+}
+
+
+/* ---------------------------------------------------------
+   HOVER
+   --------------------------------------------------------- */
+
+.guide-checklist-box .checklist-item:hover {
+    color: #293a32;
+}
+
+
+/* ---------------------------------------------------------
+   CHECKED STATE
+   --------------------------------------------------------- */
+
+.guide-checklist-box
+.checklist-item
+input[type="checkbox"]:checked
++ span {
+    color: #7a8580;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    opacity: 0.7;
+}
+
+
+/* ---------------------------------------------------------
+   CHECKLIST HEADINGS
+   --------------------------------------------------------- */
+
+.guide-checklist-box h3 {
+    margin: 30px 0 10px;
+
+    color: #3d5b49;
+    font-size: 1.08rem;
+    line-height: 1.35;
+    font-weight: 750;
+}
+
+.guide-checklist-box h3:first-child {
+    margin-top: 0;
+}
+
+
+/* ---------------------------------------------------------
+   CHECKLIST DESCRIPTION
+   --------------------------------------------------------- */
+
+.guide-checklist-box > p {
+    margin: 0 0 18px;
+
+    color: #626d67;
+    font-size: 0.98rem;
+    line-height: 1.75;
+}
+
+
+/* ---------------------------------------------------------
+   TIPS LIST
+   --------------------------------------------------------- */
+
+/*
+   The tips section contains normal text rather than
+   interactive checkboxes.
+*/
+
+.guide-checklist-box ul li:not(:has(.checklist-item)) {
+    padding: 12px 0;
+
+    color: #56625c;
+    line-height: 1.7;
+
+    border-bottom: 1px solid #edf1ee;
+}
+
+.guide-checklist-box ul li:not(:has(.checklist-item)):last-child {
+    border-bottom: none;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+    .guide-checklist-box .checklist-item {
+        align-items: flex-start;
+
+        gap: 11px;
+
+        padding: 12px 2px;
+
+        font-size: 0.94rem;
+        line-height: 1.55;
+    }
+
+    .guide-checklist-box .checklist-item input[type="checkbox"] {
+        flex: 0 0 17px;
+
+        width: 17px;
+        height: 17px;
+
+        min-width: 17px;
+        min-height: 17px;
+
+        margin-top: 2px;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   SMALL MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 480px) {
+
+    .guide-checklist-box .checklist-item {
+        gap: 10px;
+
+        padding: 11px 0;
+
+        font-size: 0.92rem;
+    }
+
+    .guide-checklist-box .checklist-item input[type="checkbox"] {
+        flex-basis: 17px;
+
+        width: 17px;
+        height: 17px;
+
+        min-width: 17px;
+    }
+
+}
