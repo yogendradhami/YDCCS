@@ -331,7 +331,11 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <img src="{% static 'images/placeholder.svg' %}" alt="Placeholder" style="width:100%;height:200px;object-fit:cover;background:#f0f0f0;">
+                        <img
+                            src="{% static 'images/services/placeholder.svg' %}"
+                            alt="No gallery image available"
+                            style="width:100%;height:200px;object-fit:cover;background:#f0f0f0;"
+                        >
                     {% endif %}
 
                     <div class="dashboard-gallery-info">
