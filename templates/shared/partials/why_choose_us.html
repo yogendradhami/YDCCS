@@ -1,35 +1,73 @@
 <section class="section why-choose-section">
     <div class="container">
+
         <div class="section-title">
-            <h2>Why Choose YD Commercial Cleaning?</h2>
-            <p>Trusted Adelaide cleaning specialists with fast response, professional service and 100% satisfaction guaranteed.</p>
+            <h2>
+                Why Choose
+                {% if service.title %}
+                    {{ service.title }}
+                {% else %}
+                    YD Commercial Cleaning
+                {% endif %}
+                ?
+            </h2>
+
+            <p>
+                Trusted Adelaide cleaning specialists delivering reliable,
+                professional and high-quality cleaning services.
+            </p>
         </div>
 
         <div class="why-choose-grid">
+
             <div class="why-choose-card">
                 <h4>✅ Fully Insured & Bonded</h4>
-                <p>Protecting your home or business with professional cleaning teams and full liability coverage.</p>
+                <p>
+                    Protecting your home or business with professional cleaning
+                    teams and appropriate liability coverage.
+                </p>
             </div>
+
             <div class="why-choose-card">
                 <h4>🎯 Reliable Local Team</h4>
-                <p>Experienced Adelaide cleaners who know the area and care about every job.</p>
+                <p>
+                    Experienced Adelaide cleaners who understand local
+                    properties, businesses and cleaning requirements.
+                </p>
             </div>
+
             <div class="why-choose-card">
                 <h4>💯 Satisfaction Guaranteed</h4>
-                <p>We stand behind our work and will return if you are not completely happy.</p>
+                <p>
+                    We stand behind our work and will return to address
+                    reasonable concerns if you are not satisfied.
+                </p>
             </div>
+
             <div class="why-choose-card">
                 <h4>⏱️ Fast Response Times</h4>
-                <p>Quick booking, rapid scheduling and same-day estimates for most cleaning requests.</p>
+                <p>
+                    Quick booking, flexible scheduling and fast responses for
+                    most cleaning enquiries.
+                </p>
             </div>
+
             <div class="why-choose-card">
                 <h4>💰 Transparent Pricing</h4>
-                <p>Clear quotes with no hidden fees so you know exactly what to expect.</p>
+                <p>
+                    Clear quotes with straightforward pricing and no
+                    unexpected hidden fees.
+                </p>
             </div>
+
             <div class="why-choose-card">
                 <h4>🧹 Tailored Cleaning Plans</h4>
-                <p>Services designed for homes, offices, rental properties and commercial sites.</p>
+                <p>
+                    Cleaning solutions tailored for homes, offices, rental
+                    properties and commercial sites.
+                </p>
             </div>
+
         </div>
     </div>
 </section>

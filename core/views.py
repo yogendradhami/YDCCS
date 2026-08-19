@@ -845,9 +845,9 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
     # Prefer SVG, then WEBP, then JPG static files if they exist under static/images/services
     static_dir = os.path.join(settings.BASE_DIR, "static", "images", "services")
     candidates = [
-        f"{service_slug}.svg",
         f"{service_slug}.webp",
         f"{service_slug}.jpg",
+        f"{service_slug}.svg",
     ]
 
     chosen = None
@@ -910,6 +910,524 @@ def legacy_service_redirect(request, service_slug):
         f"/services/{service_slug}/",
         permanent=True
     )
+
+
+def _get_why_choose_context(request, service=None, location=None, suburb_name=None):
+    """
+    Build page-specific content for the globally rendered
+    'Why Choose YD Commercial Cleaning?' section.
+
+    The section remains reusable across the site while its
+    messaging changes according to the current page/service.
+    """
+
+    path = request.path.lower()
+
+    # ----------------------------------------------------
+    # Service-specific content
+    # ----------------------------------------------------
+    if service:
+        service_title = service.get("title") or service.get("heading") or ""
+        service_name = service_title.replace(" Adelaide", "").strip()
+        service_key = service_name.lower()
+
+        service_profiles = {
+            "commercial cleaning": {
+                "heading": "Why Choose YD for Commercial Cleaning?",
+                "intro": (
+                    "Reliable commercial cleaning for Adelaide businesses, "
+                    "with professional teams, flexible scheduling and "
+                    "consistent cleaning standards."
+                ),
+                "cards": [
+                    {
+                        "icon": "🏢",
+                        "title": "Business-Focused Cleaning",
+                        "text": (
+                            "Cleaning plans designed for offices, retail spaces, "
+                            "warehouses and other commercial properties across Adelaide."
+                        ),
+                    },
+                    {
+                        "icon": "🛡️",
+                        "title": "Fully Insured Teams",
+                        "text": (
+                            "Work with a professional cleaning team backed by "
+                            "appropriate insurance and clear service standards."
+                        ),
+                    },
+                    {
+                        "icon": "📅",
+                        "title": "Flexible Scheduling",
+                        "text": (
+                            "Daily, weekly or scheduled commercial cleaning "
+                            "arranged around your business operations."
+                        ),
+                    },
+                    {
+                        "icon": "✅",
+                        "title": "Consistent Quality",
+                        "text": (
+                            "A structured cleaning process with quality checks "
+                            "to help maintain a consistently professional workplace."
+                        ),
+                    },
+                    {
+                        "icon": "💬",
+                        "title": "Clear Communication",
+                        "text": (
+                            "Straightforward quotes, responsive communication "
+                            "and clear expectations before cleaning begins."
+                        ),
+                    },
+                    {
+                        "icon": "📍",
+                        "title": "Local Adelaide Service",
+                        "text": (
+                            "A local cleaning team serving businesses across "
+                            "Adelaide and surrounding areas."
+                        ),
+                    },
+                ],
+            },
+
+            "office cleaning": {
+                "heading": "Why Choose YD for Office Cleaning?",
+                "intro": (
+                    "Keep your Adelaide workplace clean, hygienic and professional "
+                    "with dependable office cleaning tailored around your team."
+                ),
+                "cards": [
+                    {
+                        "icon": "🧑‍💼",
+                        "title": "Professional Workplaces",
+                        "text": (
+                            "Detailed cleaning for workstations, meeting rooms, "
+                            "shared areas, kitchens and staff spaces."
+                        ),
+                    },
+                    {
+                        "icon": "🧼",
+                        "title": "Hygiene-Focused Cleaning",
+                        "text": (
+                            "Regular cleaning and sanitisation of high-touch "
+                            "and shared workplace areas."
+                        ),
+                    },
+                    {
+                        "icon": "🌙",
+                        "title": "After-Hours Options",
+                        "text": (
+                            "Flexible scheduling can help minimise disruption "
+                            "to your staff, customers and daily operations."
+                        ),
+                    },
+                    {
+                        "icon": "📋",
+                        "title": "Structured Service",
+                        "text": (
+                            "Consistent cleaning routines and quality checks "
+                            "help maintain your workplace to a professional standard."
+                        ),
+                    },
+                    {
+                        "icon": "🛡️",
+                        "title": "Fully Insured",
+                        "text": (
+                            "Choose a professional cleaning provider with "
+                            "appropriate insurance and service standards."
+                        ),
+                    },
+                    {
+                        "icon": "📍",
+                        "title": "Adelaide Local Team",
+                        "text": (
+                            "Reliable office cleaning services for workplaces "
+                            "across Adelaide and surrounding suburbs."
+                        ),
+                    },
+                ],
+            },
+
+            "end of lease cleaning": {
+                "heading": "Why Choose YD for End of Lease Cleaning?",
+                "intro": (
+                    "Move out with confidence with detailed end of lease cleaning "
+                    "for Adelaide tenants, landlords and property managers."
+                ),
+                "cards": [
+                    {
+                        "icon": "🏠",
+                        "title": "Inspection-Focused Cleaning",
+                        "text": (
+                            "Detailed cleaning of kitchens, bathrooms, floors, "
+                            "surfaces and other areas commonly checked during inspections."
+                        ),
+                    },
+                    {
+                        "icon": "🧽",
+                        "title": "Deep Kitchen & Bathroom Cleaning",
+                        "text": (
+                            "Targeted cleaning for grease, grime, bathrooms, "
+                            "fixtures, tiles and other high-use areas."
+                        ),
+                    },
+                    {
+                        "icon": "🧹",
+                        "title": "Detailed Property Cleaning",
+                        "text": (
+                            "Attention to floors, skirting, walls, windows and "
+                            "other areas that can affect the final presentation."
+                        ),
+                    },
+                    {
+                        "icon": "📋",
+                        "title": "Clear Cleaning Process",
+                        "text": (
+                            "A structured approach helps make sure important "
+                            "areas are covered before your property handover."
+                        ),
+                    },
+                    {
+                        "icon": "⏱️",
+                        "title": "Flexible Scheduling",
+                        "text": (
+                            "Cleaning appointments organised around your moving "
+                            "date and property handover requirements."
+                        ),
+                    },
+                    {
+                        "icon": "💬",
+                        "title": "Transparent Quotes",
+                        "text": (
+                            "Clear pricing and service expectations before the "
+                            "cleaning team starts work."
+                        ),
+                    },
+                ],
+            },
+
+            "bond cleaning": {
+                "heading": "Why Choose YD for Bond Cleaning?",
+                "intro": (
+                    "Detailed Adelaide bond cleaning designed to help tenants "
+                    "prepare their rental property for inspection and handover."
+                ),
+                "cards": [
+                    {
+                        "icon": "🔎",
+                        "title": "Inspection Ready",
+                        "text": (
+                            "Focused cleaning of the areas landlords and property "
+                            "managers commonly inspect."
+                        ),
+                    },
+                    {
+                        "icon": "🍳",
+                        "title": "Kitchen Deep Cleaning",
+                        "text": (
+                            "Detailed cleaning for ovens, appliances, benches, "
+                            "cupboards and kitchen surfaces."
+                        ),
+                    },
+                    {
+                        "icon": "🚿",
+                        "title": "Bathroom Detail",
+                        "text": (
+                            "Bathrooms receive focused attention to surfaces, "
+                            "fixtures, tiles and grout."
+                        ),
+                    },
+                    {
+                        "icon": "🧹",
+                        "title": "Whole-Property Cleaning",
+                        "text": (
+                            "Floors, walls, skirting, windows and other key areas "
+                            "are included according to your cleaning requirements."
+                        ),
+                    },
+                    {
+                        "icon": "📅",
+                        "title": "Move-Out Scheduling",
+                        "text": (
+                            "Flexible appointments to work around your moving "
+                            "and property handover timeline."
+                        ),
+                    },
+                    {
+                        "icon": "🛡️",
+                        "title": "Professional Service",
+                        "text": (
+                            "A reliable local cleaning team focused on detailed "
+                            "results and clear communication."
+                        ),
+                    },
+                ],
+            },
+        }
+
+        profile = service_profiles.get(service_key)
+
+        if profile:
+            return profile
+
+        # ------------------------------------------------
+        # Generic service fallback
+        # Uses existing SEO/service data where possible.
+        # ------------------------------------------------
+        benefits = service.get("benefits") or []
+        included = service.get("included") or []
+
+        cards = [
+            {
+                "icon": "🛡️",
+                "title": "Fully Insured Cleaning",
+                "text": (
+                    "Professional cleaning delivered with appropriate insurance "
+                    "and clear service standards."
+                ),
+            },
+            {
+                "icon": "📍",
+                "title": f"Local {location or 'Adelaide'} Service",
+                "text": (
+                    f"Reliable {service_name.lower()} delivered by a local team "
+                    f"serving {location or 'Adelaide'} and surrounding areas."
+                ),
+            },
+            {
+                "icon": "🧹",
+                "title": "Detailed Cleaning Process",
+                "text": (
+                    "A structured approach focused on the cleaning requirements "
+                    "of your property and service."
+                ),
+            },
+            {
+                "icon": "📅",
+                "title": "Flexible Scheduling",
+                "text": (
+                    "Appointments arranged around your property, business, "
+                    "rental or project requirements."
+                ),
+            },
+            {
+                "icon": "💬",
+                "title": "Transparent Communication",
+                "text": (
+                    "Clear quotes and straightforward communication before "
+                    "your cleaning service begins."
+                ),
+            },
+            {
+                "icon": "⭐",
+                "title": "Quality-Focused Results",
+                "text": (
+                    "We focus on delivering a thorough, professional result "
+                    "suited to your cleaning requirements."
+                ),
+            },
+        ]
+
+        # If the service has meaningful benefits, use one as a subtle
+        # service-specific supporting card.
+        if benefits:
+            cards[-1]["text"] = (
+                f"{benefits[0]}. Our team combines this service requirement "
+                "with a professional, detail-focused cleaning approach."
+            )
+
+        return {
+            "heading": f"Why Choose YD for {service_name}?",
+            "intro": (
+                f"Professional {service_name.lower()} for "
+                f"{location or 'Adelaide'}, delivered by a reliable local "
+                "cleaning team with a focus on quality and service."
+            ),
+            "cards": cards,
+        }
+
+    # ----------------------------------------------------
+    # Suburb/local page
+    # ----------------------------------------------------
+    if suburb_name:
+        return {
+            "heading": f"Why Choose YD Cleaning in {suburb_name}?",
+            "intro": (
+                f"Looking for reliable cleaning services in {suburb_name}, Adelaide? "
+                "YD Commercial Cleaning provides professional, locally focused "
+                "cleaning for homes, businesses and rental properties."
+            ),
+            "cards": [
+                {
+                    "icon": "📍",
+                    "title": f"Local {suburb_name} Service",
+                    "text": (
+                        f"Professional cleaning services for homes and businesses "
+                        f"in {suburb_name} and nearby Adelaide suburbs."
+                    ),
+                },
+                {
+                    "icon": "🛡️",
+                    "title": "Fully Insured Team",
+                    "text": (
+                        "Book with confidence with a professional cleaning team "
+                        "committed to safe and reliable service."
+                    ),
+                },
+                {
+                    "icon": "🧹",
+                    "title": "Professional Cleaning",
+                    "text": (
+                        "Detailed cleaning options for residential, commercial "
+                        "and rental properties."
+                    ),
+                },
+                {
+                    "icon": "⏱️",
+                    "title": "Flexible Scheduling",
+                    "text": (
+                        "Convenient cleaning appointments arranged around your "
+                        "home, workplace or property requirements."
+                    ),
+                },
+                {
+                    "icon": "💬",
+                    "title": "Clear Quotes",
+                    "text": (
+                        "Straightforward communication and transparent service "
+                        "expectations before work begins."
+                    ),
+                },
+                {
+                    "icon": "⭐",
+                    "title": "Quality-Focused Service",
+                    "text": (
+                        "We focus on reliable results and a professional customer "
+                        "experience from booking through completion."
+                    ),
+                },
+            ],
+        }
+
+    # ----------------------------------------------------
+    # Special site pages
+    # ----------------------------------------------------
+    page_profiles = {
+        "/insurance/": {
+            "heading": "Why Choose YD for Safe & Reliable Cleaning?",
+            "intro": (
+                "Professional cleaning backed by clear service standards, "
+                "insurance and a strong commitment to customer confidence."
+            ),
+        },
+        "/emergency-cleaning/": {
+            "heading": "Why Choose YD for Emergency Cleaning?",
+            "intro": (
+                "When unexpected cleaning problems need attention, our Adelaide "
+                "team focuses on responsive communication and practical solutions."
+            ),
+        },
+        "/eco-friendly-cleaning/": {
+            "heading": "Why Choose YD for Eco-Friendly Cleaning?",
+            "intro": (
+                "Thoughtful cleaning practices designed to maintain a high "
+                "standard of cleanliness while considering people and the environment."
+            ),
+        },
+    }
+
+    profile = next(
+        (
+            profile
+            for page_path, profile in page_profiles.items()
+            if path.startswith(page_path)
+        ),
+        None,
+    )
+
+    if profile:
+        return {
+            **profile,
+            "cards": [
+                {
+                    "icon": "🛡️",
+                    "title": "Professional Standards",
+                    "text": "Reliable cleaning delivered with clear processes and professional service standards.",
+                },
+                {
+                    "icon": "📍",
+                    "title": "Local Adelaide Team",
+                    "text": "A local cleaning provider serving Adelaide homes, businesses and properties.",
+                },
+                {
+                    "icon": "🧹",
+                    "title": "Detailed Results",
+                    "text": "Cleaning focused on the specific requirements of your property and service.",
+                },
+                {
+                    "icon": "💬",
+                    "title": "Clear Communication",
+                    "text": "Straightforward quotes, booking information and communication throughout your service.",
+                },
+                {
+                    "icon": "📅",
+                    "title": "Flexible Scheduling",
+                    "text": "Cleaning appointments arranged around your property and scheduling requirements.",
+                },
+                {
+                    "icon": "⭐",
+                    "title": "Customer Focused",
+                    "text": "We aim to provide a dependable experience and professional cleaning results.",
+                },
+            ],
+        }
+
+    # ----------------------------------------------------
+    # Default global fallback
+    # ----------------------------------------------------
+    return {
+        "heading": "Why Choose YD Commercial Cleaning?",
+        "intro": (
+            "Trusted Adelaide cleaning specialists providing professional, "
+            "reliable and detail-focused cleaning for homes, businesses and properties."
+        ),
+        "cards": [
+            {
+                "icon": "🛡️",
+                "title": "Fully Insured Cleaning",
+                "text": "Professional cleaning backed by appropriate insurance and clear service standards.",
+            },
+            {
+                "icon": "📍",
+                "title": "Reliable Local Team",
+                "text": "A local Adelaide cleaning team focused on dependable service and professional results.",
+            },
+            {
+                "icon": "⭐",
+                "title": "Quality-Focused Results",
+                "text": "A detail-focused approach designed around the requirements of your property.",
+            },
+            {
+                "icon": "⏱️",
+                "title": "Flexible Scheduling",
+                "text": "Convenient booking options for homes, businesses, rental properties and commercial sites.",
+            },
+            {
+                "icon": "💬",
+                "title": "Transparent Communication",
+                "text": "Clear quotes and straightforward communication so you know what to expect.",
+            },
+            {
+                "icon": "🧹",
+                "title": "Tailored Cleaning Plans",
+                "text": "Cleaning services adapted to your property, schedule and specific requirements.",
+            },
+        ],
+    }
+
+
+
 
 
 def service_page(request, service_slug):
@@ -978,6 +1496,11 @@ def service_page(request, service_slug):
             "service_url": service_url,
             "location": location,
             "location_definition": location_definition,
+            "why_choose": _get_why_choose_context(
+                request,
+                service=service,
+                location=location,
+            ),
 
             "google_reviews": google_reviews,
             "service_review_count": service_review_count,
