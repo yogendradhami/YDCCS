@@ -1,31 +1,77 @@
 {% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/faq.css' %}">
+{% endblock %}
 
 {% block content %}
-<h1>FAQ Submissions</h1>
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Question</th>
-            <th>From</th>
-            <th>Created</th>
-            <th>Published</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for q in questions %}
-        <tr>
-            <td>{{ q.id }}</td>
-            <td>{{ q.question|truncatechars:80 }}</td>
-            <td>{{ q.name }}<br>{{ q.email }}</td>
-            <td>{{ q.created_at }}</td>
-            <td>{{ q.is_published }}</td>
-            <td><a href="{% url 'faq_question_reply' q.id %}">Reply</a></td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6">No submissions yet.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="page-header">
+    <h1>FAQ Submissions</h1>
+    <div class="actions">
+        <form method="get" class="search-form">
+            <input type="search" name="q" placeholder="Search questions, email or name" value="{{ q|default:'' }}">
+            <button class="btn btn-outline" type="submit">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="card list-card">
+    <table class="faq-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Question</th>
+                <th>From</th>
+                <th>Submitted</th>
+                <th>Published</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in questions %}
+            <tr>
+                <td class="mono">#{{ q.id }}</td>
+                <td class="question-cell">
+                    <div class="question-text">{{ q.question|truncatechars:160 }}</div>
+                    <div class="muted small">{{ q.question|truncatechars:0 }}</div>
+                </td>
+                <td>
+                    <div>{{ q.name }}</div>
+                    <div class="muted small">{{ q.email }}</div>
+                </td>
+                <td class="muted small">{{ q.created_at|date:"d M Y H:i" }}</td>
+                <td>
+                    {% if q.is_published %}
+                        <span class="badge badge-success">Published</span>
+                    {% else %}
+                        <span class="badge badge-muted">Draft</span>
+                    {% endif %}
+                </td>
+                <td class="actions-col">
+                    <a class="btn btn-primary" href="{% url 'faq_question_reply' q.id %}">Reply</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="muted">No submissions yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">← Prev</a>
+        {% endif %}
+
+        <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
 {% endblock %}

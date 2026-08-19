@@ -24,6 +24,7 @@ from django.http import StreamingHttpResponse
 import mimetypes
 from urllib.parse import quote as urlquote
 from django.db.models import Avg, Count, F, Max, Q, Sum
+from django.core.paginator import Paginator
 from django.db.models.functions import TruncDate, TruncMonth
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -476,8 +477,19 @@ def customer_list(request):
 
 @login_required
 def faq_question_list(request):
-    questions = FAQQuestion.objects.order_by("-created_at")
-    return render(request, "dashboard/faq_questions.html", {"questions": questions})
+    q = request.GET.get("q", "").strip()
+    questions_qs = FAQQuestion.objects.order_by("-created_at")
+    if q:
+        questions_qs = questions_qs.filter(
+            Q(question__icontains=q) | Q(name__icontains=q) | Q(email__icontains=q)
+        )
+
+    paginator = Paginator(questions_qs, 20)
+    page = request.GET.get("page")
+    page_obj = paginator.get_page(page)
+
+    context = {"questions": page_obj.object_list, "page_obj": page_obj, "q": q}
+    return render(request, "dashboard/faq_questions.html", context)
 
 
 @login_required
@@ -486,6 +498,7 @@ def faq_question_reply(request, question_id):
     if request.method == "POST":
         answer = request.POST.get("answer", "").strip()
         publish = request.POST.get("publish") == "1"
+        notify = request.POST.get("notify") == "1"
 
         if publish and not answer:
             messages.error(request, "❌ Please enter an answer before publishing.")
@@ -497,18 +510,23 @@ def faq_question_reply(request, question_id):
         q.is_published = publish and bool(answer)
         q.save()
 
-        if publish and q.email:
+        if notify and q.email:
+            logger = logging.getLogger(__name__)
             try:
                 subject = f"Answer to your question on {settings.SITE_URL}"
-                message = f"Hi {q.name},\n\nYour question:\n{q.question}\n\nOur answer:\n{q.answer}\n\nThanks,\nYD Commercial Cleaning Team"
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [q.email])
+                message = (
+                    f"Hi {q.name or ''},\n\nYour question:\n{q.question}\n\nOur answer:\n{q.answer}\n\nThanks,\nYD Commercial Cleaning Team"
+                )
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [q.email], fail_silently=False)
+                messages.success(request, "✅ Reply saved and applicant notified by email.")
             except Exception:
-                pass
-
-        if publish:
-            messages.success(request, "✅ Reply saved and published.")
+                logger.exception("Failed to send FAQ reply email to %s", q.email)
+                messages.warning(request, "⚠️ Reply saved but failed to send notification email.")
         else:
-            messages.success(request, "✅ Reply saved as draft.")
+            if publish:
+                messages.success(request, "✅ Reply saved and published.")
+            else:
+                messages.success(request, "✅ Reply saved as draft.")
         return redirect("faq_question_list")
 
     return render(request, "dashboard/faq_reply.html", {"question": q})
@@ -1003,8 +1021,16 @@ def delete_employee(request, employee_id):
 @login_required
 def gallery_list(request):
     items = GalleryItem.objects.all().order_by("-id")
-    return render(request, "dashboard/gallery/dashboard_gallery_list.html", {"items": items})
+    source_count = items.values("source").distinct().count()
 
+    return render(
+        request,
+        "dashboard/gallery/dashboard_gallery_list.html",
+        {
+            "items": items,
+            "source_count": source_count,
+        },
+    )
 
 @login_required
 def add_gallery_item(request):

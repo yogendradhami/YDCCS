@@ -1,0 +1,40 @@
+/* Styles for FAQ dashboard pages */
+.page-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:16px;
+  margin-bottom:16px;
+}
+.page-header h1{margin:0;font-size:1.5rem}
+.search-form{display:flex;gap:8px}
+.search-form input[type="search"]{padding:8px 10px;border:1px solid #ddd;border-radius:6px}
+
+.card.list-card{padding:12px}
+.faq-table{width:100%;border-collapse:collapse}
+.faq-table thead th{background:#fbfbfb;text-align:left;padding:10px;border-bottom:1px solid #eee}
+.faq-table tbody td{padding:12px;border-bottom:1px solid #f2f2f2;vertical-align:top}
+.mono{font-family:monospace;color:#555}
+.question-cell .question-text{font-weight:600}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:0.85rem}
+.badge-success{background:#e6ffed;color:#04602a}
+.badge-muted{background:#f0f0f0;color:#666}
+.actions-col{text-align:right}
+.btn{display:inline-block;padding:8px 12px;border-radius:6px;text-decoration:none;border:1px solid transparent}
+.btn-primary{background:#0b72ff;color:#fff}
+.btn-outline{background:transparent;border:1px solid #ccc;color:#333;padding:7px 11px}
+
+/* Reply page */
+.faq-reply-grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
+.question-card{padding:12px}
+.reply-card{padding:12px}
+.content-block{background:#fff;border:1px solid #f0f0f0;padding:12px;border-radius:6px}
+.form-row{display:flex;gap:16px;align-items:center;margin-top:12px}
+.checkbox{display:flex;align-items:center;gap:8px}
+.form-actions{margin-top:12px}
+.small.muted{color:#777}
+
+@media (max-width:800px){
+  .faq-reply-grid{grid-template-columns:1fr}
+  .actions-col{text-align:left}
+}
