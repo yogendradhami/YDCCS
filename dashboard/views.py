@@ -19,6 +19,10 @@ from django.contrib.auth.decorators import login_required
 import logging
 from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
+import requests
+from django.http import StreamingHttpResponse
+import mimetypes
+from urllib.parse import quote as urlquote
 from django.db.models import Avg, Count, F, Max, Q, Sum
 from django.db.models.functions import TruncDate, TruncMonth
 from django.http import HttpResponse
@@ -362,6 +366,84 @@ def career_detail(request, application_id):
         return redirect("career_detail", application_id=application.id)
 
     return render(request, "dashboard/career_detail.html", {"application": application})
+
+
+@login_required
+def download_resume(request, application_id):
+    """Proxy download for resume to ensure proper headers and filename.
+
+    Streams the file from the storage URL and returns a download response
+    with a sensible filename so Cloudinary URL quirks don't break downloads.
+    """
+    application = get_object_or_404(CareerApplication, id=application_id)
+    if not application.resume:
+        return redirect("career_detail", application_id=application.id)
+
+    file_url = application.resume.url
+
+    # Derive filename from stored name if possible
+    filename = getattr(application.resume, 'name', None) or f"resume-{application.id}"
+    # Ensure we have a filename only, not a full path
+    filename = filename.split('/')[-1]
+    # If filename has no extension, try to infer from content-type later
+    try:
+        r = requests.get(file_url, stream=True, timeout=10)
+        r.raise_for_status()
+    except Exception:
+        # If proxying fails, fall back to redirecting the browser to the
+        # direct storage URL (Cloudinary). This avoids silently returning
+        # the detail page and lets the browser attempt the download/preview.
+        return redirect(file_url)
+
+    content_type = r.headers.get('Content-Type') or mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+
+    # If filename missing extension, try to append based on content type
+    if '.' not in filename:
+        ext = mimetypes.guess_extension(content_type) or ''
+        if ext:
+            filename = filename + ext
+
+    response = StreamingHttpResponse(r.iter_content(chunk_size=8192), content_type=content_type)
+    response['Content-Length'] = r.headers.get('Content-Length', '')
+    response['Content-Disposition'] = f'attachment; filename="{urlquote(filename)}"'
+    return response
+
+
+@login_required
+def preview_resume(request, application_id):
+    """Stream the resume for inline preview (PDFs/images) when possible.
+
+    If proxying fails, redirect to the storage URL so the browser can attempt
+    to render the file directly.
+    """
+    application = get_object_or_404(CareerApplication, id=application_id)
+    if not application.resume:
+        return redirect("career_detail", application_id=application.id)
+
+    file_url = application.resume.url
+    filename = getattr(application.resume, 'name', None) or f"resume-{application.id}"
+    filename = filename.split('/')[-1]
+
+    try:
+        r = requests.get(file_url, stream=True, timeout=10)
+        r.raise_for_status()
+    except Exception:
+        return redirect(file_url)
+
+    content_type = r.headers.get('Content-Type') or mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+
+    # For preview, prefer inline disposition so browsers render PDFs/images
+    disposition = 'inline'
+
+    # If content-type is not previewable, fall back to attachment
+    previewable = content_type.startswith('application/pdf') or content_type.startswith('image/')
+    if not previewable:
+        disposition = 'attachment'
+
+    response = StreamingHttpResponse(r.iter_content(chunk_size=8192), content_type=content_type)
+    response['Content-Length'] = r.headers.get('Content-Length', '')
+    response['Content-Disposition'] = f'{disposition}; filename="{urlquote(filename)}"'
+    return response
 
 
 @login_required

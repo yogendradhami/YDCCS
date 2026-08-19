@@ -37,6 +37,8 @@ from .views import (
     dashboard_home,
     careers_list,
     career_detail,
+    download_resume,
+    preview_resume,
     delete_booking,
     delete_customer,
     delete_employee,
@@ -130,6 +132,8 @@ urlpatterns = [
     path("dashboard/", dashboard_home, name="dashboard_home"),
     path("dashboard/careers/", careers_list, name="careers_list"),
     path("dashboard/careers/<int:application_id>/", career_detail, name="career_detail"),
+    path("dashboard/careers/<int:application_id>/resume/", download_resume, name="career_resume_download"),
+    path("dashboard/careers/<int:application_id>/resume/preview/", preview_resume, name="career_resume_preview"),
     path("dashboard/settings/", company_settings, name="company_settings"),
     path("dashboard/leads/", lead_list, name="lead_list"),
     path(

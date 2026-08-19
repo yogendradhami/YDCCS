@@ -1,53 +1,93 @@
 {% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/careers.css' %}">
+{% endblock %}
 
 {% block content %}
-<h1>Career Applications</h1>
-<form method="get" class="form-inline" style="margin-bottom:1rem;">
-    <input type="text" name="q" placeholder="Search name, email, phone, suburb" value="{{ q }}" />
-    <select name="status">
-        <option value="">All status</option>
-        <option value="new" {% if filter_status == 'new' %}selected{% endif %}>New</option>
-        <option value="reviewing" {% if filter_status == 'reviewing' %}selected{% endif %}>Reviewing</option>
-        <option value="shortlisted" {% if filter_status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
-        <option value="interview" {% if filter_status == 'interview' %}selected{% endif %}>Interview</option>
-        <option value="hired" {% if filter_status == 'hired' %}selected{% endif %}>Hired</option>
-        <option value="rejected" {% if filter_status == 'rejected' %}selected{% endif %}>Rejected</option>
-    </select>
-    <input type="text" name="position" placeholder="Position" value="{{ filter_position }}" />
-    <button type="submit">Filter</button>
-</form>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Applicant</th>
-            <th>Position</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Status</th>
-            <th>Submitted</th>
-            <th>Resume</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for app in applications %}
-        <tr>
-            <td><a href="{% url 'career_detail' app.id %}">{{ app.full_name }}</a></td>
-            <td>{{ app.position }}</td>
-            <td>{{ app.email }}</td>
-            <td>{{ app.phone }}</td>
-            <td>{{ app.status }}</td>
-            <td>{{ app.created_at }}</td>
-            <td>
-                {% if app.resume %}
-                    <a href="{{ app.resume.url }}" target="_blank">Download</a>
-                {% else %}
-                    —
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5">No applications yet.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="dash-page-header">
+    <div>
+        <h1>Career Applications</h1>
+        <p class="muted">Manage and review candidate applications. Total: <strong>{{ applications.count }}</strong></p>
+    </div>
+    <div class="header-actions">
+        <a href="/dashboard/careers/" class="btn btn-outline">Refresh</a>
+    </div>
+</div>
+
+<section class="filter-bar">
+    <form method="get" class="filter-form">
+        <div class="field">
+            <input type="search" name="q" placeholder="Search name, email, phone or suburb" value="{{ q }}" />
+        </div>
+
+        <div class="field">
+            <select name="status">
+                <option value="">All statuses</option>
+                <option value="new" {% if filter_status == 'new' %}selected{% endif %}>New</option>
+                <option value="reviewing" {% if filter_status == 'reviewing' %}selected{% endif %}>Reviewing</option>
+                <option value="shortlisted" {% if filter_status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                <option value="interview" {% if filter_status == 'interview' %}selected{% endif %}>Interview</option>
+                <option value="hired" {% if filter_status == 'hired' %}selected{% endif %}>Hired</option>
+                <option value="rejected" {% if filter_status == 'rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <input type="text" name="position" placeholder="Position" value="{{ filter_position }}" />
+        </div>
+
+        <div class="field actions">
+            <button class="btn btn-primary" type="submit">Apply</button>
+            <a class="btn btn-ghost" href="/dashboard/careers/">Clear</a>
+        </div>
+    </form>
+</section>
+
+<div class="table-wrap">
+    <table class="app-table">
+        <thead>
+            <tr>
+                <th>Applicant</th>
+                <th>Position</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th class="col-actions">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td class="applicant">
+                    <div class="avatar">{{ app.full_name|default:"-"|first }}</div>
+                    <div class="meta">
+                        <a class="name" href="{% url 'career_detail' app.id %}">{{ app.full_name|default:"—" }}</a>
+                        <div class="sub muted">{{ app.suburb }}</div>
+                    </div>
+                </td>
+                <td>{{ app.get_position_display }}</td>
+                <td>
+                    <div>{{ app.email }}</div>
+                    <div class="muted">{{ app.phone }}</div>
+                </td>
+                <td>
+                    <span class="status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
+                </td>
+                <td class="muted">{{ app.created_at|date:"d M Y H:i" }}</td>
+                <td class="col-actions">
+                    <a href="{% url 'career_detail' app.id %}" class="btn btn-sm">View</a>
+                    {% if app.resume %}
+                        <a href="{{ app.resume.url }}" class="btn btn-sm btn-outline" target="_blank">Resume</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="muted">No applications found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}

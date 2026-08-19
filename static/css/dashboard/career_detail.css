@@ -1,0 +1,55 @@
+/* Career detail page styles */
+
+.career-detail-grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+.card{background:#fff;border:1px solid #e6e8eb;padding:14px;border-radius:8px}
+.panel-left .profile{text-align:center}
+.avatar-large{width:96px;height:96px;border-radius:12px;background:#e6f0fa;color:#0b64a0;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:28px;margin-bottom:8px}
+.name{margin:6px 0 0}
+.contact h4,.documents h4,.references h4{margin-top:12px;margin-bottom:6px}
+.doc-link{display:inline-block;padding:8px 12px;border-radius:6px;background:#f8fafc;border:1px solid #e6eef7;color:#0b64a0;text-decoration:none}
+.muted{color:#6b7280}
+.small{font-size:0.9rem}
+.content-block{padding:12px;border:1px dashed #eef2f6;border-radius:6px;background:#fbfdff}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.status-block{text-align:right}
+.status-badge{display:inline-block;padding:8px 12px;border-radius:999px;font-weight:700}
+.status-new{background:#fff7ed;color:#92400e;border:1px solid #fee7c2}
+.status-reviewing{background:#eff6ff;color:#1d4ed8}
+.status-shortlisted{background:#ecfdf5;color:#065f46}
+.status-interview{background:#fff7f0;color:#b45309}
+.status-hired{background:#eef7ee;color:#0f5132}
+.status-rejected{background:#fef2f2;color:#991b1b}
+
+.admin-form label{display:block;margin-top:10px}
+.admin-form select,.admin-form textarea{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px}
+.form-actions{display:flex;gap:8px;margin-top:10px}
+
+/* Button refinements */
+.btn-outline{background:transparent;border:1px solid #d1d5db;color:#0f172a;padding:8px 12px;border-radius:6px}
+.btn-ghost{background:transparent;color:#0b64a0;border:1px solid transparent}
+.btn-primary{background:#0b64a0;color:#fff;border:none;padding:10px 14px;border-radius:8px}
+
+.doc-link{display:inline-flex;align-items:center;gap:8px}
+.doc-link::before{content:"\1F4C4";font-size:14px}
+
+.form-actions #save-notify{min-width:220px}
+.form-actions #back-to-list{min-width:120px}
+
+
+@media(max-width:980px){
+  .career-detail-grid{grid-template-columns:1fr}
+}
+
+/* Overview section styles */
+.section-title{font-size:1.05rem;margin:0 0 8px;color:#0f172a}
+.overview{padding:14px;border-radius:8px}
+.overview-list{margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.overview-list .kv-row{display:flex;flex-direction:column;padding:6px 8px;border-radius:6px;background:#fbfdff;border:1px solid #eef6fc}
+.overview-list dt{font-size:0.85rem;color:#6b7280;margin-bottom:6px}
+.overview-list dd{margin:0;font-weight:600}
+.kv-label{font-size:0.85rem;color:#6b7280;margin:0}
+.kv-value{font-weight:600;margin:4px 0 0}
+
+.content-block{background:#ffffff}
+
