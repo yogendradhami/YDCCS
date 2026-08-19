@@ -5,6 +5,38 @@
 <link rel="stylesheet" href="{% static 'css/dashboard/faq.css' %}">
 {% endblock %}
 
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const previewBtn = document.getElementById('preview-btn');
+    const closeBtn = document.getElementById('close-preview');
+    const previewPanel = document.getElementById('reply-preview');
+    const previewContent = document.getElementById('preview-content');
+    const textarea = document.getElementById('answer');
+
+    function escapeHtml(text){
+        return text.replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]; });
+    }
+
+    if(previewBtn){
+        previewBtn.addEventListener('click', function(){
+            const raw = textarea.value || '';
+            const escaped = escapeHtml(raw);
+            const html = escaped.replace(/\n/g, '<br/>');
+            previewContent.innerHTML = html || '<em>(No content)</em>';
+            previewPanel.style.display = 'block';
+            window.scrollTo({top: previewPanel.offsetTop - 80, behavior: 'smooth'});
+        });
+    }
+    if(closeBtn){
+        closeBtn.addEventListener('click', function(){
+            previewPanel.style.display = 'none';
+        });
+    }
+});
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <h1>Reply to FAQ #{{ question.id }}</h1>

@@ -64,7 +64,21 @@
             <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">← Prev</a>
         {% endif %}
 
-        <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <div class="page-numbers">
+            {% for p in page_obj.paginator.page_range %}
+                {% if p == page_obj.number %}
+                    <span class="page current">{{ p }}</span>
+                {% elif p <= page_obj.number|add:3 and p >= page_obj.number|add:-3 %}
+                    <a href="?page={{ p }}{% if q %}&q={{ q }}{% endif %}" class="page">{{ p }}</a>
+                {% elif p == 1 %}
+                    <a href="?page=1{% if q %}&q={{ q }}{% endif %}" class="page">1</a>
+                    {% if page_obj.number > 5 %}<span class="ellipsis">…</span>{% endif %}
+                {% elif p == page_obj.paginator.num_pages %}
+                    {% if page_obj.number < page_obj.paginator.num_pages|add:-4 %}<span class="ellipsis">…</span>{% endif %}
+                    <a href="?page={{ p }}{% if q %}&q={{ q }}{% endif %}" class="page">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
 
         {% if page_obj.has_next %}
             <a class="btn btn-outline" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Next →</a>
