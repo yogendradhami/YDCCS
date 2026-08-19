@@ -1,0 +1,23 @@
+Hello {{ application.full_name }},
+
+Thank you for your application for the position of {{ application.get_position_display }}.
+
+We wanted to let you know that the status of your application has been updated to: {{ application.get_status_display }}.
+
+{% if admin_notes %}Message from our recruitment team:
+
+{{ admin_notes }}
+
+{% endif %}
+What happens next:
+
+- If your status indicates further review or an interview, our team will contact you with proposed times and next steps.
+- If no further action is required at this stage, we will keep your details on file for future opportunities.
+
+If you have any questions, please reply to this email or visit https://ydcleaning.com.au/contact/.
+
+Kind regards,
+
+YD Commercial Cleaning
+Recruitment Team
+https://ydcleaning.com.au

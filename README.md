@@ -61,6 +61,15 @@ Key env vars for deployment:
 - `EMAIL_HOST_USER` — authenticated SMTP sender email.
 - `EMAIL_HOST_PASSWORD` — SMTP password or app password.
 - `DEFAULT_FROM_EMAIL` — sender email; left blank to auto-use `EMAIL_HOST_USER` for Gmail.
+
+Email templates added:
+
+- `templates/emails/application_received.txt`
+- `templates/emails/application_received.html`
+- `templates/emails/application_update.txt`
+- `templates/emails/application_update.html`
+
+Tests use Django's test email backend (`locmem`) to capture outgoing messages.
 - `ADMIN_EMAIL` — admin notification address.
 - `RESEND_API_KEY` — API key for Resend if used.
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` — Google OAuth settings.

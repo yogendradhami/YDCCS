@@ -256,11 +256,88 @@ class CareerApplication(models.Model):
     resume = models.FileField(upload_to="careers/resumes/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # New recruitment fields
+    POSITION_CHOICES = [
+        ("residential_cleaner", "Residential Cleaner"),
+        ("commercial_cleaner", "Commercial Cleaner"),
+        ("specialist_cleaner", "Specialist Cleaner"),
+        ("team_leader", "Cleaning Team Leader"),
+        ("general_application", "General Application"),
+    ]
+
+    EMPLOYMENT_CHOICES = [
+        ("casual", "Casual"),
+        ("part_time", "Part-time"),
+        ("full_time", "Full-time"),
+        ("contractor", "Contractor"),
+    ]
+
+    WORK_RIGHTS_CHOICES = [
+        ("citizen", "Australian Citizen"),
+        ("permanent_resident", "Permanent Resident"),
+        ("visa_holder", "Visa Holder"),
+        ("other", "Other"),
+    ]
+
+    STATUS_CHOICES = [
+        ("new", "New"),
+        ("reviewing", "Reviewing"),
+        ("shortlisted", "Shortlisted"),
+        ("interview", "Interview"),
+        ("hired", "Hired"),
+        ("rejected", "Rejected"),
+    ]
+
+    position = models.CharField(
+        max_length=40, choices=POSITION_CHOICES, default="general_application"
+    )
+
+    employment_type = models.CharField(
+        max_length=20, choices=EMPLOYMENT_CHOICES, blank=True
+    )
+
+    address = models.TextField(blank=True)
+    suburb = models.CharField(max_length=150, blank=True)
+
+    date_of_birth = models.DateField(null=True, blank=True)
+
+    work_rights = models.CharField(
+        max_length=30, choices=WORK_RIGHTS_CHOICES, blank=True
+    )
+
+    work_rights_details = models.CharField(max_length=250, blank=True)
+
+    has_drivers_license = models.BooleanField(default=False)
+    has_vehicle = models.BooleanField(default=False)
+
+    years_cleaning_experience = models.PositiveIntegerField(null=True, blank=True)
+
+    previous_cleaning_experience = models.TextField(blank=True)
+    skills = models.TextField(blank=True)
+
+    availability_days = models.TextField(blank=True)
+    availability_hours = models.TextField(blank=True)
+    preferred_start_date = models.DateField(null=True, blank=True)
+
+    reference_name = models.CharField(max_length=200, blank=True)
+    reference_phone = models.CharField(max_length=50, blank=True)
+    reference_relationship = models.CharField(max_length=100, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
+
+    admin_notes = models.TextField(blank=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.full_name} <{self.email}>"
+        try:
+            pos = dict(self.POSITION_CHOICES).get(self.position, "Applicant")
+        except Exception:
+            pos = "Applicant"
+        return f"{self.full_name} - {pos}"
 
 class CleaningSupply(models.Model):
 

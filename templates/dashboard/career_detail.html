@@ -1,0 +1,80 @@
+{% extends 'dashboard_base.html' %}
+
+{% block content %}
+<h1>Application: {{ application.full_name }}</h1>
+
+<h3>Personal Information</h3>
+<p><strong>Email:</strong> {{ application.email }}</p>
+<p><strong>Phone:</strong> {{ application.phone }}</p>
+<p><strong>Address:</strong> {{ application.address }}</p>
+<p><strong>Suburb:</strong> {{ application.suburb }}</p>
+<p><strong>Date of Birth:</strong> {{ application.date_of_birth }}</p>
+
+<h3>Position</h3>
+<p><strong>Position:</strong> {{ application.get_position_display }}</p>
+<p><strong>Employment Type:</strong> {{ application.employment_type }}</p>
+
+<h3>Work Eligibility</h3>
+<p><strong>Work Rights:</strong> {{ application.get_work_rights_display }}</p>
+<p><strong>Work Rights Details:</strong> {{ application.work_rights_details }}</p>
+
+<h3>Experience</h3>
+<p><strong>Years Cleaning Experience:</strong> {{ application.years_cleaning_experience }}</p>
+<p><strong>Previous Cleaning Experience:</strong> {{ application.previous_cleaning_experience|linebreaksbr }}</p>
+<p><strong>Skills:</strong> {{ application.skills|linebreaksbr }}</p>
+
+<h3>Availability</h3>
+<p><strong>Availability Days:</strong> {{ application.availability_days|linebreaksbr }}</p>
+<p><strong>Availability Hours:</strong> {{ application.availability_hours|linebreaksbr }}</p>
+<p><strong>Preferred Start Date:</strong> {{ application.preferred_start_date }}</p>
+
+<h3>Application</h3>
+<p><strong>Cover Letter:</strong></p>
+<div class="card">
+    {{ application.cover_letter|linebreaksbr }}
+</div>
+<p><strong>Resume:</strong>
+    {% if application.resume %}
+        <a href="{{ application.resume.url }}" target="_blank">Download</a>
+    {% else %} — {% endif %}
+</p>
+
+<h3>References</h3>
+<p><strong>Name:</strong> {{ application.reference_name }}</p>
+<p><strong>Phone:</strong> {{ application.reference_phone }}</p>
+<p><strong>Relationship:</strong> {{ application.reference_relationship }}</p>
+
+<h3>Internal Management</h3>
+<p><strong>Status:</strong> {{ application.get_status_display }}</p>
+<p><strong>Admin Notes:</strong></p>
+<div class="card">{{ application.admin_notes|linebreaksbr }}</div>
+
+{% if user.is_staff %}
+<hr />
+<form method="post">
+    {% csrf_token %}
+    <label for="status"><strong>Update Status</strong></label>
+    <select name="status" id="status">
+        <option value="new" {% if application.status == 'new' %}selected{% endif %}>New</option>
+        <option value="reviewing" {% if application.status == 'reviewing' %}selected{% endif %}>Reviewing</option>
+        <option value="shortlisted" {% if application.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+        <option value="interview" {% if application.status == 'interview' %}selected{% endif %}>Interview</option>
+        <option value="hired" {% if application.status == 'hired' %}selected{% endif %}>Hired</option>
+        <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+
+    <div style="margin-top:0.5rem;">
+        <label for="admin_notes"><strong>Admin Notes (optional)</strong></label>
+        <textarea name="admin_notes" id="admin_notes" rows="6" style="width:100%;">{{ application.admin_notes }}</textarea>
+    </div>
+
+    <div style="margin-top:0.5rem;">
+        <button type="submit">Save & Notify Applicant</button>
+    </div>
+</form>
+{% endif %}
+
+<p><strong>Submitted:</strong> {{ application.created_at }}</p>
+<p><strong>Updated:</strong> {{ application.updated_at }}</p>
+
+{% endblock %}

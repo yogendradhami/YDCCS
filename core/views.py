@@ -13,6 +13,8 @@ from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse
 from django.db import transaction
 from django.shortcuts import redirect, render
+from django.core.mail import send_mail
+from django.conf import settings
 from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.text import slugify
@@ -1532,11 +1534,56 @@ def robots_txt(request):
 def careers(request):
     """Render careers page and accept applications."""
     if request.method == "POST":
-        form = CareerApplicationForm(request.POST, request.FILES)
+        # Translate incoming public form fields to match the internal ModelForm
+        post = request.POST.copy()
+
+        pos_map = {
+            "residential-cleaner": "residential_cleaner",
+            "commercial-cleaner": "commercial_cleaner",
+            "specialist-cleaner": "specialist_cleaner",
+            "cleaning-team-leader": "team_leader",
+            "other": "general_application",
+        }
+        if "position" in post:
+            post["position"] = pos_map.get(post.get("position", ""), post.get("position", ""))
+
+        emp_map = {"part-time": "part_time", "full-time": "full_time", "contract": "contractor"}
+        if "employment_type" in post:
+            post["employment_type"] = emp_map.get(post.get("employment_type", ""), post.get("employment_type", ""))
+
+        exp_map = {"none": "0", "less-than-1": "0", "1-2": "1", "3-5": "3", "5-plus": "5"}
+        if "experience_years" in post:
+            post["years_cleaning_experience"] = exp_map.get(post.get("experience_years", ""), "")
+
+        if "availability" in post:
+            post["availability_days"] = post.get("availability", "")
+        if "preferred_hours" in post:
+            post["availability_hours"] = post.get("preferred_hours", "")
+
+        working_days = request.POST.getlist("working_days")
+        if working_days:
+            existing = post.get("availability_days", "")
+            joined = ", ".join(working_days)
+            post["availability_days"] = (existing + ", " + joined).strip(", ") if existing else joined
+
+        dl = post.get("drivers_license") or post.get("drivers_license", "")
+        if dl:
+            post["has_drivers_license"] = "yes" == dl
+        veh = post.get("vehicle") or post.get("vehicle", "")
+        if veh:
+            post["has_vehicle"] = "yes" == veh
+
+        wr_map = {"permanent-resident": "permanent_resident", "visa": "visa_holder"}
+        if "work_rights" in post:
+            post["work_rights"] = wr_map.get(post.get("work_rights", ""), post.get("work_rights", ""))
+
+        if "experience" in post:
+            post["previous_cleaning_experience"] = post.get("experience")
+
+        form = CareerApplicationForm(post, request.FILES)
         if form.is_valid():
             application = form.save()
 
-            # notify first admin user if present
             User = get_user_model()
             admin_user = User.objects.filter(is_superuser=True).first()
             if admin_user:
@@ -1551,8 +1598,28 @@ def careers(request):
                 except Exception:
                     pass
 
+            # Send templated confirmation email
+            try:
+                subject = "YD Commercial Cleaning — Application Received"
+                context = {"application": application}
+                text = render_to_string("emails/application_received.txt", context)
+                html = render_to_string("emails/application_received.html", context)
+                send_mail(subject, text, settings.DEFAULT_FROM_EMAIL, [application.email], html_message=html)
+            except Exception:
+                pass
+
             messages.success(request, "✅ Thank you — your application has been received.")
             return redirect("/careers/#applied")
+        else:
+            # surface validation errors to the user via messages (template already shows messages)
+            try:
+                err_items = []
+                for k, v in form.errors.items():
+                    err_items.append(f"{k}: {', '.join(v)}")
+                messages.error(request, "There were errors with your submission: " + "; ".join(err_items))
+            except Exception:
+                messages.error(request, "There were errors with your submission. Please check the form fields.")
+            # fall through to re-render form with posted data (form contains errors)
     else:
         form = CareerApplicationForm()
 

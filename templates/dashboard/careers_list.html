@@ -2,12 +2,28 @@
 
 {% block content %}
 <h1>Career Applications</h1>
+<form method="get" class="form-inline" style="margin-bottom:1rem;">
+    <input type="text" name="q" placeholder="Search name, email, phone, suburb" value="{{ q }}" />
+    <select name="status">
+        <option value="">All status</option>
+        <option value="new" {% if filter_status == 'new' %}selected{% endif %}>New</option>
+        <option value="reviewing" {% if filter_status == 'reviewing' %}selected{% endif %}>Reviewing</option>
+        <option value="shortlisted" {% if filter_status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+        <option value="interview" {% if filter_status == 'interview' %}selected{% endif %}>Interview</option>
+        <option value="hired" {% if filter_status == 'hired' %}selected{% endif %}>Hired</option>
+        <option value="rejected" {% if filter_status == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+    <input type="text" name="position" placeholder="Position" value="{{ filter_position }}" />
+    <button type="submit">Filter</button>
+</form>
 <table class="table">
     <thead>
         <tr>
             <th>Applicant</th>
+            <th>Position</th>
             <th>Email</th>
             <th>Phone</th>
+            <th>Status</th>
             <th>Submitted</th>
             <th>Resume</th>
         </tr>
@@ -15,9 +31,11 @@
     <tbody>
         {% for app in applications %}
         <tr>
-            <td>{{ app.full_name }}</td>
+            <td><a href="{% url 'career_detail' app.id %}">{{ app.full_name }}</a></td>
+            <td>{{ app.position }}</td>
             <td>{{ app.email }}</td>
             <td>{{ app.phone }}</td>
+            <td>{{ app.status }}</td>
             <td>{{ app.created_at }}</td>
             <td>
                 {% if app.resume %}

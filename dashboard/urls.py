@@ -36,6 +36,7 @@ from .views import (
     customer_value_dashboard,
     dashboard_home,
     careers_list,
+    career_detail,
     delete_booking,
     delete_customer,
     delete_employee,
@@ -128,6 +129,7 @@ urlpatterns = [
     ),
     path("dashboard/", dashboard_home, name="dashboard_home"),
     path("dashboard/careers/", careers_list, name="careers_list"),
+    path("dashboard/careers/<int:application_id>/", career_detail, name="career_detail"),
     path("dashboard/settings/", company_settings, name="company_settings"),
     path("dashboard/leads/", lead_list, name="lead_list"),
     path(

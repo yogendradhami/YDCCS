@@ -1,66 +1,989 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Careers - Join Our Team{% endblock %}
+
+{% block title %}Careers | Join YD Commercial Cleaning Services Adelaide{% endblock %}
+
+{% block meta_description %}
+Join YD Commercial Cleaning Services in Adelaide. Explore cleaning job opportunities and submit your application for residential, commercial and specialist cleaning positions.
+{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/modern-landing.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/careers.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="modern-landing-page">
-    <section class="modern-landing-hero">
-        <div class="container">
-            <span class="eyebrow">Join our team</span>
-            <h1>Build a career with a trusted cleaning company in Adelaide.</h1>
-            <p>We’re proud to offer opportunities for reliable, hardworking people who want to grow with a respected local business.</p>
-        </div>
-    </section>
 
-    <section class="modern-landing-section">
+<div class="yd-careers-page">
+
+    <!-- HERO -->
+    <section class="yd-careers-hero">
         <div class="container">
-            <div class="modern-landing-grid">
-                <div class="modern-landing-card">
-                    <h2>Why work with us</h2>
-                    <ul class="modern-landing-list">
-                        <li>Competitive wages and regular pay progression.</li>
-                        <li>Flexible scheduling and support for work-life balance.</li>
-                        <li>Training and career development opportunities.</li>
-                        <li>Full insurance protection while working with the team.</li>
-                    </ul>
+
+            <div class="yd-careers-hero-content">
+
+                <span class="yd-careers-eyebrow">
+                    CAREERS AT YD COMMERCIAL CLEANING
+                </span>
+
+                <h1>
+                    Build your future with
+                    <strong>YD Commercial Cleaning.</strong>
+                </h1>
+
+                <p>
+                    Join our growing Adelaide cleaning team and become part of
+                    a professional business that values reliability,
+                    quality workmanship and great customer service.
+                </p>
+
+                <div class="yd-careers-hero-actions">
+                    <a href="#apply" class="yd-careers-primary-btn">
+                        View Open Positions
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </a>
+
+                    <a href="/contact/" class="yd-careers-secondary-btn">
+                        Contact Our Team
+                    </a>
                 </div>
-                <div class="modern-landing-card">
-                    <h3>Apply now</h3>
-                    <p>Fill out the form below and tell us a little about yourself. We’ll be in touch if your experience matches our current needs.</p>
-                    <form method="post" enctype="multipart/form-data" class="career-form">
-                        {% csrf_token %}
-                        <div class="form-row">
-                            {{ form.full_name.label_tag }}
-                            {{ form.full_name }}
-                        </div>
-                        <div class="form-row">
-                            {{ form.email.label_tag }}
-                            {{ form.email }}
-                        </div>
-                        <div class="form-row">
-                            {{ form.phone.label_tag }}
-                            {{ form.phone }}
-                        </div>
-                        <div class="form-row">
-                            {{ form.cover_letter.label_tag }}
-                            {{ form.cover_letter }}
-                        </div>
-                        <div class="form-row">
-                            {{ form.resume.label_tag }}
-                            {{ form.resume }}
-                        </div>
-                        <div class="form-row">
-                            <button type="submit" class="btn btn-primary">Submit Application</button>
-                        </div>
-                    </form>
-                </div>
+
             </div>
+
+            <div class="yd-careers-hero-stats">
+
+                <div>
+                    <strong>7 Days</strong>
+                    <span>Flexible service availability</span>
+                </div>
+
+                <div>
+                    <strong>Adelaide</strong>
+                    <span>Local cleaning opportunities</span>
+                </div>
+
+                <div>
+                    <strong>Growth</strong>
+                    <span>Training & development</span>
+                </div>
+
+            </div>
+
         </div>
     </section>
-</div>
-{% endblock %}
 
+
+    <!-- WHY JOIN US -->
+    <section class="yd-careers-benefits">
+
+        <div class="container">
+
+            <div class="yd-careers-section-heading">
+                <span>WHY JOIN US</span>
+
+                <h2>
+                    More than just a cleaning job.
+                </h2>
+
+                <p>
+                    We want our team members to feel supported, respected and
+                    proud of the work they deliver.
+                </p>
+            </div>
+
+
+            <div class="yd-careers-benefit-grid">
+
+                <div class="yd-careers-benefit-card">
+
+                    <div class="yd-careers-benefit-icon">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+
+                    <h3>Flexible Opportunities</h3>
+
+                    <p>
+                        We offer flexible work opportunities depending on
+                        customer requirements, availability and position.
+                    </p>
+
+                </div>
+
+
+                <div class="yd-careers-benefit-card">
+
+                    <div class="yd-careers-benefit-icon">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+
+                    <h3>Training & Development</h3>
+
+                    <p>
+                        Develop professional cleaning skills and learn
+                        industry-standard cleaning practices.
+                    </p>
+
+                </div>
+
+
+                <div class="yd-careers-benefit-card">
+
+                    <div class="yd-careers-benefit-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+
+                    <h3>Supportive Team</h3>
+
+                    <p>
+                        Work alongside a local team that values communication,
+                        reliability and professional behaviour.
+                    </p>
+
+                </div>
+
+
+                <div class="yd-careers-benefit-card">
+
+                    <div class="yd-careers-benefit-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <h3>Professional Environment</h3>
+
+                    <p>
+                        We focus on safe working practices, quality standards
+                        and delivering excellent customer experiences.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- POSITIONS -->
+    <section class="yd-careers-positions" id="positions">
+
+        <div class="container">
+
+            <div class="yd-careers-section-heading">
+
+                <span>CURRENT OPPORTUNITIES</span>
+
+                <h2>
+                    Find a position that suits you.
+                </h2>
+
+                <p>
+                    Select the position that best matches your skills and
+                    experience when completing the application form.
+                </p>
+
+            </div>
+
+
+            <div class="yd-careers-position-grid">
+
+                <article class="yd-careers-position-card">
+
+                    <div class="yd-careers-position-top">
+                        <div class="yd-careers-position-icon">
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+
+                        <span class="yd-careers-position-badge">
+                            Cleaning
+                        </span>
+                    </div>
+
+                    <h3>Residential Cleaner</h3>
+
+                    <p>
+                        Provide professional cleaning services for homes,
+                        apartments and residential properties across Adelaide.
+                    </p>
+
+                    <ul>
+                        <li>Residential cleaning</li>
+                        <li>Regular & one-off cleaning</li>
+                        <li>Customer-focused role</li>
+                    </ul>
+
+                </article>
+
+
+                <article class="yd-careers-position-card">
+
+                    <div class="yd-careers-position-top">
+                        <div class="yd-careers-position-icon">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+
+                        <span class="yd-careers-position-badge">
+                            Commercial
+                        </span>
+                    </div>
+
+                    <h3>Commercial Cleaner</h3>
+
+                    <p>
+                        Help maintain offices, commercial properties and
+                        business premises to a professional standard.
+                    </p>
+
+                    <ul>
+                        <li>Commercial cleaning</li>
+                        <li>Office & business premises</li>
+                        <li>Professional presentation</li>
+                    </ul>
+
+                </article>
+
+
+                <article class="yd-careers-position-card">
+
+                    <div class="yd-careers-position-top">
+                        <div class="yd-careers-position-icon">
+                            <i class="fa-solid fa-broom"></i>
+                        </div>
+
+                        <span class="yd-careers-position-badge">
+                            Specialist
+                        </span>
+                    </div>
+
+                    <h3>Specialist Cleaner</h3>
+
+                    <p>
+                        Work across specialist cleaning services including
+                        deep cleaning, bond cleaning and detailed cleaning.
+                    </p>
+
+                    <ul>
+                        <li>Deep cleaning</li>
+                        <li>End-of-lease cleaning</li>
+                        <li>Detailed cleaning work</li>
+                    </ul>
+
+                </article>
+
+
+                <article class="yd-careers-position-card">
+
+                    <div class="yd-careers-position-top">
+                        <div class="yd-careers-position-icon">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+
+                        <span class="yd-careers-position-badge">
+                            Management
+                        </span>
+                    </div>
+
+                    <h3>Cleaning Team Leader</h3>
+
+                    <p>
+                        Coordinate cleaning work, communicate with customers
+                        and help maintain high service standards.
+                    </p>
+
+                    <ul>
+                        <li>Team coordination</li>
+                        <li>Quality control</li>
+                        <li>Customer communication</li>
+                    </ul>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- APPLICATION -->
+    <section class="yd-careers-application" id="apply">
+
+        <div class="container">
+
+            <div class="yd-careers-application-grid">
+
+                <!-- FORM INTRO -->
+                <div class="yd-careers-application-intro">
+
+                    <span>JOIN OUR TEAM</span>
+
+                    <h2>
+                        Submit your application.
+                    </h2>
+
+                    <p>
+                        Tell us about your experience, availability and the
+                        type of work you are looking for.
+                    </p>
+
+                    <div class="yd-careers-application-note">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <div>
+                            <strong>Before you apply</strong>
+
+                            <p>
+                                Please make sure your contact details are
+                                correct and your resume is up to date.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="yd-careers-process">
+
+                        <div class="yd-careers-process-item">
+                            <span>01</span>
+                            <div>
+                                <strong>Apply Online</strong>
+                                <p>Complete the application form.</p>
+                            </div>
+                        </div>
+
+                        <div class="yd-careers-process-item">
+                            <span>02</span>
+                            <div>
+                                <strong>Application Review</strong>
+                                <p>Our team reviews your information.</p>
+                            </div>
+                        </div>
+
+                        <div class="yd-careers-process-item">
+                            <span>03</span>
+                            <div>
+                                <strong>Contact</strong>
+                                <p>Suitable applicants may be contacted.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FORM -->
+                <div class="yd-careers-form-card">
+
+                    <div class="yd-careers-form-heading">
+
+                        <span>APPLICATION FORM</span>
+
+                        <h3>
+                            Tell us about yourself
+                        </h3>
+
+                        <p>
+                            Fields marked with * are required.
+                        </p>
+
+                    </div>
+
+
+                    <form
+                        method="post"
+                        enctype="multipart/form-data"
+                        class="yd-careers-form"
+                    >
+
+                        {% csrf_token %}
+
+
+                        <!-- POSITION -->
+                        <div class="yd-careers-form-section">
+
+                            <h4>
+                                <i class="fa-solid fa-briefcase"></i>
+                                Position Details
+                            </h4>
+
+                            <div class="yd-careers-form-grid">
+
+                                <div class="yd-careers-field full">
+
+                                    <label for="position">
+                                        Position Applying For *
+                                    </label>
+
+                                    <select
+                                        id="position"
+                                        name="position"
+                                        required
+                                    >
+                                        <option value="">
+                                            Select a position
+                                        </option>
+
+                                        <option value="residential-cleaner">
+                                            Residential Cleaner
+                                        </option>
+
+                                        <option value="commercial-cleaner">
+                                            Commercial Cleaner
+                                        </option>
+
+                                        <option value="specialist-cleaner">
+                                            Specialist Cleaner
+                                        </option>
+
+                                        <option value="cleaning-team-leader">
+                                            Cleaning Team Leader
+                                        </option>
+
+                                        <option value="other">
+                                            Other / General Application
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="yd-careers-field">
+
+                                    <label for="employment_type">
+                                        Preferred Employment Type
+                                    </label>
+
+                                    <select
+                                        id="employment_type"
+                                        name="employment_type"
+                                    >
+                                        <option value="">
+                                            Select employment type
+                                        </option>
+
+                                        <option value="casual">
+                                            Casual
+                                        </option>
+
+                                        <option value="part-time">
+                                            Part-time
+                                        </option>
+
+                                        <option value="full-time">
+                                            Full-time
+                                        </option>
+
+                                        <option value="contract">
+                                            Contract
+                                        </option>
+                                    </select>
+
+                                </div>
+
+
+                                <div class="yd-careers-field">
+
+                                    <label for="experience_years">
+                                        Cleaning Experience
+                                    </label>
+
+                                    <select
+                                        id="experience_years"
+                                        name="experience_years"
+                                    >
+                                        <option value="">
+                                            Select experience
+                                        </option>
+
+                                        <option value="none">
+                                            No previous experience
+                                        </option>
+
+                                        <option value="less-than-1">
+                                            Less than 1 year
+                                        </option>
+
+                                        <option value="1-2">
+                                            1–2 years
+                                        </option>
+
+                                        <option value="3-5">
+                                            3–5 years
+                                        </option>
+
+                                        <option value="5-plus">
+                                            More than 5 years
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PERSONAL -->
+                        <div class="yd-careers-form-section">
+
+                            <h4>
+                                <i class="fa-solid fa-user"></i>
+                                Personal Details
+                            </h4>
+
+                            <div class="yd-careers-form-grid">
+
+                                <div class="yd-careers-field full">
+
+                                    <label for="full_name">
+                                        Full Name *
+                                    </label>
+
+                                    {{ form.full_name }}
+
+                                </div>
+
+
+                                <div class="yd-careers-field">
+
+                                    <label for="email">
+                                        Email Address *
+                                    </label>
+
+                                    {{ form.email }}
+
+                                </div>
+
+
+                                <div class="yd-careers-field">
+
+                                    <label for="phone">
+                                        Phone Number *
+                                    </label>
+
+                                    {{ form.phone }}
+
+                                </div>
+
+
+                                <div class="yd-careers-field full">
+
+                                    <label for="suburb">
+                                        Suburb
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="suburb"
+                                        name="suburb"
+                                        placeholder="e.g. Prospect"
+                                    >
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- AVAILABILITY -->
+                        <div class="yd-careers-form-section">
+
+                            <h4>
+                                <i class="fa-solid fa-calendar-days"></i>
+                                Availability
+                            </h4>
+
+                            <div class="yd-careers-form-grid">
+
+                                <div class="yd-careers-field">
+
+                                    <label for="availability">
+                                        Availability
+                                    </label>
+
+                                    <select
+                                        id="availability"
+                                        name="availability"
+                                    >
+                                        <option value="">
+                                            Select availability
+                                        </option>
+
+                                        <option value="immediate">
+                                            Available immediately
+                                        </option>
+
+                                        <option value="1-week">
+                                            Within 1 week
+                                        </option>
+
+                                        <option value="2-weeks">
+                                            Within 2 weeks
+                                        </option>
+
+                                        <option value="1-month">
+                                            Within 1 month
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="yd-careers-field">
+
+                                    <label for="preferred_hours">
+                                        Preferred Hours
+                                    </label>
+
+                                    <select
+                                        id="preferred_hours"
+                                        name="preferred_hours"
+                                    >
+                                        <option value="">
+                                            Select preferred hours
+                                        </option>
+
+                                        <option value="morning">
+                                            Morning
+                                        </option>
+
+                                        <option value="day">
+                                            Daytime
+                                        </option>
+
+                                        <option value="afternoon">
+                                            Afternoon
+                                        </option>
+
+                                        <option value="evening">
+                                            Evening
+                                        </option>
+
+                                        <option value="flexible">
+                                            Flexible
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="yd-careers-field full">
+
+                                    <label>
+                                        Preferred Working Days
+                                    </label>
+
+                                    <div class="yd-careers-checkbox-grid">
+
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name="working_days"
+                                                value="monday"
+                                            >
+                                            Monday
+                                        </label>
+
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name="working_days"
+                                                value="tuesday"
+                                            >
+                                            Tuesday
+                                        </label>
+
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name="working_days"
+                                                value="wednesday"
+                                            >
+                                            Wednesday
+                                        </label>
+
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name="working_days"
+                                                value="thursday"
+                                            >
+                                            Thursday
+                                        </label>
+
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name="working_days"
+                                                value="friday"
+                                            >
+                                            Friday
+                                        </label>
+
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name="working_days"
+                                                value="saturday"
+                                            >
+                                            Saturday
+                                        </label>
+
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                name="working_days"
+                                                value="sunday"
+                                            >
+                                            Sunday
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- REQUIREMENTS -->
+                        <div class="yd-careers-form-section">
+
+                            <h4>
+                                <i class="fa-solid fa-circle-check"></i>
+                                Work Information
+                            </h4>
+
+                            <div class="yd-careers-form-grid">
+
+                                <div class="yd-careers-field">
+
+                                    <label for="drivers_license">
+                                        Driver's Licence
+                                    </label>
+
+                                    <select
+                                        id="drivers_license"
+                                        name="drivers_license"
+                                    >
+                                        <option value="">
+                                            Select
+                                        </option>
+
+                                        <option value="yes">
+                                            Yes
+                                        </option>
+
+                                        <option value="no">
+                                            No
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="yd-careers-field">
+
+                                    <label for="vehicle">
+                                        Own Vehicle
+                                    </label>
+
+                                    <select
+                                        id="vehicle"
+                                        name="vehicle"
+                                    >
+                                        <option value="">
+                                            Select
+                                        </option>
+
+                                        <option value="yes">
+                                            Yes
+                                        </option>
+
+                                        <option value="no">
+                                            No
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="yd-careers-field full">
+
+                                    <label for="work_rights">
+                                        Australian Work Rights
+                                    </label>
+
+                                    <select
+                                        id="work_rights"
+                                        name="work_rights"
+                                    >
+                                        <option value="">
+                                            Select
+                                        </option>
+
+                                        <option value="citizen">
+                                            Australian Citizen
+                                        </option>
+
+                                        <option value="permanent-resident">
+                                            Permanent Resident
+                                        </option>
+
+                                        <option value="visa">
+                                            Valid Work Visa
+                                        </option>
+
+                                        <option value="other">
+                                            Other
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- EXPERIENCE -->
+                        <div class="yd-careers-form-section">
+
+                            <h4>
+                                <i class="fa-solid fa-file-lines"></i>
+                                Experience & Application
+                            </h4>
+
+                            <div class="yd-careers-form-grid">
+
+                                <div class="yd-careers-field full">
+
+                                    <label for="experience">
+                                        Previous Cleaning Experience
+                                    </label>
+
+                                    <textarea
+                                        id="experience"
+                                        name="experience"
+                                        rows="4"
+                                        placeholder="Tell us about your previous cleaning or related work experience..."
+                                    ></textarea>
+
+                                </div>
+
+
+                                <div class="yd-careers-field full">
+
+                                    <label for="cover_letter">
+                                        Cover Letter / Message
+                                    </label>
+
+                                    {{ form.cover_letter }}
+
+                                </div>
+
+
+                                <div class="yd-careers-field full">
+
+                                    <label for="resume">
+                                        Resume / CV *
+                                    </label>
+
+                                    {{ form.resume }}
+
+                                    <small>
+                                        Accepted formats: PDF, DOC or DOCX.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- SUBMIT -->
+                        <div class="yd-careers-submit">
+
+                            <label class="yd-careers-consent">
+
+                                <input
+                                    type="checkbox"
+                                    name="consent"
+                                    required
+                                >
+
+                                <span>
+                                    I confirm that the information provided is
+                                    accurate and I consent to YD Commercial
+                                    Cleaning Services contacting me regarding
+                                    employment opportunities. *
+                                </span>
+
+                            </label>
+
+
+                            <button
+                                type="submit"
+                                class="yd-careers-submit-btn"
+                            >
+                                Submit Application
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FINAL CTA -->
+    <section class="yd-careers-final">
+
+        <div class="container">
+
+            <div class="yd-careers-final-content">
+
+                <span>QUESTIONS ABOUT WORKING WITH US?</span>
+
+                <h2>
+                    We'd love to hear from you.
+                </h2>
+
+                <p>
+                    If you don't see a suitable vacancy, you can still submit
+                    a general application and tell us what type of work you
+                    are looking for.
+                </p>
+
+                <a href="/contact/" class="yd-careers-final-btn">
+                    Contact YD Commercial Cleaning
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

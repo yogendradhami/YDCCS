@@ -1,0 +1,33 @@
+<html>
+  <body style="font-family:Segoe UI, Arial, sans-serif; color:#333; line-height:1.5;">
+    <div style="max-width:600px; margin:0 auto; padding:20px;">
+      <h2 style="color:#0b64a0;">Application Update</h2>
+
+      <p>Dear {{ application.full_name }},</p>
+
+      <p>Thank you for applying for the role of <strong>{{ application.get_position_display }}</strong> with YD Commercial Cleaning.</p>
+
+      <p style="font-size:16px;">The status of your application has been updated to:</p>
+
+      <p style="display:inline-block; background:#f1f7fb; color:#0b64a0; padding:8px 12px; border-radius:4px; font-weight:600;">{{ application.get_status_display }}</p>
+
+      {% if admin_notes %}
+      <h4 style="margin-top:18px;">Message from our recruitment team</h4>
+      <div style="border-left:3px solid #e0e0e0; padding-left:10px; margin-bottom:14px;">{{ admin_notes|linebreaksbr }}</div>
+      {% endif %}
+
+      <h4 style="margin-top:12px;">What happens next</h4>
+      <ul>
+        <li>If your application progresses to the next stage, we will contact you to arrange an interview.</li>
+        <li>If no further action is required, we will retain your details for future opportunities.</li>
+      </ul>
+
+      <p>If you have any questions, please reply to this email or visit <a href="https://ydcleaning.com.au/contact/">our contact page</a>.</p>
+
+      <p style="margin-top:20px;">Warm regards,<br/><strong>YD Commercial Cleaning — Recruitment Team</strong></p>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:18px 0;"/>
+      <p style="font-size:12px;color:#777;">YD Commercial Cleaning • Adelaide • <a href="https://ydcleaning.com.au">ydcleaning.com.au</a></p>
+    </div>
+  </body>
+</html>

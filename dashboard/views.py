@@ -16,7 +16,9 @@ from datetime import datetime, time, timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+import logging
 from django.core.mail import EmailMessage, send_mail
+from django.template.loader import render_to_string
 from django.db.models import Avg, Count, F, Max, Q, Sum
 from django.db.models.functions import TruncDate, TruncMonth
 from django.http import HttpResponse
@@ -279,8 +281,87 @@ def dashboard_home(request):
 @login_required
 def careers_list(request):
     """Dashboard view listing career applications."""
-    applications = CareerApplication.objects.all()
-    return render(request, "dashboard/careers_list.html", {"applications": applications})
+    applications = CareerApplication.objects.all().order_by("-created_at")
+
+    # Filtering
+    status = request.GET.get("status")
+    position = request.GET.get("position")
+    q = request.GET.get("q")
+
+    if status:
+        applications = applications.filter(status=status)
+    if position:
+        applications = applications.filter(position=position)
+
+    if q:
+        applications = applications.filter(
+            Q(full_name__icontains=q)
+            | Q(email__icontains=q)
+            | Q(phone__icontains=q)
+            | Q(suburb__icontains=q)
+        )
+
+    context = {"applications": applications, "filter_status": status, "filter_position": position, "q": q}
+    return render(request, "dashboard/careers_list.html", context)
+
+
+@login_required
+def career_detail(request, application_id):
+    application = get_object_or_404(CareerApplication, id=application_id)
+
+    if request.method == "POST":
+        # allow updating status/admin notes from dashboard
+        status = request.POST.get("status")
+        admin_notes = request.POST.get("admin_notes", "")
+        if not request.user.is_staff and not request.user.is_superuser:
+            messages.error(request, "Permission denied.")
+            return redirect("career_detail", application_id=application.id)
+
+        old_status = application.status
+
+        if status and status in dict(CareerApplication.STATUS_CHOICES):
+            application.status = status
+        application.admin_notes = admin_notes
+        application.save()
+
+        # Send status update email to applicant and record it in EmailLog
+        logger = logging.getLogger(__name__)
+        try:
+            subject = f"YD Commercial Cleaning — Application Update: {application.get_position_display()}"
+            context = {"application": application, "admin_notes": admin_notes}
+            text = render_to_string("emails/application_update.txt", context)
+            html = render_to_string("emails/application_update.html", context)
+
+            # send email (raise on failure) and log it
+            send_mail(
+                subject,
+                text,
+                settings.DEFAULT_FROM_EMAIL,
+                [application.email],
+                fail_silently=False,
+                html_message=html,
+            )
+
+            try:
+                EmailLog.objects.create(
+                    sent_by=request.user,
+                    email_type="system",
+                    recipient_name=application.full_name or application.email,
+                    recipient_email=application.email,
+                    subject=subject,
+                    related_object=f"CareerApplication #{application.id}",
+                )
+            except Exception:
+                logger.exception("Failed to create EmailLog for application update")
+
+            messages.success(request, "✅ Application updated and applicant notified.")
+
+        except Exception:
+            logger.exception("Failed to send application update email to %s", application.email)
+            messages.warning(request, "⚠️ Application updated but failed to notify applicant by email.")
+        return redirect("career_detail", application_id=application.id)
+
+    return render(request, "dashboard/career_detail.html", {"application": application})
 
 
 @login_required
