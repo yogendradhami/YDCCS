@@ -1,75 +1,527 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
-Contact YD Commercial Cleaning Services
+Contact YD Commercial Cleaning Services | Adelaide
+{% endblock %}
+
+{% block meta_description %}
+Contact YD Commercial Cleaning Services for professional residential and commercial cleaning across Adelaide. Call, email or request a free cleaning quote today.
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/contact.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<section class="page-hero">
-    <div class="container">
-        <h1>Contact YD Commercial Cleaning Services</h1>
-        <p>Professional cleaning services across Adelaide and surrounding suburbs.</p>
-    </div>
-</section>
+<div class="yd-contact-page">
 
-<section class="section">
-    <div class="container contact-grid">
+    <!-- HERO -->
+    <section class="yd-contact-hero">
+        <div class="container">
 
-        <div class="contact-card">
-            <h2>Business Details</h2>
+            <div class="yd-contact-hero-content">
 
-            <p><strong>Business Name:</strong><br>YD Commercial Cleaning Services</p>
-            <p><strong>Owner:</strong><br>Yogendra Dhami</p>
-            <p><strong>ABN:</strong><br>95 916 203 175</p>
-            <p><strong>Phone:</strong><br><a href="tel:0430049865">0430 049 865</a></p>
-            <p><strong>Email:</strong><br><a href="mailto:ydcommercialcleaning@gmail.com">ydcommercialcleaning@gmail.com</a></p>
-            <p><strong>Address:</strong><br>2/10 Da Costa Avenue, Prospect SA 5082, Australia</p>
-            <p><strong>Business Hours:</strong><br>Monday – Sunday: 8:00 AM – 12:00 PM</p>
+                <div class="yd-contact-eyebrow">
+                    <span></span>
+                    ADELAIDE CLEANING SERVICES
+                </div>
 
-            <a href="/#quote" class="btn-fill">Request Free Quote</a>
-        </div>
+                <h1>
+                    Let's talk about
+                    <strong>your cleaning needs.</strong>
+                </h1>
 
-        <div class="contact-card social-card">
-            <h2>Connect With Us</h2>
-            <p class="social-intro">
-                Follow YD Commercial Cleaning Services online for updates, cleaning transformations and customer reviews.
-            </p>
+                <p>
+                    Looking for reliable professional cleaning in Adelaide?
+                    Get in touch with YD Commercial Cleaning Services today.
+                    We're here to help with residential, commercial and
+                    specialised cleaning services.
+                </p>
 
-            <div class="social-icon-row">
-                <a class="social-icon google" href="https://share.google/Smnvzo3lXHXygIPBI" target="_blank" aria-label="Google Business Profile">
-                    <i class="fa-brands fa-google"></i>
-                </a>
+                <div class="yd-contact-hero-actions">
 
-                <a class="social-icon facebook" href="https://www.facebook.com/YD.cleaningservice" target="_blank" aria-label="Facebook">
-                    <i class="fa-brands fa-facebook-f"></i>
-                </a>
+                    <a href="tel:0430049865" class="yd-contact-primary-btn">
+                        <i class="fa-solid fa-phone"></i>
+                        Call 0430 049 865
+                    </a>
 
-                <a class="social-icon instagram" href="https://www.instagram.com/ydcommercialcleaning" target="_blank" aria-label="Instagram">
-                    <i class="fa-brands fa-instagram"></i>
-                </a>
+                    <a href="#yd-contact-details" class="yd-contact-secondary-btn">
+                        View Contact Details
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </a>
 
-                <a class="social-icon tiktok" href="https://www.tiktok.com/@yd_cleaning3" target="_blank" aria-label="TikTok">
-                    <i class="fa-brands fa-tiktok"></i>
-                </a>
+                </div>
 
-                <a class="social-icon linkedin" href="https://www.linkedin.com/in/yogendra-dhami-91b46640b" target="_blank" aria-label="LinkedIn">
-                    <i class="fa-brands fa-linkedin-in"></i>
-                </a>
+                <div class="yd-contact-trust">
+
+                    <span>
+                        <i class="fa-solid fa-circle-check"></i>
+                        Free Quotes
+                    </span>
+
+                    <span>
+                        <i class="fa-solid fa-shield-halved"></i>
+                        Fully Insured
+                    </span>
+
+                    <span>
+                        <i class="fa-solid fa-location-dot"></i>
+                        Adelaide Wide
+                    </span>
+
+                </div>
+
             </div>
 
-            <div class="map-box">
+        </div>
+    </section>
+
+
+    <!-- QUICK CONTACT -->
+    <section class="yd-contact-quick-section">
+
+        <div class="container">
+
+            <div class="yd-contact-quick-grid">
+
+                <a href="tel:0430049865" class="yd-contact-quick-card">
+
+                    <div class="yd-contact-quick-icon">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+
+                    <div class="yd-contact-quick-content">
+                        <span>CALL US</span>
+                        <strong>0430 049 865</strong>
+                        <small>Speak with our team</small>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-right yd-contact-card-arrow"></i>
+
+                </a>
+
+
+                <a
+                    href="mailto:ydcommercialcleaning@gmail.com"
+                    class="yd-contact-quick-card"
+                >
+
+                    <div class="yd-contact-quick-icon">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+
+                    <div class="yd-contact-quick-content">
+                        <span>EMAIL US</span>
+                        <strong>ydcommercialcleaning@gmail.com</strong>
+                        <small>Send us your enquiry</small>
+                    </div>
+
+                    <i class="fa-solid fa-arrow-right yd-contact-card-arrow"></i>
+
+                </a>
+
+
+                <div class="yd-contact-quick-card">
+
+                    <div class="yd-contact-quick-icon">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+
+                    <div class="yd-contact-quick-content">
+                        <span>OPENING HOURS</span>
+                        <strong>8:00 AM – 12:00 PM</strong>
+                        <small>Monday – Sunday</small>
+                    </div>
+
+                    <i class="fa-solid fa-calendar-check yd-contact-card-arrow"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CONTACT DETAILS -->
+    <section
+        class="yd-contact-main-section"
+        id="yd-contact-details"
+    >
+
+        <div class="container">
+
+            <div class="yd-contact-section-intro">
+
+                <span class="yd-contact-section-label">
+                    GET IN TOUCH
+                </span>
+
+                <h2>
+                    Contact YD Commercial Cleaning
+                </h2>
+
+                <p>
+                    Whether you need regular cleaning, a one-off deep clean,
+                    commercial cleaning or a specialised service, our Adelaide
+                    team is ready to discuss your requirements.
+                </p>
+
+            </div>
+
+
+            <div class="yd-contact-main-grid">
+
+                <!-- BUSINESS INFORMATION -->
+                <div class="yd-contact-business-card">
+
+                    <div class="yd-contact-card-heading">
+
+                        <div class="yd-contact-heading-icon">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+
+                        <div>
+                            <span>BUSINESS INFORMATION</span>
+                            <h3>YD Commercial Cleaning Services</h3>
+                        </div>
+
+                    </div>
+
+
+                    <div class="yd-contact-business-details">
+
+                        <div class="yd-contact-business-detail">
+
+                            <div class="yd-contact-detail-icon">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+
+                            <div>
+                                <small>Owner</small>
+                                <strong>Yogendra Dhami</strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="yd-contact-business-detail">
+
+                            <div class="yd-contact-detail-icon">
+                                <i class="fa-solid fa-id-card"></i>
+                            </div>
+
+                            <div>
+                                <small>ABN</small>
+                                <strong>95 916 203 175</strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="yd-contact-business-detail">
+
+                            <div class="yd-contact-detail-icon">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+
+                            <div>
+                                <small>Phone</small>
+                                <strong>
+                                    <a href="tel:0430049865">
+                                        0430 049 865
+                                    </a>
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="yd-contact-business-detail">
+
+                            <div class="yd-contact-detail-icon">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+
+                            <div>
+                                <small>Email</small>
+                                <strong class="yd-contact-email">
+                                    <a href="mailto:ydcommercialcleaning@gmail.com">
+                                        ydcommercialcleaning@gmail.com
+                                    </a>
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="yd-contact-business-detail">
+
+                            <div class="yd-contact-detail-icon">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+
+                            <div>
+                                <small>Business Address</small>
+                                <strong>
+                                    2/10 Da Costa Avenue,
+                                    Prospect SA 5082,
+                                    Australia
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="yd-contact-business-detail">
+
+                            <div class="yd-contact-detail-icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+
+                            <div>
+                                <small>Business Hours</small>
+                                <strong>
+                                    Monday – Sunday<br>
+                                    8:00 AM – 12:00 PM
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="yd-contact-business-footer">
+
+                        <a
+                            href="/#quote"
+                            class="yd-contact-quote-btn"
+                        >
+                            Request a Free Quote
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SOCIAL MEDIA -->
+                <div class="yd-contact-connect-card">
+
+                    <div class="yd-contact-card-heading">
+
+                        <div class="yd-contact-heading-icon">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </div>
+
+                        <div>
+                            <span>STAY CONNECTED</span>
+                            <h3>Connect With Us</h3>
+                        </div>
+
+                    </div>
+
+
+                    <p class="yd-contact-connect-description">
+                        Follow YD Commercial Cleaning Services online for
+                        cleaning transformations, updates, videos and
+                        customer reviews.
+                    </p>
+
+
+                    <div class="yd-contact-social-links">
+
+                        <a
+                            href="https://share.google/Smnvzo3lXHXygIPBI"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="yd-contact-social-link yd-contact-google"
+                        >
+                            <i class="fa-brands fa-google"></i>
+
+                            <span>
+                                <strong>Google</strong>
+                                <small>Reviews & business profile</small>
+                            </span>
+
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+
+
+                        <a
+                            href="https://www.facebook.com/YD.cleaningservice"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="yd-contact-social-link yd-contact-facebook"
+                        >
+                            <i class="fa-brands fa-facebook-f"></i>
+
+                            <span>
+                                <strong>Facebook</strong>
+                                <small>Follow our page</small>
+                            </span>
+
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+
+
+                        <a
+                            href="https://www.instagram.com/ydcommercialcleaning"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="yd-contact-social-link yd-contact-instagram"
+                        >
+                            <i class="fa-brands fa-instagram"></i>
+
+                            <span>
+                                <strong>Instagram</strong>
+                                <small>See our latest work</small>
+                            </span>
+
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+
+
+                        <a
+                            href="https://www.tiktok.com/@yd_cleaning3"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="yd-contact-social-link yd-contact-tiktok"
+                        >
+                            <i class="fa-brands fa-tiktok"></i>
+
+                            <span>
+                                <strong>TikTok</strong>
+                                <small>Cleaning videos & tips</small>
+                            </span>
+
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+
+
+                        <a
+                            href="https://www.linkedin.com/in/yogendra-dhami-91b46640b"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="yd-contact-social-link yd-contact-linkedin"
+                        >
+                            <i class="fa-brands fa-linkedin-in"></i>
+
+                            <span>
+                                <strong>LinkedIn</strong>
+                                <small>Professional profile</small>
+                            </span>
+
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MAP -->
+    <section class="yd-contact-map-section">
+
+        <div class="container">
+
+            <div class="yd-contact-map-heading">
+
+                <div>
+                    <span class="yd-contact-section-label">
+                        FIND US
+                    </span>
+
+                    <h2>Our Adelaide location</h2>
+                </div>
+
+                <a
+                    href="https://www.google.com/maps/search/?api=1&query=2/10%20Da%20Costa%20Avenue%20Prospect%20SA%205082%20Australia"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="yd-contact-directions-btn"
+                >
+                    Get Directions
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+
+            </div>
+
+
+            <div class="yd-contact-map-wrapper">
+
                 <iframe
                     src="https://www.google.com/maps?q=2/10%20Da%20Costa%20Avenue%20Prospect%20SA%205082%20Australia&output=embed"
                     width="100%"
-                    height="320"
+                    height="450"
                     style="border:0;"
-                    loading="lazy">
-                </iframe>
+                    loading="lazy"
+                    title="YD Commercial Cleaning Services location"
+                ></iframe>
+
             </div>
+
         </div>
 
-    </div>
-</section>
+    </section>
+
+
+    <!-- FINAL CTA -->
+    <section class="yd-contact-final-cta">
+
+        <div class="container">
+
+            <div class="yd-contact-final-content">
+
+                <span>READY TO GET STARTED?</span>
+
+                <h2>
+                    Let's get your space
+                    <strong>clean and fresh.</strong>
+                </h2>
+
+                <p>
+                    Contact our Adelaide cleaning team today for a free,
+                    no-obligation quote.
+                </p>
+
+                <div class="yd-contact-final-buttons">
+
+                    <a
+                        href="/#quote"
+                        class="yd-contact-final-primary"
+                    >
+                        Request Free Quote
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                    <a
+                        href="tel:0430049865"
+                        class="yd-contact-final-secondary"
+                    >
+                        <i class="fa-solid fa-phone"></i>
+                        0430 049 865
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
 
 {% endblock %}
