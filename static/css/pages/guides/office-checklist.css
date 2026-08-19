@@ -1,477 +1,1159 @@
 /* =========================================================
    YD COMMERCIAL CLEANING
-   OFFICE CLEANING CHECKLIST
+   PROFESSIONAL GUIDES
    ========================================================= */
 
 
 /* =========================================================
-   PAGE CONTENT
+   VARIABLES
    ========================================================= */
 
-.office-checklist-page {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 75px 20px 100px;
+:root {
+    --guide-navy: #102a43;
+    --guide-blue: #1769aa;
+    --guide-blue-dark: #0f4f82;
+    --guide-blue-soft: #edf6fc;
+
+    --guide-text: #243b53;
+    --guide-muted: #627d98;
+    --guide-light: #829ab1;
+
+    --guide-border: #d9e2ec;
+    --guide-border-light: #e8eef3;
+
+    --guide-bg: #f5f8fb;
+    --guide-white: #ffffff;
+
+    --guide-radius: 16px;
+    --guide-radius-small: 10px;
+
+    --guide-shadow:
+        0 8px 30px rgba(16, 42, 67, 0.07);
+
+    --guide-shadow-hover:
+        0 14px 38px rgba(16, 42, 67, 0.11);
 }
 
 
 /* =========================================================
-   INTRO BOX
+   HERO
    ========================================================= */
 
-.office-checklist-intro {
-    margin-bottom: 30px;
-    padding: 30px 32px;
-
-    background: #f3f7f4;
-    border: 1px solid #dfe9e2;
-    border-left: 5px solid #557763;
-    border-radius: 14px;
-}
-
-.office-checklist-intro h2 {
-    margin: 0 0 12px;
-
-    color: #263b31;
-    font-size: 1.5rem;
-    line-height: 1.25;
-    font-weight: 800;
-}
-
-.office-checklist-intro p {
-    margin: 0;
-
-    color: #5d6963;
-    font-size: 0.98rem;
-    line-height: 1.8;
-}
-
-
-/* =========================================================
-   CHECKLIST BOX
-   ========================================================= */
-
-.office-checklist-box {
-    margin-bottom: 28px;
-    padding: 32px;
-
-    background: #ffffff;
-    border: 1px solid #e1e7e3;
-    border-radius: 16px;
-
-    box-shadow: 0 8px 28px rgba(36, 53, 44, 0.055);
-}
-
-.office-checklist-box h2 {
-    margin: 0 0 18px;
-
-    color: #263b31;
-    font-size: 1.65rem;
-    line-height: 1.25;
-    font-weight: 800;
-}
-
-.office-checklist-box h3 {
-    margin: 30px 0 10px;
-
-    color: #3d5b49;
-    font-size: 1.08rem;
-    line-height: 1.35;
-    font-weight: 750;
-}
-
-.office-checklist-box h3:first-child {
-    margin-top: 0;
-}
-
-
-/* =========================================================
-   CHECKLIST LIST RESET
-   ========================================================= */
-
-.office-checklist-box ul {
-    margin: 14px 0 0;
-    padding: 0;
-
-    list-style: none;
-}
-
-.office-checklist-box li {
-    position: static;
-
-    margin: 0;
-    padding: 0;
-
-    list-style: none;
-    border: 0;
-}
-
-
-/* =========================================================
-   CHECKLIST ROW
-   ========================================================= */
-
-.office-checklist-box .checklist-item {
-    display: flex;
-    align-items: center;
-
-    width: 100%;
-    box-sizing: border-box;
-
-    gap: 12px;
-
-    margin: 0;
-    padding: 13px 4px;
-
-    color: #4f5d56;
-
-    font-size: 0.97rem;
-    font-weight: 500;
-    line-height: 1.55;
-
-    cursor: pointer;
-
-    border-bottom: 1px solid #edf1ee;
-
-    transition:
-        color 0.2s ease,
-        background-color 0.2s ease;
-}
-
-
-/* =========================================================
-   REMOVE OLD DECORATIVE CHECKMARK
-   ========================================================= */
-
-.office-checklist-box .checklist-item::before {
-    content: none !important;
-    display: none !important;
-}
-
-
-/* =========================================================
-   LAST CHECKLIST ITEM
-   ========================================================= */
-
-.office-checklist-box li:last-child .checklist-item {
-    border-bottom: none;
-}
-
-
-/* =========================================================
-   REAL CHECKBOX
-   ========================================================= */
-
-.office-checklist-box
-.checklist-item
-input[type="checkbox"] {
-
-    appearance: auto;
-    -webkit-appearance: checkbox;
-
-    flex: 0 0 18px;
-
-    width: 18px;
-    height: 18px;
-
-    min-width: 18px;
-    min-height: 18px;
-
-    margin: 0;
-    padding: 0;
-
-    accent-color: #557763;
-
-    cursor: pointer;
-}
-
-
-/* =========================================================
-   CHECKLIST TEXT
-   ========================================================= */
-
-.office-checklist-box
-.checklist-item
-span {
-
-    display: block;
-
-    flex: 1 1 auto;
-    min-width: 0;
-
-    margin: 0;
-    padding: 0;
-
-    color: inherit;
-}
-
-
-/* =========================================================
-   HOVER
-   ========================================================= */
-
-.office-checklist-box
-.checklist-item:hover {
-
-    color: #293a32;
-}
-
-
-/* =========================================================
-   CHECKED STATE
-   ========================================================= */
-
-.office-checklist-box
-.checklist-item
-input[type="checkbox"]:checked
-+ span {
-
-    color: #7a8580;
-
-    text-decoration: line-through;
-    text-decoration-thickness: 1px;
-
-    opacity: 0.7;
-}
-
-
-/* =========================================================
-   NORMAL INFORMATION LIST
-   Professional Cleaning Tips
-   ========================================================= */
-
-.office-checklist-box
-ul
-li:not(:has(.checklist-item)) {
-
-    padding: 12px 0;
-
-    color: #56625c;
-
-    font-size: 0.97rem;
-    line-height: 1.7;
-
-    border-bottom: 1px solid #edf1ee;
-}
-
-.office-checklist-box
-ul
-li:not(:has(.checklist-item)):last-child {
-
-    border-bottom: none;
-}
-
-.office-checklist-box
-ul
-li
-strong {
-
-    color: #35483e;
-    font-weight: 800;
-}
-
-
-/* =========================================================
-   PROFESSIONAL CTA
-   ========================================================= */
-
-.office-checklist-cta {
-    margin-top: 50px;
-    padding: 42px;
+.guide-page-hero {
+    position: relative;
+    overflow: hidden;
 
     background:
-        radial-gradient(
-            circle at 90% 10%,
-            rgba(255,255,255,0.08),
-            transparent 30%
-        ),
         linear-gradient(
             135deg,
-            #263b31,
-            #34483d
+            #102a43 0%,
+            #153f5d 55%,
+            #1769aa 100%
         );
 
-    border-radius: 18px;
-
     color: #ffffff;
 
-    box-shadow:
-        0 20px 45px rgba(36, 53, 44, 0.14);
+    padding: 76px 0 82px;
+
+    margin: 0;
 }
 
-.office-checklist-cta h2 {
-    margin: 0 0 12px;
 
-    color: #ffffff;
+.guide-page-hero::after {
+    content: "";
 
-    font-size: 1.8rem;
-    line-height: 1.25;
+    position: absolute;
+
+    width: 420px;
+    height: 420px;
+
+    right: -170px;
+    top: -190px;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+
+    pointer-events: none;
+}
+
+
+.guide-page-hero::before {
+    content: "";
+
+    position: absolute;
+
+    width: 280px;
+    height: 280px;
+
+    right: 80px;
+    bottom: -220px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.045);
+
+    pointer-events: none;
+}
+
+
+.guide-hero-grid {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    gap: 50px;
+
+    align-items: end;
+}
+
+
+.guide-hero-content {
+    max-width: 820px;
+}
+
+
+.guide-eyebrow {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 7px 13px;
+
+    margin-bottom: 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.20);
+
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: rgba(255, 255, 255, 0.90);
+
+    font-size: 0.72rem;
+
     font-weight: 800;
+
+    letter-spacing: 0.14em;
+
+    text-transform: uppercase;
 }
 
-.office-checklist-cta p {
-    max-width: 720px;
 
-    margin: 0 0 22px;
+.guide-hero-content h1 {
+    margin: 0 0 20px;
 
-    color: rgba(255,255,255,0.82);
+    color: #ffffff;
+
+    font-size: clamp(2.25rem, 5vw, 4rem);
+
+    line-height: 1.05;
+
+    font-weight: 800;
+
+    letter-spacing: -0.035em;
+}
+
+
+.guide-hero-description {
+    max-width: 760px;
+
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.84);
+
+    font-size: 1.08rem;
 
     line-height: 1.75;
 }
 
 
-/* =========================================================
-   CTA CONTACT LINKS
-   ========================================================= */
-
-.office-checklist-contact {
+.guide-hero-meta {
     display: flex;
+
     flex-wrap: wrap;
-    gap: 12px;
+
+    gap: 10px 22px;
+
+    margin-top: 28px;
 }
 
-.office-checklist-contact a {
+
+.guide-hero-meta span {
+    color: rgba(255, 255, 255, 0.88);
+
+    font-size: 0.88rem;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   HERO BUTTONS
+   ========================================================= */
+
+.guide-hero-actions {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    min-width: 190px;
+}
+
+
+.guide-button {
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
-    min-height: 44px;
+    gap: 9px;
 
-    padding: 10px 18px;
+    min-height: 48px;
 
-    border-radius: 8px;
+    padding: 12px 20px;
 
-    background: #ffffff;
-    color: #263b31;
+    border-radius: 9px;
 
-    text-decoration: none;
+    text-decoration: none !important;
 
     font-size: 0.9rem;
+
     font-weight: 750;
+
+    line-height: 1.2;
 
     transition:
         transform 0.2s ease,
-        background 0.2s ease;
+        box-shadow 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
-.office-checklist-contact a:hover {
+
+.guide-button:hover {
     transform: translateY(-2px);
-    background: #edf5ef;
+}
+
+
+.guide-button-primary {
+    background: #ffffff;
+
+    color: var(--guide-navy);
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+
+.guide-button-primary:hover {
+    background: #f4f8fb;
+
+    color: var(--guide-navy);
+
+    box-shadow:
+        0 12px 26px rgba(0, 0, 0, 0.20);
+}
+
+
+.guide-button-secondary {
+    border: 1px solid rgba(255, 255, 255, 0.32);
+
+    background: rgba(255, 255, 255, 0.06);
+
+    color: #ffffff;
+}
+
+
+.guide-button-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.55);
+
+    background: rgba(255, 255, 255, 0.12);
+
+    color: #ffffff;
 }
 
 
 /* =========================================================
-   MOBILE
+   MAIN PAGE
    ========================================================= */
 
-@media (max-width: 768px) {
+.guide-page {
+    background: var(--guide-bg);
 
-    .office-checklist-page {
-        padding: 55px 16px 70px;
+    padding: 54px 0 90px;
+}
+
+
+.guide-container {
+    width: min(1080px, calc(100% - 40px));
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   OVERVIEW
+   ========================================================= */
+
+.guide-overview {
+    margin-bottom: 28px;
+
+    padding: 34px;
+
+    background: var(--guide-white);
+
+    border: 1px solid var(--guide-border);
+
+    border-radius: var(--guide-radius);
+
+    box-shadow: var(--guide-shadow);
+}
+
+
+.guide-overview-heading {
+    max-width: 760px;
+
+    margin-bottom: 28px;
+}
+
+
+.guide-section-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--guide-blue);
+
+    font-size: 0.70rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.14em;
+
+    text-transform: uppercase;
+}
+
+
+.guide-overview-heading h2,
+.guide-section-header h2,
+.guide-tips-header h2,
+.guide-cta h2 {
+    margin: 0 0 10px;
+
+    color: var(--guide-navy);
+
+    font-size: clamp(1.55rem, 3vw, 2.05rem);
+
+    line-height: 1.2;
+
+    font-weight: 800;
+
+    letter-spacing: -0.02em;
+}
+
+
+.guide-overview-heading p {
+    margin: 0;
+
+    color: var(--guide-muted);
+
+    font-size: 0.98rem;
+
+    line-height: 1.7;
+}
+
+
+.guide-overview-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 14px;
+}
+
+
+.guide-overview-card {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 16px;
+
+    padding: 20px;
+
+    border: 1px solid var(--guide-border-light);
+
+    border-radius: 12px;
+
+    background: #fbfdff;
+}
+
+
+.overview-number {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex: 0 0 42px;
+
+    width: 42px;
+
+    height: 42px;
+
+    border-radius: 10px;
+
+    background: var(--guide-blue-soft);
+
+    color: var(--guide-blue);
+
+    font-size: 0.75rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.04em;
+}
+
+
+.guide-overview-card h3 {
+    margin: 1px 0 4px;
+
+    color: var(--guide-text);
+
+    font-size: 1rem;
+
+    font-weight: 750;
+}
+
+
+.guide-overview-card p {
+    margin: 0;
+
+    color: var(--guide-muted);
+
+    font-size: 0.84rem;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   MAIN SECTION CARD
+   ========================================================= */
+
+.guide-section-card {
+    margin-bottom: 28px;
+
+    padding: 36px;
+
+    background: var(--guide-white);
+
+    border: 1px solid var(--guide-border);
+
+    border-radius: var(--guide-radius);
+
+    box-shadow: var(--guide-shadow);
+}
+
+
+.guide-section-header {
+    display: grid;
+
+    grid-template-columns: 58px minmax(0, 1fr);
+
+    gap: 20px;
+
+    align-items: start;
+
+    margin-bottom: 34px;
+
+    padding-bottom: 26px;
+
+    border-bottom: 1px solid var(--guide-border-light);
+}
+
+
+.guide-section-number {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 58px;
+
+    height: 58px;
+
+    border-radius: 13px;
+
+    background: var(--guide-navy);
+
+    color: #ffffff;
+
+    font-size: 0.9rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.04em;
+}
+
+
+.guide-section-header p {
+    max-width: 700px;
+
+    margin: 0;
+
+    color: var(--guide-muted);
+
+    font-size: 0.94rem;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   TASK GROUP
+   ========================================================= */
+
+.guide-task-group {
+    margin-top: 30px;
+}
+
+
+.guide-task-group:first-of-type {
+    margin-top: 0;
+}
+
+
+.guide-task-group h3 {
+    position: relative;
+
+    margin: 0 0 13px;
+
+    padding-left: 15px;
+
+    color: var(--guide-text);
+
+    font-size: 1.02rem;
+
+    line-height: 1.4;
+
+    font-weight: 750;
+}
+
+
+.guide-task-group h3::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    top: 3px;
+
+    bottom: 3px;
+
+    width: 3px;
+
+    border-radius: 4px;
+
+    background: var(--guide-blue);
+}
+
+
+/* =========================================================
+   CHECKLIST
+   ========================================================= */
+
+.guide-checklist {
+    margin: 0;
+
+    padding: 0;
+
+    list-style: none;
+}
+
+
+.guide-checklist li {
+    margin: 0;
+
+    padding: 0;
+
+    list-style: none;
+}
+
+
+.guide-check {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    width: 100%;
+
+    min-height: 48px;
+
+    padding: 10px 12px;
+
+    border-bottom: 1px solid #edf2f6;
+
+    cursor: pointer;
+
+    color: var(--guide-text);
+
+    font-size: 0.92rem;
+
+    line-height: 1.45;
+
+    transition:
+        background 0.18s ease,
+        padding-left 0.18s ease;
+}
+
+
+.guide-check:hover {
+    padding-left: 16px;
+
+    background: #f8fbfd;
+}
+
+
+.guide-check input[type="checkbox"] {
+    appearance: none;
+
+    -webkit-appearance: none;
+
+    flex: 0 0 19px;
+
+    width: 19px;
+
+    height: 19px;
+
+    margin: 0;
+
+    border: 1.7px solid #9fb3c8;
+
+    border-radius: 5px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+
+    position: relative;
+}
+
+
+.guide-check input[type="checkbox"]:checked {
+    border-color: var(--guide-blue);
+
+    background: var(--guide-blue);
+}
+
+
+.guide-check input[type="checkbox"]:checked::after {
+    content: "";
+
+    position: absolute;
+
+    left: 5px;
+
+    top: 2px;
+
+    width: 5px;
+
+    height: 9px;
+
+    border-right: 2px solid #ffffff;
+
+    border-bottom: 2px solid #ffffff;
+
+    transform: rotate(45deg);
+}
+
+
+.guide-check input[type="checkbox"]:focus-visible {
+    outline: 3px solid rgba(23, 105, 170, 0.20);
+
+    outline-offset: 2px;
+}
+
+
+.guide-check input[type="checkbox"]:checked + span {
+    color: var(--guide-light);
+
+    text-decoration: line-through;
+}
+
+
+/* =========================================================
+   TIPS CARD
+   ========================================================= */
+
+.guide-tips-card {
+    margin-bottom: 28px;
+
+    padding: 36px;
+
+    border: 1px solid var(--guide-border);
+
+    border-radius: var(--guide-radius);
+
+    background:
+        linear-gradient(
+            145deg,
+            #fafdff 0%,
+            #f2f8fc 100%
+        );
+
+    box-shadow: var(--guide-shadow);
+}
+
+
+.guide-tips-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+
+    margin-bottom: 28px;
+}
+
+
+.guide-tips-icon {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex: 0 0 48px;
+
+    width: 48px;
+
+    height: 48px;
+
+    border-radius: 12px;
+
+    background: var(--guide-blue);
+
+    color: #ffffff;
+
+    font-size: 1.15rem;
+
+    font-weight: 800;
+}
+
+
+.guide-tips-header .guide-section-label {
+    margin-bottom: 4px;
+}
+
+
+.guide-tips-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 1px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--guide-border);
+
+    border-radius: 12px;
+
+    background: var(--guide-border);
+}
+
+
+.guide-tip {
+    padding: 23px;
+
+    background: #ffffff;
+}
+
+
+.guide-tip h3 {
+    margin: 0 0 7px;
+
+    color: var(--guide-text);
+
+    font-size: 0.96rem;
+
+    font-weight: 750;
+}
+
+
+.guide-tip p {
+    margin: 0;
+
+    color: var(--guide-muted);
+
+    font-size: 0.86rem;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   CTA
+   ========================================================= */
+
+.guide-cta {
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 48px;
+
+    border-radius: var(--guide-radius);
+
+    background:
+        linear-gradient(
+            135deg,
+            #102a43 0%,
+            #1769aa 100%
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 15px 45px rgba(16, 42, 67, 0.16);
+}
+
+
+.guide-cta::after {
+    content: "";
+
+    position: absolute;
+
+    width: 300px;
+
+    height: 300px;
+
+    right: -140px;
+
+    top: -140px;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+
+.guide-cta-content {
+    position: relative;
+
+    z-index: 2;
+
+    max-width: 760px;
+}
+
+
+.guide-cta .guide-section-label {
+    color: rgba(255, 255, 255, 0.70);
+}
+
+
+.guide-cta h2 {
+    color: #ffffff;
+
+    margin-bottom: 14px;
+}
+
+
+.guide-cta p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.80);
+
+    font-size: 0.98rem;
+
+    line-height: 1.75;
+}
+
+
+.guide-cta-actions {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-top: 28px;
+}
+
+
+.guide-button-light {
+    background: #ffffff;
+
+    color: var(--guide-navy);
+}
+
+
+.guide-button-light:hover {
+    background: #f2f7fa;
+
+    color: var(--guide-navy);
+}
+
+
+.guide-button-ghost {
+    border: 1px solid rgba(255, 255, 255, 0.28);
+
+    background: rgba(255, 255, 255, 0.07);
+
+    color: #ffffff;
+}
+
+
+.guide-button-ghost:hover {
+    border-color: rgba(255, 255, 255, 0.48);
+
+    background: rgba(255, 255, 255, 0.12);
+
+    color: #ffffff;
+}
+
+
+.guide-cta-contact {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 9px;
+
+    margin-top: 22px;
+
+    color: rgba(255, 255, 255, 0.62);
+
+    font-size: 0.82rem;
+}
+
+
+.guide-cta-contact a {
+    color: rgba(255, 255, 255, 0.82);
+
+    text-decoration: none;
+}
+
+
+.guide-cta-contact a:hover {
+    color: #ffffff;
+
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .guide-page-hero {
+        padding: 60px 0 66px;
     }
 
-    .office-checklist-intro {
-        padding: 24px 20px;
+
+    .guide-hero-grid {
+        grid-template-columns: 1fr;
+
+        gap: 30px;
+
+        align-items: start;
     }
 
-    .office-checklist-box {
-        padding: 24px 20px;
-        border-radius: 14px;
+
+    .guide-hero-actions {
+        flex-direction: row;
+
+        flex-wrap: wrap;
     }
 
-    .office-checklist-box h2 {
-        font-size: 1.4rem;
+
+    .guide-hero-actions .guide-button {
+        min-width: 170px;
     }
 
-    .office-checklist-box .checklist-item {
-        align-items: flex-start;
 
-        gap: 11px;
-
-        padding: 12px 2px;
-
-        font-size: 0.94rem;
-        line-height: 1.55;
+    .guide-overview-grid {
+        grid-template-columns: 1fr;
     }
 
-    .office-checklist-box
-    .checklist-item
-    input[type="checkbox"] {
+}
 
-        flex: 0 0 17px;
 
-        width: 17px;
-        height: 17px;
+@media (max-width: 700px) {
 
-        min-width: 17px;
-        min-height: 17px;
-
-        margin-top: 2px;
+    .guide-page {
+        padding: 34px 0 60px;
     }
 
-    .office-checklist-cta {
-        padding: 30px 24px;
+
+    .guide-container {
+        width: min(100% - 28px, 1080px);
     }
 
-    .office-checklist-contact {
+
+    .guide-page-hero {
+        padding: 48px 0 54px;
+    }
+
+
+    .guide-hero-content h1 {
+        font-size: 2.35rem;
+    }
+
+
+    .guide-hero-description {
+        font-size: 0.98rem;
+
+        line-height: 1.65;
+    }
+
+
+    .guide-hero-actions {
+        width: 100%;
+
         flex-direction: column;
     }
 
-    .office-checklist-contact a {
+
+    .guide-hero-actions .guide-button {
         width: 100%;
     }
+
+
+    .guide-overview,
+    .guide-section-card,
+    .guide-tips-card {
+        padding: 24px;
+    }
+
+
+    .guide-section-header {
+        grid-template-columns: 1fr;
+
+        gap: 15px;
+
+        margin-bottom: 26px;
+    }
+
+
+    .guide-section-number {
+        width: 46px;
+
+        height: 46px;
+
+        border-radius: 10px;
+    }
+
+
+    .guide-task-group {
+        margin-top: 25px;
+    }
+
+
+    .guide-check {
+        align-items: flex-start;
+
+        min-height: 48px;
+
+        padding: 11px 8px;
+
+        font-size: 0.88rem;
+    }
+
+
+    .guide-check input[type="checkbox"] {
+        margin-top: 1px;
+    }
+
+
+    .guide-tips-header {
+        align-items: flex-start;
+    }
+
+
+    .guide-tips-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .guide-cta {
+        padding: 32px 24px;
+    }
+
+
+    .guide-cta-actions {
+        flex-direction: column;
+    }
+
+
+    .guide-cta-actions .guide-button {
+        width: 100%;
+    }
+
 }
 
 
-/* =========================================================
-   SMALL MOBILE
-   ========================================================= */
+@media (max-width: 430px) {
 
-@media (max-width: 480px) {
-
-    .office-checklist-page {
-        padding: 45px 14px 60px;
+    .guide-container {
+        width: min(100% - 20px, 1080px);
     }
 
-    .office-checklist-box {
-        padding: 22px 17px;
+
+    .guide-page-hero {
+        padding: 40px 0 46px;
     }
 
-    .office-checklist-box h2 {
-        font-size: 1.3rem;
+
+    .guide-hero-content h1 {
+        font-size: 2rem;
     }
 
-    .office-checklist-box h3 {
-        font-size: 1rem;
+
+    .guide-hero-meta {
+        flex-direction: column;
+
+        gap: 8px;
     }
 
-    .office-checklist-box .checklist-item {
-        gap: 10px;
 
-        padding: 11px 0;
-
-        font-size: 0.92rem;
+    .guide-overview,
+    .guide-section-card,
+    .guide-tips-card {
+        padding: 20px;
     }
 
-    .office-checklist-box
-    .checklist-item
-    input[type="checkbox"] {
 
-        flex-basis: 17px;
-
-        width: 17px;
-        height: 17px;
-
-        min-width: 17px;
+    .guide-section-header h2 {
+        font-size: 1.45rem;
     }
 
-    .office-checklist-cta {
-        padding: 25px 19px;
+
+    .guide-cta {
+        padding: 28px 20px;
     }
 
-    .office-checklist-cta h2 {
-        font-size: 1.5rem;
-    }
 }
 
 
@@ -481,27 +1163,72 @@ strong {
 
 @media print {
 
-    .office-checklist-page {
-        max-width: none;
-        padding: 20px;
+    .guide-page-hero {
+        padding: 30px 0;
+
+        background: #ffffff;
+
+        color: #000000;
     }
 
-    .office-checklist-box {
+
+    .guide-hero-content h1 {
+        color: #000000;
+    }
+
+
+    .guide-hero-description,
+    .guide-hero-meta span {
+        color: #333333;
+    }
+
+
+    .guide-hero-actions {
+        display: none;
+    }
+
+
+    .guide-page {
+        padding: 20px 0;
+
+        background: #ffffff;
+    }
+
+
+    .guide-overview,
+    .guide-section-card,
+    .guide-tips-card,
+    .guide-cta {
         box-shadow: none;
+
         break-inside: avoid;
-        border: 1px solid #ccc;
     }
 
-    .office-checklist-cta {
-        background: none;
-        color: #000;
-        border: 1px solid #ccc;
-        box-shadow: none;
+
+    .guide-cta {
+        background: #ffffff;
+
+        border: 1px solid #cccccc;
+
+        color: #000000;
     }
 
-    .office-checklist-cta h2,
-    .office-checklist-cta p {
-        color: #000;
+
+    .guide-cta h2,
+    .guide-cta p {
+        color: #000000;
+    }
+
+
+    .guide-button {
+        display: none;
+    }
+
+
+    .guide-check input[type="checkbox"] {
+        appearance: auto;
+
+        -webkit-appearance: auto;
     }
 
 }

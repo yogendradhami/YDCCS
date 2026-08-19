@@ -1,64 +1,65 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Office Cleaning Checklist | YD Commercial Cleaning
-{% endblock %}
+{% block title %}Office Cleaning Checklist | YD Commercial Cleaning{% endblock %}
 
 {% block meta_description %}
-Professional office cleaning checklist covering daily, weekly and monthly tasks to help keep Adelaide workplaces clean, hygienic and productive.
+Professional office cleaning checklist for Adelaide workplaces. Use our daily, weekly and monthly cleaning tasks to maintain a clean, healthy and professional office.
 {% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/guides/office-checklist.css' %}">
 {% endblock %}
 
-
 {% block content %}
 
-<!-- =====================================================
-     HERO
-     ===================================================== -->
+<!-- =========================================================
+     GUIDE HERO
+========================================================= -->
 
-<section class="guide-detail-hero">
-
+<section class="guide-page-hero">
     <div class="container">
 
-        <div class="guide-detail-header">
+        <div class="guide-hero-grid">
 
-            <div class="guide-detail-header-left">
+            <div class="guide-hero-content">
 
-                <span class="guide-detail-eyebrow">
-                    Cleaning Guide
+                <span class="guide-eyebrow">
+                    OFFICE CLEANING GUIDE
                 </span>
 
                 <h1>
                     Office Cleaning Checklist
                 </h1>
 
-                <p class="guide-detail-subtitle">
+                <p class="guide-hero-description">
                     A practical daily, weekly and monthly office cleaning
-                    checklist from YD Commercial Cleaning Services, designed
-                    to help Adelaide workplaces stay clean, hygienic and
-                    professional.
+                    checklist to help Adelaide workplaces stay clean,
+                    hygienic, organised and professional.
                 </p>
+
+                <div class="guide-hero-meta">
+                    <span>✓ Daily tasks</span>
+                    <span>✓ Weekly tasks</span>
+                    <span>✓ Monthly tasks</span>
+                </div>
 
             </div>
 
-
-            <div class="guide-actions">
+            <div class="guide-hero-actions">
 
                 <a
                     href="{% static 'pdf/guides/office-checklist.pdf' %}"
-                    class="btn btn-primary"
+                    class="guide-button guide-button-primary"
                     download
                 >
-                    📥 Download PDF
+                    <span>↓</span>
+                    Download PDF
                 </a>
 
                 <a
                     href="{% url 'guides' %}"
-                    class="btn btn-outline"
+                    class="guide-button guide-button-secondary"
                 >
                     ← All Guides
                 </a>
@@ -68,559 +69,743 @@ Professional office cleaning checklist covering daily, weekly and monthly tasks 
         </div>
 
     </div>
-
 </section>
 
 
-<!-- =====================================================
-     CONTENT
-     ===================================================== -->
+<!-- =========================================================
+     GUIDE CONTENT
+========================================================= -->
 
-<section class="office-checklist-page">
+<main class="guide-page">
+
+    <div class="guide-container">
 
 
-    <!-- INTRO -->
+        <!-- =================================================
+             QUICK OVERVIEW
+        ================================================== -->
 
-    <div class="office-checklist-intro">
+        <section class="guide-overview">
 
-        <h2>
-            How to use this office cleaning checklist
-        </h2>
+            <div class="guide-overview-heading">
 
-        <p>
-            Use this checklist to organise routine office cleaning tasks
-            across reception areas, workspaces, bathrooms, kitchens and
-            shared areas. Tick each task as it is completed and adjust
-            cleaning frequency according to your workplace size, traffic
-            levels and specific requirements.
-        </p>
+                <span class="guide-section-label">
+                    AT A GLANCE
+                </span>
+
+                <h2>
+                    A simple office cleaning routine
+                </h2>
+
+                <p>
+                    Use this checklist to organise routine cleaning tasks
+                    throughout your workplace. Adjust the frequency according
+                    to building size, staff numbers, foot traffic and specific
+                    cleaning requirements.
+                </p>
+
+            </div>
+
+
+            <div class="guide-overview-grid">
+
+                <div class="guide-overview-card">
+                    <span class="overview-number">01</span>
+
+                    <div>
+                        <h3>Daily</h3>
+                        <p>
+                            Routine cleaning and high-touch areas.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="guide-overview-card">
+                    <span class="overview-number">02</span>
+
+                    <div>
+                        <h3>Weekly</h3>
+                        <p>
+                            Deeper cleaning of floors, glass and facilities.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="guide-overview-card">
+                    <span class="overview-number">03</span>
+
+                    <div>
+                        <h3>Monthly</h3>
+                        <p>
+                            Detailed cleaning and less frequent tasks.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             DAILY TASKS
+        ================================================== -->
+
+        <section class="guide-section-card">
+
+            <div class="guide-section-header">
+
+                <div class="guide-section-number">
+                    01
+                </div>
+
+                <div>
+                    <span class="guide-section-label">
+                        ROUTINE CLEANING
+                    </span>
+
+                    <h2>
+                        Daily Office Cleaning
+                    </h2>
+
+                    <p>
+                        Focus on high-use areas, hygiene facilities and
+                        frequently touched surfaces each working day.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- Entrances -->
+
+            <div class="guide-task-group">
+
+                <h3>Entrances &amp; Reception Area</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Empty and replace trash bins</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Sweep and mop floors</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean and disinfect door handles</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Wipe reception desk</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Dust decorative items</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- Restrooms -->
+
+            <div class="guide-task-group">
+
+                <h3>Restrooms</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean and disinfect toilets, sinks and faucets</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Mop and sanitise floors</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Refill soap and paper towel dispensers</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Empty and replace trash bins</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Check and refill toilet paper</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- Kitchen -->
+
+            <div class="guide-task-group">
+
+                <h3>Kitchen / Break Room</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean and disinfect countertops</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Wipe microwave interior and exterior</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Empty and replace trash bins</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Mop and sweep floors</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Wipe down sink and faucet</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- Offices -->
+
+            <div class="guide-task-group">
+
+                <h3>Offices &amp; Workspaces</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Empty trash bins</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Vacuum carpets in high-traffic areas</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Spot-clean stains on carpets or upholstery</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Dust surfaces and equipment</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- Common Areas -->
+
+            <div class="guide-task-group">
+
+                <h3>Common Areas</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Sweep and mop hallways</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Dust baseboards and light fixtures</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean glass doors and partitions</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Disinfect high-touch surfaces such as railings and switches</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             WEEKLY TASKS
+        ================================================== -->
+
+        <section class="guide-section-card">
+
+            <div class="guide-section-header">
+
+                <div class="guide-section-number">
+                    02
+                </div>
+
+                <div>
+                    <span class="guide-section-label">
+                        DEEPER CLEANING
+                    </span>
+
+                    <h2>
+                        Weekly Office Cleaning
+                    </h2>
+
+                    <p>
+                        Use weekly cleaning to reach areas that require more
+                        detailed attention than routine daily cleaning.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="guide-task-group">
+
+                <h3>Deep Carpet &amp; Floor Cleaning</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Deep vacuum all carpeted areas</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Spot-treat stained areas</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Strip, wax and buff hard floors where applicable</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean baseboards throughout the office</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="guide-task-group">
+
+                <h3>Window &amp; Glass Cleaning</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean interior and exterior windows where suitable</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean glass doors and partitions</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean window sills and frames</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="guide-task-group">
+
+                <h3>Wall &amp; Ceiling Maintenance</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Wipe light switches and outlet covers</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Dust ceiling tiles and vents where accessible</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Spot-clean walls for marks and scuffs</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div class="guide-task-group">
+
+                <h3>Restroom Deep Clean</h3>
+
+                <ul class="guide-checklist">
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Deep scrub toilets, sinks and fixtures</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Clean tile grout and corners</span>
+                        </label>
+                    </li>
+
+                    <li>
+                        <label class="guide-check">
+                            <input type="checkbox">
+                            <span>Sanitise mirrors and fixtures</span>
+                        </label>
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MONTHLY TASKS
+        ================================================== -->
+
+        <section class="guide-section-card">
+
+            <div class="guide-section-header">
+
+                <div class="guide-section-number">
+                    03
+                </div>
+
+                <div>
+                    <span class="guide-section-label">
+                        DETAILED CLEANING
+                    </span>
+
+                    <h2>
+                        Monthly Office Cleaning
+                    </h2>
+
+                    <p>
+                        Monthly tasks help address areas that may not require
+                        attention every working day or week.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <ul class="guide-checklist">
+
+                <li>
+                    <label class="guide-check">
+                        <input type="checkbox">
+                        <span>Clean behind and under furniture where accessible</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="guide-check">
+                        <input type="checkbox">
+                        <span>Deep clean refrigerators and kitchen appliances</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="guide-check">
+                        <input type="checkbox">
+                        <span>Clean air vents and grilles</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="guide-check">
+                        <input type="checkbox">
+                        <span>Clean and sanitise keyboards and shared computer equipment as appropriate</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="guide-check">
+                        <input type="checkbox">
+                        <span>Deep clean carpets with professional equipment as required</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="guide-check">
+                        <input type="checkbox">
+                        <span>Clean window blinds and accessible curtains</span>
+                    </label>
+                </li>
+
+                <li>
+                    <label class="guide-check">
+                        <input type="checkbox">
+                        <span>Inspect and clean accessible light fixtures</span>
+                    </label>
+                </li>
+
+            </ul>
+
+        </section>
+
+
+        <!-- =================================================
+             PROFESSIONAL TIPS
+        ================================================== -->
+
+        <section class="guide-tips-card">
+
+            <div class="guide-tips-header">
+
+                <span class="guide-tips-icon">
+                    ✓
+                </span>
+
+                <div>
+                    <span class="guide-section-label">
+                        PROFESSIONAL ADVICE
+                    </span>
+
+                    <h2>
+                        Office Cleaning Tips
+                    </h2>
+                </div>
+
+            </div>
+
+
+            <div class="guide-tips-grid">
+
+                <div class="guide-tip">
+                    <h3>Declutter First</h3>
+                    <p>
+                        Remove unnecessary items before cleaning so surfaces
+                        and floor areas are easier to access.
+                    </p>
+                </div>
+
+
+                <div class="guide-tip">
+                    <h3>Work Top to Bottom</h3>
+                    <p>
+                        Start with higher surfaces and work down towards the
+                        floor to reduce repeated cleaning.
+                    </p>
+                </div>
+
+
+                <div class="guide-tip">
+                    <h3>Use the Right Products</h3>
+                    <p>
+                        Select cleaning products that are suitable for the
+                        specific surface and always follow manufacturer
+                        instructions.
+                    </p>
+                </div>
+
+
+                <div class="guide-tip">
+                    <h3>Prioritise Touchpoints</h3>
+                    <p>
+                        Give additional attention to handles, switches,
+                        shared equipment and other frequently touched areas.
+                    </p>
+                </div>
+
+
+                <div class="guide-tip">
+                    <h3>Maintain Equipment</h3>
+                    <p>
+                        Clean and maintain cleaning equipment regularly so it
+                        continues to perform effectively.
+                    </p>
+                </div>
+
+
+                <div class="guide-tip">
+                    <h3>Stay Consistent</h3>
+                    <p>
+                        A consistent cleaning routine helps prevent buildup
+                        and maintains a professional workplace environment.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             CTA
+        ================================================== -->
+
+        <section class="guide-cta">
+
+            <div class="guide-cta-content">
+
+                <span class="guide-section-label">
+                    PROFESSIONAL CLEANING
+                </span>
+
+                <h2>
+                    Need help keeping your office clean?
+                </h2>
+
+                <p>
+                    YD Commercial Cleaning Services provides professional
+                    cleaning solutions for offices and commercial workplaces
+                    across Adelaide. We can tailor a cleaning program around
+                    your property's size, usage and specific requirements.
+                </p>
+
+                <div class="guide-cta-actions">
+
+                    <a
+                        href="{% url 'contact' %}"
+                        class="guide-button guide-button-light"
+                    >
+                        Request a Cleaning Quote
+                    </a>
+
+                    <a
+                        href="tel:0430049865"
+                        class="guide-button guide-button-ghost"
+                    >
+                        📞 0430 049 865
+                    </a>
+
+                </div>
+
+                <div class="guide-cta-contact">
+                    <a href="mailto:info@ydcleaning.com.au">
+                        info@ydcleaning.com.au
+                    </a>
+
+                    <span>•</span>
+
+                    <span>
+                        Adelaide, South Australia
+                    </span>
+                </div>
+
+            </div>
+
+        </section>
+
 
     </div>
 
-
-    <!-- =================================================
-         DAILY TASKS
-         ================================================= -->
-
-    <div class="office-checklist-box">
-
-        <h2>
-            Daily Office Cleaning Tasks
-        </h2>
-
-
-        <!-- Reception -->
-
-        <h3>
-            Entrances & Reception Area
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Empty and replace waste and recycling bins.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Sweep and mop hard flooring.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean and disinfect door handles.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Wipe reception desks and accessible surfaces.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Dust decorative items and visible surfaces.</span>
-                </label>
-            </li>
-
-        </ul>
-
-
-        <!-- Restrooms -->
-
-        <h3>
-            Restrooms
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean and disinfect toilets, sinks and faucets.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Mop and sanitise restroom floors.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Refill soap and paper towel dispensers.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Empty and replace restroom waste bins.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Check and refill toilet paper.</span>
-                </label>
-            </li>
-
-        </ul>
-
-
-        <!-- Kitchen -->
-
-        <h3>
-            Kitchen & Break Room
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean and disinfect countertops.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Wipe microwave interior and exterior.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Empty and replace waste bins.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Sweep and mop kitchen floors.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean and disinfect sinks and faucets.</span>
-                </label>
-            </li>
-
-        </ul>
-
-
-        <!-- Workspaces -->
-
-        <h3>
-            Offices & Workspaces
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Empty waste bins.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Vacuum carpets in high-traffic areas.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Spot-clean visible carpet or upholstery stains.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Dust accessible surfaces and equipment.</span>
-                </label>
-            </li>
-
-        </ul>
-
-
-        <!-- Common Areas -->
-
-        <h3>
-            Common Areas
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Sweep and mop hallways.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Dust baseboards and accessible light fixtures.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean glass doors and partitions.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Disinfect high-touch surfaces such as switches and railings.</span>
-                </label>
-            </li>
-
-        </ul>
-
-    </div>
-
-
-    <!-- =================================================
-         WEEKLY TASKS
-         ================================================= -->
-
-    <div class="office-checklist-box">
-
-        <h2>
-            Weekly Office Cleaning Tasks
-        </h2>
-
-
-        <h3>
-            Deep Carpet & Floor Cleaning
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Deep vacuum all carpeted areas.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Spot-treat visible carpet stains.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Strip, wax and buff hard floors where applicable.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean baseboards throughout the office.</span>
-                </label>
-            </li>
-
-        </ul>
-
-
-        <h3>
-            Windows & Glass
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean internal glass surfaces.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean glass doors and partitions.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean accessible window sills and frames.</span>
-                </label>
-            </li>
-
-        </ul>
-
-
-        <h3>
-            Walls & Ceilings
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Wipe light switches and outlet covers.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Dust accessible ceiling tiles and vents.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Spot-clean visible wall marks and scuffs.</span>
-                </label>
-            </li>
-
-        </ul>
-
-
-        <h3>
-            Restroom Deep Cleaning
-        </h3>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Deep scrub toilets, sinks and bathroom fixtures.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean tile grout and corners.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Sanitise mirrors and fixtures.</span>
-                </label>
-            </li>
-
-        </ul>
-
-    </div>
-
-
-    <!-- =================================================
-         MONTHLY TASKS
-         ================================================= -->
-
-    <div class="office-checklist-box">
-
-        <h2>
-            Monthly Office Cleaning Tasks
-        </h2>
-
-        <ul>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean behind and underneath movable furniture.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Deep clean refrigerators and kitchen appliances.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean accessible air vents and grilles.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean and sanitise suitable computer equipment.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Deep clean carpets using suitable professional equipment.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Clean window blinds and accessible curtains.</span>
-                </label>
-            </li>
-
-            <li>
-                <label class="checklist-item">
-                    <input type="checkbox">
-                    <span>Inspect and clean accessible light fixtures.</span>
-                </label>
-            </li>
-
-        </ul>
-
-    </div>
-
-
-    <!-- =================================================
-         PROFESSIONAL TIPS
-         ================================================= -->
-
-    <div class="office-checklist-box">
-
-        <h2>
-            Professional Office Cleaning Tips
-        </h2>
-
-        <ul>
-
-            <li>
-                <strong>Declutter first:</strong>
-                Remove unnecessary items before cleaning so surfaces and
-                hard-to-reach areas can be accessed properly.
-            </li>
-
-            <li>
-                <strong>Work from top to bottom:</strong>
-                Start with higher surfaces and finish with floors to avoid
-                re-contaminating cleaned areas.
-            </li>
-
-            <li>
-                <strong>Use the right cleaning products:</strong>
-                Different surfaces require different cleaning products and
-                methods. Follow manufacturer instructions where applicable.
-            </li>
-
-            <li>
-                <strong>Prioritise high-touch areas:</strong>
-                Pay extra attention to door handles, switches, shared
-                equipment and other frequently touched surfaces.
-            </li>
-
-            <li>
-                <strong>Maintain cleaning equipment:</strong>
-                Clean and maintain vacuum cleaners, mops and other equipment
-                regularly for better results.
-            </li>
-
-            <li>
-                <strong>Keep a consistent schedule:</strong>
-                Regular cleaning helps prevent dirt and buildup while
-                maintaining a professional workplace environment.
-            </li>
-
-        </ul>
-
-    </div>
-
-
-    <!-- =================================================
-         CTA
-         ================================================= -->
-
-    <div class="office-checklist-cta">
-
-        <h2>
-            Need professional office cleaning?
-        </h2>
-
-        <p>
-            YD Commercial Cleaning Services provides professional office
-            and commercial cleaning solutions across Adelaide. We can help
-            create a cleaning program based on your workplace size,
-            traffic levels and cleaning requirements.
-        </p>
-
-        <div class="office-checklist-contact">
-
-            <a href="tel:0430049865">
-                📞 0430 049 865
-            </a>
-
-            <a href="mailto:info@ydcleaning.com.au">
-                ✉ Email YD Cleaning
-            </a>
-
-            <a href="{% url 'contact' %}">
-                Request a Cleaning Quote
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
+</main>
 
 {% endblock %}
