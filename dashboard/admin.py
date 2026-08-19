@@ -15,6 +15,9 @@ from .models import (
     Vehicle,
 )
 
+from core.models import TeamMember
+
+
 admin.site.register(Vehicle)
 
 admin.site.register(CompanySettings)
@@ -28,3 +31,36 @@ admin.site.register(PurchaseOrder)
 admin.site.register(Supplier)
 admin.site.register(MaintenanceHistory)
 admin.site.register(CareerApplication)
+
+
+@admin.register(TeamMember)
+class TeamMemberAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "role",
+        "display_order",
+        "is_active",
+        "created_at",
+    )
+
+    list_filter = (
+        "is_active",
+        "role",
+    )
+
+    search_fields = (
+        "name",
+        "role",
+        "short_bio",
+        "email",
+    )
+
+    ordering = (
+        "display_order",
+        "name",
+    )
+
+    list_editable = (
+        "display_order",
+        "is_active",
+    )

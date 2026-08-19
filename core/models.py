@@ -87,3 +87,62 @@ class TestimonialVideo(models.Model):
 
     def __str__(self):
         return self.title
+
+class TeamMember(models.Model):
+    """Team members displayed on the public Team page."""
+
+    name = models.CharField(
+        max_length=150,
+        help_text="Team member's full name."
+    )
+
+    role = models.CharField(
+        max_length=150,
+        help_text="Job title or role."
+    )
+
+    short_bio = models.TextField(
+        blank=True,
+        help_text="Short professional biography."
+    )
+
+    image = models.ImageField(
+        upload_to="team/",
+        blank=True,
+        null=True,
+        help_text="Upload a professional team member photo."
+    )
+
+    email = models.EmailField(
+        blank=True
+    )
+
+    phone = models.CharField(
+        max_length=30,
+        blank=True
+    )
+
+    display_order = models.PositiveIntegerField(
+        default=0,
+        help_text="Lower numbers appear first."
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["display_order", "name"]
+        verbose_name = "Team Member"
+        verbose_name_plural = "Team Members"
+
+    def __str__(self):
+        return f"{self.name} - {self.role}"

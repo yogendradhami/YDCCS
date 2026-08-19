@@ -1,204 +1,624 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}About YD Commercial Cleaning | Professional Cleaning Services{% endblock %}
-{% block meta_description %}Learn about YD Commercial Cleaning Services - Adelaide's trusted cleaning company. Our story, values, team, and commitment to excellence.{% endblock %}
+{% block title %}About YD Commercial Cleaning | Professional Cleaning Services Adelaide{% endblock %}
+
+{% block meta_description %}
+Learn about YD Commercial Cleaning Services, a professional Adelaide cleaning company focused on reliable service, attention to detail, customer satisfaction and quality cleaning solutions for homes and businesses.
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/about.css' %}">
 {% endblock %}
 
+{% block extra_js %}
+<script src="{% static 'js/pages/about.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
-<!-- Hero Section -->
+
+<!-- =========================================================
+     HERO
+     ========================================================= -->
+
 <section class="about-hero">
     <div class="hero-overlay"></div>
+
     <div class="hero-content">
-        <h1>About YD Commercial Cleaning</h1>
-        <p>Delivering professional, reliable cleaning solutions across Adelaide with a commitment to excellence and customer satisfaction</p>
+        <span class="hero-eyebrow">ABOUT YD COMMERCIAL CLEANING</span>
+
+        <h1>Professional Cleaning You Can Rely On</h1>
+
+        <p>
+            Reliable cleaning solutions for homes, offices and commercial
+            spaces across Adelaide, delivered with care, consistency and
+            attention to detail.
+        </p>
+
+        <div class="hero-actions">
+            <a href="{% url 'contact' %}" class="about-btn about-btn-primary">
+                Contact Us
+            </a>
+
+            <a href="{% url 'home' %}#quote" class="about-btn about-btn-light">
+                Get a Quote
+            </a>
+        </div>
     </div>
 </section>
 
-<!-- Our Story Section -->
+
+<!-- =========================================================
+     INTRO / STORY
+     ========================================================= -->
+
 <section class="about-story">
     <div class="container">
+
         <div class="story-content">
+
             <div class="story-text">
-                <h2>Our Story</h2>
-                <p>YD Commercial Cleaning Services was founded with a simple mission: to provide professional, reliable cleaning services that exceed customer expectations.</p>
-                <p>Starting as a small local operation, we've grown into a trusted cleaning partner for hundreds of residential and commercial clients across Adelaide. Our success is built on our commitment to quality, reliability, and customer satisfaction.</p>
-                <p>Today, we're proud to be one of Adelaide's most trusted cleaning service providers, serving homes, offices, and commercial spaces with professional teams dedicated to excellence.</p>
-                <a href="{% url 'contact' %}" class="btn btn-primary">Work With Us</a>
+
+                <span class="section-eyebrow">
+                    WHO WE ARE
+                </span>
+
+                <h2>
+                    A Cleaning Company Built Around Quality and Trust
+                </h2>
+
+                <p>
+                    YD Commercial Cleaning Services was founded with a simple
+                    goal: to provide professional, dependable cleaning services
+                    that make a genuine difference to the spaces our customers
+                    live and work in.
+                </p>
+
+                <p>
+                    From residential homes to offices and commercial
+                    properties, we focus on delivering consistent results,
+                    professional service and a positive customer experience
+                    from the first enquiry through to completion.
+                </p>
+
+                <p>
+                    Our approach is straightforward. We listen to what our
+                    customers need, pay attention to the details that matter
+                    and work hard to deliver a clean, fresh and well-presented
+                    environment.
+                </p>
+
+                <a href="{% url 'contact' %}" class="about-btn about-btn-primary">
+                    Work With Us
+                </a>
+
             </div>
+
             <div class="story-image">
-                <img src="{% static 'images/hero-cleaning-poster.webp' %}" alt="YD Commercial Cleaning Services professional team at work" loading="lazy">
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- Core Values Section -->
-<section class="about-values">
-    <div class="container">
-        <h2>Our Core Values</h2>
-        <div class="values-grid">
-            <div class="value-card">
-                <div class="value-icon">✓</div>
-                <h3>Excellence</h3>
-                <p>We're committed to delivering the highest quality cleaning standards on every job.</p>
-            </div>
-            <div class="value-card">
-                <div class="value-icon">✓</div>
-                <h3>Reliability</h3>
-                <p>We show up on time, every time, and deliver consistent professional service.</p>
-            </div>
-            <div class="value-card">
-                <div class="value-icon">✓</div>
-                <h3>Care</h3>
-                <p>We treat your property with the same care and respect we'd show our own homes.</p>
-            </div>
-            <div class="value-card">
-                <div class="value-icon">✓</div>
-                <h3>Efficiency</h3>
-                <p>We work efficiently to deliver excellent results in a timely manner.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Why Choose Us Section -->
-<section class="about-choose-us">
-    <div class="container">
-        <h2>Why Choose YD Commercial Cleaning?</h2>
-        <div class="choose-us-grid">
-            <div class="choose-card">
-                <div class="card-number">01</div>
-                <h3>Professional Teams</h3>
-                <p>Trained, experienced cleaning professionals dedicated to quality work and customer satisfaction.</p>
-            </div>
-            <div class="choose-card">
-                <div class="card-number">02</div>
-                <h3>Reliable Service</h3>
-                <p>Punctual, consistent service you can count on every single time we visit.</p>
-            </div>
-            <div class="choose-card">
-                <div class="card-number">03</div>
-                <h3>Affordable Pricing</h3>
-                <p>Competitive rates with transparent pricing and no hidden fees ever.</p>
-            </div>
-            <div class="choose-card">
-                <div class="card-number">04</div>
-                <h3>Local Experts</h3>
-                <p>Based in Adelaide, we understand the local community and its cleaning needs.</p>
-            </div>
-            <div class="choose-card">
-                <div class="card-number">05</div>
-                <h3>Flexible Solutions</h3>
-                <p>Custom cleaning packages tailored to your specific needs and budget.</p>
-            </div>
-            <div class="choose-card">
-                <div class="card-number">06</div>
-                <h3>Quick Response</h3>
-                <p>Fast response times and flexible scheduling to fit your lifestyle.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Testimonials Carousel Section -->
-<section class="about-testimonials">
-    <div class="container">
-        <h2>What Our Customers Say</h2>
-        <div class="testimonials-carousel-wrapper">
-            <div class="testimonials-carousel">
-                <div class="carousel-track">
-                    <div class="testimonial-card carousel-slide">
-                        <div class="stars">★★★★★</div>
-                        <p>"I recently hired this cleaning company and honestly, I was pretty impressed. The team showed up on time, which already gave a good first impression. They were polite, easy to communicate with, and got straight to work without wasting any time. What I liked the most was the attention to detail."</p>
-                        <strong>Dipesh Bag</strong>
-                        <span>Google Reviews</span>
-                    </div>
-                    <div class="testimonial-card carousel-slide">
-                        <div class="stars">★★★★★</div>
-                        <p>"YD Commercial Cleaning Services delivers outstanding and reliable cleaning every time. Their team is professional, punctual, and pays great attention to detail. The quality of their work truly stands out, leaving spaces spotless and fresh. Highly recommended!"</p>
-                        <strong>Code With Me</strong>
-                        <span>Google Reviews</span>
-                    </div>
-                    <div class="testimonial-card carousel-slide">
-                        <div class="stars">★★★★★</div>
-                        <p>"I recently hired YD Commercial Cleaning Services for an end of lease clean, and I'm very satisfied with the results. The team was professional, punctual, and communicated clearly throughout the process. Great value for money and excellent service overall."</p>
-                        <strong>Sushila Bista</strong>
-                        <span>Google Reviews</span>
-                    </div>
+                <div class="story-image-frame">
+                    <img
+                        src="{% static 'images/hero-cleaning-poster.webp' %}"
+                        alt="Professional cleaning service in Adelaide"
+                        loading="lazy"
+                    >
                 </div>
+
+                <div class="story-badge">
+                    <strong>Professional</strong>
+                    <span>Cleaning Service</span>
+                </div>
+
             </div>
-            <button class="carousel-btn carousel-prev" aria-label="Previous testimonial">&#10094;</button>
-            <button class="carousel-btn carousel-next" aria-label="Next testimonial">&#10095;</button>
+
         </div>
-        <div class="carousel-dots">
-            <button class="dot active" data-slide="0" aria-label="Testimonial 1"></button>
-            <button class="dot" data-slide="1" aria-label="Testimonial 2"></button>
-            <button class="dot" data-slide="2" aria-label="Testimonial 3"></button>
-        </div>
+
     </div>
 </section>
 
 
+<!-- =========================================================
+     VALUES
+     ========================================================= -->
 
-<!-- CTA Section -->
-<section class="about-cta">
+<section class="about-values">
+
     <div class="container">
-        <h2>Ready to Experience Professional Cleaning?</h2>
-        <p>Contact us today to discuss your cleaning needs and get started with Adelaide's trusted cleaning service.</p>
-        <div class="cta-buttons">
-            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">Contact Us Today</a>
-            <a href="{% url 'home' %}#quote" class="btn btn-secondary btn-lg">Get a Quote</a>
+
+        <div class="section-heading">
+            <span class="section-eyebrow">WHAT WE STAND FOR</span>
+
+            <h2>Our Core Values</h2>
+
+            <p>
+                The principles behind every cleaning service we provide.
+            </p>
         </div>
+
+        <div class="values-grid">
+
+            <article class="value-card">
+
+                <div class="value-icon" aria-hidden="true">
+                    ✓
+                </div>
+
+                <h3>Excellence</h3>
+
+                <p>
+                    We aim for high standards on every job, paying attention
+                    to the details that help create a cleaner, healthier and
+                    more comfortable space.
+                </p>
+
+            </article>
+
+
+            <article class="value-card">
+
+                <div class="value-icon" aria-hidden="true">
+                    ✓
+                </div>
+
+                <h3>Reliability</h3>
+
+                <p>
+                    Our customers need a cleaning service they can depend on.
+                    We focus on clear communication, consistency and
+                    professional service.
+                </p>
+
+            </article>
+
+
+            <article class="value-card">
+
+                <div class="value-icon" aria-hidden="true">
+                    ✓
+                </div>
+
+                <h3>Care</h3>
+
+                <p>
+                    We treat every property with care and respect, taking the
+                    time to understand the environment and the customer's
+                    expectations.
+                </p>
+
+            </article>
+
+
+            <article class="value-card">
+
+                <div class="value-icon" aria-hidden="true">
+                    ✓
+                </div>
+
+                <h3>Efficiency</h3>
+
+                <p>
+                    We work efficiently and systematically so customers can
+                    enjoy professional results without unnecessary disruption.
+                </p>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     WHY CHOOSE US
+     ========================================================= -->
+
+<section class="about-choose-us">
+
+    <div class="container">
+
+        <div class="section-heading">
+            <span class="section-eyebrow">WHY CUSTOMERS CHOOSE US</span>
+
+            <h2>Professional Service From Start to Finish</h2>
+
+            <p>
+                We combine practical cleaning experience with a customer-first
+                approach to deliver dependable cleaning solutions across
+                Adelaide.
+            </p>
+        </div>
+
+
+        <div class="choose-us-grid">
+
+            <article class="choose-card">
+
+                <div class="card-number">01</div>
+
+                <div>
+                    <h3>Professional Teams</h3>
+
+                    <p>
+                        Our cleaning professionals focus on quality,
+                        presentation and delivering a positive customer
+                        experience.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="choose-card">
+
+                <div class="card-number">02</div>
+
+                <div>
+                    <h3>Reliable Service</h3>
+
+                    <p>
+                        We understand how important consistency is, whether
+                        you need regular cleaning or a one-off service.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="choose-card">
+
+                <div class="card-number">03</div>
+
+                <div>
+                    <h3>Transparent Pricing</h3>
+
+                    <p>
+                        We aim to provide clear, straightforward pricing based
+                        on the cleaning requirements of your property.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="choose-card">
+
+                <div class="card-number">04</div>
+
+                <div>
+                    <h3>Adelaide Focused</h3>
+
+                    <p>
+                        We provide cleaning services for customers across
+                        Adelaide and understand the needs of local properties
+                        and businesses.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="choose-card">
+
+                <div class="card-number">05</div>
+
+                <div>
+                    <h3>Flexible Solutions</h3>
+
+                    <p>
+                        Cleaning requirements vary from property to property,
+                        so we provide solutions that can be tailored to your
+                        needs.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="choose-card">
+
+                <div class="card-number">06</div>
+
+                <div>
+                    <h3>Customer Focused</h3>
+
+                    <p>
+                        We value communication and feedback because great
+                        cleaning service starts with understanding what matters
+                        to our customers.
+                    </p>
+                </div>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     SERVICE PROMISE
+     ========================================================= -->
+
+<section class="about-promise">
+
+    <div class="container">
+
+        <div class="promise-grid">
+
+            <div class="promise-content">
+
+                <span class="section-eyebrow">
+                    OUR PROMISE
+                </span>
+
+                <h2>
+                    More Than Just Cleaning
+                </h2>
+
+                <p>
+                    A professional cleaning service should give you more than
+                    a clean space. It should give you confidence that the job
+                    has been handled properly.
+                </p>
+
+                <p>
+                    That's why we focus on dependable communication,
+                    attention to detail and consistent service across every
+                    property we clean.
+                </p>
+
+                <ul class="promise-list">
+
+                    <li>
+                        <span>✓</span>
+                        Professional and dependable service
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Attention to detail
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Flexible cleaning solutions
+                    </li>
+
+                    <li>
+                        <span>✓</span>
+                        Customer-focused approach
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <div class="promise-panel">
+
+                <div class="promise-panel-inner">
+
+                    <span class="promise-panel-label">
+                        YD COMMERCIAL CLEANING
+                    </span>
+
+                    <strong>
+                        Clean Spaces.<br>
+                        Better Impressions.
+                    </strong>
+
+                    <p>
+                        Professional cleaning solutions for Adelaide homes,
+                        workplaces and commercial properties.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     TESTIMONIALS
+     ========================================================= -->
+
+<section class="about-testimonials">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <span class="section-eyebrow">
+                CUSTOMER FEEDBACK
+            </span>
+
+            <h2>What Our Customers Say</h2>
+
+            <p>
+                Real feedback from customers who have experienced our cleaning
+                services.
+            </p>
+
+        </div>
+
+
+        <div class="testimonials-carousel-wrapper">
+
+            <div class="testimonials-carousel">
+
+                <div class="carousel-track">
+
+                    <article class="testimonial-card carousel-slide">
+
+                        <div class="stars" aria-label="5 out of 5 stars">
+                            ★★★★★
+                        </div>
+
+                        <p>
+                            "I recently hired this cleaning company and honestly,
+                            I was pretty impressed. The team showed up on time,
+                            which already gave a good first impression. They
+                            were polite, easy to communicate with, and got
+                            straight to work without wasting any time. What I
+                            liked the most was the attention to detail."
+                        </p>
+
+                        <strong>Dipesh Bag</strong>
+
+                        <span>Google Review</span>
+
+                    </article>
+
+
+                    <article class="testimonial-card carousel-slide">
+
+                        <div class="stars" aria-label="5 out of 5 stars">
+                            ★★★★★
+                        </div>
+
+                        <p>
+                            "YD Commercial Cleaning Services delivers
+                            outstanding and reliable cleaning every time. Their
+                            team is professional, punctual, and pays great
+                            attention to detail. The quality of their work
+                            truly stands out, leaving spaces spotless and fresh.
+                            Highly recommended!"
+                        </p>
+
+                        <strong>Code With Me</strong>
+
+                        <span>Google Review</span>
+
+                    </article>
+
+
+                    <article class="testimonial-card carousel-slide">
+
+                        <div class="stars" aria-label="5 out of 5 stars">
+                            ★★★★★
+                        </div>
+
+                        <p>
+                            "I recently hired YD Commercial Cleaning Services
+                            for an end of lease clean, and I'm very satisfied
+                            with the results. The team was professional,
+                            punctual, and communicated clearly throughout the
+                            process. Great value for money and excellent
+                            service overall."
+                        </p>
+
+                        <strong>Sushila Bista</strong>
+
+                        <span>Google Review</span>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="carousel-btn carousel-prev"
+                aria-label="Previous testimonial"
+            >
+                &#10094;
+            </button>
+
+            <button
+                type="button"
+                class="carousel-btn carousel-next"
+                aria-label="Next testimonial"
+            >
+                &#10095;
+            </button>
+
+        </div>
+
+
+        <div class="carousel-dots" aria-label="Testimonial navigation">
+
+            <button
+                type="button"
+                class="dot active"
+                data-slide="0"
+                aria-label="Show testimonial 1"
+                aria-current="true"
+            ></button>
+
+            <button
+                type="button"
+                class="dot"
+                data-slide="1"
+                aria-label="Show testimonial 2"
+                aria-current="false"
+            ></button>
+
+            <button
+                type="button"
+                class="dot"
+                data-slide="2"
+                aria-label="Show testimonial 3"
+                aria-current="false"
+            ></button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CTA
+     ========================================================= -->
+
+<section class="about-cta">
+
+    <div class="container">
+
+        <span class="cta-eyebrow">
+            READY TO GET STARTED?
+        </span>
+
+        <h2>
+            Let's Make Your Space Cleaner
+        </h2>
+
+        <p>
+            Contact YD Commercial Cleaning Services today to discuss your
+            cleaning requirements and request a quote.
+        </p>
+
+        <div class="cta-buttons">
+
+            <a
+                href="{% url 'contact' %}"
+                class="about-btn about-btn-white"
+            >
+                Contact Us Today
+            </a>
+
+            <a
+                href="{% url 'home' %}#quote"
+                class="about-btn about-btn-outline"
+            >
+                Get a Quote
+            </a>
+
+        </div>
+
+    </div>
+
 </section>
 
 {% endblock %}
-
-<script>
-// Testimonial Carousel Script
-document.addEventListener('DOMContentLoaded', function() {
-    const carousel = document.querySelector('.carousel-track');
-    const prevBtn = document.querySelector('.carousel-prev');
-    const nextBtn = document.querySelector('.carousel-next');
-    const dots = document.querySelectorAll('.dot');
-    
-    let currentIndex = 0;
-    const totalSlides = document.querySelectorAll('.carousel-slide').length;
-    
-    function updateCarousel() {
-        const offset = -currentIndex * 100;
-        carousel.style.transform = `translateX(${offset}%)`;
-        
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentIndex);
-        });
-    }
-    
-    function goToSlide(index) {
-        currentIndex = (index + totalSlides) % totalSlides;
-        updateCarousel();
-    }
-    
-    function nextSlide() {
-        goToSlide(currentIndex + 1);
-    }
-    
-    function prevSlide() {
-        goToSlide(currentIndex - 1);
-    }
-    
-    // Event listeners
-    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
-    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
-    
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => goToSlide(index));
-    });
-    
-    // Auto-rotate every 8 seconds
-    setInterval(nextSlide, 8000);
-});
-</script>

@@ -16,6 +16,7 @@ from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.text import slugify
+from .models import FAQQuestion, TeamMember
 
 # Local app imports
 from .faq_data import FAQ_PAGE_CONFIG
@@ -549,9 +550,20 @@ def about(request):
 def pricing(request):
     return render(request, "pages/pricing.html")
 
-
 def team(request):
-    return render(request, "pages/team.html")
+    team_members = (
+        TeamMember.objects
+        .filter(is_active=True)
+        .order_by("display_order", "name")
+    )
+
+    return render(
+        request,
+        "pages/team.html",
+        {
+            "team_members": team_members,
+        },
+    )
 
 
 def corporate(request):
