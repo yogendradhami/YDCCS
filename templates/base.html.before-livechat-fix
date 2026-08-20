@@ -1574,6 +1574,7 @@
                             "YD Live Chat connected"
                         );
 
+
                         if (
                             liveChatStatus
                         ) {
@@ -1582,52 +1583,6 @@
                                 "🟢 Connected";
 
                         }
-
-                        /* -----------------------------------------
-                        Get or create browser session key.
-                        ----------------------------------------- */
-
-                        let liveChatSessionKey =
-                            localStorage.getItem(
-                                "yd_live_chat_session_key"
-                            );
-
-                        if (
-                            !liveChatSessionKey
-                        ) {
-
-                            liveChatSessionKey =
-                                crypto.randomUUID();
-
-                            localStorage.setItem(
-                                "yd_live_chat_session_key",
-                                liveChatSessionKey
-                            );
-                        }
-
-                        /* -----------------------------------------
-                        Automatically create/join customer chat.
-                        ----------------------------------------- */
-
-                        liveChatSocket.send(
-                            JSON.stringify({
-
-                                action:
-                                    "customer_join",
-
-                                session_key:
-                                    liveChatSessionKey,
-
-                                name:
-                                    "Website Visitor",
-
-                                email:
-                                    "",
-
-                                phone:
-                                    ""
-                            })
-                        );
 
                     };
 
@@ -1642,53 +1597,25 @@
                                     event.data
                                 );
 
+
                             console.log(
                                 "YD Live Chat:",
                                 data
                             );
 
-                            /* -----------------------------------------
-                            Connection
-                            ----------------------------------------- */
 
                             if (
                                 data.type ===
                                 "connection"
                             ) {
 
-                                if (
+                                addLiveChatSystemMessage(
                                     data.message
-                                ) {
-
-                                    addLiveChatSystemMessage(
-                                        data.message
-                                    );
-
-                                }
-
-                                return;
-                            }
-
-                            /* -----------------------------------------
-                            Customer joined
-                            ----------------------------------------- */
-
-                            if (
-                                data.type ===
-                                "customer_joined"
-                            ) {
-
-                                console.log(
-                                    "Live chat conversation:",
-                                    data.conversation_id
                                 );
 
                                 return;
                             }
 
-                            /* -----------------------------------------
-                            Normal chat message
-                            ----------------------------------------- */
 
                             if (
                                 data.type ===
@@ -1700,82 +1627,12 @@
                                     data.sender_type
                                 );
 
-                                return;
                             }
-
-                            /* -----------------------------------------
-                            System message
-                            ----------------------------------------- */
-
-                            if (
-                                data.type ===
-                                "system"
-                            ) {
-
-                                addLiveChatSystemMessage(
-                                    data.message
-                                );
-
-                                return;
-                            }
-
-                            /* -----------------------------------------
-                            Chat closed
-                            ----------------------------------------- */
-
-                            if (
-                                data.type ===
-                                "chat_closed"
-                            ) {
-
-                                addLiveChatSystemMessage(
-                                    data.message ||
-                                    "This conversation has been closed."
-                                );
-
-                                if (
-                                    liveChatStatus
-                                ) {
-
-                                    liveChatStatus.textContent =
-                                        "🔴 Closed";
-
-                                }
-
-                                return;
-                            }
-
-                            /* -----------------------------------------
-                            Error
-                            ----------------------------------------- */
-
-                            if (
-                                data.type ===
-                                "error"
-                            ) {
-
-                                console.error(
-                                    "YD Live Chat backend error:",
-                                    data.message
-                                );
-
-                                addLiveChatSystemMessage(
-                                    data.message ||
-                                    "Something went wrong with live chat."
-                                );
-
-                                return;
-                            }
-
-                            console.warn(
-                                "Unknown live chat response:",
-                                data
-                            );
 
                         } catch (error) {
 
                             console.error(
-                                "Live chat message parsing error:",
+                                "Live chat message error:",
                                 error
                             );
 
@@ -1974,11 +1831,9 @@
             }
 
 
-
-
             /* =================================================
-            LIVE CHAT SEND MESSAGE
-            ================================================= */
+               LIVE CHAT SEND MESSAGE
+               ================================================= */
 
             if (
                 liveChatForm
@@ -1990,14 +1845,17 @@
 
                         event.preventDefault();
 
+
                         if (
                             !liveChatInput
                         ) {
                             return;
                         }
 
+
                         const message =
                             liveChatInput.value.trim();
+
 
                         if (
                             !message
@@ -2005,32 +1863,6 @@
                             return;
                         }
 
-                        /* -----------------------------------------
-                        Make sure a persistent browser session key
-                        exists.
-                        ----------------------------------------- */
-
-                        let liveChatSessionKey =
-                            localStorage.getItem(
-                                "yd_live_chat_session_key"
-                            );
-
-                        if (
-                            !liveChatSessionKey
-                        ) {
-
-                            liveChatSessionKey =
-                                crypto.randomUUID();
-
-                            localStorage.setItem(
-                                "yd_live_chat_session_key",
-                                liveChatSessionKey
-                            );
-                        }
-
-                        /* -----------------------------------------
-                        Make sure WebSocket is connected.
-                        ----------------------------------------- */
 
                         if (
                             !liveChatSocket ||
@@ -2045,34 +1877,21 @@
                             connectLiveChat();
 
                             return;
+
                         }
 
-                        /* -----------------------------------------
-                        Send customer message.
-                        ----------------------------------------- */
 
                         liveChatSocket.send(
                             JSON.stringify({
-
-                                action:
-                                    "customer_message",
-
-                                session_key:
-                                    liveChatSessionKey,
-
-                                sender_name:
-                                    "Website Visitor",
-
                                 message:
                                     message
                             })
                         );
 
-                        /* -----------------------------------------
-                        Clear input.
-                        ----------------------------------------- */
 
-                        liveChatInput.value = "";
+                        liveChatInput.value =
+                            "";
+
 
                         liveChatInput.focus();
 

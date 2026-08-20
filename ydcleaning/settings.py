@@ -27,6 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = "https://ydcleaning.com.au"
 SITE_ID = 1
 
+RECAPTCHA_SITE_KEY = env.str("RECAPTCHA_SITE_KEY", default="")
+RECAPTCHA_SECRET_KEY = env.str("RECAPTCHA_SECRET_KEY", default="")
+
 
 # Read local .env if present
 if (BASE_DIR / ".env").exists():
@@ -60,11 +63,15 @@ else:
 
 INSTALLED_APPS = [
     # Django apps
+    "daphne",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "channels",
+
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "django.contrib.sitemaps",
@@ -100,6 +107,7 @@ INSTALLED_APPS = [
     "rosters",
     "expenses",
     "support",
+
 
 
  
@@ -180,7 +188,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ydcleaning.wsgi.application"
+# ====================================================
+# Django Channels / WebSocket Configuration
+# ====================================================
 
+
+ASGI_APPLICATION = "ydcleaning.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases

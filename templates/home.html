@@ -648,30 +648,23 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                     <div class="form-group">
                         <label>Optional add-ons</label>
                         <div class="addon-grid">
-                            <label class="addon-option">{{ form.window_cleaning }} <span>Window Cleaning (+$50)</span></label>
-                            <label class="addon-option">{{ form.carpet_shampooing }} <span>Carpet Shampooing (+$100)</span></label>
-                            <label class="addon-option">{{ form.grout_cleaning }} <span>Grout Cleaning (+$75)</span></label>
-                            <label class="addon-option">{{ form.upholstery_cleaning }} <span>Upholstery Cleaning (+$60)</span></label>
-                            <label class="addon-option">{{ form.laundry_service }} <span>Laundry Service (+$60)</span></label>
+                            <label class="addon-option">{{ form.window_cleaning }} <span>Window Cleaning</span></label>
+                            <label class="addon-option">{{ form.carpet_shampooing }} <span>Carpet Shampooing</span></label>
+                            <label class="addon-option">{{ form.grout_cleaning }} <span>Grout Cleaning</span></label>
+                            <label class="addon-option">{{ form.upholstery_cleaning }} <span>Upholstery Cleaning</span></label>
+                            <label class="addon-option">{{ form.laundry_service }} <span>Laundry Service</span></label>
                         </div>
                     </div>
                 </details>
 
-                <div class="form-group">
-                    <label class="addon-option" style="justify-content:flex-start;">
-                        {{ form.is_not_robot }}
-                        <span>I’m not a robot</span>
-                    </label>
-                    <div class="text-danger">{{ form.is_not_robot.errors }}</div>
-                </div>
-
-                <div class="estimate-card">
-                    <div class="estimate-head">
-                        <span>Estimated quote</span>
-                        <strong id="estimated-price">$120</strong>
+                {% if form.recaptcha_site_key %}
+                    <div class="form-group">
+                        <label>Security check</label>
+                        <div class="g-recaptcha" data-sitekey="{{ form.recaptcha_site_key }}"></div>
+                        {{ form.g_recaptcha_response }}
+                        <div class="text-danger">{{ form.g_recaptcha_response.errors }}</div>
                     </div>
-                    <p>Final pricing will be confirmed by YD Commercial Cleaning Services after review.</p>
-                </div>
+                {% endif %}
 
                 <button type="submit" class="quote-submit">
                     Request My Free Quote
@@ -688,5 +681,24 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 {% endblock %}
 
 {% block extra_js %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        window.addEventListener('load', function () {
+            const recaptchaBlocks = document.querySelectorAll('.g-recaptcha');
+            if (!window.grecaptcha || !recaptchaBlocks.length) {
+                return;
+            }
+
+            recaptchaBlocks.forEach((block) => {
+                if (!block.dataset.sitekey || block.dataset.rendered === 'true') {
+                    return;
+                }
+                window.grecaptcha.render(block, {
+                    sitekey: block.dataset.sitekey,
+                });
+                block.dataset.rendered = 'true';
+            });
+        });
+    </script>
     <script defer src="{% static 'js/pages/home-page.js' %}"></script>
 {% endblock %}

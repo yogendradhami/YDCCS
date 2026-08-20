@@ -1,4 +1,6 @@
 from django import forms
+from django.conf import settings
+import requests
 
 from .models import QuoteRequest
 
@@ -23,6 +25,11 @@ class MultipleImageField(forms.ImageField):
 
 
 class QuoteRequestForm(forms.ModelForm):
+    g_recaptcha_response = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+
     property_images = MultipleImageField(
         required=False,
         widget=MultipleFileInput(
@@ -33,6 +40,11 @@ class QuoteRequestForm(forms.ModelForm):
             }
         ),
     )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
+        self.recaptcha_site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "")
 
     class Meta:
         model = QuoteRequest
@@ -49,7 +61,6 @@ class QuoteRequestForm(forms.ModelForm):
             "grout_cleaning",
             "upholstery_cleaning",
             "laundry_service",
-            "is_not_robot",
             "bedrooms",
             "bathrooms",
             "lead_source",
@@ -123,11 +134,6 @@ class QuoteRequestForm(forms.ModelForm):
                     "class": "form-check-input",
                 }
             ),
-            "is_not_robot": forms.CheckboxInput(
-                attrs={
-                    "class": "form-check-input",
-                }
-            ),
         }
 
     def clean_property_type(self):
@@ -136,8 +142,38 @@ class QuoteRequestForm(forms.ModelForm):
             raise forms.ValidationError("Please select a property type.")
         return value
 
-    def clean_is_not_robot(self):
-        value = self.cleaned_data.get("is_not_robot")
-        if not value:
-            raise forms.ValidationError("Please confirm that you are not a robot.")
-        return value
+    def clean(self):
+        cleaned_data = super().clean()
+        secret_key = getattr(settings, "RECAPTCHA_SECRET_KEY", "")
+
+        if not secret_key:
+            raise forms.ValidationError("reCAPTCHA is not configured on this server.")
+
+        token = None
+        if self.request is not None:
+            token = self.request.POST.get("g-recaptcha-response") or self.request.POST.get("g_recaptcha_response")
+        if token is None:
+            token = self.data.get("g-recaptcha-response") or self.data.get("g_recaptcha_response")
+
+        if not token:
+            raise forms.ValidationError("Please complete the reCAPTCHA challenge.")
+
+        try:
+            response = requests.post(
+                "https://www.google.com/recaptcha/api/siteverify",
+                data={
+                    "secret": secret_key,
+                    "response": token,
+                    "remoteip": self.request.META.get("REMOTE_ADDR") if self.request else None,
+                },
+                timeout=10,
+            )
+            response.raise_for_status()
+            result = response.json()
+        except requests.RequestException:
+            raise forms.ValidationError("reCAPTCHA verification failed. Please try again.")
+
+        if not result.get("success"):
+            raise forms.ValidationError("Please complete the reCAPTCHA challenge correctly.")
+
+        return cleaned_data

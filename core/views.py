@@ -194,7 +194,7 @@ def home(request):
     google_review_count = len(google_reviews)
 
     if request.method == "POST":
-        form = QuoteRequestForm(request.POST, request.FILES)
+        form = QuoteRequestForm(request.POST, request.FILES, request=request)
 
         if form.is_valid():
 
@@ -265,7 +265,7 @@ def home(request):
         messages.error(request, "❌ Please check the form and try again.")
 
     else:
-        form = QuoteRequestForm()
+        form = QuoteRequestForm(request=request)
 
     return render(
         request,

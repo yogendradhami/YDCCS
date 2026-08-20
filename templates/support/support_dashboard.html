@@ -1,10 +1,19 @@
 {% extends 'dashboard_base.html' %}
 
 {% block title %}Support Dashboard{% endblock %}
+
 {% block page_title %}Support Dashboard{% endblock %}
-{% block page_subtitle %}Manage customer support tickets, complaints and service requests.{% endblock %}
+
+{% block page_subtitle %}
+Manage customer support tickets, complaints, service requests and live website chats.
+{% endblock %}
+
 
 {% block content %}
+
+<!-- =====================================================
+     SUPPORT SUMMARY
+===================================================== -->
 
 <section class="crm-summary-grid">
 
@@ -40,11 +49,60 @@
 
 </section>
 
+
+<!-- =====================================================
+     LIVE CHAT SUMMARY
+===================================================== -->
+
+<section class="live-chat-summary-grid">
+
+    <div class="live-chat-stat waiting">
+
+        <div class="live-chat-stat-icon">
+            💬
+        </div>
+
+        <div>
+            <span>Waiting Chats</span>
+
+            <strong id="waiting-chat-count">
+                {{ waiting_chats }}
+            </strong>
+        </div>
+
+    </div>
+
+
+    <div class="live-chat-stat active">
+
+        <div class="live-chat-stat-icon">
+            🟢
+        </div>
+
+        <div>
+            <span>Active Chats</span>
+
+            <strong id="active-chat-count">
+                {{ active_chats }}
+            </strong>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     URGENT ALERT
+===================================================== -->
+
 {% if urgent_tickets > 0 %}
 
 <section class="support-alert-panel">
 
-    <h3>Urgent Support Attention Needed</h3>
+    <h3>
+        Urgent Support Attention Needed
+    </h3>
 
     <p>
         You currently have {{ urgent_tickets }} urgent ticket(s).
@@ -55,16 +113,291 @@
 
 {% endif %}
 
+
+<!-- =====================================================
+     LIVE WEBSITE CHAT
+===================================================== -->
+
+<section class="crm-panel live-chat-panel">
+
+    <div class="crm-panel-header">
+
+        <div>
+
+            <h2>
+                💬 Website Live Chat
+            </h2>
+
+            <p>
+                Monitor visitors and respond to customers in real time.
+            </p>
+
+        </div>
+
+        <div class="live-chat-connection-status">
+
+            <span class="status-dot"></span>
+
+            Live Support
+
+        </div>
+
+    </div>
+
+
+    <div class="live-chat-layout">
+
+        <!-- =================================================
+             CHAT LIST
+        ================================================== -->
+
+        <aside class="live-chat-list">
+
+            <div class="live-chat-list-header">
+
+                <strong>
+                    Conversations
+                </strong>
+
+                <span>
+                    {{ live_chats|length }}
+                </span>
+
+            </div>
+
+
+            {% if live_chats %}
+
+                {% for chat in live_chats %}
+
+                <button
+                    type="button"
+                    class="live-chat-list-item"
+                    data-chat-id="{{ chat.id }}"
+                    data-session-key="{{ chat.session_key }}"
+                >
+
+                    <div class="chat-avatar">
+                        👤
+                    </div>
+
+
+                    <div class="chat-list-content">
+
+                        <strong>
+                            {{ chat.name|default:"Website Visitor" }}
+                        </strong>
+
+                        <span>
+
+                            {% if chat.status == "waiting" %}
+
+                                Waiting for staff
+
+                            {% else %}
+
+                                Live with staff
+
+                            {% endif %}
+
+                        </span>
+
+                        <small>
+                            {{ chat.updated_at|date:"d M Y H:i" }}
+                        </small>
+
+                    </div>
+
+
+                    <div>
+
+                        {% if chat.status == "waiting" %}
+
+                            <span class="chat-status waiting">
+                                Waiting
+                            </span>
+
+                        {% else %}
+
+                            <span class="chat-status active">
+                                Active
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </button>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="no-live-chats">
+
+                    <div>
+                        💬
+                    </div>
+
+                    <strong>
+                        No active conversations
+                    </strong>
+
+                    <p>
+                        New website chats will appear here.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </aside>
+
+
+        <!-- =================================================
+             CHAT WINDOW
+        ================================================== -->
+
+        <div class="live-chat-window">
+
+            <div
+                id="liveChatEmpty"
+                class="live-chat-empty"
+            >
+
+                <div class="live-chat-empty-icon">
+                    💬
+                </div>
+
+                <h3>
+                    Select a conversation
+                </h3>
+
+                <p>
+                    Choose a website visitor from the left
+                    to view their conversation.
+                </p>
+
+            </div>
+
+
+            <div
+                id="staffChat"
+                class="staff-chat"
+                style="display:none;"
+            >
+
+                <!-- HEADER -->
+
+                <div class="staff-chat-header">
+
+                    <div>
+
+                        <h3 id="staffChatName">
+                            Website Visitor
+                        </h3>
+
+                        <div class="staff-chat-contact">
+
+                            <span id="staffChatEmail"></span>
+
+                            <span id="staffChatPhone"></span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="staff-chat-actions">
+
+                        <span
+                            id="staffChatStatus"
+                            class="chat-status waiting"
+                        >
+                            Waiting
+                        </span>
+
+                        <button
+                            type="button"
+                            id="takeoverChatBtn"
+                            class="staff-action-btn takeover"
+                        >
+                            Take Over Chat
+                        </button>
+
+                        <button
+                            type="button"
+                            id="closeChatBtn"
+                            class="staff-action-btn close"
+                        >
+                            Close Chat
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MESSAGES -->
+
+                <div
+                    id="staffChatMessages"
+                    class="staff-chat-messages"
+                ></div>
+
+
+                <!-- REPLY -->
+
+                <form
+                    id="staffChatForm"
+                    class="staff-chat-form"
+                >
+
+                    <input
+                        type="text"
+                        id="staffChatInput"
+                        placeholder="Type your reply..."
+                        autocomplete="off"
+                        maxlength="2000"
+                    >
+
+                    <button type="submit">
+                        Send
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     RECENT SUPPORT TICKETS
+===================================================== -->
+
 <section class="crm-panel">
 
     <div class="crm-panel-header">
 
         <div>
-            <h2>Recent Support Tickets</h2>
-            <p>Latest customer support requests submitted through the customer portal.</p>
+
+            <h2>
+                Recent Support Tickets
+            </h2>
+
+            <p>
+                Latest customer support requests submitted through the customer portal.
+            </p>
+
         </div>
 
     </div>
+
 
     {% if recent_tickets %}
 
@@ -73,6 +406,7 @@
         <table class="dashboard-table advanced-table">
 
             <thead>
+
                 <tr>
                     <th>Customer</th>
                     <th>Subject</th>
@@ -81,7 +415,9 @@
                     <th>Created</th>
                     <th>Updated</th>
                 </tr>
+
             </thead>
+
 
             <tbody>
 
@@ -89,41 +425,96 @@
 
                 <tr>
 
-                    <td>{{ ticket.customer.full_name }}</td>
+                    <td>
+                        {{ ticket.customer.full_name }}
+                    </td>
+
 
                     <td>
-                        <strong>{{ ticket.subject }}</strong>
+
+                        <strong>
+                            {{ ticket.subject }}
+                        </strong>
+
                         <br>
-                        <small>{{ ticket.message|truncatechars:80 }}</small>
+
+                        <small>
+                            {{ ticket.message|truncatechars:80 }}
+                        </small>
+
                     </td>
 
+
                     <td>
+
                         {% if ticket.priority == "urgent" %}
-                            <span class="badge-danger">Urgent</span>
+
+                            <span class="badge-danger">
+                                Urgent
+                            </span>
+
                         {% elif ticket.priority == "high" %}
-                            <span class="badge-warning">High</span>
+
+                            <span class="badge-warning">
+                                High
+                            </span>
+
                         {% elif ticket.priority == "medium" %}
-                            <span class="badge-primary">Medium</span>
+
+                            <span class="badge-primary">
+                                Medium
+                            </span>
+
                         {% else %}
-                            <span class="badge-success">Low</span>
+
+                            <span class="badge-success">
+                                Low
+                            </span>
+
                         {% endif %}
+
                     </td>
+
 
                     <td>
+
                         {% if ticket.status == "resolved" %}
-                            <span class="badge-success">Resolved</span>
+
+                            <span class="badge-success">
+                                Resolved
+                            </span>
+
                         {% elif ticket.status == "in_progress" %}
-                            <span class="badge-warning">In Progress</span>
+
+                            <span class="badge-warning">
+                                In Progress
+                            </span>
+
                         {% elif ticket.status == "closed" %}
-                            <span class="badge-danger">Closed</span>
+
+                            <span class="badge-danger">
+                                Closed
+                            </span>
+
                         {% else %}
-                            <span class="badge-primary">Open</span>
+
+                            <span class="badge-primary">
+                                Open
+                            </span>
+
                         {% endif %}
+
                     </td>
 
-                    <td>{{ ticket.created_at|date:"d M Y" }}</td>
 
-                    <td>{{ ticket.updated_at|date:"d M Y" }}</td>
+                    <td>
+                        {{ ticket.created_at|date:"d M Y" }}
+                    </td>
+
+
+                    <td>
+                        {{ ticket.updated_at|date:"d M Y" }}
+                    </td>
 
                 </tr>
 
@@ -137,20 +528,37 @@
 
     {% else %}
 
-        <div class="empty-box">
-            <h3>No Support Tickets Yet</h3>
-            <p>Customer support requests will appear here.</p>
-        </div>
+    <div class="empty-box">
+
+        <h3>
+            No Support Tickets Yet
+        </h3>
+
+        <p>
+            Customer support requests will appear here.
+        </p>
+
+    </div>
 
     {% endif %}
 
 </section>
 
+
+<!-- =====================================================
+     PRIORITY OVERVIEW
+===================================================== -->
+
 <section class="crm-panel">
 
     <div class="crm-panel-header">
-        <h2>Support Priority Overview</h2>
+
+        <h2>
+            Support Priority Overview
+        </h2>
+
     </div>
+
 
     <div class="support-grid">
 
@@ -178,6 +586,7 @@
 
 </section>
 
+
 <style>
 
 .support-alert-panel{
@@ -199,44 +608,425 @@
     font-weight:600;
 }
 
-.badge-success{
-    background:#dcfce7;
-    color:#166534;
+.badge-success,
+.badge-primary,
+.badge-warning,
+.badge-danger{
     padding:6px 12px;
     border-radius:20px;
     font-size:13px;
     font-weight:700;
     display:inline-block;
+}
+
+.badge-success{
+    background:#dcfce7;
+    color:#166534;
 }
 
 .badge-primary{
     background:#dbeafe;
     color:#1d4ed8;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:700;
-    display:inline-block;
 }
 
 .badge-warning{
     background:#fef3c7;
     color:#92400e;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:700;
-    display:inline-block;
 }
 
 .badge-danger{
     background:#fee2e2;
     color:#991b1b;
-    padding:6px 12px;
-    border-radius:20px;
+}
+
+.live-chat-summary-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+    margin-bottom:24px;
+}
+
+.live-chat-stat{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:20px;
+    border-radius:18px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+}
+
+.live-chat-stat-icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    background:#f1f5f9;
+}
+
+.live-chat-stat span{
+    display:block;
+    color:#64748b;
+    font-size:14px;
+}
+
+.live-chat-stat strong{
+    display:block;
+    font-size:30px;
+    margin-top:4px;
+}
+
+.live-chat-stat.waiting{
+    border-left:5px solid #f59e0b;
+}
+
+.live-chat-stat.active{
+    border-left:5px solid #16a34a;
+}
+
+.live-chat-panel{
+    overflow:hidden;
+}
+
+.live-chat-connection-status{
+    display:flex;
+    align-items:center;
+    gap:8px;
     font-size:13px;
     font-weight:700;
+    color:#166534;
+}
+
+.status-dot{
+    width:9px;
+    height:9px;
+    background:#16a34a;
+    border-radius:50%;
     display:inline-block;
+}
+
+.live-chat-layout{
+    display:grid;
+    grid-template-columns:320px 1fr;
+    min-height:620px;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    overflow:hidden;
+}
+
+.live-chat-list{
+    background:#f8fafc;
+    border-right:1px solid #e5e7eb;
+    overflow-y:auto;
+}
+
+.live-chat-list-header{
+    padding:18px;
+    border-bottom:1px solid #e5e7eb;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.live-chat-list-header span{
+    background:#e2e8f0;
+    color:#334155;
+    min-width:26px;
+    height:26px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    font-weight:700;
+}
+
+.live-chat-list-item{
+    width:100%;
+    border:0;
+    border-bottom:1px solid #e5e7eb;
+    background:#fff;
+    padding:15px;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    text-align:left;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.live-chat-list-item:hover{
+    background:#f1f5f9;
+}
+
+.live-chat-list-item.selected{
+    background:#eff6ff;
+    border-left:4px solid #2563eb;
+}
+
+.chat-avatar{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#dbeafe;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+
+.chat-list-content{
+    flex:1;
+    min-width:0;
+}
+
+.chat-list-content strong{
+    display:block;
+    color:#0f172a;
+    font-size:14px;
+}
+
+.chat-list-content span{
+    display:block;
+    margin-top:3px;
+    font-size:12px;
+    color:#64748b;
+}
+
+.chat-list-content small{
+    display:block;
+    margin-top:5px;
+    color:#94a3b8;
+    font-size:11px;
+}
+
+.chat-status{
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.chat-status.waiting{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.chat-status.active{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.no-live-chats{
+    padding:50px 20px;
+    text-align:center;
+    color:#64748b;
+}
+
+.no-live-chats div{
+    font-size:40px;
+    margin-bottom:10px;
+}
+
+.no-live-chats strong{
+    display:block;
+    color:#334155;
+}
+
+.no-live-chats p{
+    font-size:13px;
+}
+
+.live-chat-window{
+    background:#fff;
+    min-width:0;
+}
+
+.live-chat-empty{
+    height:100%;
+    min-height:620px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+    padding:30px;
+    color:#64748b;
+}
+
+.live-chat-empty-icon{
+    width:70px;
+    height:70px;
+    border-radius:22px;
+    background:#eff6ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:34px;
+    margin-bottom:20px;
+}
+
+.live-chat-empty h3{
+    color:#0f172a;
+    margin-bottom:8px;
+}
+
+.staff-chat{
+    height:620px;
+    display:flex;
+    flex-direction:column;
+}
+
+.staff-chat-header{
+    min-height:80px;
+    padding:16px 20px;
+    border-bottom:1px solid #e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.staff-chat-header h3{
+    margin:0 0 5px;
+}
+
+.staff-chat-contact{
+    display:flex;
+    gap:15px;
+    font-size:12px;
+    color:#64748b;
+}
+
+.staff-chat-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.staff-action-btn{
+    border:0;
+    padding:9px 13px;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:700;
+    font-size:12px;
+}
+
+.staff-action-btn.takeover{
+    background:#2563eb;
+    color:#fff;
+}
+
+.staff-action-btn.close{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.staff-action-btn:hover{
+    opacity:.9;
+}
+
+.staff-chat-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:22px;
+    background:#f8fafc;
+}
+
+.staff-message{
+    max-width:75%;
+    margin-bottom:14px;
+}
+
+.staff-message.customer{
+    margin-right:auto;
+}
+
+.staff-message.bot,
+.staff-message.staff{
+    margin-left:auto;
+}
+
+.staff-message.system{
+    max-width:100%;
+    text-align:center;
+}
+
+.staff-message-name{
+    font-size:11px;
+    color:#64748b;
+    margin-bottom:4px;
+}
+
+.staff-message-bubble{
+    padding:11px 14px;
+    border-radius:14px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    line-height:1.45;
+    font-size:14px;
+}
+
+.staff-message.customer .staff-message-bubble{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    color:#0f172a;
+    border-top-left-radius:4px;
+}
+
+.staff-message.bot .staff-message-bubble{
+    background:#eff6ff;
+    color:#1e3a8a;
+    border-top-right-radius:4px;
+}
+
+.staff-message.staff .staff-message-bubble{
+    background:#2563eb;
+    color:#fff;
+    border-top-right-radius:4px;
+}
+
+.staff-message.system .staff-message-bubble{
+    display:inline-block;
+    background:#e2e8f0;
+    color:#475569;
+    font-size:12px;
+}
+
+.staff-chat-form{
+    display:flex;
+    gap:10px;
+    padding:14px;
+    border-top:1px solid #e5e7eb;
+    background:#fff;
+}
+
+.staff-chat-form input{
+    flex:1;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    padding:12px 14px;
+    outline:none;
+}
+
+.staff-chat-form input:focus{
+    border-color:#2563eb;
+}
+
+.staff-chat-form button{
+    border:0;
+    background:#2563eb;
+    color:#fff;
+    padding:0 22px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
 }
 
 .support-grid{
@@ -284,10 +1074,33 @@
     padding:60px 20px;
 }
 
+@media(max-width:1100px){
+
+    .live-chat-layout{
+        grid-template-columns:280px 1fr;
+    }
+
+    .staff-chat-header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+}
+
 @media(max-width:900px){
 
     .support-grid{
         grid-template-columns:1fr 1fr;
+    }
+
+    .live-chat-layout{
+        grid-template-columns:1fr;
+    }
+
+    .live-chat-list{
+        max-height:300px;
+        border-right:0;
+        border-bottom:1px solid #e5e7eb;
     }
 
 }
@@ -298,8 +1111,814 @@
         grid-template-columns:1fr;
     }
 
+    .live-chat-summary-grid{
+        grid-template-columns:1fr;
+    }
+
+    .staff-chat{
+        height:550px;
+    }
+
+    .staff-chat-contact{
+        flex-direction:column;
+        gap:3px;
+    }
+
+    .staff-chat-messages{
+        padding:14px;
+    }
+
+    .staff-message{
+        max-width:90%;
+    }
+
 }
 
 </style>
+
+
+<!-- =====================================================
+     LIVE CHAT JAVASCRIPT
+===================================================== -->
+
+<script>
+
+(function(){
+
+    "use strict";
+
+    let selectedConversationId = null;
+    let staffSocket = null;
+
+    const emptyState =
+        document.getElementById("liveChatEmpty");
+
+    const staffChat =
+        document.getElementById("staffChat");
+
+    const messagesContainer =
+        document.getElementById("staffChatMessages");
+
+    const chatName =
+        document.getElementById("staffChatName");
+
+    const chatEmail =
+        document.getElementById("staffChatEmail");
+
+    const chatPhone =
+        document.getElementById("staffChatPhone");
+
+    const chatStatus =
+        document.getElementById("staffChatStatus");
+
+    const takeoverButton =
+        document.getElementById("takeoverChatBtn");
+
+    const closeButton =
+        document.getElementById("closeChatBtn");
+
+    const chatForm =
+        document.getElementById("staffChatForm");
+
+    const chatInput =
+        document.getElementById("staffChatInput");
+
+
+    function getSocketUrl(){
+
+        const protocol =
+            window.location.protocol === "https:"
+                ? "wss:"
+                : "ws:";
+
+        return (
+            protocol +
+            "//" +
+            window.location.host +
+            "/ws/live-chat/"
+        );
+    }
+
+
+    function scrollMessages(){
+
+        if(messagesContainer){
+
+            messagesContainer.scrollTop =
+                messagesContainer.scrollHeight;
+        }
+    }
+
+
+    function renderMessage(
+        senderType,
+        senderName,
+        message
+    ){
+
+        const wrapper =
+            document.createElement("div");
+
+        wrapper.className =
+            "staff-message " +
+            (senderType || "system");
+
+        const name =
+            document.createElement("div");
+
+        name.className =
+            "staff-message-name";
+
+        name.textContent =
+            senderName ||
+            senderType ||
+            "System";
+
+        const bubble =
+            document.createElement("div");
+
+        bubble.className =
+            "staff-message-bubble";
+
+        bubble.textContent =
+            message || "";
+
+        wrapper.appendChild(name);
+        wrapper.appendChild(bubble);
+
+        messagesContainer.appendChild(
+            wrapper
+        );
+
+        scrollMessages();
+    }
+
+
+    function updateStatus(status){
+
+        if(!chatStatus){
+            return;
+        }
+
+        if(status === "closed"){
+
+            chatStatus.textContent =
+                "Closed";
+
+            chatStatus.className =
+                "chat-status waiting";
+
+        }else if(status === "active"){
+
+            chatStatus.textContent =
+                "Active";
+
+            chatStatus.className =
+                "chat-status active";
+
+        }else{
+
+            chatStatus.textContent =
+                "Waiting";
+
+            chatStatus.className =
+                "chat-status waiting";
+        }
+
+
+        if(takeoverButton){
+
+            takeoverButton.style.display =
+                status === "waiting"
+                    ? "inline-block"
+                    : "none";
+        }
+
+
+        if(chatForm){
+
+            chatForm.style.display =
+                status === "closed"
+                    ? "none"
+                    : "flex";
+        }
+    }
+
+
+    function connectStaffSocket(){
+
+        if(
+            staffSocket &&
+            (
+                staffSocket.readyState === WebSocket.OPEN ||
+                staffSocket.readyState === WebSocket.CONNECTING
+            )
+        ){
+
+            return;
+        }
+
+
+        staffSocket =
+            new WebSocket(
+                getSocketUrl()
+            );
+
+
+        staffSocket.onopen =
+            function(){
+
+                staffSocket.send(
+                    JSON.stringify({
+                        action:"staff_join",
+                        conversation_id:
+                            selectedConversationId
+                    })
+                );
+            };
+
+
+        staffSocket.onmessage =
+            function(event){
+
+                try{
+
+                    const data =
+                        JSON.parse(
+                            event.data
+                        );
+
+
+                    if(
+                        data.type === "message"
+                    ){
+
+                        renderMessage(
+                            data.sender_type,
+                            data.sender_name,
+                            data.message
+                        );
+                    }
+
+
+                    if(
+                        data.type === "system"
+                    ){
+
+                        renderMessage(
+                            "system",
+                            "System",
+                            data.message
+                        );
+
+                        if(data.status){
+
+                            updateStatus(
+                                data.status
+                            );
+                        }
+                    }
+
+
+                    if(
+                        data.type === "staff_joined"
+                    ){
+
+                        updateStatus(
+                            data.status
+                        );
+                    }
+
+
+                    if(
+                        data.type === "chat_closed"
+                    ){
+
+                        updateStatus(
+                            "closed"
+                        );
+                    }
+
+
+                    if(
+                        data.type === "connection"
+                    ){
+
+                        if(data.status){
+
+                            updateStatus(
+                                data.status
+                            );
+                        }
+
+                    }
+
+
+                    if(
+                        data.type === "error"
+                    ){
+
+                        console.error(
+                            "Live chat:",
+                            data.message
+                        );
+                    }
+
+                }catch(error){
+
+                    console.error(
+                        "Staff chat message error:",
+                        error
+                    );
+                }
+            };
+
+
+        staffSocket.onclose =
+            function(){
+
+                console.log(
+                    "Staff live chat disconnected."
+                );
+            };
+
+
+        staffSocket.onerror =
+            function(error){
+
+                console.error(
+                    "Staff live chat error:",
+                    error
+                );
+            };
+    }
+
+
+    async function loadConversation(
+        conversationId
+    ){
+
+        selectedConversationId =
+            conversationId;
+
+
+        document
+            .querySelectorAll(
+                ".live-chat-list-item"
+            )
+            .forEach(
+                function(item){
+
+                    item.classList.toggle(
+                        "selected",
+                        item.dataset.chatId ===
+                        String(conversationId)
+                    );
+                }
+            );
+
+
+        emptyState.style.display =
+            "none";
+
+        staffChat.style.display =
+            "flex";
+
+        messagesContainer.innerHTML =
+            "";
+
+
+        try{
+
+            const response =
+                await fetch(
+                    "/dashboard/support/live-chat/" +
+                    conversationId +
+                    "/",
+                    {
+                        credentials:"same-origin"
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if(!data.success){
+
+                alert(
+                    data.message ||
+                    "Unable to load conversation."
+                );
+
+                return;
+            }
+
+
+            const conversation =
+                data.conversation;
+
+
+            chatName.textContent =
+                conversation.name ||
+                "Website Visitor";
+
+
+            chatEmail.textContent =
+                conversation.email ||
+                "";
+
+
+            chatPhone.textContent =
+                conversation.phone ||
+                "";
+
+
+            updateStatus(
+                conversation.status
+            );
+
+
+            data.messages.forEach(
+                function(message){
+
+                    renderMessage(
+                        message.sender_type,
+                        message.sender_name,
+                        message.message
+                    );
+                }
+            );
+
+
+            if(staffSocket){
+
+                staffSocket.close();
+                staffSocket = null;
+            }
+
+
+            connectStaffSocket();
+
+        }catch(error){
+
+            console.error(
+                error
+            );
+
+            alert(
+                "Unable to load live chat."
+            );
+        }
+    }
+
+
+    document
+        .querySelectorAll(
+            ".live-chat-list-item"
+        )
+        .forEach(
+            function(item){
+
+                item.addEventListener(
+                    "click",
+                    function(){
+
+                        loadConversation(
+                            item.dataset.chatId
+                        );
+                    }
+                );
+            }
+        );
+
+
+    if(takeoverButton){
+
+        takeoverButton.addEventListener(
+            "click",
+            async function(){
+
+                if(!selectedConversationId){
+                    return;
+                }
+
+
+                try{
+
+                    const response =
+                        await fetch(
+                            "/dashboard/support/live-chat/" +
+                            selectedConversationId +
+                            "/takeover/",
+                            {
+                                method:"POST",
+                                credentials:"same-origin",
+                                headers:{
+                                    "X-CSRFToken":
+                                        getCookie(
+                                            "csrftoken"
+                                        )
+                                }
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if(data.success){
+
+                        updateStatus(
+                            "active"
+                        );
+
+                    }else{
+
+                        alert(
+                            data.message ||
+                            "Unable to take over chat."
+                        );
+                    }
+
+                }catch(error){
+
+                    console.error(
+                        error
+                    );
+
+                    alert(
+                        "Unable to take over chat."
+                    );
+                }
+            }
+        );
+    }
+
+
+    if(closeButton){
+
+        closeButton.addEventListener(
+            "click",
+            async function(){
+
+                if(!selectedConversationId){
+                    return;
+                }
+
+
+                if(
+                    !confirm(
+                        "Close this conversation?"
+                    )
+                ){
+
+                    return;
+                }
+
+
+                try{
+
+                    const response =
+                        await fetch(
+                            "/dashboard/support/live-chat/" +
+                            selectedConversationId +
+                            "/close/",
+                            {
+                                method:"POST",
+                                credentials:"same-origin",
+                                headers:{
+                                    "X-CSRFToken":
+                                        getCookie(
+                                            "csrftoken"
+                                        )
+                                }
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if(data.success){
+
+                        updateStatus(
+                            "closed"
+                        );
+
+                    }else{
+
+                        alert(
+                            data.message ||
+                            "Unable to close chat."
+                        );
+                    }
+
+                }catch(error){
+
+                    console.error(
+                        error
+                    );
+
+                    alert(
+                        "Unable to close chat."
+                    );
+                }
+            }
+        );
+    }
+
+
+    if(chatForm){
+
+        chatForm.addEventListener(
+            "submit",
+            function(event){
+
+                event.preventDefault();
+
+
+                const message =
+                    chatInput.value.trim();
+
+
+                if(
+                    !message ||
+                    !selectedConversationId
+                ){
+
+                    return;
+                }
+
+
+                if(
+                    !staffSocket ||
+                    staffSocket.readyState !==
+                    WebSocket.OPEN
+                ){
+
+                    alert(
+                        "Live chat connection is unavailable."
+                    );
+
+                    return;
+                }
+
+
+                staffSocket.send(
+                    JSON.stringify({
+                        action:"staff_message",
+                        conversation_id:
+                            selectedConversationId,
+                        message:message
+                    })
+                );
+
+
+                chatInput.value = "";
+
+                chatInput.focus();
+            }
+        );
+    }
+
+
+    function getCookie(name){
+
+        const cookies =
+            document.cookie.split(";");
+
+
+        for(
+            let i = 0;
+            i < cookies.length;
+            i++
+        ){
+
+            const cookie =
+                cookies[i].trim();
+
+
+            if(
+                cookie.substring(
+                    0,
+                    name.length + 1
+                ) ===
+                name + "="
+            ){
+
+                return decodeURIComponent(
+                    cookie.substring(
+                        name.length + 1
+                    )
+                );
+            }
+        }
+
+
+        return null;
+    }
+
+})();
+</script>
+
+
+<!-- =====================================================
+     LIVE CHAT COUNTS
+===================================================== -->
+
+<script>
+
+(function(){
+
+    "use strict";
+
+
+    function updateLiveChatCounts(){
+
+        fetch(
+            "{% url 'live_chat_counts' %}",
+            {
+                method:"GET",
+                headers:{
+                    "X-Requested-With":
+                        "XMLHttpRequest"
+                },
+                credentials:"same-origin"
+            }
+        )
+        .then(
+            function(response){
+
+                if(!response.ok){
+
+                    throw new Error(
+                        "Unable to load chat counts."
+                    );
+                }
+
+                return response.json();
+            }
+        )
+        .then(
+            function(data){
+
+                if(!data.success){
+                    return;
+                }
+
+
+                const waitingCount =
+                    document.getElementById(
+                        "waiting-chat-count"
+                    );
+
+
+                const activeCount =
+                    document.getElementById(
+                        "active-chat-count"
+                    );
+
+
+                if(waitingCount){
+
+                    waitingCount.textContent =
+                        data.waiting_chats;
+                }
+
+
+                if(activeCount){
+
+                    activeCount.textContent =
+                        data.active_chats;
+                }
+            }
+        )
+        .catch(
+            function(error){
+
+                console.error(
+                    "Live chat count update failed:",
+                    error
+                );
+            }
+        );
+    }
+
+
+    updateLiveChatCounts();
+
+
+    setInterval(
+        updateLiveChatCounts,
+        3000
+    );
+
+})();
+
+</script>
 
 {% endblock %}

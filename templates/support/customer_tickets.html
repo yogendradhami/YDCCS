@@ -1,148 +1,247 @@
 {% extends 'dashboard_base.html' %}
 
-{% block title %}Support Centre{% endblock %}
-{% block page_title %}Support Centre{% endblock %}
-{% block page_subtitle %}Track support requests, service issues and customer enquiries.{% endblock %}
+{% block title %}
+Support Centre
+{% endblock %}
+
+{% block page_title %}
+Support Centre
+{% endblock %}
+
+{% block page_subtitle %}
+Track support requests, service issues and customer enquiries.
+{% endblock %}
+
 
 {% block content %}
 
 
+<!-- =====================================================
+     SUMMARY
+===================================================== -->
 
 <section class="crm-summary-grid">
 
+    <div class="crm-card">
 
-<div class="crm-card">
-    <span>Total Tickets</span>
-    <h2>{{ tickets.count }}</h2>
-</div>
+        <span>
+            Total Tickets
+        </span>
 
-<div class="crm-card">
-    <span>Support Status</span>
-    <h2>Active</h2>
-</div>
+        <h2>
+            {{ tickets.count }}
+        </h2>
 
+    </div>
+
+
+    <div class="crm-card">
+
+        <span>
+            Support Status
+        </span>
+
+        <h2>
+            Active
+        </h2>
+
+    </div>
 
 </section>
 
+
+<!-- =====================================================
+     SUPPORT TICKETS
+===================================================== -->
+
 <section class="crm-panel">
 
-<div class="crm-panel-header">
+    <div class="crm-panel-header">
 
-    <h2>My Support Tickets</h2>
+        <div>
 
-    <a href="/portal/support/new/" class="primary-btn">
-        + Create Ticket
-    </a>
+            <h2>
+                My Support Tickets
+            </h2>
 
-</div>
+            <p>
+                View your submitted support requests and their current status.
+            </p>
 
-{% if tickets %}
+        </div>
 
-<div class="table-wrapper">
 
-    <table class="dashboard-table advanced-table">
+        <a
+            href="/portal/support/new/"
+            class="primary-btn"
+        >
+            + Create Ticket
+        </a>
 
-        <thead>
-            <tr>
-                <th>Subject</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Last Updated</th>
-            </tr>
-        </thead>
+    </div>
 
-        <tbody>
 
-            {% for ticket in tickets %}
+    {% if tickets %}
 
-            <tr>
+    <div class="table-wrapper">
 
-                <td>
-                    <strong>{{ ticket.subject }}</strong>
-                </td>
+        <table class="dashboard-table advanced-table">
 
-                <td>
+            <thead>
 
-                    {% if ticket.priority == "urgent" %}
-                        <span class="badge-danger">Urgent</span>
+                <tr>
 
-                    {% elif ticket.priority == "high" %}
-                        <span class="badge-warning">High</span>
+                    <th>
+                        Subject
+                    </th>
 
-                    {% elif ticket.priority == "medium" %}
-                        <span class="badge-primary">Medium</span>
+                    <th>
+                        Priority
+                    </th>
 
-                    {% else %}
-                        <span class="badge-success">Low</span>
-                    {% endif %}
+                    <th>
+                        Status
+                    </th>
 
-                </td>
+                    <th>
+                        Created
+                    </th>
 
-                <td>
+                    <th>
+                        Last Updated
+                    </th>
 
-                    {% if ticket.status == "resolved" %}
-                        <span class="badge-success">
-                            Resolved
-                        </span>
+                </tr>
 
-                    {% elif ticket.status == "in_progress" %}
-                        <span class="badge-warning">
-                            In Progress
-                        </span>
+            </thead>
 
-                    {% elif ticket.status == "closed" %}
-                        <span class="badge-danger">
-                            Closed
-                        </span>
 
-                    {% else %}
-                        <span class="badge-primary">
-                            Open
-                        </span>
+            <tbody>
 
-                    {% endif %}
+                {% for ticket in tickets %}
 
-                </td>
+                <tr>
 
-                <td>
-                    {{ ticket.created_at|date:"d M Y" }}
-                </td>
+                    <td>
 
-                <td>
-                    {{ ticket.updated_at|date:"d M Y" }}
-                </td>
+                        <strong>
+                            {{ ticket.subject }}
+                        </strong>
 
-            </tr>
+                    </td>
 
-            {% endfor %}
 
-        </tbody>
+                    <td>
 
-    </table>
+                        {% if ticket.priority == "urgent" %}
 
-</div>
+                            <span class="badge-danger">
+                                Urgent
+                            </span>
 
-{% else %}
+                        {% elif ticket.priority == "high" %}
+
+                            <span class="badge-warning">
+                                High
+                            </span>
+
+                        {% elif ticket.priority == "medium" %}
+
+                            <span class="badge-primary">
+                                Medium
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge-success">
+                                Low
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if ticket.status == "resolved" %}
+
+                            <span class="badge-success">
+                                Resolved
+                            </span>
+
+                        {% elif ticket.status == "in_progress" %}
+
+                            <span class="badge-warning">
+                                In Progress
+                            </span>
+
+                        {% elif ticket.status == "closed" %}
+
+                            <span class="badge-danger">
+                                Closed
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge-primary">
+                                Open
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ ticket.created_at|date:"d M Y" }}
+                    </td>
+
+
+                    <td>
+                        {{ ticket.updated_at|date:"d M Y" }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    {% else %}
 
     <div class="empty-box">
 
-        <h3>No Support Tickets Found</h3>
+        <div class="empty-icon">
+            🎫
+        </div>
+
+        <h3>
+            No Support Tickets Found
+        </h3>
 
         <p>
             You have not submitted any support requests yet.
         </p>
 
-        <a href="/portal/support/new/" class="primary-btn">
+        <a
+            href="/portal/support/new/"
+            class="primary-btn"
+        >
             Create First Ticket
         </a>
 
     </div>
 
-{% endif %}
-
+    {% endif %}
 
 </section>
+
 
 <style>
 
@@ -156,6 +255,7 @@
     font-weight:600;
 }
 
+
 .primary-btn{
     background:#2563eb !important;
     color:#ffffff !important;
@@ -166,50 +266,71 @@
     display:inline-block;
 }
 
+
 .primary-btn:hover{
     color:#ffffff !important;
+    opacity:.92;
 }
+
+
+.badge-success,
+.badge-primary,
+.badge-warning,
+.badge-danger{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    display:inline-block;
+}
+
 
 .badge-success{
     background:#dcfce7;
     color:#166534;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:600;
 }
+
 
 .badge-primary{
     background:#dbeafe;
     color:#1d4ed8;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:600;
 }
+
 
 .badge-warning{
     background:#fef3c7;
     color:#92400e;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:600;
 }
+
 
 .badge-danger{
     background:#fee2e2;
     color:#991b1b;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:600;
 }
+
 
 .empty-box{
     text-align:center;
-    padding:60px 20px;
+    padding:70px 20px;
 }
+
+
+.empty-icon{
+    font-size:48px;
+    margin-bottom:15px;
+}
+
+
+.empty-box h3{
+    margin-bottom:8px;
+}
+
+
+.empty-box p{
+    color:#64748b;
+    margin-bottom:22px;
+}
+
 
 @media(max-width:768px){
 
@@ -220,13 +341,20 @@
         align-items:flex-start;
     }
 
+
     .primary-btn{
         width:100%;
         text-align:center;
     }
 
+
+    .table-wrapper{
+        overflow-x:auto;
+    }
+
 }
 
 </style>
+
 
 {% endblock %}

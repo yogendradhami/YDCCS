@@ -1,0 +1,1144 @@
+import asyncio
+import uuid
+from datetime import timedelta
+
+from asgiref.sync import sync_to_async
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.contrib.auth.models import User
+from django.db import transaction
+from django.utils import timezone
+
+from .chat_faq import FAQ_RESPONSES
+from .models import (
+    LiveChatConversation,
+    LiveChatMessage,
+)
+
+
+# =========================================================
+# SETTINGS
+# =========================================================
+
+# Automatically close a conversation after this many
+# minutes without customer/staff activity.
+INACTIVITY_TIMEOUT_MINUTES = 1
+
+# How often the connected WebSocket checks inactivity.
+INACTIVITY_CHECK_INTERVAL_SECONDS = 10
+
+
+class LiveChatConsumer(AsyncJsonWebsocketConsumer):
+
+    # =====================================================
+    # CONNECT
+    # =====================================================
+
+    async def connect(self):
+
+        self.conversation_id = None
+        self.conversation = None
+        self.is_staff = False
+        self.room_group_name = None
+
+        self.inactivity_task = None
+        self.chat_closed = False
+
+        user = self.scope.get("user")
+
+        self.is_staff = bool(
+            user
+            and user.is_authenticated
+            and user.is_staff
+        )
+
+        await self.accept()
+
+        await self.send_json(
+            {
+                "type": "connection",
+                "success": True,
+                "message": "Live chat connected.",
+            }
+        )
+
+    # =====================================================
+    # DISCONNECT
+    # =====================================================
+
+    async def disconnect(self, close_code):
+
+        self.chat_closed = True
+
+        # Stop background inactivity monitor.
+        if self.inactivity_task:
+
+            self.inactivity_task.cancel()
+
+            try:
+                await self.inactivity_task
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                pass
+
+            self.inactivity_task = None
+
+        # Leave conversation group.
+        if self.room_group_name:
+
+            try:
+
+                await self.channel_layer.group_discard(
+                    self.room_group_name,
+                    self.channel_name,
+                )
+
+            except Exception:
+                pass
+
+    # =====================================================
+    # RECEIVE JSON
+    # =====================================================
+
+    async def receive_json(
+        self,
+        content,
+        **kwargs,
+    ):
+
+        # =================================================
+        # BASIC VALIDATION
+        # =================================================
+
+        if not isinstance(content, dict):
+
+            await self.send_json(
+                {
+                    "type": "error",
+                    "message": "Invalid WebSocket request.",
+                }
+            )
+
+            return
+
+        action = content.get(
+            "action",
+            "",
+        )
+
+        conversation_id = content.get(
+            "conversation_id"
+        )
+
+        # =================================================
+        # UPDATE STAFF STATUS
+        # =================================================
+
+        user = self.scope.get("user")
+
+        self.is_staff = bool(
+            user
+            and user.is_authenticated
+            and user.is_staff
+        )
+
+        # =================================================
+        # JOIN
+        # =================================================
+
+        if action in (
+            "customer_join",
+            "staff_join",
+        ):
+
+            if not conversation_id:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Conversation ID is required.",
+                    }
+                )
+
+                return
+
+            conversation = await self.get_conversation(
+                conversation_id
+            )
+
+            if not conversation:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Conversation not found.",
+                    }
+                )
+
+                return
+
+            self.conversation = conversation
+            self.conversation_id = conversation.id
+
+            self.room_group_name = (
+                f"live_chat_{conversation.id}"
+            )
+
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name,
+            )
+
+            # ---------------------------------------------
+            # Check inactivity before joining.
+            # ---------------------------------------------
+
+            inactivity_result = await self.check_inactivity(
+                conversation.id
+            )
+
+            if inactivity_result == "closed":
+
+                self.chat_closed = True
+
+                await self.send_json(
+                    {
+                        "type": "chat_closed",
+                        "success": False,
+                        "reason": "inactivity",
+                        "message": (
+                            "This conversation was automatically "
+                            "closed because there was no activity "
+                            f"for {INACTIVITY_TIMEOUT_MINUTES} minutes."
+                        ),
+                    }
+                )
+
+                return
+
+            if inactivity_result == "already_closed":
+
+                self.chat_closed = True
+
+                await self.send_json(
+                    {
+                        "type": "chat_closed",
+                        "success": False,
+                        "message": (
+                            "This conversation has already been closed."
+                        ),
+                    }
+                )
+
+                return
+
+            # ---------------------------------------------
+            # Start automatic inactivity monitoring.
+            # ---------------------------------------------
+
+            self.start_inactivity_monitor()
+
+            await self.send_json(
+                {
+                    "type": "connection",
+                    "success": True,
+                    "conversation_id": conversation.id,
+                    "status": conversation.status,
+                }
+            )
+
+            return
+
+        # =================================================
+        # REQUIRE CONVERSATION
+        # =================================================
+
+        if not conversation_id:
+
+            conversation_id = self.conversation_id
+
+        if not conversation_id:
+
+            await self.send_json(
+                {
+                    "type": "error",
+                    "message": "No active conversation.",
+                }
+            )
+
+            return
+
+        conversation = await self.get_conversation(
+            conversation_id
+        )
+
+        if not conversation:
+
+            await self.send_json(
+                {
+                    "type": "error",
+                    "message": "Conversation not found.",
+                }
+            )
+
+            return
+
+        self.conversation = conversation
+        self.conversation_id = conversation.id
+
+        # =================================================
+        # CHECK INACTIVITY BEFORE ACTION
+        # =================================================
+
+        inactivity_result = await self.check_inactivity(
+            conversation.id
+        )
+
+        if inactivity_result == "closed":
+
+            self.chat_closed = True
+
+            await self.send_json(
+                {
+                    "type": "chat_closed",
+                    "success": False,
+                    "reason": "inactivity",
+                    "message": (
+                        "This conversation was automatically "
+                        "closed because there was no activity "
+                        f"for {INACTIVITY_TIMEOUT_MINUTES} minutes."
+                    ),
+                }
+            )
+
+            return
+
+        if inactivity_result == "already_closed":
+
+            self.chat_closed = True
+
+            await self.send_json(
+                {
+                    "type": "chat_closed",
+                    "success": False,
+                    "message": (
+                        "This conversation has been closed."
+                    ),
+                }
+            )
+
+            return
+
+        # Make sure monitor is running.
+        self.start_inactivity_monitor()
+
+        # =================================================
+        # STAFF TAKEOVER
+        # =================================================
+
+        if action == "staff_takeover":
+
+            if not self.is_staff:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Staff access required.",
+                    }
+                )
+
+                return
+
+            user = self.scope["user"]
+
+            await self.takeover_conversation(
+                conversation.id,
+                user.id,
+            )
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chat_system",
+                    "message": (
+                        f"{user.get_full_name() or user.username} "
+                        "has taken over this conversation."
+                    ),
+                    "status": "active",
+                },
+            )
+
+            return
+
+        # =================================================
+        # STAFF CLOSE
+        # =================================================
+
+        if action == "staff_close":
+
+            if not self.is_staff:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Staff access required.",
+                    }
+                )
+
+                return
+
+            user = self.scope["user"]
+
+            sender_name = (
+                user.get_full_name()
+                or user.username
+                or "YD Cleaning Support"
+            )
+
+            close_result = await self.close_conversation(
+                conversation.id,
+                sender_name,
+                (
+                    "This conversation was closed by "
+                    f"{sender_name}."
+                ),
+            )
+
+            if not close_result:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": (
+                            "This conversation is already closed."
+                        ),
+                    }
+                )
+
+                return
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chat_system",
+                    "message": (
+                        "This conversation was closed by "
+                        f"{sender_name}."
+                    ),
+                    "status": "closed",
+                },
+            )
+
+            self.chat_closed = True
+
+            return
+
+        # =================================================
+        # STAFF MESSAGE
+        # =================================================
+
+        if action == "staff_message":
+
+            if not self.is_staff:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Staff access required.",
+                    }
+                )
+
+                return
+
+            message = str(
+                content.get(
+                    "message",
+                    "",
+                )
+            ).strip()
+
+            if not message:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Message cannot be empty.",
+                    }
+                )
+
+                return
+
+            user = self.scope["user"]
+
+            sender_name = (
+                user.get_full_name()
+                or user.username
+                or "YD Cleaning Support"
+            )
+
+            saved = await self.save_message(
+                conversation.id,
+                "staff",
+                sender_name,
+                message,
+            )
+
+            if not saved:
+
+                await self.send_json(
+                    {
+                        "type": "chat_closed",
+                        "success": False,
+                        "message": (
+                            "This conversation has been closed."
+                        ),
+                    }
+                )
+
+                self.chat_closed = True
+
+                return
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chat_message",
+                    "sender_type": "staff",
+                    "sender_name": sender_name,
+                    "message": message,
+                },
+            )
+
+            return
+
+        # =================================================
+        # CUSTOMER MESSAGE
+        # =================================================
+
+        if action in (
+            "customer_message",
+            "message",
+        ):
+
+            message = str(
+                content.get(
+                    "message",
+                    "",
+                )
+            ).strip()
+
+            if not message:
+
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Message cannot be empty.",
+                    }
+                )
+
+                return
+
+            sender_name = (
+                content.get(
+                    "sender_name",
+                    "",
+                )
+                or "Website Visitor"
+            )
+
+            saved = await self.save_message(
+                conversation.id,
+                "customer",
+                sender_name,
+                message,
+            )
+
+            if not saved:
+
+                await self.send_json(
+                    {
+                        "type": "chat_closed",
+                        "success": False,
+                        "message": (
+                            "This conversation has been closed."
+                        ),
+                    }
+                )
+
+                self.chat_closed = True
+
+                return
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chat_message",
+                    "sender_type": "customer",
+                    "sender_name": sender_name,
+                    "message": message,
+                },
+            )
+
+            # ---------------------------------------------
+            # FAQ / BOT RESPONSE
+            # ---------------------------------------------
+
+            bot_response = self.find_faq_response(
+                message
+            )
+
+            if bot_response:
+
+                await self.save_message(
+                    conversation.id,
+                    "bot",
+                    "YD Cleaning Assistant",
+                    bot_response,
+                )
+
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "chat_message",
+                        "sender_type": "bot",
+                        "sender_name": (
+                            "YD Cleaning Assistant"
+                        ),
+                        "message": bot_response,
+                    },
+                )
+
+            return
+
+        # =================================================
+        # UNKNOWN ACTION
+        # =================================================
+
+        await self.send_json(
+            {
+                "type": "error",
+                "message": (
+                    f"Unknown chat action: {action}"
+                ),
+            }
+        )
+
+    # =====================================================
+    # START INACTIVITY MONITOR
+    # =====================================================
+
+    def start_inactivity_monitor(self):
+
+        if self.chat_closed:
+
+            return
+
+        if self.inactivity_task:
+
+            if not self.inactivity_task.done():
+
+                return
+
+        self.inactivity_task = asyncio.create_task(
+            self.monitor_inactivity()
+        )
+
+    # =====================================================
+    # BACKGROUND INACTIVITY MONITOR
+    # =====================================================
+
+    async def monitor_inactivity(self):
+
+        try:
+
+            while not self.chat_closed:
+
+                await asyncio.sleep(
+                    INACTIVITY_CHECK_INTERVAL_SECONDS
+                )
+
+                if self.chat_closed:
+
+                    return
+
+                if not self.conversation_id:
+
+                    continue
+
+                result = await self.check_inactivity(
+                    self.conversation_id
+                )
+
+                if result == "closed":
+
+                    self.chat_closed = True
+
+                    if self.room_group_name:
+
+                        await self.channel_layer.group_send(
+                            self.room_group_name,
+                            {
+                                "type": "chat_inactivity_closed",
+                                "message": (
+                                    "This conversation was "
+                                    "automatically closed because "
+                                    "there was no activity for "
+                                    f"{INACTIVITY_TIMEOUT_MINUTES} "
+                                    "minutes."
+                                ),
+                                "status": "closed",
+                            },
+                        )
+
+                    return
+
+                if result == "already_closed":
+
+                    self.chat_closed = True
+
+                    return
+
+        except asyncio.CancelledError:
+
+            raise
+
+        except Exception as error:
+
+            print(
+                "Live chat inactivity monitor error:",
+                error,
+            )
+
+    # =====================================================
+    # ATOMIC INACTIVITY CHECK
+    # =====================================================
+
+    @sync_to_async
+    def check_inactivity(
+        self,
+        conversation_id,
+    ):
+
+        try:
+
+            with transaction.atomic():
+
+                conversation = (
+                    LiveChatConversation.objects
+                    .select_for_update()
+                    .get(
+                        id=conversation_id
+                    )
+                )
+
+                # -----------------------------------------
+                # Already closed.
+                # -----------------------------------------
+
+                if conversation.status == "closed":
+
+                    return "already_closed"
+
+                now = timezone.now()
+
+                last_activity = (
+                    conversation.updated_at
+                    or conversation.created_at
+                )
+
+                if not last_activity:
+
+                    return "active"
+
+                timeout = timedelta(
+                    minutes=INACTIVITY_TIMEOUT_MINUTES
+                )
+
+                inactive_for = (
+                    now - last_activity
+                )
+
+                if inactive_for < timeout:
+
+                    return "active"
+
+                # -----------------------------------------
+                # CLOSE ATOMICALLY
+                # -----------------------------------------
+
+                conversation.status = "closed"
+
+                conversation.updated_at = now
+
+                conversation.save(
+                    update_fields=[
+                        "status",
+                        "updated_at",
+                    ]
+                )
+
+                LiveChatMessage.objects.create(
+                    conversation=conversation,
+                    sender_type="system",
+                    sender_name="YD Cleaning Support",
+                    message=(
+                        "This conversation was automatically "
+                        "closed due to inactivity."
+                    ),
+                )
+
+                return "closed"
+
+        except LiveChatConversation.DoesNotExist:
+
+            return "already_closed"
+
+    # =====================================================
+    # DATABASE HELPERS
+    # =====================================================
+
+    @sync_to_async
+    def get_conversation(
+        self,
+        conversation_id,
+    ):
+
+        try:
+
+            return (
+                LiveChatConversation.objects
+                .select_related("assigned_to")
+                .get(
+                    id=conversation_id
+                )
+            )
+
+        except LiveChatConversation.DoesNotExist:
+
+            return None
+
+    # =====================================================
+    # SAVE MESSAGE + UPDATE ACTIVITY
+    # =====================================================
+
+    @sync_to_async
+    def save_message(
+        self,
+        conversation_id,
+        sender_type,
+        sender_name,
+        message,
+    ):
+
+        with transaction.atomic():
+
+            try:
+
+                conversation = (
+                    LiveChatConversation.objects
+                    .select_for_update()
+                    .get(
+                        id=conversation_id
+                    )
+                )
+
+            except LiveChatConversation.DoesNotExist:
+
+                return False
+
+            # ---------------------------------------------
+            # Never allow messages after closure.
+            # ---------------------------------------------
+
+            if conversation.status == "closed":
+
+                return False
+
+            now = timezone.now()
+
+            LiveChatMessage.objects.create(
+                conversation=conversation,
+                sender_type=sender_type,
+                sender_name=sender_name,
+                message=message,
+            )
+
+            conversation.updated_at = now
+
+            conversation.save(
+                update_fields=[
+                    "updated_at",
+                ]
+            )
+
+            return True
+
+    # =====================================================
+    # TAKEOVER
+    # =====================================================
+
+    @sync_to_async
+    def takeover_conversation(
+        self,
+        conversation_id,
+        user_id,
+    ):
+
+        with transaction.atomic():
+
+            conversation = (
+                LiveChatConversation.objects
+                .select_for_update()
+                .get(
+                    id=conversation_id
+                )
+            )
+
+            if conversation.status == "closed":
+
+                return False
+
+            user = User.objects.get(
+                id=user_id
+            )
+
+            conversation.status = "active"
+
+            conversation.assigned_to = user
+
+            conversation.updated_at = timezone.now()
+
+            conversation.save(
+                update_fields=[
+                    "status",
+                    "assigned_to",
+                    "updated_at",
+                ]
+            )
+
+            return True
+
+    # =====================================================
+    # CLOSE CONVERSATION
+    # =====================================================
+
+    @sync_to_async
+    def close_conversation(
+        self,
+        conversation_id,
+        sender_name,
+        message,
+    ):
+
+        with transaction.atomic():
+
+            conversation = (
+                LiveChatConversation.objects
+                .select_for_update()
+                .get(
+                    id=conversation_id
+                )
+            )
+
+            if conversation.status == "closed":
+
+                return False
+
+            conversation.status = "closed"
+
+            conversation.updated_at = timezone.now()
+
+            conversation.save(
+                update_fields=[
+                    "status",
+                    "updated_at",
+                ]
+            )
+
+            LiveChatMessage.objects.create(
+                conversation=conversation,
+                sender_type="system",
+                sender_name=sender_name,
+                message=message,
+            )
+
+            return True
+
+    # =====================================================
+    # FAQ
+    # =====================================================
+
+    def find_faq_response(
+        self,
+        message,
+    ):
+
+        normalized = (
+            message
+            .lower()
+            .strip()
+        )
+
+        if not normalized:
+
+            return None
+
+        # Exact FAQ key.
+        if normalized in FAQ_RESPONSES:
+
+            faq = FAQ_RESPONSES[
+                normalized
+            ]
+
+            return faq.get(
+                "answer"
+            )
+
+        # Keyword matching.
+        for key, faq in FAQ_RESPONSES.items():
+
+            key_normalized = (
+                str(key)
+                .lower()
+                .replace(
+                    "-",
+                    " ",
+                )
+                .replace(
+                    "_",
+                    " ",
+                )
+            )
+
+            keywords = (
+                key_normalized
+                .split()
+            )
+
+            if not keywords:
+
+                continue
+
+            matched = sum(
+                1
+                for keyword in keywords
+                if keyword in normalized
+            )
+
+            if matched >= max(
+                1,
+                len(keywords) // 2,
+            ):
+
+                return faq.get(
+                    "answer"
+                )
+
+        return None
+
+    # =====================================================
+    # CHAT MESSAGE HANDLER
+    # =====================================================
+
+    async def chat_message(
+        self,
+        event,
+    ):
+
+        await self.send_json(
+            {
+                "type": "message",
+                "sender_type": event.get(
+                    "sender_type",
+                    "system",
+                ),
+                "sender_name": event.get(
+                    "sender_name",
+                    "System",
+                ),
+                "message": event.get(
+                    "message",
+                    "",
+                ),
+            }
+        )
+
+    # =====================================================
+    # SYSTEM MESSAGE HANDLER
+    # =====================================================
+
+    async def chat_system(
+        self,
+        event,
+    ):
+
+        status = event.get(
+            "status"
+        )
+
+        await self.send_json(
+            {
+                "type": "system",
+                "message": event.get(
+                    "message",
+                    "",
+                ),
+                "status": status,
+            }
+        )
+
+        if status:
+
+            await self.send_json(
+                {
+                    "type": "staff_joined",
+                    "status": status,
+                }
+            )
+
+        if status == "closed":
+
+            self.chat_closed = True
+
+    # =====================================================
+    # AUTOMATIC INACTIVITY CLOSE HANDLER
+    # =====================================================
+
+    async def chat_inactivity_closed(
+        self,
+        event,
+    ):
+
+        self.chat_closed = True
+
+        message = event.get(
+            "message",
+            (
+                "This conversation was automatically "
+                "closed due to inactivity."
+            ),
+        )
+
+        await self.send_json(
+            {
+                "type": "chat_closed",
+                "success": False,
+                "reason": "inactivity",
+                "message": message,
+            }
+        )
+
+        await self.send_json(
+            {
+                "type": "system",
+                "message": message,
+                "status": "closed",
+            }
+        )
+
+        await self.send_json(
+            {
+                "type": "staff_joined",
+                "status": "closed",
+            }
+        )

@@ -316,59 +316,39 @@ YD Commercial Cleaning Services Adelaide
                     <div class="form-check">
                         <label class="form-check-label" for="{{ form.window_cleaning.id_for_label }}">
                             {{ form.window_cleaning }}
-                            Window Cleaning (+$50)
+                            Window Cleaning
                         </label>
                     </div>
                     <div class="form-check">
                         <label class="form-check-label" for="{{ form.carpet_shampooing.id_for_label }}">
                             {{ form.carpet_shampooing }}
-                            Carpet Shampooing (+$100)
+                            Carpet Shampooing
                         </label>
                     </div>
                     <div class="form-check">
                         <label class="form-check-label" for="{{ form.grout_cleaning.id_for_label }}">
                             {{ form.grout_cleaning }}
-                            Grout Cleaning (+$75)
+                            Grout Cleaning
                         </label>
                     </div>
                     <div class="form-check">
                         <label class="form-check-label" for="{{ form.upholstery_cleaning.id_for_label }}">
                             {{ form.upholstery_cleaning }}
-                            Upholstery Cleaning (+$60)
+                            Upholstery Cleaning
                         </label>
                     </div>
                     <div class="form-check">
                         <label class="form-check-label" for="{{ form.laundry_service.id_for_label }}">
                             {{ form.laundry_service }}
-                            Laundry Service (+$60)
+                            Laundry Service
                         </label>
                     </div>
                 </fieldset>
 
-                <div class="form-check robot-check">
-                    <label class="form-check-label" for="{{ form.is_not_robot.id_for_label }}">
-                        {{ form.is_not_robot }}
-                        I'm not a robot
-                    </label>
-                    <div class="text-danger">{{ form.is_not_robot.errors }}</div>
-                </div>
-
-                <div class="estimate-box" style="
-                    background:#f8fafc;
-                    border:2px solid #0ea5e9;
-                    padding:20px;
-                    border-radius:12px;
-                    margin-bottom:20px;
-                    text-align:center;
-                ">
-                    <h3>Estimated Quote</h3>
-
-                    <h2 id="estimated-price">$120</h2>
-
-                    <p>
-                        Final pricing will be confirmed by
-                        YD Commercial Cleaning Services.
-                    </p>
+                <div class="form-group">
+                    <label for="{{ form.captcha_answer.id_for_label }}">Security check: {{ form.captcha_question }}</label>
+                    {{ form.captcha_answer }}
+                    <div class="text-danger">{{ form.captcha_answer.errors }}</div>
                 </div>
 
                 <button type="submit" class="btn-fill full-width">
