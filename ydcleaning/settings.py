@@ -27,8 +27,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = "https://ydcleaning.com.au"
 SITE_ID = 1
 
-RECAPTCHA_SITE_KEY = env.str("RECAPTCHA_SITE_KEY", default="")
-RECAPTCHA_SECRET_KEY = env.str("RECAPTCHA_SECRET_KEY", default="")
 
 
 # Read local .env if present
@@ -37,6 +35,8 @@ if (BASE_DIR / ".env").exists():
 if (BASE_DIR / ".env.local").exists():
     env.read_env(str(BASE_DIR / ".env.local"))
 
+RECAPTCHA_SITE_KEY = env.str("RECAPTCHA_SITE_KEY", default="")
+RECAPTCHA_SECRET_KEY = env.str("RECAPTCHA_SECRET_KEY", default="")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/

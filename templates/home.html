@@ -15,6 +15,12 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/pages/home-page.css' %}">
+    <style>
+        /* Hide Google reCAPTCHA error badge and notices */
+        .grecaptcha-badge {
+            display: none !important;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -658,10 +664,13 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                 </details>
 
                 {% if form.recaptcha_site_key %}
-                    <div class="form-group">
-                        <label>Security check</label>
-                        <div class="g-recaptcha" data-sitekey="{{ form.recaptcha_site_key }}"></div>
+                    <div class="form-group" style="margin: 20px auto; padding: 14px 16px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; text-align: center; width: 100%; box-sizing: border-box;">
                         {{ form.g_recaptcha_response }}
+                        <small style="color: #374151; display: block; margin-top: 10px; font-size: 12px; line-height: 1.5;">
+                            This site is protected by reCAPTCHA and the Google
+                            <a href="https://policies.google.com/privacy" target="_blank" style="color: #2563eb; text-decoration: none;">Privacy Policy</a> and
+                            <a href="https://policies.google.com/terms" target="_blank" style="color: #2563eb; text-decoration: none;">Terms of Service</a> apply.
+                        </small>
                         <div class="text-danger">{{ form.g_recaptcha_response.errors }}</div>
                     </div>
                 {% endif %}
@@ -679,24 +688,83 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 <a href="#quote" class="floating-quote" aria-label="Request a free quote">✦ Get Free Quote</a>
 
 {% endblock %}
-
 {% block extra_js %}
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script>
-        window.addEventListener('load', function () {
-            const recaptchaBlocks = document.querySelectorAll('.g-recaptcha');
-            if (!window.grecaptcha || !recaptchaBlocks.length) {
-                return;
-            }
+    {% if form.recaptcha_site_key %}
+        <script src="https://www.google.com/recaptcha/api.js?render={{ form.recaptcha_site_key }}"></script>
+    {% endif %}
 
-            recaptchaBlocks.forEach((block) => {
-                if (!block.dataset.sitekey || block.dataset.rendered === 'true') {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const quoteForm = document.querySelector("#quote form");
+            if (!quoteForm) return;
+
+            const recaptchaField = quoteForm.querySelector('input[name="g_recaptcha_response"]');
+            const siteKey = "{{ form.recaptcha_site_key }}";
+            const submitBtn = quoteForm.querySelector('.quote-submit');
+            
+            let isSubmitting = false;
+            let isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+            quoteForm.addEventListener("submit", async function (event) {
+                // Prevent double-submit
+                if (isSubmitting) {
+                    event.preventDefault();
                     return;
                 }
-                window.grecaptcha.render(block, {
-                    sitekey: block.dataset.sitekey,
-                });
-                block.dataset.rendered = 'true';
+
+                event.preventDefault();
+
+                // Check if reCAPTCHA is configured
+                if (!siteKey || typeof grecaptcha === "undefined" || !recaptchaField) {
+                    console.log("reCAPTCHA not configured, submitting form directly");
+                    quoteForm.submit();
+                    return;
+                }
+
+                isSubmitting = true;
+                if (submitBtn) submitBtn.disabled = true;
+
+                try {
+                    // For localhost testing, allow form submission without waiting for reCAPTCHA
+                    // This is a development convenience - will work properly once localhost is added to reCAPTCHA domains
+                    if (isLocalhost) {
+                        console.log("Localhost detected - allowing form submission for testing");
+                        // Set a placeholder token so backend knows reCAPTCHA was attempted
+                        recaptchaField.value = "localhost-test-token";
+                        isSubmitting = false;
+                        if (submitBtn) submitBtn.disabled = false;
+                        quoteForm.submit();
+                        return;
+                    }
+
+                    // Execute reCAPTCHA v3 on production
+                    const token = await grecaptcha.execute(siteKey, { action: "quote_submit" });
+
+                    if (!token) {
+                        throw new Error("Failed to get reCAPTCHA token");
+                    }
+
+                    // Set the token in the hidden field
+                    recaptchaField.value = token;
+                    console.log("reCAPTCHA token obtained, submitting form");
+                    isSubmitting = false;
+                    if (submitBtn) submitBtn.disabled = false;
+                    quoteForm.submit();
+
+                } catch (error) {
+                    console.error("reCAPTCHA error:", error);
+                    // For localhost, allow submission anyway
+                    if (isLocalhost) {
+                        recaptchaField.value = "localhost-test-token";
+                        isSubmitting = false;
+                        if (submitBtn) submitBtn.disabled = false;
+                        quoteForm.submit();
+                    } else {
+                        alert("Security verification failed. Please try again.");
+                        isSubmitting = false;
+                        if (submitBtn) submitBtn.disabled = false;
+                    }
+                }
             });
         });
     </script>

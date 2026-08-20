@@ -113,34 +113,37 @@ def customer_tickets(request):
 @login_required
 def support_dashboard(request):
 
+    # =====================================================
+    # SUPPORT TICKETS
+    # =====================================================
+
     tickets = (
         SupportTicket.objects
         .select_related("customer")
-        .all()
         .order_by("-updated_at")
     )
 
-    open_tickets = tickets.filter(
+    open_tickets = SupportTicket.objects.filter(
         status="open"
     ).count()
 
-    in_progress_tickets = tickets.filter(
+    in_progress_tickets = SupportTicket.objects.filter(
         status="in_progress"
     ).count()
 
-    resolved_tickets = tickets.filter(
+    resolved_tickets = SupportTicket.objects.filter(
         status="resolved"
     ).count()
 
-    closed_tickets = tickets.filter(
+    closed_tickets = SupportTicket.objects.filter(
         status="closed"
     ).count()
 
-    urgent_tickets = tickets.filter(
+    urgent_tickets = SupportTicket.objects.filter(
         priority="urgent"
     ).count()
 
-    high_tickets = tickets.filter(
+    high_tickets = SupportTicket.objects.filter(
         priority="high"
     ).count()
 
@@ -149,28 +152,32 @@ def support_dashboard(request):
     # =====================================================
     # LIVE CHAT
     # =====================================================
+    # IMPORTANT:
+    # Do NOT prefetch messages here.
+    #
+    # Messages are only required when an admin opens a
+    # specific conversation.
+    # =====================================================
 
     live_chats = (
         LiveChatConversation.objects
         .select_related("assigned_to")
-        .prefetch_related("messages")
-        .all()
         .order_by("-updated_at")
     )
 
-    waiting_chats = live_chats.filter(
+    waiting_chats = LiveChatConversation.objects.filter(
         status="waiting"
     ).count()
 
-    active_chats = live_chats.filter(
+    active_chats = LiveChatConversation.objects.filter(
         status="active"
     ).count()
 
-    closed_chats = live_chats.filter(
+    closed_chats = LiveChatConversation.objects.filter(
         status="closed"
     ).count()
 
-    total_live_chats = live_chats.count()
+    total_live_chats = LiveChatConversation.objects.count()
 
     return render(
         request,
@@ -192,7 +199,6 @@ def support_dashboard(request):
             "total_live_chats": total_live_chats,
         },
     )
-
 
 # =========================================================
 # LIVE CHAT COUNTS
