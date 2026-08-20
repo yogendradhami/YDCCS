@@ -265,8 +265,22 @@ function initReviewCarousel() {
     }
 
     function refreshDimensions() {
-        slideWidth = slides[0].getBoundingClientRect().width + 24;
+        const visibleWidth = carousel.clientWidth || slides[0].getBoundingClientRect().width;
+        slideWidth = visibleWidth + 24;
         track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+        if (window.innerWidth <= 980) {
+            slides.forEach((slide) => {
+                slide.style.width = `${carousel.clientWidth}px`;
+                slide.style.minWidth = `${carousel.clientWidth}px`;
+                slide.style.flexBasis = `${carousel.clientWidth}px`;
+            });
+        } else {
+            slides.forEach((slide) => {
+                slide.style.width = '';
+                slide.style.minWidth = '';
+                slide.style.flexBasis = '';
+            });
+        }
     }
 
     function goTo(index) {

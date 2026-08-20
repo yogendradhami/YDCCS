@@ -42,9 +42,13 @@ body {
 }
 .home-reviews-grid {
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     gap: 30px;
     align-items: stretch;
+}
+.home-review-summary,
+.home-review-carousel-wrapper {
+    min-width: 0;
 }
 .home-review-summary {
     background: #ffffff;
@@ -70,8 +74,8 @@ body {
     font-size: 13px;
 }
 .home-review-summary h3 {
-    font-size: 42px;
-    line-height: 1.05;
+    font-size: clamp(2rem, 2.15vw, 2.7rem);
+    line-height: 1.08;
     margin-bottom: 18px;
     color: #0f172a;
 }
@@ -88,14 +92,14 @@ body {
     margin-bottom: 24px;
 }
 .home-review-rating strong {
-    font-size: 72px;
+    font-size: clamp(3rem, 4vw, 4.5rem);
     line-height: 1;
     color: #0f172a;
 }
 .home-review-rating span {
     display: block;
     color: #475569;
-    font-size: 18px;
+    font-size: clamp(1rem, 1.3vw, 1.125rem);
 }
 .home-review-trust {
     display: grid;
@@ -125,20 +129,28 @@ body {
 }
 .home-review-carousel-wrapper {
     position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 .home-review-carousel {
     overflow: hidden;
     padding: 10px 0;
+    width: 100%;
+    max-width: 100%;
 }
 .home-review-carousel-track {
     display: flex;
     gap: 24px;
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform;
+    width: 100%;
 }
 .home-review-slide {
+    width: 100%;
     min-width: 100%;
     flex: 0 0 100%;
+    max-width: 100%;
 }
 .home-review-card {
     background: #ffffff;
@@ -147,6 +159,8 @@ body {
     box-shadow: 0 28px 60px rgba(15, 23, 42, 0.08);
     position: relative;
     overflow: hidden;
+    width: 100%;
+    max-width: 100%;
 }
 .home-review-card::before {
     content: "“";
@@ -244,6 +258,7 @@ body {
 }
 @media (min-width: 980px) {
     .home-review-slide {
+        width: calc(50% - 12px);
         min-width: calc(50% - 12px);
         flex: 0 0 calc(50% - 12px);
     }
@@ -255,11 +270,75 @@ body {
     .home-review-carousel {
         grid-template-columns: 1fr;
     }
+    .home-review-summary {
+        padding: 30px 24px;
+    }
+    .home-review-carousel-track {
+        width: 100%;
+    }
     .carousel-control.prev {
-        left: 6px;
+        left: 10px;
     }
     .carousel-control.next {
-        right: 6px;
+        right: 10px;
+    }
+}
+@media (max-width: 640px) {
+    .home-reviews-premium {
+        padding: 60px 0;
+    }
+    .home-reviews-premium .section-title {
+        margin-bottom: 26px;
+    }
+    .home-review-summary {
+        border-radius: 20px;
+        padding: 24px 18px;
+    }
+    .home-review-summary .eyebrow {
+        font-size: 11px;
+        padding: 8px 12px;
+    }
+    .home-review-summary h3 {
+        font-size: 1.9rem;
+    }
+    .home-review-rating {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .home-review-rating strong {
+        font-size: 2.7rem;
+    }
+    .home-review-rating span {
+        line-height: 1.5;
+    }
+    .home-review-trust {
+        gap: 10px;
+    }
+    .home-trust-pill {
+        padding: 12px 14px;
+        font-size: 0.92rem;
+    }
+    .home-review-cta {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .home-review-cta .btn-fill,
+    .home-review-cta .btn-light-outline {
+        min-width: 0;
+        width: 100%;
+    }
+    .home-review-card {
+        padding: 22px 18px;
+        border-radius: 20px;
+    }
+    .home-review-card .review-comment {
+        font-size: 0.98rem;
+    }
+    .carousel-control {
+        width: 42px;
+        height: 42px;
     }
 }
 .hero-section {
