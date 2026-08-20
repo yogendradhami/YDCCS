@@ -18,14 +18,11 @@
     overflow: hidden;
     text-align: center;
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(15, 23, 42, 0.94),
-            rgba(30, 64, 175, 0.82)
-        ),
-        url("/static/images/hero-cleaning-poster.webp")
-        center center / cover no-repeat;
+    /* Use the hero image directly as background (replace the file at
+       static/images/hero-cleaning-poster.webp with your new image). The
+       gradient background has been removed so the provided image shows
+       through without the dark overlay. */
+    background: url("/static/images/hero-cleaning-poster.webp") center center / cover no-repeat;
 }
 
 .about-hero::before {
@@ -41,14 +38,25 @@
         );
 }
 
+/* Responsive behaviour: let the hero fill on large screens (cover),
+   but on small screens switch to contain so the full image remains visible. */
+@media (max-width: 768px) {
+    .about-hero {
+        background-size: contain;
+        background-position: center top;
+        min-height: 420px;
+    }
+    .hero-content {
+        padding: 48px 16px;
+    }
+}
+
 .hero-overlay {
+    /* overlay removed to let the image show without a coloured wash; if
+       you want a subtle darkening for text contrast, adjust this value */
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        180deg,
-        rgba(0, 0, 0, 0.05),
-        rgba(0, 0, 0, 0.18)
-    );
+    background: transparent;
 }
 
 .hero-content {
