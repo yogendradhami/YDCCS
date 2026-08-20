@@ -89,6 +89,41 @@ Manage customer support tickets, complaints, service requests and live website c
 
     </div>
 
+
+    <div class="live-chat-stat closed">
+
+        <div class="live-chat-stat-icon">
+            🔴
+        </div>
+
+        <div>
+            <span>Closed Chats</span>
+
+            <strong id="closed-chat-count">
+                {{ closed_chats }}
+            </strong>
+        </div>
+
+    </div>
+
+
+    <div class="live-chat-stat total">
+
+        <div class="live-chat-stat-icon">
+            💬
+        </div>
+
+        <div>
+            <span>Total Live Chats</span>
+
+            <strong id="total-live-chat-count">
+                {{ total_live_chats }}
+            </strong>
+        </div>
+
+    </div>{% if chat.status == "waiting" %}
+
+
 </section>
 
 
@@ -194,9 +229,17 @@ Manage customer support tickets, complaints, service requests and live website c
 
                                 Waiting for staff
 
-                            {% else %}
+                            {% elif chat.status == "active" %}
 
                                 Live with staff
+
+                            {% elif chat.status == "closed" %}
+
+                                Conversation closed
+
+                            {% else %}
+
+                                {{ chat.status|title }}
 
                             {% endif %}
 
@@ -217,10 +260,22 @@ Manage customer support tickets, complaints, service requests and live website c
                                 Waiting
                             </span>
 
-                        {% else %}
+                        {% elif chat.status == "active" %}
 
                             <span class="chat-status active">
                                 Active
+                            </span>
+
+                        {% elif chat.status == "closed" %}
+
+                            <span class="chat-status closed">
+                                Closed
+                            </span>
+
+                        {% else %}
+
+                            <span class="chat-status">
+                                {{ chat.status|title }}
                             </span>
 
                         {% endif %}
@@ -1826,8 +1881,8 @@ Manage customer support tickets, complaints, service requests and live website c
 </script>
 
 
-<!-- =====================================================
-     LIVE CHAT COUNTS
+<<!-- =====================================================
+     LIVE CHAT COUNTS + LIVE CHAT STATUS REFRESH
 ===================================================== -->
 
 <script>
@@ -1837,85 +1892,254 @@ Manage customer support tickets, complaints, service requests and live website c
     "use strict";
 
 
-    function updateLiveChatCounts(){
-
-        fetch(
-            "{% url 'live_chat_counts' %}",
-            {
-                method:"GET",
-                headers:{
-                    "X-Requested-With":
-                        "XMLHttpRequest"
-                },
-                credentials:"same-origin"
-            }
-        )
-        .then(
-            function(response){
-
-                if(!response.ok){
-
-                    throw new Error(
-                        "Unable to load chat counts."
-                    );
-                }
-
-                return response.json();
-            }
-        )
-        .then(
-            function(data){
-
-                if(!data.success){
-                    return;
-                }
+    let countsRequestRunning = false;
 
 
-                const waitingCount =
-                    document.getElementById(
-                        "waiting-chat-count"
-                    );
+    /*
+    =====================================================
+    GET CSRF COOKIE
+    =====================================================
+    */
+
+    function getCookie(name){
+
+        const cookies =
+            document.cookie.split(";");
 
 
-                const activeCount =
-                    document.getElementById(
-                        "active-chat-count"
-                    );
+        for(
+            let i = 0;
+            i < cookies.length;
+            i++
+        ){
+
+            const cookie =
+                cookies[i].trim();
 
 
-                if(waitingCount){
+            if(
+                cookie.substring(
+                    0,
+                    name.length + 1
+                ) ===
+                name + "="
+            ){
 
-                    waitingCount.textContent =
-                        data.waiting_chats;
-                }
-
-
-                if(activeCount){
-
-                    activeCount.textContent =
-                        data.active_chats;
-                }
-            }
-        )
-        .catch(
-            function(error){
-
-                console.error(
-                    "Live chat count update failed:",
-                    error
+                return decodeURIComponent(
+                    cookie.substring(
+                        name.length + 1
+                    )
                 );
             }
-        );
+        }
+
+
+        return null;
     }
 
 
+    /*
+    =====================================================
+    UPDATE WAITING / ACTIVE COUNTS
+    =====================================================
+    */
+
+    async function updateLiveChatCounts(){
+
+        /*
+        Prevent multiple requests from running
+        at the same time.
+        */
+
+        if(countsRequestRunning){
+
+            return;
+        }
+
+
+        countsRequestRunning = true;
+
+
+        try{
+
+            const response =
+                await fetch(
+                    "{% url 'live_chat_counts' %}",
+                    {
+                        method:"GET",
+
+                        credentials:"same-origin",
+
+                        headers:{
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+
+                            "Accept":
+                                "application/json"
+                        },
+
+                        cache:"no-store"
+                    }
+                );
+
+
+            /*
+            =============================================
+            AUTH / PERMISSION ERROR
+            =============================================
+            */
+
+            if(
+                response.status === 401 ||
+                response.status === 403
+            ){
+
+                console.error(
+                    "Live chat counts permission denied:",
+                    response.status
+                );
+
+                return;
+            }
+
+
+            /*
+            =============================================
+            SERVER ERROR
+            =============================================
+            */
+
+            if(!response.ok){
+
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+            }
+
+
+            /*
+            =============================================
+            PARSE JSON
+            =============================================
+            */
+
+            const data =
+                await response.json();
+
+
+            if(
+                !data ||
+                data.success !== true
+            ){
+
+                console.error(
+                    "Invalid live chat count response:",
+                    data
+                );
+
+                return;
+            }
+
+
+            /*
+            =============================================
+            WAITING COUNT
+            =============================================
+            */
+
+            const waitingCount =
+                document.getElementById(
+                    "waiting-chat-count"
+                );
+
+
+            if(waitingCount){
+
+                waitingCount.textContent =
+                    Number(
+                        data.waiting_chats || 0
+                    );
+            }
+
+
+            /*
+            =============================================
+            ACTIVE COUNT
+            =============================================
+            */
+
+            const activeCount =
+                document.getElementById(
+                    "active-chat-count"
+                );
+
+
+            if(activeCount){
+
+                activeCount.textContent =
+                    Number(
+                        data.active_chats || 0
+                    );
+            }
+
+
+            /*
+            =============================================
+            CONVERSATION TOTAL
+            =============================================
+            */
+
+            const conversationTotal =
+                document.querySelector(
+                    ".live-chat-list-header span"
+                );
+
+
+            if(conversationTotal){
+
+                conversationTotal.textContent =
+                    Number(
+                        data.total_chats || 0
+                    );
+            }
+
+
+        }catch(error){
+
+            console.error(
+                "Live chat count update failed:",
+                error
+            );
+
+        }finally{
+
+            countsRequestRunning = false;
+        }
+    }
+
+
+    /*
+    =====================================================
+    INITIAL UPDATE
+    =====================================================
+    */
+
     updateLiveChatCounts();
 
+
+    /*
+    =====================================================
+    AUTO REFRESH
+    Every 3 seconds
+    =====================================================
+    */
 
     setInterval(
         updateLiveChatCounts,
         3000
     );
+
 
 })();
 

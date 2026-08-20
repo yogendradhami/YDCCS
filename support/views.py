@@ -154,12 +154,7 @@ def support_dashboard(request):
         LiveChatConversation.objects
         .select_related("assigned_to")
         .prefetch_related("messages")
-        .filter(
-            status__in=[
-                "waiting",
-                "active",
-            ]
-        )
+        .all()
         .order_by("-updated_at")
     )
 
@@ -170,6 +165,12 @@ def support_dashboard(request):
     active_chats = live_chats.filter(
         status="active"
     ).count()
+
+    closed_chats = live_chats.filter(
+        status="closed"
+    ).count()
+
+    total_live_chats = live_chats.count()
 
     return render(
         request,
@@ -187,6 +188,8 @@ def support_dashboard(request):
             "live_chats": live_chats,
             "waiting_chats": waiting_chats,
             "active_chats": active_chats,
+            "closed_chats": closed_chats,
+            "total_live_chats": total_live_chats,
         },
     )
 
@@ -199,22 +202,34 @@ def support_dashboard(request):
 @require_GET
 def live_chat_counts(request):
 
-    live_chats = LiveChatConversation.objects.filter(
-        status__in=[
-            "waiting",
-            "active",
-        ]
+    live_chats = (
+        LiveChatConversation.objects.filter(
+            status__in=[
+                "waiting",
+                "active",
+            ]
+        )
     )
+
+    waiting_chats = live_chats.filter(
+        status="waiting"
+    ).count()
+
+    active_chats = live_chats.filter(
+        status="active"
+    ).count()
+
+    total_chats = live_chats.count()
 
     return JsonResponse(
         {
             "success": True,
-            "waiting_chats": live_chats.filter(
-                status="waiting"
-            ).count(),
-            "active_chats": live_chats.filter(
-                status="active"
-            ).count(),
+
+            "total_chats": total_chats,
+
+            "waiting_chats": waiting_chats,
+
+            "active_chats": active_chats,
         }
     )
 
