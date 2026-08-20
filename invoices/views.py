@@ -223,7 +223,7 @@ def download_invoice_pdf(request, invoice_id):
     pdf.drawString(145, height - 75, "ABN: 95 916 203 175")
     pdf.drawString(145, height - 90, "2/10 Da Costa Avenue, Prospect SA 5082")
     pdf.drawString(145, height - 105, "Phone: 0430 049 865")
-    pdf.drawString(145, height - 120, "Email: ydcommercialcleaning@gmail.com")
+    pdf.drawString(145, height - 120, "Email: info@ydcleaning.com.au")
 
     # Invoice details - top right
     pdf.setFont("Helvetica-Bold", 18)

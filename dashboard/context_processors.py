@@ -35,7 +35,7 @@ def company_settings(request):
         settings = CompanySettings(
             business_name="YD Commercial Cleaning Services",
             phone="0430 049 865",
-            email="ydcommercialcleaning@gmail.com",
+            email="info@ydcleaning.com.au",
             facebook_url="https://www.facebook.com/ydcommercialcleaning",
             instagram_url="https://www.instagram.com/ydcommercialcleaning",
             linkedin_url="https://www.linkedin.com/in/yogendra-dhami-91b46640b",

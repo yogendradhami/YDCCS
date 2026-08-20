@@ -103,7 +103,7 @@ def download_cleaning_report_pdf(request, booking_id):
     y -= 15
     pdf.drawString(50, y, "Phone: 0430 049 865")
     y -= 15
-    pdf.drawString(50, y, "Email: ydcommercialcleaning@gmail.com")
+    pdf.drawString(50, y, "Email: info@ydcleaning.com.au")
     y -= 15
     pdf.drawString(50, y, "Address: 2/10 Da Costa Avenue, Prospect SA 5082")
     y -= 35

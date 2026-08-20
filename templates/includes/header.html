@@ -3,7 +3,7 @@
 <div class="company-contact-strip">
     <div class="company-contact-left">
         <a href="tel:{{ company_settings.phone|default:'+61 430 049 865'|urlencode }}">📞 {{ company_settings.phone|default:'+61 430 049 865' }}</a>
-        <a href="mailto:{{ company_settings.email|default:'ydcommercialcleaning@gmail.com' }}">✉️ {{ company_settings.email|default:'ydcommercialcleaning@gmail.com' }}</a>
+        <a href="mailto:{{ company_settings.email|default:'info@ydcleaning.com.au' }}">✉️ {{ company_settings.email|default:'info@ydcleaning.com.au' }}</a>
     </div>
     {% with fb_url=company_settings.facebook_url|default:'https://www.facebook.com/ydcommercialcleaning' insta_url=company_settings.instagram_url|default:'https://www.instagram.com/ydcommercialcleaning' li_url=company_settings.linkedin_url|default:'https://www.linkedin.com/in/yogendra-dhami-91b46640b' tt_url=company_settings.tiktok_url|default:'https://www.tiktok.com/@yd_cleaning3' %}
     <div class="company-contact-right">

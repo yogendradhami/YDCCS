@@ -10,7 +10,7 @@ class SmokeTest(TestCase):
         CompanySettings.objects.create(
             business_name="YD Commercial Cleaning Services",
             phone="0430 049 865",
-            email="ydcommercialcleaning@gmail.com",
+            email="info@ydcleaning.com.au",
         )
         Service.objects.create(
             slug="carpet-steam-cleaning-adelaide",
