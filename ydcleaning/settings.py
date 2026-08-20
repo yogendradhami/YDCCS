@@ -351,24 +351,32 @@ TWILIO_PHONE_NUMBER = env.str("TWILIO_PHONE_NUMBER", default="")
 # =========================================================
 # SECURITY / HTTPS
 # =========================================================
+
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
 )
 
+# Render/production uses HTTPS.
+# Local development uses plain HTTP.
+IS_PRODUCTION = env.bool(
+    "IS_PRODUCTION",
+    default=False,
+)
+
 SECURE_SSL_REDIRECT = env.bool(
     "SECURE_SSL_REDIRECT",
-    default=True,
+    default=IS_PRODUCTION,
 )
 
 SESSION_COOKIE_SECURE = env.bool(
     "SESSION_COOKIE_SECURE",
-    default=True,
+    default=IS_PRODUCTION,
 )
 
 CSRF_COOKIE_SECURE = env.bool(
     "CSRF_COOKIE_SECURE",
-    default=True,
+    default=IS_PRODUCTION,
 )
 
 CSRF_TRUSTED_ORIGINS = env.list(
@@ -376,7 +384,6 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=[
         "https://ydcleaning.com.au",
         "https://www.ydcleaning.com.au",
-        "https://*.onrender.com",
     ],
 )
 
