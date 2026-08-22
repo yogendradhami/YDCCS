@@ -105,6 +105,11 @@
 
     <link
         rel="stylesheet"
+        href="{% static 'css/components/header.css' %}?v=1"
+    >
+
+    <link
+        rel="stylesheet"
         href="{% static 'css/canonical.css' %}"
     >
 
@@ -118,66 +123,9 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     >
 
+
+
     <style>
-
-        .promo-bar {
-            background: #f6f9fc;
-            color: #111;
-            padding: 6px 12px;
-            font-size: 13px;
-            text-align: center;
-        }
-
-        .yd-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background: #fff;
-            border-bottom: 1px solid #eee;
-        }
-
-        .yd-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .yd-logo img {
-            display: block;
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-        }
-
-        .yd-logo-text {
-            display: block;
-        }
-
-        .yd-menu {
-            display: none;
-        }
-
-        .yd-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        @media (min-width: 768px) {
-            .yd-menu {
-                display: flex;
-                gap: 12px;
-            }
-        }
-
-        .yd-logo-title {
-            font-weight: 700;
-            font-size: 16px;
-            line-height: 1;
-        }
 
         .hero-section {
             background: linear-gradient(

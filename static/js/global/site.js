@@ -10,36 +10,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const offerBanner = document.getElementById("offerBanner");
     const offerClose = document.querySelector(".promo-close");
 
-    const siteSearchData = [
-        { title: "Home", url: "/" },
-        { title: "About Us", url: "/about/" },
-        { title: "Pricing", url: "/pricing/" },
-        { title: "Team", url: "/team/" },
-        { title: "Gallery", url: "/gallery/" },
-        { title: "Contact", url: "/contact/" },
-        { title: "Services", url: "/services/" },
-        { title: "House Cleaning", url: "/services/house-cleaning-adelaide/" },
-        { title: "Commercial Cleaning", url: "/services/commercial-cleaning-adelaide/" },
-        { title: "Office Cleaning", url: "/services/office-cleaning/" },
-        { title: "Spring Cleaning", url: "/services/spring-cleaning/" },
-        { title: "Oven Cleaning", url: "/services/oven-cleaning/" },
-        { title: "Bathroom Cleaning", url: "/services/bathroom-cleaning/" },
-        { title: "Bond Cleaning", url: "/services/bond-cleaning/" },
-        { title: "Exit Cleaning", url: "/services/exit-cleaning/" },
-        { title: "Carpet Cleaning", url: "/services/carpet-cleaning/" },
-        { title: "Window Cleaning", url: "/services/window-cleaning-adelaide/" },
-        { title: "Post Construction Cleaning", url: "/services/post-construction-cleaning-adelaide/" },
-        { title: "End of Lease Cleaning", url: "/services/end-of-lease-cleaning-adelaide/" },
-        { title: "Resources", url: "/resources/" },
-        { title: "Blog", url: "/blog/" },
-        { title: "Customer Portal", url: "/portal/login/" },
-        { title: "Employee Portal", url: "/employee/login/" }
-    ];
-
     const closeMenu = function () {
         if (publicMenu) {
             publicMenu.classList.remove("active");
         }
+        document.querySelectorAll(".yd-mega-parent, .yd-dropdown-parent").forEach(function (item) {
+            item.classList.remove("active");
+            const trigger = item.querySelector("a.yd-menu-trigger");
+            if (trigger) {
+                trigger.setAttribute("aria-expanded", "false");
+            }
+        });
         if (menuButton) {
             menuButton.setAttribute("aria-expanded", "false");
         }
@@ -48,7 +29,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const closeSearch = function () {
         if (searchBox) {
             searchBox.classList.remove("active");
+            searchBox.setAttribute("aria-hidden", "true");
         }
+        if (searchButton) {
+            searchButton.setAttribute("aria-expanded", "false");
+        }
+    };
+
+    const closeAllMenus = function () {
+        closeMenu();
+        closeSearch();
     };
 
     const refreshSearchResults = function (keyword) {
@@ -70,22 +60,37 @@ document.addEventListener("DOMContentLoaded", function () {
             link.style.display = matches ? "block" : "none";
         });
 
-        const matchingCount = links.filter(function (link) {
-            return window.getComputedStyle(link).display !== "none";
-        }).length;
+        if (query) {
+            const visible = links.filter(function (link) {
+                return window.getComputedStyle(link).display !== "none";
+            });
 
-        if (!matchingCount && query) {
-            const fallback = document.createElement("a");
-            fallback.href = "/";
-            fallback.textContent = "No exact matches found. Try a broader keyword.";
-            fallback.style.display = "block";
-            searchResults.appendChild(fallback);
+            if (!visible.length) {
+                const fallback = document.createElement("a");
+                fallback.href = "/";
+                fallback.textContent = "No exact matches found. Try a broader keyword.";
+                fallback.style.display = "block";
+                fallback.className = "site-search-empty";
+                const existingEmpty = searchResults.querySelector(".site-search-empty");
+                if (!existingEmpty) {
+                    searchResults.appendChild(fallback);
+                }
+            } else {
+                const emptyItem = searchResults.querySelector(".site-search-empty");
+                if (emptyItem) {
+                    emptyItem.remove();
+                }
+            }
+        } else {
+            const emptyItem = searchResults.querySelector(".site-search-empty");
+            if (emptyItem) {
+                emptyItem.remove();
+            }
         }
     };
 
     if (offerBanner && offerClose) {
-        const bannerDismissed = localStorage.getItem("yd_offer_banner_dismissed");
-        if (bannerDismissed === "true") {
+        if (localStorage.getItem("yd_offer_banner_dismissed") === "true") {
             offerBanner.style.display = "none";
         }
 
@@ -103,7 +108,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         document.addEventListener("click", function (event) {
-            if (!publicMenu.contains(event.target) && !menuButton.contains(event.target)) {
+            const target = event.target;
+            const insideMenu = publicMenu.contains(target);
+            const insideButton = menuButton.contains(target);
+            if (!insideMenu && !insideButton) {
                 closeMenu();
             }
         });
@@ -113,6 +121,8 @@ document.addEventListener("DOMContentLoaded", function () {
         searchButton.addEventListener("click", function () {
             const shouldOpen = !searchBox.classList.contains("active");
             searchBox.classList.toggle("active", shouldOpen);
+            searchBox.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
+            searchButton.setAttribute("aria-expanded", shouldOpen.toString());
             closeMenu();
 
             if (shouldOpen && searchInput) {
@@ -127,8 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
-            closeMenu();
-            closeSearch();
+            closeAllMenus();
         }
     });
 
@@ -139,66 +148,108 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.querySelectorAll(".yd-dropdown-parent, .yd-mega-parent").forEach(function (parentItem) {
-        const trigger = parentItem.querySelector("a");
-        if (!trigger || window.innerWidth > 1000) {
+        const trigger = parentItem.querySelector("a.yd-menu-trigger");
+        if (!trigger) {
             return;
         }
 
-        trigger.addEventListener("click", function (event) {
-            const submenu = parentItem.querySelector(".yd-dropdown-menu, .yd-mega-menu");
-            if (!submenu) {
-                return;
-            }
+        trigger.setAttribute("aria-expanded", "false");
 
-            const isOpen = parentItem.classList.toggle("js-open");
-            event.preventDefault();
-            submenu.style.display = isOpen ? "block" : "none";
-        });
+        if (window.innerWidth <= 1000) {
+            trigger.addEventListener("click", function (event) {
+                const href = trigger.getAttribute("href");
+                const menu = parentItem.querySelector(".yd-dropdown-menu, .yd-mega-menu");
+                if (!menu) {
+                    return;
+                }
+
+                if (href === "#") {
+                    event.preventDefault();
+                }
+
+                const isOpen = parentItem.classList.contains("active");
+                document.querySelectorAll(".yd-mega-parent, .yd-dropdown-parent").forEach(function (other) {
+                    if (other !== parentItem) {
+                        other.classList.remove("active");
+                        const otherTrigger = other.querySelector("a.yd-menu-trigger");
+                        if (otherTrigger) {
+                            otherTrigger.setAttribute("aria-expanded", "false");
+                        }
+                    }
+                });
+
+                parentItem.classList.toggle("active", !isOpen);
+                trigger.setAttribute("aria-expanded", String(!isOpen));
+            });
+        } else {
+            trigger.addEventListener("mouseenter", function () {
+                parentItem.classList.add("active");
+                trigger.setAttribute("aria-expanded", "true");
+            });
+
+            parentItem.addEventListener("mouseleave", function () {
+                parentItem.classList.remove("active");
+                trigger.setAttribute("aria-expanded", "false");
+            });
+
+            parentItem.addEventListener("focusin", function () {
+                parentItem.classList.add("active");
+                trigger.setAttribute("aria-expanded", "true");
+            });
+
+            parentItem.addEventListener("focusout", function (event) {
+                const nextFocus = event.relatedTarget;
+                if (nextFocus && parentItem.contains(nextFocus)) {
+                    return;
+                }
+                parentItem.classList.remove("active");
+                trigger.setAttribute("aria-expanded", "false");
+            });
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        const clickTarget = event.target;
+        const clickedInsideDropdown = clickTarget.closest(".yd-mega-parent") || clickTarget.closest(".yd-dropdown-parent");
+        if (!clickedInsideDropdown) {
+            document.querySelectorAll(".yd-mega-parent, .yd-dropdown-parent").forEach(function (item) {
+                item.classList.remove("active");
+                const trigger = item.querySelector("a.yd-menu-trigger");
+                if (trigger) {
+                    trigger.setAttribute("aria-expanded", "false");
+                }
+            });
+        }
     });
 
     if (notificationBell) {
         notificationBell.addEventListener("click", function () {
-            fetch("/notifications/mark-read/", {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken"),
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && notificationCount) {
-                    notificationCount.textContent = "0";
-                    notificationCount.style.display = "none";
+            const box = notificationBell.closest(".portal-notification-box");
+            if (box) {
+                box.classList.toggle("active");
+                notificationBell.setAttribute("aria-expanded", box.classList.contains("active") ? "true" : "false");
+            }
 
-                    document.querySelectorAll(".notification-dropdown a.unread").forEach(function (item) {
-                        item.classList.remove("unread");
-                    });
-                }
-            });
-        });
-    }
-
-    // Handle Services mega menu click on mobile/desktop
-    const servicesLink = document.querySelector(".yd-mega-parent > a");
-    if (servicesLink) {
-        servicesLink.addEventListener("click", function (e) {
-            // On mobile/tablet (width <= 1000px), toggle the menu on first click, navigate on second click
-            if (window.innerWidth <= 1000) {
-                const parent = servicesLink.parentElement;
-                const isOpen = parent.classList.contains("js-open");
-
-                if (!isOpen) {
-                    e.preventDefault();
-                    parent.classList.add("js-open");
-                    const menu = parent.querySelector(".yd-mega-menu");
-                    if (menu) menu.style.display = "block";
-                } else {
-                    window.location.href = servicesLink.href;
-                }
-            } else {
-                // On desktop, clicking immediately navigates to the services page
-                window.location.href = servicesLink.href;
+            if (typeof getCookie === "function") {
+                fetch("/notifications/mark-read/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.success && notificationCount) {
+                        notificationCount.textContent = "0";
+                        notificationCount.style.display = "none";
+                        document.querySelectorAll(".notification-dropdown a.unread").forEach(function (item) {
+                            item.classList.remove("unread");
+                        });
+                    }
+                });
             }
         });
     }
