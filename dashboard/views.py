@@ -3190,6 +3190,14 @@ def update_booking_quick_status(request, booking_id, new_status):
             booking.status = new_status
             booking.save()
 
+            try:
+                create_or_update_booking_event(booking)
+            except Exception as error:
+                messages.warning(
+                    request,
+                    f"Booking updated, but Google Calendar sync failed: {error}",
+                )
+
             if new_status == "completed":
 
                 existing_invoice = Invoice.objects.filter(booking=booking).first()
@@ -4988,7 +4996,7 @@ def convert_quote_to_booking(request, quote_id):
     elif quote.property_type == "End of Lease Property":
         service_type = "End of Lease Cleaning"
 
-    Booking.objects.create(
+    booking = Booking.objects.create(
         customer=customer,
         service_type=service_type,
         booking_date=quote.preferred_date or timezone.localdate(),
@@ -4999,6 +5007,13 @@ def convert_quote_to_booking(request, quote_id):
         status="pending",
         notes=quote.message,
     )
+    try:
+        create_or_update_booking_event(booking)
+    except Exception as error:
+        messages.warning(
+            request,
+            f"Booking created, but Google Calendar sync failed: {error}",
+        )
 
     quote.status = "booked"
     quote.save()

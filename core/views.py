@@ -1703,7 +1703,18 @@ def booking(request):
         form = BookingForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            booking = form.save()
+
+            try:
+                from google_reviews.calendar_utils import create_or_update_booking_event
+
+                create_or_update_booking_event(booking)
+
+            except Exception as error:
+                messages.warning(
+                    request,
+                    f"Booking submitted, but Google Calendar sync failed: {error}",
+                )
 
             messages.success(
                 request,

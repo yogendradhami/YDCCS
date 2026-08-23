@@ -197,6 +197,17 @@ def employee_job_detail(request, booking_id):
 
             updated_booking.save()
 
+            try:
+                from google_reviews.calendar_utils import create_or_update_booking_event
+
+                create_or_update_booking_event(updated_booking)
+
+            except Exception as error:
+                messages.warning(
+                    request,
+                    f"Job updated, but Google Calendar sync failed: {error}",
+                )
+
             if updated_booking.status == "completed":
                 from reports.models import CleaningReport
 
