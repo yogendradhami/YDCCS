@@ -1,5 +1,5 @@
+import base64
 import resend
-
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 
@@ -127,10 +127,18 @@ class ResendEmailBackend(BaseEmailBackend):
 
                 filename, content, mimetype = attachment
 
+                if isinstance(content, bytes):
+                    encoded_content = base64.b64encode(content).decode("utf-8")
+                else:
+                    encoded_content = base64.b64encode(
+                        content.encode("utf-8")
+                    ).decode("utf-8")
+
+
                 resend_attachments.append(
                     {
                         "filename": filename,
-                        "content": content,
+                        "content": encoded_content,
                     }
                 )
 
