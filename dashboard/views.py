@@ -63,6 +63,7 @@ from core.forms import FAQSubmissionForm
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+from google_reviews.calendar_utils import create_or_update_booking_event
 
 
 # Company settings form
@@ -462,9 +463,100 @@ def update_quote_status(request, quote_id):
         admin_notes = request.POST.get("admin_notes", "")
 
         if new_status in dict(QuoteRequest.STATUS_CHOICES):
+
+            old_status = quote.status
+
             quote.status = new_status
             quote.admin_notes = admin_notes
             quote.save()
+
+            # --------------------------------------------------
+            # Automatically convert quote to booking
+            # when status changes to Booked.
+            # --------------------------------------------------
+            if new_status == "booked" and old_status != "booked":
+
+                try:
+                    customer = Customer.objects.filter(
+                        email=quote.email
+                    ).first()
+
+                    if not customer:
+                        customer = Customer.objects.create(
+                            full_name=quote.name,
+                            email=quote.email,
+                            phone=quote.phone,
+                            property_type=quote.property_type,
+                            suburb_postcode=quote.suburb_postcode,
+                            notes=quote.message,
+                        )
+                    else:
+                        if not customer.phone:
+                            customer.phone = quote.phone
+
+                        if not customer.suburb_postcode:
+                            customer.suburb_postcode = quote.suburb_postcode
+
+                        if not customer.property_type:
+                            customer.property_type = quote.property_type
+
+                        customer.save()
+
+                    service_type = "House Cleaning"
+
+                    if quote.property_type == "Office":
+                        service_type = "Office Cleaning"
+
+                    elif quote.property_type == "Commercial Property":
+                        service_type = "Commercial Cleaning"
+
+                    elif quote.property_type == "End of Lease Property":
+                        service_type = "End of Lease Cleaning"
+
+                    booking = Booking.objects.filter(
+                        customer=customer,
+                        booking_date=quote.preferred_date or timezone.localdate(),
+                        quoted_price=quote.estimated_price,
+                        notes=quote.message,
+                    ).first()
+
+                    if not booking:
+                        booking = Booking.objects.create(
+                            customer=customer,
+                            service_type=service_type,
+                            booking_date=(
+                                quote.preferred_date
+                                or timezone.localdate()
+                            ),
+                            booking_time="09:00",
+                            address=customer.address or "Address not provided",
+                            suburb_postcode=quote.suburb_postcode,
+                            quoted_price=quote.estimated_price,
+                            status="pending",
+                            notes=quote.message,
+                        )
+
+                    # --------------------------------------------------
+                    # Sync booking with Google Calendar.
+                    # --------------------------------------------------
+                    try:
+                        create_or_update_booking_event(booking)
+                    except Exception as error:
+                        messages.warning(
+                            request,
+                            f"Booking created, but Google Calendar sync failed: {error}",
+                        )
+
+                    messages.success(
+                        request,
+                        f"Quote booked successfully. Booking #{booking.id} created.",
+                    )
+
+                except Exception as error:
+                    messages.error(
+                        request,
+                        f"Quote status updated, but booking creation failed: {error}",
+                    )
 
     return redirect("lead_list")
 
