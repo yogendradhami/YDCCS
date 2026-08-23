@@ -298,7 +298,7 @@ STRIPE_CURRENCY = env.str("STRIPE_CURRENCY", default="aud")
 
 EMAIL_BACKEND = env.str(
     "DJANGO_EMAIL_BACKEND",
-    default="django.core.mail.backends.smtp.EmailBackend",
+    default="core.email_backends.resend.ResendEmailBackend",
 )
 
 EMAIL_HOST = env.str("EMAIL_HOST", default="smtp.gmail.com")
