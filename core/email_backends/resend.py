@@ -138,7 +138,7 @@ class ResendEmailBackend(BaseEmailBackend):
                 resend_attachments.append(
                     {
                         "filename": filename,
-                        "content": encoded_content,
+                        "content": encoded_content,    
                     }
                 )
 
