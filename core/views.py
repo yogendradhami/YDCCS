@@ -1622,6 +1622,7 @@ def careers(request):
                     getattr(settings, "EMAIL_TIMEOUT", None),
                 )
 
+                # Send confirmation email to the applicant
                 send_mail(
                     subject,
                     text,
@@ -1630,6 +1631,24 @@ def careers(request):
                     html_message=html,
                     fail_silently=False,
                 )
+
+                # Send notification email to the company
+                admin_email = getattr(settings, "ADMIN_EMAIL", "").strip()
+
+                if admin_email:
+                    send_mail(
+                        f"New Career Application — {application.full_name}",
+                        text,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [admin_email],
+                        html_message=html,
+                        fail_silently=False,
+                    )
+                else:
+                    logger.warning(
+                        "ADMIN_EMAIL is not configured; career application %s was not emailed to admin.",
+                        application.id,
+                    )
             except Exception:
                 logger.exception(
                     "Failed to send career application confirmation email for application %s",
