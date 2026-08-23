@@ -6,6 +6,8 @@
 
 import copy
 import os
+import logging
+
 
 from django.conf import settings
 from django.contrib import messages
@@ -57,6 +59,9 @@ from google_reviews.review_utils import (
 from bookings.forms import BookingForm
 from notifications.models import Notification
 from .models import TestimonialVideo
+
+logger = logging.getLogger(__name__)
+
 
 def _slugify_area(area):
     return slugify(f"{area['name']} {area['postcode']}")
@@ -1606,7 +1611,10 @@ def careers(request):
                 html = render_to_string("emails/application_received.html", context)
                 send_mail(subject, text, settings.DEFAULT_FROM_EMAIL, [application.email], html_message=html)
             except Exception:
-                pass
+                logger.exception(
+                    "Failed to send career application confirmation email for application %s",
+                    application.id,
+                )
 
             messages.success(request, "✅ Thank you — your application has been received.")
             return redirect("/careers/#applied")
