@@ -1609,7 +1609,27 @@ def careers(request):
                 context = {"application": application}
                 text = render_to_string("emails/application_received.txt", context)
                 html = render_to_string("emails/application_received.html", context)
-                send_mail(subject, text, settings.DEFAULT_FROM_EMAIL, [application.email], html_message=html)
+
+                logger.info(
+                    "Career email configuration: backend=%s host=%s port=%s tls=%s ssl=%s user=%s from=%s timeout=%s",
+                    settings.EMAIL_BACKEND,
+                    settings.EMAIL_HOST,
+                    settings.EMAIL_PORT,
+                    settings.EMAIL_USE_TLS,
+                    settings.EMAIL_USE_SSL,
+                    settings.EMAIL_HOST_USER,
+                    settings.DEFAULT_FROM_EMAIL,
+                    getattr(settings, "EMAIL_TIMEOUT", None),
+                )
+
+                send_mail(
+                    subject,
+                    text,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [application.email],
+                    html_message=html,
+                    fail_silently=False,
+                )
             except Exception:
                 logger.exception(
                     "Failed to send career application confirmation email for application %s",
