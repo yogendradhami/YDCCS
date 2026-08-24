@@ -56,3 +56,27 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.full_name
+
+
+class EmployeeGoogleAccount(models.Model):
+    employee = models.OneToOneField(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="google_calendar_account",
+    )
+
+    email = models.EmailField(blank=True)
+
+    access_token = models.TextField()
+
+    refresh_token = models.TextField(blank=True, null=True)
+
+    connected_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        if self.email:
+            return f"{self.employee.full_name} - {self.email}"
+
+        return f"{self.employee.full_name} - Google Calendar"

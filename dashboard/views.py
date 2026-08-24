@@ -56,6 +56,7 @@ from payroll.models import PayrollRecord
 from quotes.models import QuoteRequest
 from reviews.forms import ReviewForm
 from reviews.models import Review
+from rosters.models import Roster
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from core.models import FAQQuestion
@@ -726,9 +727,23 @@ def delete_customer(request, customer_id):
 
 @login_required
 def booking_list(request):
-    bookings = Booking.objects.all().order_by("-booking_date", "-booking_time")
-    return render(request, "bookings/booking_list.html", {"bookings": bookings})
+    from rosters.models import Roster
 
+    bookings = (
+        Booking.objects
+        .select_related("customer", "assigned_employee")
+        .prefetch_related("rosters")
+        .all()
+        .order_by("-booking_date", "-booking_time")
+    )
+
+    return render(
+        request,
+        "bookings/booking_list.html",
+        {
+            "bookings": bookings,
+        },
+    )
 
 @login_required
 def add_booking(request):
@@ -736,15 +751,26 @@ def add_booking(request):
         form = BookingForm(request.POST)
 
         if form.is_valid():
-            # booking = form.save()
-
             booking = form.save()
 
             try:
-                create_or_update_booking_event(booking)
+                from rosters.services import sync_booking_roster
+
+                sync_booking_roster(booking)
+
             except Exception as error:
                 messages.warning(
-                    request, f"Booking saved, but Google Calendar sync failed: {error}"
+                    request,
+                    f"Booking saved, but roster sync failed: {error}",
+                )
+
+            try:
+                create_or_update_booking_event(booking)
+
+            except Exception as error:
+                messages.warning(
+                    request,
+                    f"Booking saved, but Google Calendar sync failed: {error}",
                 )
 
             if booking.assigned_employee and booking.assigned_employee.user:
@@ -793,9 +819,19 @@ def edit_booking(request, booking_id):
         form = BookingForm(request.POST, instance=booking)
 
         if form.is_valid():
-            # updated_booking = form.save()
-
+            
             updated_booking = form.save()
+
+            try:
+                from rosters.services import sync_booking_roster
+
+                sync_booking_roster(updated_booking)
+
+            except Exception as error:
+                messages.warning(
+                    request,
+                    f"Booking updated, but roster sync failed: {error}",
+                )
 
             if updated_booking.status == "completed":
 
@@ -937,26 +973,34 @@ def booking_calendar(request):
 
     week_days = []
 
-    # for i in range(7):
-    #     day = week_start + timedelta(days=i)
-
-    #     day_bookings = bookings.filter(
-    #         booking_date=day
-    #     )
 
     for i in range(7):
         day = week_start + timedelta(days=i)
 
         day_bookings = bookings.filter(booking_date=day)
 
+        day_rosters = (
+            Roster.objects.filter(shift_date=day)
+            .exclude(status="cancelled")
+            .select_related(
+                "employee",
+                "booking",
+                "booking__customer",
+            )
+            .order_by("start_time")
+        )
+
         day_leave = LeaveRequest.objects.filter(
-            status="approved", start_date__lte=day, end_date__gte=day
+            status="approved",
+            start_date__lte=day,
+            end_date__gte=day,
         ).select_related("employee")
 
         week_days.append(
             {
                 "date": day,
                 "bookings": day_bookings,
+                "rosters": day_rosters,
                 "leave_requests": day_leave,
             }
         )

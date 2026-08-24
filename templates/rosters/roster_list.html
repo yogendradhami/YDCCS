@@ -1,35 +1,686 @@
 {% extends 'dashboard_base.html' %}
+{% load static %}
 
 {% block content %}
 
-<h2>Roster Management</h2>
+<link rel="stylesheet" href="{% static 'css/dashboard/roster.css' %}">
 
-<a href="/dashboard/rosters/add/" class="btn-fill">
-Add Shift
-</a>
+<div class="roster-page">
 
-<table class="dashboard-table">
+    <!-- ==================================================
+         Page Header
+         ================================================== -->
 
-<tr>
-<th>Employee</th>
-<th>Date</th>
-<th>Start</th>
-<th>End</th>
-<th>Status</th>
-</tr>
+    <div class="roster-header">
 
-{% for roster in rosters %}
+        <div class="roster-title-wrap">
+            <h1>Roster Management</h1>
 
-<tr>
-<td>{{ roster.employee.full_name }}</td>
-<td>{{ roster.shift_date }}</td>
-<td>{{ roster.start_time }}</td>
-<td>{{ roster.end_time }}</td>
-<td>{{ roster.get_status_display }}</td>
-</tr>
+            <p>
+                Manage employee shifts, schedules and Google Calendar
+                synchronisation.
+            </p>
+        </div>
 
-{% endfor %}
+        <a href="{% url 'add_roster' %}" class="roster-add-btn">
+            <span>＋</span>
+            Add Shift
+        </a>
 
-</table>
+        <form method="get" class="roster-filter-bar">
+
+            <div class="roster-filter-group roster-search">
+
+                <label for="roster-search">
+                    Search
+                </label>
+
+                <input
+                    type="text"
+                    id="roster-search"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Employee, service or customer..."
+                >
+
+            </div>
+
+
+            <div class="roster-filter-group">
+
+                <label for="roster-status">
+                    Status
+                </label>
+
+                <select
+                    id="roster-status"
+                    name="status"
+                >
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="scheduled"
+                        {% if selected_status == "scheduled" %}
+                            selected
+                        {% endif %}
+                    >
+                        Scheduled
+                    </option>
+
+                    <option
+                        value="completed"
+                        {% if selected_status == "completed" %}
+                            selected
+                        {% endif %}
+                    >
+                        Completed
+                    </option>
+
+                    <option
+                        value="cancelled"
+                        {% if selected_status == "cancelled" %}
+                            selected
+                        {% endif %}
+                    >
+                        Cancelled
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="roster-filter-group">
+
+                <label for="roster-date">
+                    Date
+                </label>
+
+                <input
+                    type="date"
+                    id="roster-date"
+                    name="date"
+                    value="{{ selected_date }}"
+                >
+
+            </div>
+
+
+            <div class="roster-filter-actions">
+
+                <button
+                    type="submit"
+                    class="roster-filter-btn"
+                >
+                    Search
+                </button>
+
+                <a
+                    href="{% url 'roster_list' %}"
+                    class="roster-clear-btn"
+                >
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ==================================================
+         Summary
+         ================================================== -->
+
+    <div class="roster-stats">
+
+        <div class="roster-stat">
+
+            <div class="roster-stat-label">
+                Total Shifts
+            </div>
+
+            <div class="roster-stat-value">
+                {{ total_count|default:"0" }}
+            </div>
+
+        </div>
+
+
+        <div class="roster-stat">
+
+            <div class="roster-stat-label">
+                Scheduled
+            </div>
+
+            <div class="roster-stat-value">
+                {{ scheduled_count|default:"0" }}
+            </div>
+
+        </div>
+
+
+        <div class="roster-stat">
+
+            <div class="roster-stat-label">
+                Completed
+            </div>
+
+            <div class="roster-stat-value">
+                {{ completed_count|default:"0" }}
+            </div>
+
+        </div>
+
+
+        <div class="roster-stat">
+
+            <div class="roster-stat-label">
+                Calendar Synced
+            </div>
+
+            <div class="roster-stat-value">
+                {{ synced_count|default:"0" }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         UPCOMING / ACTIVE SHIFTS
+         ================================================== -->
+
+    <div class="roster-panel">
+
+        <div class="roster-panel-header">
+
+            <div>
+
+                <h2 class="roster-panel-title">
+                    Upcoming &amp; Active Shifts
+                </h2>
+
+                <p class="roster-panel-subtitle">
+                    Current and upcoming employee schedules
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="roster-table-wrap">
+
+            <table class="roster-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Employee</th>
+                        <th>Booking</th>
+                        <th>Date</th>
+                        <th>Shift</th>
+                        <th>Status</th>
+                        <th>Google Calendar</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for roster in active_rosters %}
+
+                    <tr>
+
+                        <!-- Employee -->
+
+                        <td data-label="Employee">
+
+                            <div class="roster-employee">
+
+                                <div class="roster-avatar">
+
+                                    {{ roster.employee.full_name|first|upper }}
+
+                                </div>
+
+                                <div class="roster-employee-name">
+
+                                    {{ roster.employee.full_name }}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Booking -->
+
+                        <td data-label="Booking">
+
+                            <div class="roster-booking">
+
+                                {{ roster.booking.service_type }}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Date -->
+
+                        <td data-label="Date">
+
+                            <div class="roster-date">
+
+                                {{ roster.shift_date|date:"d M Y" }}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Shift -->
+
+                        <td data-label="Shift">
+
+                            <div class="roster-shift">
+
+                                <span>
+                                    {{ roster.start_time|time:"g:i A" }}
+                                </span>
+
+                                <span>
+                                    →
+                                </span>
+
+                                <span>
+                                    {{ roster.end_time|time:"g:i A" }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Status -->
+
+                        <td data-label="Status">
+
+                            {% if roster.time_status == "upcoming" %}
+
+                                <span class="roster-status roster-status-scheduled">
+                                    Upcoming
+                                </span>
+
+                            {% elif roster.time_status == "in_progress" %}
+
+                                <span class="roster-status roster-status-in-progress">
+                                    In Progress
+                                </span>
+
+                            {% elif roster.status == "completed" %}
+
+                                <span class="roster-status roster-status-completed">
+                                    Completed
+                                </span>
+
+                            {% elif roster.status == "cancelled" %}
+
+                                <span class="roster-status roster-status-cancelled">
+                                    Cancelled
+                                </span>
+
+                            {% else %}
+
+                                <span class="roster-status">
+                                    {{ roster.time_status_display }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Google Calendar -->
+
+                        <td data-label="Google Calendar">
+
+                            {% if roster.google_calendar_event_id %}
+
+                                <span class="roster-calendar-sync">
+
+                                    <span class="roster-calendar-sync-dot"></span>
+
+                                    Synced
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="roster-calendar-not-synced">
+                                    Not synced
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Actions -->
+
+                        <td data-label="Actions">
+
+                            <div class="roster-actions">
+
+                                <a
+                                    href="{% url 'edit_roster' roster.id %}"
+                                    class="roster-action"
+                                >
+                                    Edit
+                                </a>
+
+                                <a
+                                    href="{% url 'delete_roster' roster.id %}"
+                                    class="roster-action roster-action-delete"
+                                >
+                                    Delete
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="7">
+
+                            <div class="roster-empty">
+
+                                <div class="roster-empty-icon">
+                                    📅
+                                </div>
+
+                                <h3>
+                                    No upcoming or active shifts
+                                </h3>
+
+                                <p>
+                                    There are currently no upcoming
+                                    employee shifts.
+                                </p>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         PAST / EXPIRED SHIFTS
+         ================================================== -->
+
+    <div class="roster-panel roster-past-panel">
+
+        <div class="roster-panel-header">
+
+            <div>
+
+                <h2 class="roster-panel-title">
+                    Past &amp; Expired Shifts
+                </h2>
+
+                <p class="roster-panel-subtitle">
+                    Previous shifts whose scheduled time has passed
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="roster-table-wrap">
+
+            <table class="roster-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Employee</th>
+                        <th>Booking</th>
+                        <th>Date</th>
+                        <th>Shift</th>
+                        <th>Status</th>
+                        <th>Google Calendar</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for roster in past_rosters %}
+
+                    <tr>
+
+                        <!-- Employee -->
+
+                        <td data-label="Employee">
+
+                            <div class="roster-employee">
+
+                                <div class="roster-avatar">
+
+                                    {{ roster.employee.full_name|first|upper }}
+
+                                </div>
+
+                                <div class="roster-employee-name">
+
+                                    {{ roster.employee.full_name }}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Booking -->
+
+                        <td data-label="Booking">
+
+                            <div class="roster-booking">
+
+                                {{ roster.booking.service_type }}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Date -->
+
+                        <td data-label="Date">
+
+                            <div class="roster-date">
+
+                                {{ roster.shift_date|date:"d M Y" }}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Shift -->
+
+                        <td data-label="Shift">
+
+                            <div class="roster-shift">
+
+                                <span>
+                                    {{ roster.start_time|time:"g:i A" }}
+                                </span>
+
+                                <span>
+                                    →
+                                </span>
+
+                                <span>
+                                    {{ roster.end_time|time:"g:i A" }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Status -->
+
+                        <td data-label="Status">
+
+                            {% if roster.status == "completed" %}
+
+                                <span class="roster-status roster-status-completed">
+                                    Completed
+                                </span>
+
+                            {% elif roster.status == "cancelled" %}
+
+                                <span class="roster-status roster-status-cancelled">
+                                    Cancelled
+                                </span>
+
+                            {% elif roster.time_status == "time_passed" %}
+
+                                <span class="roster-status roster-status-time-passed">
+                                    Time Passed
+                                </span>
+
+                            {% else %}
+
+                                <span class="roster-status">
+                                    {{ roster.time_status_display }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Google Calendar -->
+
+                        <td data-label="Google Calendar">
+
+                            {% if roster.google_calendar_event_id %}
+
+                                <span class="roster-calendar-sync">
+
+                                    <span class="roster-calendar-sync-dot"></span>
+
+                                    Synced
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="roster-calendar-not-synced">
+                                    Not synced
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Actions -->
+
+                        <td data-label="Actions">
+
+                            <div class="roster-actions">
+
+                                <a
+                                    href="{% url 'edit_roster' roster.id %}"
+                                    class="roster-action"
+                                >
+                                    Edit
+                                </a>
+
+                                <a
+                                    href="{% url 'delete_roster' roster.id %}"
+                                    class="roster-action roster-action-delete"
+                                >
+                                    Delete
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="7">
+
+                            <div class="roster-empty">
+
+                                <div class="roster-empty-icon">
+                                    🗂️
+                                </div>
+
+                                <h3>
+                                    No past shifts
+                                </h3>
+
+                                <p>
+                                    No expired, completed or cancelled
+                                    roster shifts were found.
+                                </p>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

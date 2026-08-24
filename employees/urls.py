@@ -21,12 +21,25 @@ from .views import (
     employee_profile,
     upload_job_photo,
     delete_job_photo,
+    employee_google_connect,
+    employee_google_callback,
 )
 
 urlpatterns = [
     # Employee authentication routes
     path("employee/login/", employee_login, name="employee_login"),
     path("employee/logout/", employee_logout, name="employee_logout"),
+
+    path(
+        "employee/google/connect/",
+        employee_google_connect,
+        name="employee_google_connect",
+    ),
+    path(
+        "employee/google/oauth/callback/",
+        employee_google_callback,
+        name="employee_google_callback",
+    ),
     # Employee dashboard route
     path("employee/dashboard/", employee_dashboard, name="employee_dashboard"),
     # Employee profile route

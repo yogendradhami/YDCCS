@@ -16,6 +16,10 @@ from pathlib import Path
 
 import environ
 
+# Allow OAuth over HTTP during local development only.
+if os.environ.get("DJANGO_DEBUG", "").lower() in ("1", "true", "yes"):
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 # Load environment variables from a .env file when present (local dev)
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
@@ -34,6 +38,11 @@ if (BASE_DIR / ".env").exists():
     env.read_env(str(BASE_DIR / ".env"))
 if (BASE_DIR / ".env.local").exists():
     env.read_env(str(BASE_DIR / ".env.local"))
+
+# Allow OAuth over HTTP during local development only.
+if env.bool("DJANGO_DEBUG", default=False):
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 
 RECAPTCHA_SITE_KEY = env.str("RECAPTCHA_SITE_KEY", default="")
 RECAPTCHA_SECRET_KEY = env.str("RECAPTCHA_SECRET_KEY", default="")
@@ -338,6 +347,10 @@ ADMIN_EMAIL = env.str("ADMIN_EMAIL", default="")
 GOOGLE_CLIENT_ID = env.str("GOOGLE_CLIENT_ID", default="")
 GOOGLE_CLIENT_SECRET = env.str("GOOGLE_CLIENT_SECRET", default="")
 GOOGLE_REDIRECT_URI = env.str( "GOOGLE_REDIRECT_URI", default="https://ydcleaning.com.au/google/oauth/callback/" )
+GOOGLE_EMPLOYEE_REDIRECT_URI = env.str(
+    "GOOGLE_EMPLOYEE_REDIRECT_URI",
+    default="http://127.0.0.1:8000/employee/google/oauth/callback/",
+)
 # ====================================================
 # Resend Email API
 # ====================================================

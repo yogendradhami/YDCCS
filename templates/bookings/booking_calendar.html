@@ -5,12 +5,17 @@
 {% block page_title %}Job Scheduling Calendar{% endblock %}
 
 {% block page_subtitle %}
-Simple weekly job schedule for YD Commercial Cleaning Services.
+Bookings, employee roster shifts and leave in one weekly schedule.
 {% endblock %}
 
 {% block content %}
 
+<!-- =========================================================
+     SUMMARY
+========================================================= -->
+
 <div class="crm-summary-grid">
+
     <div class="crm-card">
         <span>Today's Jobs</span>
         <h2>{{ today_jobs }}</h2>
@@ -30,162 +35,514 @@ Simple weekly job schedule for YD Commercial Cleaning Services.
         <span>Unassigned Jobs</span>
         <h2>{{ unassigned_jobs }}</h2>
     </div>
+
 </div>
 
-<section class="crm-panel">
+
+<!-- =========================================================
+     WEEK NAVIGATION
+========================================================= -->
+
+<section class="crm-panel calendar-toolbar">
+
     <div class="crm-panel-header">
-        <h2>
-            {{ week_start|date:"d M Y" }} - {{ week_end|date:"d M Y" }}
-        </h2>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a href="/dashboard/calendar/?start={{ previous_week|date:'Y-m-d' }}" class="small-link-btn">
-                Previous
-            </a>
+        <div>
+            <h2>
+                {{ week_start|date:"d M Y" }}
+                -
+                {{ week_end|date:"d M Y" }}
+            </h2>
 
-            <a href="/dashboard/calendar/" class="small-link-btn">
-                This Week
-            </a>
-
-            <a href="/dashboard/calendar/?start={{ next_week|date:'Y-m-d' }}" class="small-link-btn">
-                Next
-            </a>
-
-            <a href="/dashboard/bookings/add/" class="small-link-btn">
-                Add Booking
-            </a>
+            <p class="calendar-toolbar-subtitle">
+                Weekly job and employee schedule
+            </p>
         </div>
+
+        <div class="calendar-navigation">
+
+            <a
+                href="/dashboard/calendar/?start={{ previous_week|date:'Y-m-d' }}"
+                class="small-link-btn"
+            >
+                ← Previous
+            </a>
+
+            <a
+                href="/dashboard/calendar/"
+                class="small-link-btn"
+            >
+                Today
+            </a>
+
+            <a
+                href="/dashboard/calendar/?start={{ next_week|date:'Y-m-d' }}"
+                class="small-link-btn"
+            >
+                Next →
+            </a>
+
+            <a
+                href="/dashboard/bookings/add/"
+                class="small-link-btn calendar-add-btn"
+            >
+                + Add Booking
+            </a>
+
+            <a
+                href="/dashboard/rosters/add/"
+                class="small-link-btn calendar-roster-btn"
+            >
+                + Add Roster
+            </a>
+
+        </div>
+
     </div>
+
 </section>
+
+
+<!-- =========================================================
+     WEEKLY CALENDAR
+========================================================= -->
 
 {% for day in week_days %}
 
-<section class="crm-panel">
+<section class="crm-panel calendar-day-panel">
 
-    <div class="crm-panel-header">
-        <h2>
-            {{ day.date|date:"l, d M Y" }}
-        </h2>
+    <!-- DAY HEADER -->
 
-        <span>
-            {{ day.bookings|length }} jobs
-        </span>
+    <div class="calendar-day-header">
+
+        <div>
+            <h2>
+                {{ day.date|date:"l" }}
+            </h2>
+
+            <span>
+                {{ day.date|date:"d M Y" }}
+            </span>
+        </div>
+
+        <div class="calendar-day-count">
+            {{ day.bookings|length }} job{{ day.bookings|length|pluralize }}
+        </div>
+
     </div>
 
-    {% if day.bookings or day.leave_requests %}
 
-        {% if day.leave_requests %}
-            <div style="margin-bottom:15px;">
-                {% for leave in day.leave_requests %}
-                    <div class="crm-list-item" style="border-left:4px solid orange;">
-                        <strong>
-                            ⚠ {{ leave.employee.full_name }} is on leave
-                        </strong>
+    <!-- =====================================================
+         LEAVE
+    ====================================================== -->
 
-                        <span>
-                            {{ leave.get_leave_type_display }}
-                        </span>
+    {% if day.leave_requests %}
 
-                        <span>
-                            {{ leave.start_date }} to {{ leave.end_date }}
-                        </span>
-                    </div>
-                {% endfor %}
+        <div class="calendar-section calendar-leave-section">
+
+            <div class="calendar-section-title">
+                <span>⚠</span>
+                Employee Leave
             </div>
-        {% endif %}
 
-        {% if day.bookings %}
-            <div class="table-wrapper">
-                <table class="dashboard-table advanced-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Customer</th>
-                            <th>Service</th>
-                            <th>Employee</th>
-                            <th>Status</th>
-                            <th>Edit</th>
-                        </tr>
-                    </thead>
+            {% for leave in day.leave_requests %}
 
-                    <tbody>
-                        {% for booking in day.bookings %}
-                            <tr>
-                                <td>{{ booking.booking_time|time:"H:i" }}</td>
-                                <td>{{ booking.customer.full_name }}</td>
-                                <td>{{ booking.service_type }}</td>
-                                <td>
+                <div class="calendar-leave-item">
+
+                    <strong>
+                        {{ leave.employee.full_name }}
+                    </strong>
+
+                    <span>
+                        {{ leave.get_leave_type_display }}
+                    </span>
+
+                    <span>
+                        {{ leave.start_date }}
+                        -
+                        {{ leave.end_date }}
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         JOBS
+    ====================================================== -->
+
+    {% if day.bookings %}
+
+        <div class="calendar-jobs">
+
+            {% for booking in day.bookings %}
+
+                <article
+                    class="calendar-job"
+                    data-status="{{ booking.status }}"
+                >
+
+                    <!-- TIME -->
+
+                    <div class="calendar-job-time">
+
+                        {{ booking.booking_time|time:"H:i" }}
+
+                    </div>
+
+
+                    <!-- JOB INFORMATION -->
+
+                    <div class="calendar-job-main">
+
+                        <div class="calendar-job-top">
+
+                            <div>
+
+                                <h3>
+                                    {{ booking.service_type }}
+                                </h3>
+
+                                <p class="calendar-customer">
+                                    {{ booking.customer.full_name }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- STATUS -->
+
+                            <span class="calendar-status calendar-status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+
+                        </div>
+
+
+                        <!-- DETAILS -->
+
+                        <div class="calendar-job-details">
+
+                            <div>
+                                <span class="calendar-detail-label">
+                                    Employee
+                                </span>
+
+                                <strong>
+
                                     {% if booking.assigned_employee %}
+
                                         {{ booking.assigned_employee.full_name }}
+
                                     {% else %}
-                                        Not assigned
+
+                                        <span class="calendar-unassigned">
+                                            Not assigned
+                                        </span>
+
                                     {% endif %}
-                                </td>
-                                <td>{{ booking.get_status_display }}</td>
-                              
 
-                                <td>
-                                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                </strong>
+                            </div>
 
-                                        <a href="/dashboard/bookings/{{ booking.id }}/edit/" class="small-link-btn">
-                                            Edit
-                                        </a>
 
-                                        {% if booking.status != "confirmed" %}
-                                            <form method="POST" action="{% url 'update_booking_quick_status' booking.id 'confirmed' %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="small-link-btn">
-                                                    Confirm
-                                                </button>
-                                            </form>
-                                        {% endif %}
+                            <div>
 
-                                        {% if booking.status != "in_progress" %}
-                                            <form method="POST" action="{% url 'update_booking_quick_status' booking.id 'in_progress' %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="small-link-btn">
-                                                    Start
-                                                </button>
-                                            </form>
-                                        {% endif %}
+                                <span class="calendar-detail-label">
+                                    Location
+                                </span>
 
-                                        {% if booking.status != "completed" %}
-                                            <form method="POST" action="{% url 'update_booking_quick_status' booking.id 'completed' %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="small-link-btn">
-                                                    Complete
-                                                </button>
-                                            </form>
-                                        {% endif %}
+                                <strong>
+                                    {{ booking.address }}
+                                </strong>
 
-                                        {% if booking.status != "cancelled" %}
-                                            <form method="POST" action="{% url 'update_booking_quick_status' booking.id 'cancelled' %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="small-link-btn">
-                                                    Cancel
-                                                </button>
-                                            </form>
-                                        {% endif %}
+                            </div>
+
+
+                            {% if booking.suburb_postcode %}
+
+                                <div>
+
+                                    <span class="calendar-detail-label">
+                                        Suburb
+                                    </span>
+
+                                    <strong>
+                                        {{ booking.suburb_postcode }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ROSTER -->
+
+                        {% if booking.rosters.all %}
+
+                            {% for roster in booking.rosters.all %}
+
+                                <div class="calendar-roster-linked">
+
+                                    <span class="calendar-roster-icon">
+                                        👤
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            Roster:
+                                            {{ roster.employee.full_name }}
+                                        </strong>
+
+                                        <span>
+                                            {{ roster.start_time|time:"H:i" }}
+                                            -
+                                            {{ roster.end_time|time:"H:i" }}
+                                        </span>
+
+                                        <span>
+                                            {{ roster.get_status_display }}
+                                        </span>
 
                                     </div>
-                                </td>
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% endif %}
 
 
+                        <!-- ACTIONS -->
+
+                        <div class="calendar-job-actions">
+
+                            <a
+                                href="/dashboard/bookings/{{ booking.id }}/edit/"
+                                class="small-link-btn"
+                            >
+                                Edit Booking
+                            </a>
 
 
+                            {% if not booking.assigned_employee %}
+
+                                <a
+                                    href="/dashboard/rosters/add/?booking={{ booking.id }}"
+                                    class="small-link-btn calendar-assign-btn"
+                                >
+                                    Assign Employee
+                                </a>
+
+                            {% endif %}
 
 
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            {% if booking.status != "confirmed" %}
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'update_booking_quick_status' booking.id 'confirmed' %}"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="small-link-btn"
+                                    >
+                                        Confirm
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+
+                            {% if booking.status != "in_progress" %}
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'update_booking_quick_status' booking.id 'in_progress' %}"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="small-link-btn"
+                                    >
+                                        Start
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+
+                            {% if booking.status != "completed" %}
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'update_booking_quick_status' booking.id 'completed' %}"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="small-link-btn"
+                                    >
+                                        Complete
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+
+                            {% if booking.status != "cancelled" %}
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'update_booking_quick_status' booking.id 'cancelled' %}"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="small-link-btn calendar-cancel-btn"
+                                    >
+                                        Cancel
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         ROSTER WITHOUT BOOKING
+    ====================================================== -->
+
+    {% if day.rosters %}
+
+        <div class="calendar-section calendar-roster-section">
+
+            <div class="calendar-section-title">
+
+                <span>👥</span>
+
+                Employee Roster
+
             </div>
-        {% endif %}
 
-    {% else %}
 
-        <div class="empty-box">
-            <p>No jobs or approved leave scheduled for this day.</p>
+            {% for roster in day.rosters %}
+
+                <div class="calendar-roster-item">
+
+                    <div class="calendar-roster-time">
+
+                        {{ roster.start_time|time:"H:i" }}
+                        -
+                        {{ roster.end_time|time:"H:i" }}
+
+                    </div>
+
+
+                    <div class="calendar-roster-info">
+
+                        <strong>
+                            {{ roster.employee.full_name }}
+                        </strong>
+
+                        {% if roster.booking %}
+
+                            <span>
+                                {{ roster.booking.service_type }}
+                                ·
+                                {{ roster.booking.customer.full_name }}
+                            </span>
+
+                        {% else %}
+
+                            <span>
+                                Roster shift without booking
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <span class="calendar-status calendar-status-{{ roster.status }}">
+                        {{ roster.get_status_display }}
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         EMPTY DAY
+    ====================================================== -->
+
+    {% if not day.bookings and not day.rosters and not day.leave_requests %}
+
+        <div class="empty-box calendar-empty">
+
+            <strong>
+                No scheduled activity
+            </strong>
+
+            <p>
+                No jobs, roster shifts or approved leave scheduled.
+            </p>
+
+            <div>
+
+                <a
+                    href="/dashboard/bookings/add/"
+                    class="small-link-btn"
+                >
+                    + Add Booking
+                </a>
+
+                <a
+                    href="/dashboard/rosters/add/"
+                    class="small-link-btn"
+                >
+                    + Add Roster
+                </a>
+
+            </div>
+
         </div>
 
     {% endif %}

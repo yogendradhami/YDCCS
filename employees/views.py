@@ -10,6 +10,14 @@
 # - Profile Management
 # ==========================================================
 
+import secrets
+import base64
+import hashlib
+from django.conf import settings
+from django.http import HttpResponse
+from google_auth_oauthlib.flow import Flow
+
+from .models import Employee, EmployeeGoogleAccount
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -26,9 +34,218 @@ from .profile_forms import (
     EmployeeProfileForm,
 )
 
+EMPLOYEE_GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+]
+
+
+def get_employee_google_flow():
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [
+                    settings.GOOGLE_EMPLOYEE_REDIRECT_URI,
+                ],
+            }
+        },
+        scopes=EMPLOYEE_GOOGLE_SCOPES,
+    )
+
+    flow.redirect_uri = settings.GOOGLE_EMPLOYEE_REDIRECT_URI
+
+    return flow
+
+
+from .profile_forms import (
+    EmployeePasswordForm,
+    EmployeeProfileForm,
+)
+
+EMPLOYEE_GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+]
+
+
+def get_employee_google_flow():
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [
+                    settings.GOOGLE_EMPLOYEE_REDIRECT_URI,
+                ],
+            }
+        },
+        scopes=EMPLOYEE_GOOGLE_SCOPES,
+    )
+
+    flow.redirect_uri = settings.GOOGLE_EMPLOYEE_REDIRECT_URI
+
+    return flow
+
+
+def employee_google_connect(request):
+    employee = get_object_or_404(Employee, user=request.user)
+
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [
+                    settings.GOOGLE_EMPLOYEE_REDIRECT_URI,
+                ],
+            }
+        },
+        scopes=EMPLOYEE_GOOGLE_SCOPES,
+    )
+
+    flow.redirect_uri = settings.GOOGLE_EMPLOYEE_REDIRECT_URI
+
+    # ---------------------------------------------------------
+    # PKCE
+    # ---------------------------------------------------------
+
+    code_verifier = secrets.token_urlsafe(64)
+
+    authorization_url, state = flow.authorization_url(
+        access_type="offline",
+        prompt="consent",
+        include_granted_scopes="true",
+        code_challenge=base64.urlsafe_b64encode(
+            hashlib.sha256(code_verifier.encode("utf-8")).digest()
+        ).decode("utf-8").rstrip("="),
+        code_challenge_method="S256",
+    )
+
+    # ---------------------------------------------------------
+    # Save OAuth session data
+    # ---------------------------------------------------------
+
+    request.session["employee_google_oauth_state"] = state
+    request.session["employee_google_code_verifier"] = code_verifier
+    request.session["employee_google_id"] = employee.id
+
+    request.session.save()
+
+    return redirect(authorization_url)
+
+
+def employee_google_callback(request):
+
+    state = request.session.get("employee_google_oauth_state")
+    employee_id = request.session.get("employee_google_id")
+    code_verifier = request.session.get("employee_google_code_verifier")
+
+    if not state or not employee_id or not code_verifier:
+        return HttpResponse(
+            """
+            <h2>Employee Google OAuth session expired</h2>
+            <p>Please start the Google Calendar connection again.</p>
+            <a href="/employee/google/connect/">Connect Google Calendar</a>
+            """
+        )
+
+    employee = get_object_or_404(Employee, id=employee_id)
+
+    try:
+
+        flow = Flow.from_client_config(
+            {
+                "web": {
+                    "client_id": settings.GOOGLE_CLIENT_ID,
+                    "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "redirect_uris": [
+                        settings.GOOGLE_EMPLOYEE_REDIRECT_URI,
+                    ],
+                }
+            },
+            scopes=EMPLOYEE_GOOGLE_SCOPES,
+        )
+
+        flow.redirect_uri = settings.GOOGLE_EMPLOYEE_REDIRECT_URI
+
+        flow.oauth2session.state = state
+
+        # ---------------------------------------------------------
+        # PKCE verifier
+        # ---------------------------------------------------------
+
+        flow.code_verifier = code_verifier
+
+        flow.fetch_token(
+            authorization_response=request.build_absolute_uri(),
+            code_verifier=code_verifier,
+        )
+
+        credentials = flow.credentials
+
+        # ---------------------------------------------------------
+        # Save Google account
+        # ---------------------------------------------------------
+
+        EmployeeGoogleAccount.objects.update_or_create(
+            employee=employee,
+            defaults={
+                "email": (
+                    credentials.id_token.get("email", "")
+                    if credentials.id_token
+                    else ""
+                ),
+                "access_token": credentials.token,
+                "refresh_token": credentials.refresh_token or "",
+            },
+        )
+
+        # ---------------------------------------------------------
+        # Clear OAuth session data
+        # ---------------------------------------------------------
+
+        request.session.pop("employee_google_oauth_state", None)
+        request.session.pop("employee_google_code_verifier", None)
+        request.session.pop("employee_google_id", None)
+
+        request.session.save()
+
+        return HttpResponse(
+            f"""
+            <h2>✅ Google Calendar connected</h2>
+            <p>Google Calendar has been connected for {employee.full_name}.</p>
+            <a href="/employee/dashboard/">Return to Employee Dashboard</a>
+            """
+        )
+
+    except Exception as error:
+
+        return HttpResponse(
+            f"""
+            <h2>Google Calendar OAuth Error</h2>
+            <pre>{error}</pre>
+            """,
+            status=500,
+        )
+
 # ==========================================================
 # Employee Login
 # ==========================================================
+
+
+
+# ==========================================================
+# Employee Login
+# ==========================================================
+
 
 
 def employee_login(request):
