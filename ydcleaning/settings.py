@@ -218,6 +218,9 @@ DATABASES = {
     "default": env.db("DATABASE_URL", default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
 }
 
+# Reuse PostgreSQL connections to reduce connection overhead.
+DATABASES["default"]["CONN_MAX_AGE"] = 60
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
