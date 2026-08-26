@@ -1,30 +1,45 @@
-from django import forms
-from django.core.files.uploadedfile import InMemoryUploadedFile
+# gallery/forms.py
+
 from io import BytesIO
 
+from django import forms
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image
 
-# Optional HEIF/HEIC support — register opener if pillow_heif is present
+# Optional HEIF/HEIC support
 try:
     from pillow_heif import register_heif_opener
+
     register_heif_opener()
 except Exception:
     pass
 
-from .models import GalleryItem
+from .models import GalleryItem, GalleryMedia
 
 
 class HEICImageField(forms.ImageField):
+    """
+    Image field that automatically converts HEIC/HEIF
+    uploads to JPEG.
+    """
 
     def clean(self, data, initial=None):
         file = super().clean(data, initial)
 
-        if file and file.name.lower().endswith((".heic", ".heif")):
+        if file and file.name.lower().endswith(
+            (".heic", ".heif")
+        ):
             image = Image.open(file)
             image = image.convert("RGB")
 
             buffer = BytesIO()
-            image.save(buffer, format="JPEG", quality=90)
+
+            image.save(
+                buffer,
+                format="JPEG",
+                quality=90,
+            )
+
             buffer.seek(0)
 
             file = InMemoryUploadedFile(
@@ -41,9 +56,17 @@ class HEICImageField(forms.ImageField):
 
 class GalleryItemForm(forms.ModelForm):
 
-    image = HEICImageField(required=False)
-    before_image = HEICImageField(required=False)
-    after_image = HEICImageField(required=False)
+    image = HEICImageField(
+        required=False,
+    )
+
+    before_image = HEICImageField(
+        required=False,
+    )
+
+    after_image = HEICImageField(
+        required=False,
+    )
 
     class Meta:
         model = GalleryItem
@@ -53,4 +76,40 @@ class GalleryItemForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         for field_name, field in self.fields.items():
-            field.widget.attrs.update({"class": "form-control"})
+            field.widget.attrs.update(
+                {
+                    "class": "form-control",
+                }
+            )
+
+
+class GalleryMediaForm(forms.ModelForm):
+
+    image = HEICImageField(
+        required=False,
+    )
+
+    video_thumbnail = HEICImageField(
+        required=False,
+    )
+
+    class Meta:
+        model = GalleryMedia
+        fields = [
+            "media_type",
+            "image",
+            "video_platform",
+            "video_url",
+            "video_thumbnail",
+            "order",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update(
+                {
+                    "class": "form-control",
+                }
+            )
