@@ -24,6 +24,7 @@ class EmployeeForm(forms.ModelForm):
             "full_name",
             "phone",
             "email",
+            "image",
             "address",
             "role",
             "availability",
@@ -55,6 +56,13 @@ class EmployeeForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Email address",
+                }
+            ),
+
+            "image": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": "image/*",
                 }
             ),
             "address": forms.TextInput(

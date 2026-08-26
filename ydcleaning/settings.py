@@ -221,6 +221,16 @@ DATABASES = {
 # Reuse PostgreSQL connections to reduce connection overhead.
 DATABASES["default"]["CONN_MAX_AGE"] = 60
 
+# ==========================================================
+# Cache configuration
+# ==========================================================
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "ydcleaning-cache",
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

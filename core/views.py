@@ -21,7 +21,7 @@ from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.text import slugify
 from .models import FAQQuestion, TeamMember
-
+from employees.models import Employee
 # Local app imports
 from .faq_data import FAQ_PAGE_CONFIG
 from .suburbs_data import ADELAIDE_SUBURBS
@@ -160,10 +160,35 @@ def _get_faq_submissions(faq_key="generic"):
 # Homepage View
 # ====================================================
 def home(request):
-    gallery_items = GalleryItem.objects.filter(featured=True).order_by("-created_at")[:6]
-    featured_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
-    featured_services = list(Service.objects.filter(is_active=True).order_by("name")[:6])
+    gallery_items = cache.get("homepage_gallery_items")
 
+    if gallery_items is None:
+        gallery_items = list(
+            GalleryItem.objects
+            .filter(featured=True)
+            .order_by("-created_at")[:6]
+        )
+        cache.set("homepage_gallery_items", gallery_items, 3600)
+
+    featured_reviews = cache.get("homepage_featured_reviews")
+
+    if featured_reviews is None:
+        featured_reviews = list(
+            Review.objects
+            .filter(featured=True)
+            .order_by("-created_at")[:3]
+        )
+        cache.set("homepage_featured_reviews", featured_reviews, 3600)
+
+    featured_services = cache.get("homepage_featured_services")
+
+    if featured_services is None:
+        featured_services = list(
+            Service.objects
+            .filter(is_active=True)
+            .order_by("name")[:6]
+        )
+        cache.set("homepage_featured_services", featured_services, 3600)
     google_reviews = cache.get("homepage_google_reviews")
 
     if not google_reviews:
@@ -558,11 +583,50 @@ def pricing(request):
     return render(request, "pages/pricing.html")
 
 def team(request):
-    team_members = (
+    """
+    Public Team page.
+
+    Active Employee records are automatically displayed on the
+    public Team page. Existing TeamMember records are also retained.
+    """
+
+    employees = (
+        Employee.objects
+        .filter(active=True)
+        .order_by("full_name")
+    )
+
+    existing_team_members = (
         TeamMember.objects
         .filter(is_active=True)
         .order_by("display_order", "name")
     )
+
+    team_members = []
+
+    # Existing manually managed TeamMember records
+    for member in existing_team_members:
+        team_members.append({
+            "name": member.name,
+            "role": member.role,
+            "short_bio": member.short_bio,
+            "bio": getattr(member, "bio", ""),
+            "image": member.image,
+            "email": member.email,
+            "phone": member.phone,
+        })
+
+    # Employees automatically displayed on the public Team page
+    for employee in employees:
+        team_members.append({
+            "name": employee.full_name,
+            "role": employee.get_role_display(),
+            "short_bio": employee.notes,
+            "bio": "",
+            "image": employee.image,
+            "email": employee.email,
+            "phone": employee.phone,
+        })
 
     return render(
         request,

@@ -37,6 +37,12 @@ class Employee(models.Model):
     phone = models.CharField(max_length=30)
     email = models.EmailField(blank=True)
     address = models.CharField(max_length=255, blank=True)
+    image = models.ImageField(
+        upload_to="employees/",
+        blank=True,
+        null=True,
+        help_text="Professional employee photo displayed on the public Team page.",
+    )
 
     role = models.CharField(max_length=30, choices=ROLE_CHOICES, default="cleaner")
 

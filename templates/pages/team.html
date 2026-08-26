@@ -19,10 +19,12 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
 ========================================================= -->
 
 <section class="team-hero">
-    <div class="team-hero-bg"></div>
 
+
+<div class="team-hero-bg"></div>
 
 <div class="container">
+
     <div class="team-hero-content">
 
         <span class="team-eyebrow">
@@ -42,6 +44,7 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
         </p>
 
         <div class="team-hero-actions">
+
             <a href="{% url 'contact' %}" class="team-btn team-btn-primary">
                 Talk to Our Team
                 <span>→</span>
@@ -50,9 +53,11 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
             <a href="{% url 'home' %}#quote" class="team-btn team-btn-light">
                 Get a Free Quote
             </a>
+
         </div>
 
     </div>
+
 </div>
 
 
@@ -63,21 +68,27 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
 ========================================================= -->
 
 <section class="team-intro">
-    <div class="container">
 
+
+<div class="container">
 
     <div class="team-intro-grid">
 
         <div class="team-intro-heading">
-            <span class="section-kicker">WHO WE ARE</span>
+
+            <span class="section-kicker">
+                WHO WE ARE
+            </span>
 
             <h2>
                 A team that takes
                 <span>cleaning seriously.</span>
             </h2>
+
         </div>
 
         <div class="team-intro-copy">
+
             <p>
                 At YD Commercial Cleaning Services, we believe great
                 cleaning starts with great people. Our team is built
@@ -91,9 +102,11 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
                 goal is simple: provide a consistent service you can
                 trust.
             </p>
+
         </div>
 
     </div>
+
 
     <div class="team-stat-row">
 
@@ -129,143 +142,182 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
 ========================================================= -->
 
 <section class="team-members">
+
     <div class="container">
 
+        <div class="section-heading centered">
 
-    <div class="section-heading centered">
+            <span class="section-kicker">OUR PEOPLE</span>
 
-        <span class="section-kicker">OUR PEOPLE</span>
+            <h2>
+                The people you can
+                <span>count on</span>
+            </h2>
 
-        <h2>
-            The people you can
-            <span>count on</span>
-        </h2>
+            <p>
+                Meet the people who help deliver dependable cleaning
+                services and a professional customer experience across
+                Adelaide.
+            </p>
 
-        <p>
-            Meet the people who help deliver dependable cleaning
-            services and a professional customer experience across
-            Adelaide.
-        </p>
-
-    </div>
-
-
-    {% if team_members %}
-
-    <div class="team-grid">
-
-        {% for member in team_members %}
-
-        <article class="team-card{% if forloop.first %} featured-team-card{% endif %}">
-
-            <!-- TEAM IMAGE -->
-            <div class="team-image-wrap">
-
-                {% if member.image %}
-                    <img
-                        src="{{ member.image.url }}"
-                        alt="{{ member.name }} — {{ member.role }} at YD Commercial Cleaning Services"
-                        loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                    >
-                {% else %}
-                    <div class="team-image-placeholder">
-                        <span>YD</span>
-                    </div>
-                {% endif %}
-
-                <div class="team-image-overlay"></div>
-
-                {% if member.role %}
-                    <span class="team-role-badge">
-                        {{ member.role }}
-                    </span>
-                {% endif %}
-
-            </div>
+        </div>
 
 
-            <!-- TEAM CONTENT -->
-            <div class="team-card-content">
+        {% if team_members %}
 
-                {% if forloop.first %}
-                    <span class="team-card-kicker">
-                        LEADERSHIP
-                    </span>
-                {% else %}
-                    <span class="team-card-kicker">
-                        OUR PROFESSIONAL TEAM
-                    </span>
-                {% endif %}
+        <div class="team-grid">
 
-                <h3>
-                    {{ member.name }}
-                </h3>
+            {% for member in team_members %}
 
-                {% if member.role %}
-                    <p class="team-role">
-                        {{ member.role }}
-                    </p>
-                {% endif %}
+            <article class="team-card{% if forloop.first %} featured-team-card{% endif %}">
 
-                {% if member.short_bio %}
-                    <p class="team-member-bio">
-                        {{ member.short_bio }}
-                    </p>
-                {% elif member.bio %}
-                    <p class="team-member-bio">
-                        {{ member.bio }}
-                    </p>
-                {% else %}
-                    <p class="team-member-bio">
-                        Dedicated to delivering reliable, professional
-                        and detail-focused cleaning services across
-                        Adelaide.
-                    </p>
-                {% endif %}
+                <!-- =================================================
+                     TEAM IMAGE
+                ================================================== -->
 
-                <div class="team-card-footer">
+                <div class="team-image-wrap">
 
-                    <span>
-                        Professional
-                    </span>
+                    {% if member.image %}
 
-                    <span>•</span>
+                        <img
+                            src="{{ member.image.url }}"
+                            alt="{{ member.name }} — {{ member.role }} at YD Commercial Cleaning Services"
+                            loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                        >
 
-                    <span>
-                        Reliable
-                    </span>
+                    {% else %}
+
+                        <div class="team-image-placeholder">
+                            <span>YD</span>
+                        </div>
+
+                    {% endif %}
+
+                    <div class="team-image-overlay"></div>
+
+
+                    {% if member.role %}
+
+                        <span class="team-role-badge">
+                            {{ member.role }}
+                        </span>
+
+                    {% endif %}
 
                 </div>
 
-            </div>
 
-        </article>
+                <!-- =================================================
+                     TEAM CONTENT
+                ================================================== -->
 
-        {% endfor %}
+                <div class="team-card-content">
 
-    </div>
+                    {% if forloop.first %}
 
-    {% else %}
+                        <span class="team-card-kicker">
+                            LEADERSHIP
+                        </span>
 
-    <div class="team-empty">
+                    {% else %}
 
-        <div class="team-empty-icon">
-            👥
+                        <span class="team-card-kicker">
+                            OUR PROFESSIONAL TEAM
+                        </span>
+
+                    {% endif %}
+
+
+                    <h3>
+                        {{ member.name }}
+                    </h3>
+
+
+                    <!-- =================================================
+                         EMPLOYEE POSITION / ROLE
+                    ================================================== -->
+
+                    {% if member.role %}
+
+                        <p class="team-role">
+                            {{ member.role }}
+                        </p>
+
+                    {% endif %}
+
+
+                    <!-- =================================================
+                         BIO / NOTES
+                    ================================================== -->
+
+                    {% if member.short_bio %}
+
+                        <p class="team-member-bio">
+                            {{ member.short_bio }}
+                        </p>
+
+                    {% elif member.bio %}
+
+                        <p class="team-member-bio">
+                            {{ member.bio }}
+                        </p>
+
+                    {% else %}
+
+                        <p class="team-member-bio">
+                            Dedicated to delivering reliable, professional
+                            and detail-focused cleaning services across
+                            Adelaide.
+                        </p>
+
+                    {% endif %}
+
+
+                    <div class="team-card-footer">
+
+                        <span>
+                            Professional
+                        </span>
+
+                        <span>•</span>
+
+                        <span>
+                            Reliable
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
         </div>
 
-        <h3>Our team is growing</h3>
 
-        <p>
-            We're building a professional team dedicated to delivering
-            reliable cleaning services across Adelaide.
-        </p>
+        {% else %}
+
+        <div class="team-empty">
+
+            <div class="team-empty-icon">
+                👥
+            </div>
+
+            <h3>
+                Our team is growing
+            </h3>
+
+            <p>
+                We're building a professional team dedicated to
+                delivering reliable cleaning services across Adelaide.
+            </p>
+
+        </div>
+
+        {% endif %}
 
     </div>
-
-    {% endif %}
-
-</div>
-
 
 </section>
 
@@ -314,41 +366,68 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
         <div class="team-standard-points">
 
             <div class="standard-point">
-                <span class="standard-point-number">01</span>
+
+                <span class="standard-point-number">
+                    01
+                </span>
 
                 <div>
-                    <h3>Professional Approach</h3>
+
+                    <h3>
+                        Professional Approach
+                    </h3>
+
                     <p>
                         We approach every job with preparation,
                         care and attention to detail.
                     </p>
+
                 </div>
+
             </div>
 
 
             <div class="standard-point">
-                <span class="standard-point-number">02</span>
+
+                <span class="standard-point-number">
+                    02
+                </span>
 
                 <div>
-                    <h3>Customer Respect</h3>
+
+                    <h3>
+                        Customer Respect
+                    </h3>
+
                     <p>
                         We respect your property, schedule and
                         individual cleaning requirements.
                     </p>
+
                 </div>
+
             </div>
 
 
             <div class="standard-point">
-                <span class="standard-point-number">03</span>
+
+                <span class="standard-point-number">
+                    03
+                </span>
 
                 <div>
-                    <h3>Consistent Results</h3>
+
+                    <h3>
+                        Consistent Results
+                    </h3>
+
                     <p>
                         Our goal is to provide dependable results
                         you can rely on every time.
                     </p>
+
                 </div>
+
             </div>
 
         </div>
@@ -372,12 +451,16 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
     <div class="team-process-header">
 
         <div>
-            <span class="section-kicker">HOW WE WORK</span>
+
+            <span class="section-kicker">
+                HOW WE WORK
+            </span>
 
             <h2>
                 Professional from
                 <span>start to finish.</span>
             </h2>
+
         </div>
 
         <p>
@@ -391,58 +474,90 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
     <div class="process-grid">
 
         <div class="process-card">
-            <span class="process-number">01</span>
+
+            <span class="process-number">
+                01
+            </span>
 
             <div>
-                <h3>Listen</h3>
+
+                <h3>
+                    Listen
+                </h3>
 
                 <p>
                     We understand your property, requirements,
                     priorities and preferred cleaning schedule.
                 </p>
+
             </div>
+
         </div>
 
 
         <div class="process-card">
-            <span class="process-number">02</span>
+
+            <span class="process-number">
+                02
+            </span>
 
             <div>
-                <h3>Plan</h3>
+
+                <h3>
+                    Plan
+                </h3>
 
                 <p>
                     We organise the right cleaning approach and
                     tailor the service to your needs.
                 </p>
+
             </div>
+
         </div>
 
 
         <div class="process-card">
-            <span class="process-number">03</span>
+
+            <span class="process-number">
+                03
+            </span>
 
             <div>
-                <h3>Clean</h3>
+
+                <h3>
+                    Clean
+                </h3>
 
                 <p>
                     Our team completes the work carefully with a
                     strong focus on quality and attention to detail.
                 </p>
+
             </div>
+
         </div>
 
 
         <div class="process-card">
-            <span class="process-number">04</span>
+
+            <span class="process-number">
+                04
+            </span>
 
             <div>
-                <h3>Follow Up</h3>
+
+                <h3>
+                    Follow Up
+                </h3>
 
                 <p>
                     We value your feedback and aim to build long-term
                     relationships with our customers.
                 </p>
+
             </div>
+
         </div>
 
     </div>
@@ -478,50 +593,74 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
     <div class="values-grid">
 
         <div class="team-value">
-            <div class="value-icon">✓</div>
 
-            <h3>Reliability</h3>
+            <div class="value-icon">
+                ✓
+            </div>
+
+            <h3>
+                Reliability
+            </h3>
 
             <p>
                 We understand that customers need a cleaning service
                 they can depend on.
             </p>
+
         </div>
 
 
         <div class="team-value">
-            <div class="value-icon">★</div>
 
-            <h3>Quality</h3>
+            <div class="value-icon">
+                ★
+            </div>
+
+            <h3>
+                Quality
+            </h3>
 
             <p>
                 We focus on delivering professional results rather
                 than simply getting the job done quickly.
             </p>
+
         </div>
 
 
         <div class="team-value">
-            <div class="value-icon">◆</div>
 
-            <h3>Respect</h3>
+            <div class="value-icon">
+                ◆
+            </div>
+
+            <h3>
+                Respect
+            </h3>
 
             <p>
                 Every property, customer and workplace is treated
                 with care and professionalism.
             </p>
+
         </div>
 
 
         <div class="team-value">
-            <div class="value-icon">↗</div>
 
-            <h3>Continuous Improvement</h3>
+            <div class="value-icon">
+                ↗
+            </div>
+
+            <h3>
+                Continuous Improvement
+            </h3>
 
             <p>
                 We continually look for ways to improve our service
                 and customer experience.
             </p>
+
         </div>
 
     </div>
@@ -559,6 +698,7 @@ Meet the professional team behind YD Commercial Cleaning Services. Our Adelaide 
             </p>
 
         </div>
+
 
         <div class="team-cta-actions">
 

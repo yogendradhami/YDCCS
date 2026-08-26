@@ -1045,7 +1045,7 @@ def employee_list(request):
 @login_required
 def add_employee(request):
     if request.method == "POST":
-        form = EmployeeForm(request.POST)
+        form = EmployeeForm(request.POST, request.FILES)
 
         if form.is_valid():
             employee = form.save()
@@ -1085,7 +1085,7 @@ def edit_employee(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
 
     if request.method == "POST":
-        form = EmployeeForm(request.POST, instance=employee)
+        form = EmployeeForm(request.POST, request.FILES, instance=employee)
 
         if form.is_valid():
             updated_employee = form.save()
