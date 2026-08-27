@@ -1,6 +1,7 @@
 /* =========================================================
    YD COMMERCIAL CLEANING
    MODERN HEADER SYSTEM
+   Visual refinement only — existing structure preserved
    ========================================================= */
 
 :root {
@@ -13,17 +14,18 @@
     --yd-muted: #64748b;
 
     --yd-border: #e2e8f0;
+    --yd-border-soft: #edf2f7;
+
     --yd-white: #ffffff;
     --yd-surface: #f8fafc;
 
     --yd-header-shadow:
-        0 8px 30px rgba(15, 23, 42, 0.07);
+        0 6px 24px rgba(15, 23, 42, 0.06);
 
     --yd-dropdown-shadow:
-        0 25px 70px rgba(15, 23, 42, 0.16);
+        0 24px 65px rgba(15, 23, 42, 0.15);
 
     --yd-radius: 12px;
-
     --yd-header-z: 9000;
 }
 
@@ -58,7 +60,13 @@ body {
 
 .yd-topbar {
     width: 100%;
-    background: #0f172a;
+    background:
+        linear-gradient(
+            90deg,
+            #0b1220 0%,
+            #0f172a 50%,
+            #0b1220 100%
+        );
     color: #fff;
 }
 
@@ -89,17 +97,19 @@ body {
     align-items: center;
     gap: 7px;
 
-    color: #e2e8f0;
+    color: #dbe5f0;
     text-decoration: none;
 
     font-size: 13px;
     font-weight: 500;
 
-    transition: color 0.2s ease;
+    transition:
+        color 0.2s ease,
+        opacity 0.2s ease;
 }
 
 .yd-topbar-contact a:hover {
-    color: #fff;
+    color: #ffffff;
 }
 
 .yd-topbar-icon {
@@ -127,7 +137,7 @@ body {
 
     border-radius: 50%;
 
-    color: #e2e8f0;
+    color: #dbe5f0;
     text-decoration: none;
 
     font-size: 12px;
@@ -140,7 +150,7 @@ body {
 }
 
 .yd-topbar-social a:hover {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
     transform: translateY(-1px);
 }
@@ -165,9 +175,9 @@ body {
     background:
         linear-gradient(
             90deg,
-            #eff6ff,
-            #ffffff,
-            #eff6ff
+            #eff6ff 0%,
+            #ffffff 50%,
+            #eff6ff 100%
         );
 
     border-bottom: 1px solid #dbeafe;
@@ -186,8 +196,10 @@ body {
 .yd-offer-bar.is-hidden {
     max-height: 0;
     min-height: 0;
+
     padding-top: 0;
     padding-bottom: 0;
+
     opacity: 0;
     overflow: hidden;
 }
@@ -204,7 +216,7 @@ body {
 }
 
 .yd-offer-badge {
-    padding: 4px 8px;
+    padding: 4px 9px;
 
     background: var(--yd-primary);
     color: #fff;
@@ -214,6 +226,9 @@ body {
     font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.4px;
+
+    box-shadow:
+        0 3px 8px rgba(11, 99, 206, 0.16);
 }
 
 .yd-offer-code {
@@ -222,8 +237,10 @@ body {
 
 .yd-offer-close {
     position: absolute;
+
     right: 14px;
     top: 50%;
+
     transform: translateY(-50%);
 
     width: 28px;
@@ -240,7 +257,12 @@ body {
     color: #64748b;
 
     font-size: 20px;
+
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
 .yd-offer-close:hover {
@@ -259,25 +281,29 @@ body {
 
     width: 100%;
 
-    background: rgba(255,255,255,0.97);
+    background: rgba(255, 255, 255, 0.97);
 
     border-bottom: 1px solid var(--yd-border);
 
     box-shadow: var(--yd-header-shadow);
 
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 
 .yd-header-inner {
     width: min(1500px, calc(100% - 40px));
-    min-height: 76px;
+
+    min-height: 78px;
 
     margin: 0 auto;
+
+    padding-inline: 4px;
 
     display: flex;
     align-items: center;
 
-    gap: 20px;
+    gap: 24px;
 }
 
 
@@ -296,7 +322,7 @@ body {
     color: var(--yd-text);
     text-decoration: none;
 
-    min-width: 205px;
+    min-width: 220px;
 }
 
 .yd-brand-logo {
@@ -304,6 +330,10 @@ body {
     height: 48px;
 
     flex: 0 0 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .yd-brand-logo img {
@@ -327,8 +357,8 @@ body {
 
     font-size: 15px;
     line-height: 1.15;
-    font-weight: 850;
 
+    font-weight: 850;
     letter-spacing: -0.25px;
 
     white-space: nowrap;
@@ -364,7 +394,9 @@ body {
     align-items: center;
     justify-content: center;
 
-    gap: 2px;
+    gap: 4px;
+
+    padding-inline: 2px;
 }
 
 .yd-nav-item {
@@ -381,13 +413,12 @@ body {
 
     gap: 5px;
 
-    padding: 8px 10px;
+    padding: 8px 11px;
 
-    border: 0;
+    border: 1px solid transparent;
     border-radius: 9px;
 
     background: transparent;
-
     color: #334155;
 
     text-decoration: none;
@@ -402,13 +433,20 @@ body {
 
     transition:
         background 0.2s ease,
-        color 0.2s ease;
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .yd-nav-link:hover,
 .yd-nav-item.is-open > .yd-nav-link {
     background: var(--yd-primary-soft);
+    border-color: #dbeafe;
     color: var(--yd-primary);
+}
+
+.yd-nav-link:hover {
+    transform: translateY(-1px);
 }
 
 .yd-chevron {
@@ -467,14 +505,7 @@ body {
 .yd-services-dropdown {
     left: 50%;
 
-    width: min(
-        760px,
-        calc(100vw - 30px)
-    );
-
-    transform:
-        translateX(-50%)
-        translateY(-7px);
+    width: min(760px, calc(100vw - 30px));
 
     padding: 18px;
 
@@ -484,6 +515,10 @@ body {
     border-radius: 16px;
 
     box-shadow: var(--yd-dropdown-shadow);
+
+    transform:
+        translateX(-50%)
+        translateY(-7px);
 }
 
 .yd-services-dropdown.is-open {
@@ -493,7 +528,7 @@ body {
 }
 
 
-/* viewport safety */
+/* Dropdown arrow */
 
 .yd-services-dropdown::before {
     content: "";
@@ -511,7 +546,9 @@ body {
     border-left: 1px solid #dbe3ed;
     border-top: 1px solid #dbe3ed;
 
-    transform: translateX(-50%) rotate(45deg);
+    transform:
+        translateX(-50%)
+        rotate(45deg);
 }
 
 
@@ -565,9 +602,13 @@ body {
 
     font-size: 11px;
     font-weight: 750;
+
+    transition:
+        color 0.2s ease;
 }
 
 .yd-dropdown-view-all:hover {
+    color: var(--yd-primary-dark);
     text-decoration: underline;
 }
 
@@ -585,7 +626,7 @@ body {
     grid-template-columns:
         repeat(3, minmax(0, 1fr));
 
-    gap: 8px;
+    gap: 9px;
 }
 
 
@@ -628,7 +669,7 @@ body {
     border-color: #bfdbfe;
 
     box-shadow:
-        0 7px 18px rgba(15,23,42,0.07);
+        0 8px 20px rgba(15, 23, 42, 0.07);
 }
 
 .yd-service-icon {
@@ -643,12 +684,26 @@ body {
 
     border-radius: 8px;
 
-    background: #eff6ff;
+    background:
+        linear-gradient(
+            135deg,
+            #eff6ff,
+            #e8f2ff
+        );
 
     color: var(--yd-primary);
 
     font-size: 17px;
     font-weight: 800;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease;
+}
+
+.yd-service-card:hover .yd-service-icon {
+    transform: scale(1.05);
+    background: #dbeafe;
 }
 
 .yd-service-card > span:last-child {
@@ -709,7 +764,13 @@ body {
 
     border-radius: 10px;
 
-    background: #f8fbff;
+    background:
+        linear-gradient(
+            135deg,
+            #f8fbff,
+            #f4f9ff
+        );
+
     border: 1px solid #dbeafe;
 }
 
@@ -718,6 +779,7 @@ body {
 
     display: flex;
     align-items: center;
+
     gap: 8px;
 }
 
@@ -725,6 +787,7 @@ body {
     color: #172033;
 
     font-size: 10.5px;
+
     white-space: nowrap;
 }
 
@@ -749,14 +812,22 @@ body {
     font-size: 10px;
     font-weight: 750;
 
+    box-shadow:
+        0 4px 12px rgba(11, 99, 206, 0.16);
+
     transition:
         background 0.2s ease,
-        transform 0.2s ease;
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .yd-services-footer a:hover {
     background: var(--yd-primary-dark);
+
     transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 16px rgba(11, 99, 206, 0.22);
 }
 
 
@@ -795,12 +866,15 @@ body {
 
     transition:
         background 0.18s ease,
-        color 0.18s ease;
+        color 0.18s ease,
+        padding-left 0.18s ease;
 }
 
 .yd-simple-dropdown a:hover {
     background: var(--yd-primary-soft);
     color: var(--yd-primary);
+
+    padding-left: 15px;
 }
 
 
@@ -814,7 +888,7 @@ body {
     display: flex;
     align-items: center;
 
-    gap: 7px;
+    gap: 9px;
 }
 
 
@@ -838,27 +912,38 @@ body {
     border-radius: 9px;
 
     background: #fff;
-
     color: #334155;
 
     cursor: pointer;
+
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.03);
 
     transition:
         background 0.2s ease,
         border-color 0.2s ease,
         color 0.2s ease,
-        transform 0.2s ease;
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .yd-icon-button:hover {
     background: var(--yd-primary-soft);
+
     border-color: #bfdbfe;
+
     color: var(--yd-primary);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 5px 14px rgba(15, 23, 42, 0.07);
 }
 
 .yd-search-icon {
     font-size: 21px;
     line-height: 1;
+
     transform: rotate(-20deg);
 }
 
@@ -898,6 +983,9 @@ body {
 
     font-size: 8px;
     font-weight: 800;
+
+    box-shadow:
+        0 2px 5px rgba(15, 23, 42, 0.12);
 }
 
 .yd-notification-panel {
@@ -984,7 +1072,8 @@ body {
 
     border-bottom: 1px solid #f1f5f9;
 
-    transition: background 0.18s ease;
+    transition:
+        background 0.18s ease;
 }
 
 .yd-notification-item:hover {
@@ -1024,7 +1113,6 @@ body {
 
 .yd-notification-content strong {
     color: #172033;
-
     font-size: 11px;
 }
 
@@ -1043,7 +1131,6 @@ body {
     color: #94a3b8;
 
     font-size: 9px;
-
     font-style: normal;
 }
 
@@ -1080,7 +1167,9 @@ body {
 
 .yd-notification-empty small {
     margin-top: 4px;
+
     color: #64748b;
+
     font-size: 10px;
 }
 
@@ -1107,6 +1196,13 @@ body {
     font-weight: 750;
 
     white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .yd-book-button {
@@ -1119,6 +1215,8 @@ body {
 
 .yd-book-button:hover {
     background: #dbeafe;
+
+    transform: translateY(-1px);
 }
 
 .yd-quote-button {
@@ -1129,11 +1227,18 @@ body {
     color: #fff;
 
     box-shadow:
-        0 6px 18px rgba(11,99,206,0.18);
+        0 6px 18px rgba(11, 99, 206, 0.18);
 }
 
 .yd-quote-button:hover {
     background: var(--yd-primary-dark);
+
+    border-color: var(--yd-primary-dark);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 20px rgba(11, 99, 206, 0.24);
 }
 
 
@@ -1151,6 +1256,7 @@ body {
 
     align-items: center;
     justify-content: center;
+
     flex-direction: column;
 
     gap: 5px;
@@ -1163,21 +1269,31 @@ body {
     background: #fff;
 
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .yd-mobile-menu-button span {
-    width: 18px;
+    width: 19px;
     height: 2px;
 
     display: block;
 
-    border-radius: 2px;
+    flex: 0 0 2px;
+
+    border-radius: 999px;
 
     background: #334155;
 
+    transform-origin: center;
+
     transition:
-        transform 0.2s ease,
-        opacity 0.2s ease;
+        transform 0.3s cubic-bezier(.22,.61,.36,1),
+        opacity 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .yd-mobile-menu-button.is-open span:nth-child(1) {
@@ -1208,7 +1324,7 @@ body {
 
     padding: 90px 20px 30px;
 
-    background: rgba(15,23,42,0.48);
+    background: rgba(15, 23, 42, 0.48);
 
     opacity: 0;
     visibility: hidden;
@@ -1238,7 +1354,7 @@ body {
     border-radius: 15px;
 
     box-shadow:
-        0 30px 80px rgba(15,23,42,0.25);
+        0 30px 80px rgba(15, 23, 42, 0.25);
 }
 
 .yd-search-input-wrapper {
@@ -1253,6 +1369,17 @@ body {
     border-radius: 10px;
 
     background: #fff;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.yd-search-input-wrapper:focus-within {
+    border-color: #93c5fd;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 .yd-search-input-wrapper > span {
@@ -1264,14 +1391,12 @@ body {
     flex: 1;
 
     min-width: 0;
-
     height: 46px;
 
     border: 0;
     outline: 0;
 
     background: transparent;
-
     color: #172033;
 
     font-family: inherit;
@@ -1291,6 +1416,15 @@ body {
     font-size: 20px;
 
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.yd-search-input-wrapper button:hover {
+    background: #e2e8f0;
+    color: #334155;
 }
 
 .yd-search-results {
@@ -1320,6 +1454,10 @@ body {
     text-decoration: none;
 
     font-size: 11px;
+
+    transition:
+        background 0.18s ease,
+        color 0.18s ease;
 }
 
 .yd-search-results a:hover {
@@ -1329,7 +1467,7 @@ body {
 
 
 /* =========================================================
-   MOBILE PANEL
+   MOBILE OVERLAY
    ========================================================= */
 
 .yd-mobile-overlay {
@@ -1339,7 +1477,10 @@ body {
 
     z-index: 13000;
 
-    background: rgba(15,23,42,0.45);
+    background: rgba(15, 23, 42, 0.52);
+
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 
     opacity: 0;
     visibility: hidden;
@@ -1356,14 +1497,21 @@ body {
     pointer-events: auto;
 }
 
+
+/* =========================================================
+   MOBILE PANEL
+   ========================================================= */
+
 .yd-mobile-panel {
     position: fixed;
 
     top: 0;
     left: 0;
 
-    width: min(380px, 92vw);
-    height: 100vh;
+    width: min(400px, 88vw);
+
+    height: 100dvh;
+    max-height: 100dvh;
 
     z-index: 14000;
 
@@ -1373,17 +1521,29 @@ body {
     background: #fff;
 
     box-shadow:
-        20px 0 60px rgba(15,23,42,0.18);
+        20px 0 60px rgba(15, 23, 42, 0.20);
 
-    transform: translateX(-105%);
+    border-right: 1px solid #e2e8f0;
+
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
+
+    transform: translate3d(-105%, 0, 0);
+
+    will-change: transform;
 
     transition:
-        transform 0.28s cubic-bezier(.22,.61,.36,1);
+        transform 0.34s cubic-bezier(.22,.61,.36,1);
 }
 
 .yd-mobile-panel.is-open {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
 }
+
+
+/* =========================================================
+   MOBILE HEADER
+   ========================================================= */
 
 .yd-mobile-panel-header {
     min-height: 78px;
@@ -1395,6 +1555,13 @@ body {
     padding: 15px 18px;
 
     border-bottom: 1px solid #e2e8f0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff,
+            #fbfdff
+        );
 }
 
 .yd-mobile-brand {
@@ -1421,7 +1588,6 @@ body {
 
 .yd-mobile-brand strong {
     color: #172033;
-
     font-size: 13px;
 }
 
@@ -1439,24 +1605,62 @@ body {
     width: 38px;
     height: 38px;
 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    padding: 0;
+
     border: 1px solid #e2e8f0;
     border-radius: 9px;
 
     background: #fff;
-
     color: #334155;
 
     font-size: 25px;
+    line-height: 1;
 
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
-.yd-mobile-navigation {
-    flex: 1;
+.yd-mobile-close:hover {
+    background: var(--yd-primary-soft);
 
-    padding: 10px 14px;
+    border-color: #bfdbfe;
+
+    color: var(--yd-primary);
+
+    transform: rotate(2deg);
+}
+
+
+/* =========================================================
+   MOBILE NAVIGATION
+   ========================================================= */
+
+.yd-mobile-navigation {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    padding: 12px 14px 18px;
+
+    padding-bottom:
+        max(18px, env(safe-area-inset-bottom));
 
     overflow-y: auto;
+
+    overscroll-behavior: contain;
+
+    -webkit-overflow-scrolling: touch;
 }
 
 .yd-mobile-navigation > a,
@@ -1487,12 +1691,19 @@ body {
     text-align: left;
 
     cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        padding-left 0.18s ease;
 }
 
 .yd-mobile-navigation > a:hover,
 .yd-mobile-nav-toggle:hover {
     background: #eff6ff;
     color: var(--yd-primary);
+
+    padding-left: 16px;
 }
 
 .yd-mobile-nav-group {
@@ -1503,6 +1714,7 @@ body {
     display: none;
 
     margin: 2px 0 5px;
+
     padding: 5px;
 
     background: #f8fafc;
@@ -1527,12 +1739,24 @@ body {
     text-decoration: none;
 
     font-size: 11px;
+
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        padding-left 0.18s ease;
 }
 
 .yd-mobile-submenu a:hover {
     background: #eff6ff;
     color: var(--yd-primary);
+
+    padding-left: 14px;
 }
+
+
+/* =========================================================
+   MOBILE CTA
+   ========================================================= */
 
 .yd-mobile-cta {
     display: grid;
@@ -1544,6 +1768,8 @@ body {
     padding: 14px;
 
     border-top: 1px solid #e2e8f0;
+
+    background: #fbfdff;
 }
 
 .yd-mobile-cta a {
@@ -1559,11 +1785,22 @@ body {
 
     font-size: 11px;
     font-weight: 750;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.yd-mobile-cta a:hover {
+    transform: translateY(-1px);
 }
 
 .yd-mobile-cta a:first-child {
     background: var(--yd-primary);
     color: #fff;
+
+    box-shadow:
+        0 5px 14px rgba(11, 99, 206, 0.18);
 }
 
 .yd-mobile-cta a:last-child {
@@ -1629,6 +1866,12 @@ body {
 
     .yd-header-inner {
         min-height: 68px;
+
+        width: min(100% - 28px, 1500px);
+
+        padding-inline: 0;
+
+        gap: 12px;
     }
 
     .yd-mobile-menu-button {
@@ -1637,6 +1880,7 @@ body {
 
     .yd-header-actions {
         margin-left: auto;
+        gap: 8px;
     }
 
     .yd-brand {
@@ -1651,6 +1895,7 @@ body {
     .yd-brand-text strong,
     .yd-brand-text small {
         overflow: hidden;
+
         text-overflow: ellipsis;
     }
 
@@ -1683,6 +1928,15 @@ body {
 
     .yd-header-inner {
         width: calc(100% - 20px);
+
+        min-height: 68px;
+
+        gap: 8px;
+    }
+
+    .yd-brand {
+        min-width: 0;
+        gap: 8px;
     }
 
     .yd-brand-logo {
@@ -1700,6 +1954,10 @@ body {
         font-size: 7px;
     }
 
+    .yd-header-actions {
+        gap: 6px;
+    }
+
     .yd-icon-button {
         width: 36px;
         height: 36px;
@@ -1707,6 +1965,7 @@ body {
 
     .yd-quote-button {
         min-height: 36px;
+
         padding: 0 9px;
 
         font-size: 10px;
@@ -1716,6 +1975,7 @@ body {
         position: fixed;
 
         top: 78px;
+
         right: 10px;
         left: 10px;
 
@@ -1730,6 +1990,10 @@ body {
     .yd-search-results {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
+    }
+
+    .yd-mobile-panel {
+        width: min(390px, 90vw);
     }
 }
 
@@ -1762,10 +2026,14 @@ body {
     }
 
     .yd-header-inner {
-        width: calc(100% - 14px);
+        width: calc(100% - 12px);
 
-        min-height: 62px;
+        min-height: 64px;
 
+        gap: 6px;
+    }
+
+    .yd-header-actions {
         gap: 5px;
     }
 
@@ -1788,10 +2056,6 @@ body {
         font-size: 6.5px;
     }
 
-    .yd-header-actions {
-        gap: 4px;
-    }
-
     .yd-icon-button {
         width: 34px;
         height: 34px;
@@ -1804,7 +2068,22 @@ body {
     .yd-mobile-menu-button {
         width: 36px;
         height: 36px;
+
         flex-basis: 36px;
+    }
+
+    .yd-mobile-panel {
+        width: min(370px, 91vw);
+
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+
+    .yd-mobile-navigation > a,
+    .yd-mobile-nav-toggle {
+        min-height: 48px;
+
+        padding: 12px 13px;
     }
 
     .yd-search-results {
@@ -1820,7 +2099,13 @@ body {
 @media (max-width: 380px) {
 
     .yd-header-inner {
-        width: calc(100% - 10px);
+        width: calc(100% - 8px);
+
+        gap: 4px;
+    }
+
+    .yd-header-actions {
+        gap: 4px;
     }
 
     .yd-brand-logo {
@@ -1846,8 +2131,48 @@ body {
     .yd-mobile-menu-button {
         width: 32px;
         height: 32px;
+
         flex-basis: 32px;
     }
+
+    .yd-mobile-panel {
+        width: 94vw;
+    }
+}
+
+
+/* =========================================================
+   MOBILE MENU / RESPONSIVE REFINEMENTS
+   ========================================================= */
+
+body.yd-mobile-menu-open {
+    overflow: hidden;
+
+    overscroll-behavior: none;
+}
+
+.yd-mobile-menu-button:hover {
+    background: var(--yd-primary-soft);
+
+    border-color: #bfdbfe;
+
+    box-shadow:
+        0 4px 12px rgba(15, 23, 42, 0.07);
+}
+
+.yd-mobile-menu-button.is-open {
+    border-color: #bfdbfe;
+
+    background: var(--yd-primary-soft);
+}
+
+.yd-mobile-menu-button.is-open span {
+    background: var(--yd-primary);
+}
+
+.yd-mobile-panel,
+.yd-mobile-overlay {
+    -webkit-tap-highlight-color: transparent;
 }
 
 
@@ -1865,7 +2190,9 @@ body {
 .yd-search-input-wrapper button:focus-visible,
 .yd-book-button:focus-visible,
 .yd-quote-button:focus-visible {
-    outline: 3px solid rgba(37,99,235,0.28);
+
+    outline: 3px solid rgba(37, 99, 235, 0.28);
+
     outline-offset: 2px;
 }
 
@@ -1883,7 +2210,10 @@ body {
     .yd-mobile-overlay,
     .yd-search-panel,
     .yd-service-card,
-    .yd-mobile-menu-button span {
+    .yd-mobile-menu-button span,
+    .yd-nav-link,
+    .yd-icon-button,
+    .yd-mobile-close {
         transition: none !important;
     }
 }
@@ -1900,8 +2230,11 @@ body {
     .yd-navigation > a,
     .yd-navigation > .yd-nav-item > a,
     .yd-navigation > .yd-nav-item > button {
+
         font-size: 14px !important;
+
         line-height: 1.2;
+
         font-weight: 650;
     }
 
@@ -1920,6 +2253,45 @@ body {
     .yd-topbar-social a {
         width: 30px !important;
         height: 30px !important;
+
         font-size: 12px !important;
     }
+}
+
+
+/* =========================================================
+   MOBILE NAV ROW - CLEAN SERVICES / RESOURCES / PORTALS
+   ========================================================= */
+
+.yd-mobile-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.yd-mobile-nav-row .yd-mobile-navigation-link {
+    flex: 1;
+    min-width: 0;
+}
+
+.yd-mobile-nav-toggle {
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.yd-mobile-nav-toggle span {
+    display: block;
+    line-height: 1;
 }

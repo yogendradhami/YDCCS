@@ -1,98 +1,157 @@
 {% load static %}
 
 <!-- =========================================================
+
      YD COMMERCIAL CLEANING
+
      MODERN RESPONSIVE HEADER
+
      ========================================================= -->
 
 <!-- TOP CONTACT BAR -->
+
 {% if company_settings %}
+
 <div class="yd-topbar">
+
     <div class="yd-topbar-inner">
 
         <div class="yd-topbar-contact">
+
             <a href="tel:{{ company_settings.phone|default:'+61 430 049 865'|urlencode }}">
+
                 <span class="yd-topbar-icon">☎</span>
+
                 <span>{{ company_settings.phone|default:'+61 430 049 865' }}</span>
+
             </a>
 
             <a href="mailto:{{ company_settings.email|default:'info@ydcleaning.com.au' }}">
+
                 <span class="yd-topbar-icon">✉</span>
+
                 <span>{{ company_settings.email|default:'info@ydcleaning.com.au' }}</span>
+
             </a>
+
         </div>
 
         {% with fb_url=company_settings.facebook_url|default:'https://www.facebook.com/ydcommercialcleaning' insta_url=company_settings.instagram_url|default:'https://www.instagram.com/ydcommercialcleaning' li_url=company_settings.linkedin_url|default:'https://www.linkedin.com/in/yogendra-dhami-91b46640b' tt_url=company_settings.tiktok_url|default:'https://www.tiktok.com/@yd_cleaning3' %}
 
         <div class="yd-topbar-social">
+
             <span>Follow us</span>
 
             <a href="{{ fb_url }}"
+
                target="_blank"
+
                rel="noopener noreferrer"
+
                aria-label="Facebook">
+
                 f
+
             </a>
 
             <a href="{{ insta_url }}"
+
                target="_blank"
+
                rel="noopener noreferrer"
+
                aria-label="Instagram">
+
                 ◎
+
             </a>
 
             <a href="{{ li_url }}"
+
                target="_blank"
+
                rel="noopener noreferrer"
+
                aria-label="LinkedIn">
+
                 in
+
             </a>
 
             <a href="{{ tt_url }}"
+
                target="_blank"
+
                rel="noopener noreferrer"
+
                aria-label="TikTok">
+
                 ♪
+
             </a>
+
         </div>
 
         {% endwith %}
 
     </div>
+
 </div>
+
 {% endif %}
 
 
+
 <!-- =========================================================
+
      PROMOTIONAL BAR
+
      ========================================================= -->
 
 <div class="yd-offer-bar" id="offerBanner">
+
     <div class="yd-offer-content">
+
         <span class="yd-offer-badge">SPECIAL OFFER</span>
 
         <span>
+
             Get <strong>20% OFF</strong> your first cleaning service
+
         </span>
 
         <span class="yd-offer-code">
+
             Code: <strong>CLEAN20</strong>
+
         </span>
+
     </div>
 
     <button
+
         type="button"
+
         class="yd-offer-close"
+
         id="promoCloseButton"
+
         aria-label="Close special offer"
+
     >
+
         ×
+
     </button>
+
 </div>
 
 
+
 <!-- =========================================================
+
      MAIN HEADER
+
      ========================================================= -->
 
 <header class="yd-main-header" id="ydMainHeader">
@@ -100,201 +159,332 @@
     <div class="yd-header-inner">
 
         <!-- BRAND -->
+
         <a
+
             href="/"
+
             class="yd-brand"
+
             aria-label="{{ company_settings.business_name|default:'YD Commercial Cleaning' }}"
+
         >
 
             <span class="yd-brand-logo">
+
                 <picture>
+
                     <source
+
                         srcset="
+
                             {% static 'images/company/logoo-48.webp' %} 48w,
+
                             {% static 'images/company/logoo-84.webp' %} 84w
+
                         "
+
                         type="image/webp"
+
                     >
 
                     <img
+
                         src="{% static 'images/company/logoo-48.webp' %}"
+
                         srcset="
+
                             {% static 'images/company/logoo-48.webp' %} 48w,
+
                             {% static 'images/company/logoo-84.webp' %} 84w
+
                         "
+
                         sizes="48px"
+
                         alt=""
+
                         width="48"
+
                         height="48"
+
                         loading="eager"
+
                     >
+
                 </picture>
+
             </span>
 
             <span class="yd-brand-text">
+
                 <strong>
+
                     {% if company_settings and company_settings.business_name %}
+
                         {{ company_settings.business_name }}
+
                     {% else %}
+
                         YD Commercial Cleaning
+
                     {% endif %}
+
                 </strong>
 
                 <small>
+
                     Professional Cleaning Services
+
                 </small>
+
             </span>
 
         </a>
 
 
+
         <!-- DESKTOP NAV -->
+
         <nav class="yd-navigation" id="publicMenu" aria-label="Main navigation">
 
             <a href="/" class="yd-nav-link">
+
                 Home
+
             </a>
 
 
+
             <!-- SERVICES -->
+
             <div class="yd-nav-item yd-services-item">
 
-                <button
-                    type="button"
+                <a
+                    href="/services/"
                     class="yd-nav-link yd-nav-dropdown-toggle"
+                    aria-haspopup="true"
                     aria-expanded="false"
                     aria-controls="servicesDropdown"
                 >
                     Services
-                    <span class="yd-chevron">⌄</span>
-                </button>
+                    <span class="yd-chevron" aria-hidden="true">⌄</span>
+                </a>
 
                 <div
+
                     class="yd-dropdown yd-services-dropdown"
+
                     id="servicesDropdown"
+
                 >
 
                     <div class="yd-dropdown-heading">
+
                         <div>
+
                             <span class="yd-dropdown-label">
+
                                 OUR SERVICES
+
                             </span>
 
                             <h3>
+
                                 Professional Cleaning Solutions
+
                             </h3>
+
                         </div>
 
                         <a href="/services/" class="yd-dropdown-view-all">
+
                             View all →
+
                         </a>
+
                     </div>
+
 
 
                     <div class="yd-service-grid">
 
                         <a href="/services/house-cleaning-adelaide/" class="yd-service-card">
+
                             <span class="yd-service-icon">⌂</span>
+
                             <span>
+
                                 <strong>House Cleaning</strong>
-                                <small>Homes & apartments</small>
+
+                                <small>Homes *&* apartments</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/commercial-cleaning-adelaide/" class="yd-service-card">
+
                             <span class="yd-service-icon">▦</span>
+
                             <span>
+
                                 <strong>Commercial Cleaning</strong>
-                                <small>Workplaces & businesses</small>
+
+                                <small>Workplaces *&* businesses</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/office-cleaning/" class="yd-service-card">
+
                             <span class="yd-service-icon">▤</span>
+
                             <span>
+
                                 <strong>Office Cleaning</strong>
+
                                 <small>Clean productive spaces</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/spring-cleaning/" class="yd-service-card">
+
                             <span class="yd-service-icon">✦</span>
+
                             <span>
+
                                 <strong>Spring Cleaning</strong>
+
                                 <small>Complete deep cleaning</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/oven-cleaning/" class="yd-service-card">
+
                             <span class="yd-service-icon">◉</span>
+
                             <span>
+
                                 <strong>Oven Cleaning</strong>
+
                                 <small>Deep appliance cleaning</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/bathroom-cleaning/" class="yd-service-card">
+
                             <span class="yd-service-icon">♢</span>
+
                             <span>
+
                                 <strong>Bathroom Cleaning</strong>
-                                <small>Fresh & hygienic bathrooms</small>
+
+                                <small>Fresh *&* hygienic bathrooms</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/bond-cleaning/" class="yd-service-card">
+
                             <span class="yd-service-icon">⌑</span>
+
                             <span>
+
                                 <strong>Bond Cleaning</strong>
+
                                 <small>End of lease cleaning</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/exit-cleaning/" class="yd-service-card">
+
                             <span class="yd-service-icon">↗</span>
+
                             <span>
+
                                 <strong>Exit Cleaning</strong>
+
                                 <small>Property exit cleaning</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/carpet-cleaning/" class="yd-service-card">
+
                             <span class="yd-service-icon">▥</span>
+
                             <span>
+
                                 <strong>Carpet Cleaning</strong>
-                                <small>Carpets & upholstery</small>
+
+                                <small>Carpets *&* upholstery</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/window-cleaning-adelaide/" class="yd-service-card">
+
                             <span class="yd-service-icon">□</span>
+
                             <span>
+
                                 <strong>Window Cleaning</strong>
-                                <small>Glass & windows</small>
+
+                                <small>Glass *&* windows</small>
+
                             </span>
+
                         </a>
 
                         <a href="/services/post-construction-cleaning-adelaide/" class="yd-service-card">
+
                             <span class="yd-service-icon">⌁</span>
+
                             <span>
+
                                 <strong>Post Construction</strong>
+
                                 <small>After-build cleaning</small>
+
                             </span>
+
                         </a>
 
                     </div>
+
 
 
                     <div class="yd-services-footer">
 
                         <div>
+
                             <strong>Not sure what you need?</strong>
+
                             <span>
+
                                 Our team can help you choose the right cleaning service.
+
                             </span>
+
                         </div>
 
                         <a href="{% url 'contact' %}">
+
                             Talk to our team
+
                         </a>
 
                     </div>
@@ -304,117 +494,190 @@
             </div>
 
 
+
             <a href="/about/" class="yd-nav-link">
+
                 About
+
             </a>
 
             <a href="/pricing/" class="yd-nav-link">
+
                 Pricing
+
             </a>
 
             <a href="/team/" class="yd-nav-link">
+
                 Team
+
             </a>
 
             <a href="/gallery/" class="yd-nav-link">
+
                 Gallery
+
             </a>
 
 
+
             <!-- RESOURCES -->
+
             <div class="yd-nav-item">
 
-                <button
-                    type="button"
+                <a
+                    href="/resources/"
                     class="yd-nav-link yd-nav-dropdown-toggle"
+                    aria-haspopup="true"
                     aria-expanded="false"
                     aria-controls="resourcesDropdown"
                 >
                     Resources
-                    <span class="yd-chevron">⌄</span>
-                </button>
+                    <span class="yd-chevron" aria-hidden="true">⌄</span>
+                </a>
 
                 <div
+
                     class="yd-dropdown yd-simple-dropdown"
+
                     id="resourcesDropdown"
+
                 >
+
                     <a href="{% url 'local_services' %}">
+
                         Local Services
+
                     </a>
 
                     <a href="/blog/">
+
                         Blog
+
                     </a>
 
                     <a href="/guides/">
+
                         Guides
+
                     </a>
 
                     <a href="/case-studies/">
+
                         Case Studies
+
                     </a>
 
                     <a href="{% url 'testimonials' %}">
+
                         Testimonials
+
                     </a>
 
                     <a href="/faq/">
+
                         FAQ
+
                     </a>
+
                 </div>
 
             </div>
 
 
+
             <a href="{% url 'contact' %}" class="yd-nav-link">
+
                 Contact
+
             </a>
 
 
+
             <!-- PORTALS -->
+
             <div class="yd-nav-item">
 
-                <button
-                    type="button"
-                    class="yd-nav-link yd-nav-dropdown-toggle"
-                    aria-expanded="false"
-                    aria-controls="portalDropdown"
-                >
-                    Portals
-                    <span class="yd-chevron">⌄</span>
-                </button>
+                {% if request.user.is_authenticated and request.user.customer_profile %}
+                    <a
+                        href="/portal/dashboard/"
+                        class="yd-nav-link yd-nav-dropdown-toggle"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="portalDropdown"
+                    >
+                        Portals
+                        <span class="yd-chevron" aria-hidden="true">⌄</span>
+                    </a>
+                {% else %}
+                    <a
+                        href="/portal/login/"
+                        class="yd-nav-link yd-nav-dropdown-toggle"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="portalDropdown"
+                    >
+                        Portals
+                        <span class="yd-chevron" aria-hidden="true">⌄</span>
+                    </a>
+                {% endif %}
 
                 <div
+
                     class="yd-dropdown yd-simple-dropdown yd-portal-dropdown"
+
                     id="portalDropdown"
+
                 >
 
                     {% if request.user.is_authenticated and request.user.customer_profile %}
+
                         <a href="/portal/dashboard/">
+
                             <span>Customer Dashboard</span>
+
                         </a>
+
                     {% else %}
+
                         <a href="/portal/login/">
+
                             <span>Customer Portal</span>
+
                         </a>
+
                     {% endif %}
+
 
 
                     {% if request.user.is_authenticated and request.user.employee_profile %}
+
                         <a href="/employee/dashboard/">
+
                             <span>Employee Dashboard</span>
+
                         </a>
+
                     {% else %}
+
                         <a href="/employee/login/">
+
                             <span>Employee Portal</span>
+
                         </a>
+
                     {% endif %}
 
 
+
                     {% if request.user.is_staff %}
+
                         <a href="/dashboard/">
+
                             <span>Admin Dashboard</span>
+
                         </a>
+
                     {% endif %}
 
                 </div>
@@ -424,22 +687,35 @@
         </nav>
 
 
+
         <!-- HEADER ACTIONS -->
+
         <div class="yd-header-actions">
 
             <!-- SEARCH -->
+
             <button
+
                 type="button"
+
                 class="yd-icon-button"
+
                 id="publicSearchButton"
+
                 aria-label="Search"
+
                 aria-expanded="false"
+
             >
+
                 <span class="yd-search-icon">⌕</span>
+
             </button>
 
 
+
             <!-- NOTIFICATIONS -->
+
             {% if request.user.is_authenticated %}
 
                 {% if "/portal/" in request.path or "/employee/" in request.path %}
@@ -447,44 +723,77 @@
                     <div class="yd-notification-wrapper">
 
                         <button
+
                             type="button"
+
                             class="yd-icon-button yd-notification-button"
+
                             id="notificationBell"
+
                             aria-label="Notifications"
+
                             aria-expanded="false"
+
                         >
+
                             <span class="yd-bell-icon">♧</span>
 
                             {% if global_unread_notifications > 0 %}
+
                                 <span
+
                                     class="yd-notification-count"
+
                                     id="notificationCount"
+
                                 >
+
                                     {{ global_unread_notifications }}
+
                                 </span>
+
                             {% else %}
+
                                 <span
+
                                     class="yd-notification-count"
+
                                     id="notificationCount"
+
                                     style="display:none;"
+
                                 >
+
                                     0
+
                                 </span>
+
                             {% endif %}
+
                         </button>
 
 
+
                         <div
+
                             class="yd-notification-panel"
+
                             id="notificationPanel"
+
                             aria-hidden="true"
+
                         >
 
                             <div class="yd-notification-header">
+
                                 <div>
+
                                     <strong>Notifications</strong>
+
                                     <small>Your latest updates</small>
+
                                 </div>
+
                             </div>
 
                             <div class="yd-notification-list">
@@ -492,8 +801,11 @@
                                 {% for note in global_notifications %}
 
                                     <a
+
                                         href="{{ note.link|default:'#' }}"
+
                                         class="yd-notification-item {% if not note.is_read %}is-unread{% endif %}"
+
                                     >
 
                                         <span class="yd-notification-dot"></span>
@@ -501,15 +813,21 @@
                                         <span class="yd-notification-content">
 
                                             <strong>
+
                                                 {{ note.title }}
+
                                             </strong>
 
                                             <small>
+
                                                 {{ note.message }}
+
                                             </small>
 
                                             <em>
+
                                                 {{ note.created_at|date:"d M, g:i A" }}
+
                                             </em>
 
                                         </span>
@@ -519,9 +837,13 @@
                                 {% empty %}
 
                                     <div class="yd-notification-empty">
+
                                         <span>✓</span>
+
                                         <strong>You're all caught up</strong>
+
                                         <small>No new notifications.</small>
+
                                     </div>
 
                                 {% endfor %}
@@ -537,36 +859,63 @@
             {% endif %}
 
 
+
             <!-- BOOK -->
+
             <a
+
                 href="{% url 'home' %}#quote"
+
                 class="yd-book-button"
+
             >
+
                 Book Now
+
             </a>
+
 
 
             <!-- QUOTE -->
+
             <a
+
                 href="{% url 'home' %}#quote"
+
                 class="yd-quote-button"
+
             >
+
                 Get a Quote
+
             </a>
 
 
+
             <!-- MOBILE MENU -->
+
             <button
+
                 type="button"
+
                 class="yd-mobile-menu-button"
+
                 id="publicMenuButton"
+
                 aria-label="Open navigation"
+
                 aria-expanded="false"
-                aria-controls="publicMenu"
+
+                aria-controls="mobileMenuPanel"
+
             >
+
                 <span></span>
+
                 <span></span>
+
                 <span></span>
+
             </button>
 
         </div>
@@ -576,21 +925,33 @@
 </header>
 
 
+
 <!-- =========================================================
+
      MOBILE NAVIGATION
+
      ========================================================= -->
 
 <div
+
     class="yd-mobile-overlay"
+
     id="mobileMenuOverlay"
+
     aria-hidden="true"
+
 ></div>
 
 
+
 <aside
+
     class="yd-mobile-panel"
+
     id="mobileMenuPanel"
+
     aria-hidden="true"
+
 >
 
     <div class="yd-mobile-panel-header">
@@ -598,29 +959,45 @@
         <a href="/" class="yd-mobile-brand">
 
             <img
+
                 src="{% static 'images/company/logoo-48.webp' %}"
+
                 alt=""
+
                 width="42"
+
                 height="42"
+
             >
 
             <span>
+
                 <strong>YD Commercial Cleaning</strong>
+
                 <small>Professional Cleaning Services</small>
+
             </span>
 
         </a>
 
         <button
+
             type="button"
+
             id="mobileMenuClose"
+
             class="yd-mobile-close"
+
             aria-label="Close navigation"
+
         >
+
             ×
+
         </button>
 
     </div>
+
 
 
     <nav class="yd-mobile-navigation">
@@ -628,34 +1005,47 @@
         <a href="/">Home</a>
 
 
-        <div class="yd-mobile-nav-group">
 
-            <button
-                type="button"
-                class="yd-mobile-nav-toggle"
-                aria-expanded="false"
-                aria-controls="mobileServices"
-            >
-                <span>Services</span>
-                <span>+</span>
-            </button>
+                    <div class="yd-mobile-nav-group">
+                <div class="yd-mobile-nav-row">
+                    <a href="/services/" class="yd-mobile-navigation-link">
+                        <span>Services</span>
+                    </a>
+                    <button type="button" class="yd-mobile-nav-toggle" aria-expanded="false" aria-controls="mobileServices" aria-label="Open Services submenu">
+                        <span>+</span>
+                    </button>
+                </div>
 
             <div
+
                 class="yd-mobile-submenu"
+
                 id="mobileServices"
+
             >
 
                 <a href="/services/">All Services</a>
+
                 <a href="/services/house-cleaning-adelaide/">House Cleaning</a>
+
                 <a href="/services/commercial-cleaning-adelaide/">Commercial Cleaning</a>
+
                 <a href="/services/office-cleaning/">Office Cleaning</a>
+
                 <a href="/services/spring-cleaning/">Spring Cleaning</a>
+
                 <a href="/services/oven-cleaning/">Oven Cleaning</a>
+
                 <a href="/services/bathroom-cleaning/">Bathroom Cleaning</a>
+
                 <a href="/services/bond-cleaning/">Bond Cleaning</a>
+
                 <a href="/services/exit-cleaning/">Exit Cleaning</a>
+
                 <a href="/services/carpet-cleaning/">Carpet Cleaning</a>
+
                 <a href="/services/window-cleaning-adelaide/">Window Cleaning</a>
+
                 <a href="/services/post-construction-cleaning-adelaide/">Post Construction</a>
 
             </div>
@@ -663,39 +1053,51 @@
         </div>
 
 
+
         <a href="/about/">About</a>
+
         <a href="/pricing/">Pricing</a>
+
         <a href="/team/">Team</a>
+
         <a href="/gallery/">Gallery</a>
 
 
-        <div class="yd-mobile-nav-group">
 
-            <button
-                type="button"
-                class="yd-mobile-nav-toggle"
-                aria-expanded="false"
-                aria-controls="mobileResources"
-            >
-                <span>Resources</span>
-                <span>+</span>
-            </button>
+                <div class="yd-mobile-nav-group">
+            <div class="yd-mobile-nav-row">
+                <a href="/resources/" class="yd-mobile-navigation-link">
+                    <span>Resources</span>
+                </a>
+                <button type="button" class="yd-mobile-nav-toggle" aria-expanded="false" aria-controls="mobileResources" aria-label="Open Resources submenu">
+                    <span>+</span>
+                </button>
+            </div>
 
             <div
+
                 class="yd-mobile-submenu"
+
                 id="mobileResources"
+
             >
 
                 <a href="{% url 'local_services' %}">
+
                     Local Services
+
                 </a>
 
                 <a href="/blog/">Blog</a>
+
                 <a href="/guides/">Guides</a>
+
                 <a href="/case-studies/">Case Studies</a>
 
                 <a href="{% url 'testimonials' %}">
+
                     Testimonials
+
                 </a>
 
                 <a href="/faq/">FAQ</a>
@@ -705,52 +1107,83 @@
         </div>
 
 
+
         <a href="{% url 'contact' %}">
+
             Contact
+
         </a>
 
 
-        <div class="yd-mobile-nav-group">
 
-            <button
-                type="button"
-                class="yd-mobile-nav-toggle"
-                aria-expanded="false"
-                aria-controls="mobilePortals"
-            >
-                <span>Portals</span>
-                <span>+</span>
-            </button>
+                <div class="yd-mobile-nav-group">
+            <div class="yd-mobile-nav-row">
+                {% if request.user.is_authenticated and request.user.customer_profile %}
+                    <a href="/portal/dashboard/" class="yd-mobile-navigation-link">
+                        <span>Portals</span>
+                    </a>
+                {% else %}
+                    <a href="/portal/login/" class="yd-mobile-navigation-link">
+                        <span>Portals</span>
+                    </a>
+                {% endif %}
+                <button type="button" class="yd-mobile-nav-toggle" aria-expanded="false" aria-controls="mobilePortals" aria-label="Open Portals submenu">
+                    <span>+</span>
+                </button>
+            </div>
 
             <div
+
                 class="yd-mobile-submenu"
+
                 id="mobilePortals"
+
             >
 
                 {% if request.user.is_authenticated and request.user.customer_profile %}
+
                     <a href="/portal/dashboard/">
+
                         Customer Dashboard
+
                     </a>
+
                 {% else %}
+
                     <a href="/portal/login/">
+
                         Customer Portal
+
                     </a>
+
                 {% endif %}
 
                 {% if request.user.is_authenticated and request.user.employee_profile %}
+
                     <a href="/employee/dashboard/">
+
                         Employee Dashboard
+
                     </a>
+
                 {% else %}
+
                     <a href="/employee/login/">
+
                         Employee Portal
+
                     </a>
+
                 {% endif %}
 
                 {% if request.user.is_staff %}
+
                     <a href="/dashboard/">
+
                         Admin Dashboard
+
                     </a>
+
                 {% endif %}
 
             </div>
@@ -760,14 +1193,19 @@
     </nav>
 
 
+
     <div class="yd-mobile-cta">
 
         <a href="{% url 'home' %}#quote">
+
             Get a Free Quote
+
         </a>
 
         <a href="tel:{{ company_settings.phone|default:'+61 430 049 865'|urlencode }}">
+
             Call Us
+
         </a>
 
     </div>
@@ -775,14 +1213,21 @@
 </aside>
 
 
+
 <!-- =========================================================
+
      SEARCH PANEL
+
      ========================================================= -->
 
 <div
+
     class="yd-search-panel"
+
     id="siteSearchBox"
+
     aria-hidden="true"
+
 >
 
     <div class="yd-search-inner">
@@ -792,105 +1237,161 @@
             <span>⌕</span>
 
             <input
+
                 type="text"
+
                 id="siteSearchInput"
+
                 placeholder="Search YD Cleaning..."
+
                 autocomplete="off"
+
             >
 
             <button
+
                 type="button"
+
                 id="siteSearchClose"
+
                 aria-label="Close search"
+
             >
+
                 ×
+
             </button>
 
         </div>
 
 
+
         <div
+
             class="yd-search-results"
+
             id="siteSearchResults"
+
         >
 
             <a href="/">Home</a>
+
             <a href="/about/">About Us</a>
+
             <a href="/pricing/">Pricing</a>
+
             <a href="/team/">Team</a>
+
             <a href="/gallery/">Gallery</a>
+
             <a href="/services/">All Services</a>
 
             <a href="/services/house-cleaning-adelaide/">
+
                 House Cleaning
+
             </a>
 
             <a href="/services/commercial-cleaning-adelaide/">
+
                 Commercial Cleaning
+
             </a>
 
             <a href="/services/office-cleaning/">
+
                 Office Cleaning
+
             </a>
 
             <a href="/services/spring-cleaning/">
+
                 Spring Cleaning
+
             </a>
 
             <a href="/services/oven-cleaning/">
+
                 Oven Cleaning
+
             </a>
 
             <a href="/services/bathroom-cleaning/">
+
                 Bathroom Cleaning
+
             </a>
 
             <a href="/services/bond-cleaning/">
+
                 Bond Cleaning
+
             </a>
 
             <a href="/services/exit-cleaning/">
+
                 Exit Cleaning
+
             </a>
 
             <a href="/services/carpet-cleaning/">
+
                 Carpet Cleaning
+
             </a>
 
             <a href="/services/window-cleaning-adelaide/">
+
                 Window Cleaning
+
             </a>
 
             <a href="/services/post-construction-cleaning-adelaide/">
+
                 Post Construction Cleaning
+
             </a>
 
             <a href="/services/end-of-lease-cleaning-adelaide/">
+
                 End of Lease Cleaning
+
             </a>
 
             <a href="/contact/">
+
                 Contact
+
             </a>
 
             <a href="/blog/">
+
                 Blog
+
             </a>
 
             <a href="/guides/">
+
                 Guides
+
             </a>
 
             <a href="/resources/">
+
                 Resources
+
             </a>
 
             <a href="/portal/login/">
+
                 Customer Portal
+
             </a>
 
             <a href="/employee/login/">
+
                 Employee Portal
+
             </a>
 
         </div>
@@ -900,117 +1401,123 @@
 </div>
 
 
+
 <script>
+
 (function () {
+
     "use strict";
 
     const body = document.body;
 
     /* =====================================================
+
        ELEMENTS
+
        ===================================================== */
 
     const menuButton = document.getElementById("publicMenuButton");
+
     const mobilePanel = document.getElementById("mobileMenuPanel");
+
     const mobileOverlay = document.getElementById("mobileMenuOverlay");
+
     const mobileClose = document.getElementById("mobileMenuClose");
 
     const searchButton = document.getElementById("publicSearchButton");
+
     const searchPanel = document.getElementById("siteSearchBox");
+
     const searchInput = document.getElementById("siteSearchInput");
+
     const searchClose = document.getElementById("siteSearchClose");
 
     const notificationButton =
+
         document.getElementById("notificationBell");
 
     const notificationPanel =
+
         document.getElementById("notificationPanel");
 
     const promoClose =
+
         document.getElementById("promoCloseButton");
 
     /* =====================================================
        DESKTOP DROPDOWNS
+       Hover opens the dropdown. Clicking Services, Resources,
+       or Portals follows the linked page normally.
        ===================================================== */
+    const dropdownItems = document.querySelectorAll(".yd-nav-item");
+    let dropdownCloseTimer = null;
 
-    const dropdownToggles =
-        document.querySelectorAll(".yd-nav-dropdown-toggle");
+    function getDropdownParts(item) {
+        if (!item) return null;
+        const toggle = item.querySelector(".yd-nav-dropdown-toggle");
+        if (!toggle) return null;
+        const targetId = toggle.getAttribute("aria-controls");
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (!target) return null;
+        return { item: item, toggle: toggle, target: target };
+    }
+
+    function closeDropdownItem(item) {
+        const parts = getDropdownParts(item);
+        if (!parts) return;
+        parts.target.classList.remove("is-open");
+        parts.item.classList.remove("is-open");
+        parts.toggle.setAttribute("aria-expanded", "false");
+    }
 
     function closeDropdowns(except) {
-
-        dropdownToggles.forEach(function (toggle) {
-
-            if (toggle !== except) {
-
-                toggle.setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
-
-                const targetId =
-                    toggle.getAttribute("aria-controls");
-
-                const target =
-                    document.getElementById(targetId);
-
-                if (target) {
-                    target.classList.remove("is-open");
-                }
-
-                const parent =
-                    toggle.closest(".yd-nav-item");
-
-                if (parent) {
-                    parent.classList.remove("is-open");
-                }
-            }
+        dropdownItems.forEach(function (item) {
+            if (item !== except) closeDropdownItem(item);
         });
     }
 
-    dropdownToggles.forEach(function (toggle) {
+    function openDropdownItem(item) {
+        const parts = getDropdownParts(item);
+        if (!parts) return;
+        if (dropdownCloseTimer) {
+            clearTimeout(dropdownCloseTimer);
+            dropdownCloseTimer = null;
+        }
+        closeDropdowns(item);
+        parts.target.classList.add("is-open");
+        parts.item.classList.add("is-open");
+        parts.toggle.setAttribute("aria-expanded", "true");
+    }
 
-        toggle.addEventListener("click", function (event) {
+    function scheduleDropdownClose(item) {
+        if (dropdownCloseTimer) clearTimeout(dropdownCloseTimer);
+        dropdownCloseTimer = setTimeout(function () {
+            closeDropdownItem(item);
+            dropdownCloseTimer = null;
+        }, 140);
+    }
 
-            event.preventDefault();
-            event.stopPropagation();
+    dropdownItems.forEach(function (item) {
+        const parts = getDropdownParts(item);
+        if (!parts) return;
 
-            const targetId =
-                toggle.getAttribute("aria-controls");
-
-            const target =
-                document.getElementById(targetId);
-
-            const parent =
-                toggle.closest(".yd-nav-item");
-
-            if (!target) return;
-
-            const opening =
-                !target.classList.contains("is-open");
-
-            closeDropdowns(toggle);
-
-            if (opening) {
-
-                target.classList.add("is-open");
-
-                if (parent) {
-                    parent.classList.add("is-open");
-                }
-
-                toggle.setAttribute(
-                    "aria-expanded",
-                    "true"
-                );
-            }
-
+        item.addEventListener("mouseenter", function () {
+            if (window.innerWidth > 1050) openDropdownItem(item);
         });
 
+        item.addEventListener("mouseleave", function () {
+            if (window.innerWidth > 1050) scheduleDropdownClose(item);
+        });
+
+        parts.toggle.addEventListener("focus", function () {
+            if (window.innerWidth > 1050) openDropdownItem(item);
+        });
     });
 
-
     /* =====================================================
+
        MOBILE MENU
+
        ===================================================== */
 
     function openMobileMenu() {
@@ -1021,30 +1528,41 @@
 
         if (mobileOverlay) {
             mobileOverlay.classList.add("is-visible");
+            mobileOverlay.setAttribute("aria-hidden", "false");
         }
 
         body.classList.add("yd-mobile-menu-open");
 
         if (menuButton) {
             menuButton.classList.add("is-open");
-            menuButton.setAttribute(
-                "aria-expanded",
-                "true"
-            );
+            menuButton.setAttribute("aria-expanded", "true");
         }
 
-        mobilePanel.setAttribute(
-            "aria-hidden",
-            "false"
+        mobilePanel.setAttribute("aria-hidden", "false");
+
+        /*
+        * Automatically open Services when the mobile menu opens
+        */
+        const servicesToggle = mobilePanel.querySelector(
+            '.yd-mobile-nav-toggle[aria-controls="mobileServices"]'
         );
 
-        if (mobileOverlay) {
-            mobileOverlay.setAttribute(
-                "aria-hidden",
-                "false"
+        const servicesSubmenu = document.getElementById("mobileServices");
+
+        if (servicesToggle && servicesSubmenu) {
+            servicesSubmenu.classList.add("is-open");
+            servicesToggle.setAttribute("aria-expanded", "true");
+
+            const icon = servicesToggle.querySelector(
+                "span:last-child"
             );
+
+            if (icon) {
+                icon.textContent = "−";
+            }
         }
     }
+
 
 
     function closeMobileMenu() {
@@ -1054,92 +1572,141 @@
         mobilePanel.classList.remove("is-open");
 
         if (mobileOverlay) {
+
             mobileOverlay.classList.remove("is-visible");
+
         }
 
         body.classList.remove("yd-mobile-menu-open");
 
         if (menuButton) {
+
             menuButton.classList.remove("is-open");
+
             menuButton.setAttribute(
+
                 "aria-expanded",
+
                 "false"
+
             );
+
         }
 
         mobilePanel.setAttribute(
+
             "aria-hidden",
+
             "true"
+
         );
 
         if (mobileOverlay) {
+
             mobileOverlay.setAttribute(
+
                 "aria-hidden",
+
                 "true"
+
             );
+
         }
+
     }
+
 
 
     if (menuButton) {
 
         menuButton.addEventListener(
+
             "click",
+
             function () {
 
                 if (
+
                     mobilePanel &&
+
                     mobilePanel.classList.contains("is-open")
+
                 ) {
+
                     closeMobileMenu();
+
                 } else {
+
                     openMobileMenu();
+
                 }
 
             }
+
         );
 
     }
+
 
 
     if (mobileClose) {
+
         mobileClose.addEventListener(
+
             "click",
+
             closeMobileMenu
+
         );
+
     }
+
 
 
     if (mobileOverlay) {
+
         mobileOverlay.addEventListener(
+
             "click",
+
             closeMobileMenu
+
         );
+
     }
 
 
+
     /* =====================================================
+
        MOBILE ACCORDIONS
+
        ===================================================== */
 
     const mobileToggles =
+
         document.querySelectorAll(".yd-mobile-nav-toggle");
 
     mobileToggles.forEach(function (toggle) {
 
         toggle.addEventListener(
+
             "click",
+
             function () {
 
                 const targetId =
+
                     toggle.getAttribute("aria-controls");
 
                 const target =
+
                     document.getElementById(targetId);
 
                 if (!target) return;
 
                 const opening =
+
                     !target.classList.contains("is-open");
 
                 mobileToggles.forEach(function (otherToggle) {
@@ -1147,35 +1714,53 @@
                     if (otherToggle !== toggle) {
 
                         const otherId =
+
                             otherToggle.getAttribute(
+
                                 "aria-controls"
+
                             );
 
                         const otherTarget =
+
                             document.getElementById(otherId);
 
                         if (otherTarget) {
+
                             otherTarget.classList.remove(
+
                                 "is-open"
+
                             );
+
                         }
 
                         otherToggle.setAttribute(
+
                             "aria-expanded",
+
                             "false"
+
                         );
 
                         const plus =
+
                             otherToggle.querySelector(
+
                                 "span:last-child"
+
                             );
 
                         if (plus) {
+
                             plus.textContent = "+";
+
                         }
+
                     }
 
                 });
+
 
 
                 if (opening) {
@@ -1183,17 +1768,25 @@
                     target.classList.add("is-open");
 
                     toggle.setAttribute(
+
                         "aria-expanded",
+
                         "true"
+
                     );
 
                     const icon =
+
                         toggle.querySelector(
+
                             "span:last-child"
+
                         );
 
                     if (icon) {
+
                         icon.textContent = "−";
+
                     }
 
                 } else {
@@ -1201,28 +1794,41 @@
                     target.classList.remove("is-open");
 
                     toggle.setAttribute(
+
                         "aria-expanded",
+
                         "false"
+
                     );
 
                     const icon =
+
                         toggle.querySelector(
+
                             "span:last-child"
+
                         );
 
                     if (icon) {
+
                         icon.textContent = "+";
+
                     }
+
                 }
 
             }
+
         );
 
     });
 
 
+
     /* =====================================================
+
        SEARCH
+
        ===================================================== */
 
     function openSearch() {
@@ -1232,25 +1838,37 @@
         searchPanel.classList.add("is-open");
 
         searchPanel.setAttribute(
+
             "aria-hidden",
+
             "false"
+
         );
 
         if (searchButton) {
+
             searchButton.setAttribute(
+
                 "aria-expanded",
+
                 "true"
+
             );
+
         }
 
         setTimeout(function () {
 
             if (searchInput) {
+
                 searchInput.focus();
+
             }
 
         }, 100);
+
     }
+
 
 
     function closeSearch() {
@@ -1260,44 +1878,73 @@
         searchPanel.classList.remove("is-open");
 
         searchPanel.setAttribute(
+
             "aria-hidden",
+
             "true"
+
         );
 
         if (searchButton) {
+
             searchButton.setAttribute(
+
                 "aria-expanded",
+
                 "false"
+
             );
+
         }
+
     }
+
 
 
     if (searchButton) {
+
         searchButton.addEventListener(
+
             "click",
+
             function () {
 
                 if (
+
                     searchPanel &&
+
                     searchPanel.classList.contains("is-open")
+
                 ) {
+
                     closeSearch();
+
                 } else {
+
                     openSearch();
+
                 }
 
             }
+
         );
+
     }
+
 
 
     if (searchClose) {
+
         searchClose.addEventListener(
+
             "click",
+
             closeSearch
+
         );
+
     }
+
 
 
     /* SEARCH FILTER */
@@ -1305,192 +1952,296 @@
     if (searchInput) {
 
         searchInput.addEventListener(
+
             "input",
+
             function () {
 
                 const query =
+
                     this.value.trim().toLowerCase();
 
                 const results =
+
                     document.querySelectorAll(
+
                         "#siteSearchResults a"
+
                     );
 
                 results.forEach(function (item) {
 
                     const text =
+
                         item.textContent
+
                             .trim()
+
                             .toLowerCase();
 
                     if (!query || text.includes(query)) {
+
                         item.style.display = "";
+
                     } else {
+
                         item.style.display = "none";
+
                     }
 
                 });
 
             }
+
         );
+
     }
 
 
+
     /* =====================================================
+
        NOTIFICATIONS
+
        ===================================================== */
 
     if (notificationButton && notificationPanel) {
 
         notificationButton.addEventListener(
+
             "click",
+
             function (event) {
 
                 event.stopPropagation();
 
                 const opening =
+
                     !notificationPanel.classList.contains(
+
                         "is-open"
+
                     );
 
                 notificationPanel.classList.toggle(
+
                     "is-open",
+
                     opening
+
                 );
 
                 notificationPanel.setAttribute(
+
                     "aria-hidden",
+
                     opening ? "false" : "true"
+
                 );
 
                 notificationButton.setAttribute(
+
                     "aria-expanded",
+
                     opening ? "true" : "false"
+
                 );
 
             }
+
         );
 
     }
 
 
+
     /* =====================================================
+
        OUTSIDE CLICK
+
        ===================================================== */
 
     document.addEventListener(
+
         "click",
+
         function (event) {
 
             if (
+
                 !event.target.closest(
+
                     ".yd-nav-item"
+
                 )
+
             ) {
+
                 closeDropdowns(null);
+
             }
 
 
+
             if (
+
                 notificationPanel &&
+
                 !event.target.closest(
+
                     ".yd-notification-wrapper"
+
                 )
+
             ) {
 
                 notificationPanel.classList.remove(
+
                     "is-open"
+
                 );
 
                 notificationPanel.setAttribute(
+
                     "aria-hidden",
+
                     "true"
+
                 );
 
                 if (notificationButton) {
+
                     notificationButton.setAttribute(
+
                         "aria-expanded",
+
                         "false"
+
                     );
+
                 }
 
             }
 
         }
+
     );
 
 
+
     /* =====================================================
+
        ESCAPE KEY
+
        ===================================================== */
 
     document.addEventListener(
+
         "keydown",
+
         function (event) {
 
             if (event.key !== "Escape") return;
 
             closeDropdowns(null);
+
             closeSearch();
+
             closeMobileMenu();
 
             if (notificationPanel) {
 
                 notificationPanel.classList.remove(
+
                     "is-open"
+
                 );
 
                 notificationPanel.setAttribute(
+
                     "aria-hidden",
+
                     "true"
+
                 );
 
             }
 
         }
+
     );
 
 
+
     /* =====================================================
+       RESPONSIVE RESET
+       ===================================================== */
+    window.addEventListener("resize", function () {
+        if (window.innerWidth > 1050 && mobilePanel && mobilePanel.classList.contains("is-open")) {
+            closeMobileMenu();
+        }
+    });
+
+    /* =====================================================
+
        PROMO CLOSE
+
        ===================================================== */
 
     if (promoClose) {
 
         promoClose.addEventListener(
+
             "click",
+
             function () {
 
                 const banner =
+
                     document.getElementById(
+
                         "offerBanner"
+
                     );
 
                 if (banner) {
+
                     banner.classList.add("is-hidden");
+
                 }
 
             }
+
         );
 
     }
 
 
+
     /* =====================================================
+
        CLOSE MOBILE AFTER LINK CLICK
+
        ===================================================== */
 
     if (mobilePanel) {
 
         mobilePanel
+
             .querySelectorAll("a")
+
             .forEach(function (link) {
 
                 link.addEventListener(
+
                     "click",
+
                     function () {
+
                         closeMobileMenu();
+
                     }
+
                 );
 
             });
@@ -1498,4 +2249,5 @@
     }
 
 })();
+
 </script>
