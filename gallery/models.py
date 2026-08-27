@@ -1,4 +1,7 @@
-# gallery/models.py
+# ============================================================
+# YD Commercial Cleaning Services
+# File: gallery/models.py
+# ============================================================
 
 import logging
 import mimetypes
@@ -18,6 +21,7 @@ except Exception:
 
 
 class GalleryItem(models.Model):
+
     SERVICE_CHOICES = [
         ("Commercial Cleaning", "Commercial Cleaning"),
         ("Office Cleaning", "Office Cleaning"),
@@ -49,19 +53,24 @@ class GalleryItem(models.Model):
         ("manual", "Manual Upload"),
     ]
 
-    title = models.CharField(max_length=150)
+    title = models.CharField(
+        max_length=150
+    )
 
     service_type = models.CharField(
         max_length=100,
-        choices=SERVICE_CHOICES,
+        choices=SERVICE_CHOICES
     )
 
     suburb = models.CharField(
         max_length=100,
-        blank=True,
+        blank=True
     )
 
-    # Existing main gallery images
+    # --------------------------------------------------------
+    # Before / After
+    # --------------------------------------------------------
+
     before_image = models.ImageField(
         upload_to="gallery/before/",
         null=True,
@@ -74,7 +83,10 @@ class GalleryItem(models.Model):
         blank=True,
     )
 
-    # Existing generic gallery image
+    # --------------------------------------------------------
+    # Original single generic image
+    # --------------------------------------------------------
+
     image = models.ImageField(
         upload_to="gallery/uploads/",
         null=True,
@@ -82,20 +94,23 @@ class GalleryItem(models.Model):
     )
 
     description = models.TextField(
-        blank=True,
+        blank=True
     )
 
     featured = models.BooleanField(
-        default=True,
+        default=True
     )
 
     source = models.CharField(
         max_length=20,
         choices=SOURCE_CHOICES,
-        default="manual",
+        default="manual"
     )
 
-    # Optional link to job photo source
+    # --------------------------------------------------------
+    # Optional Job Photo link
+    # --------------------------------------------------------
+
     job_photo = models.ForeignKey(
         "bookings.JobPhoto",
         on_delete=models.SET_NULL,
@@ -105,11 +120,11 @@ class GalleryItem(models.Model):
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True,
+        auto_now_add=True
     )
 
     updated_at = models.DateTimeField(
-        auto_now=True,
+        auto_now=True
     )
 
     class Meta:
@@ -118,47 +133,44 @@ class GalleryItem(models.Model):
     def __str__(self):
         return self.title
 
+    # --------------------------------------------------------
+    # Primary image
+    # --------------------------------------------------------
+
     @property
     def primary_image(self):
         """
-        Return the main image.
-        Priority:
-        generic image -> after image -> before image -> additional media.
+        Main image used when there is no before/after pair.
         """
-        if self.image:
-            return self.image
 
         if self.after_image:
             return self.after_image
 
-        if self.before_image:
-            return self.before_image
+        if self.image:
+            return self.image
 
-        additional = self.media_files.filter(
-            media_type="image"
-        ).first()
+        return self.before_image
 
-        if additional and additional.image:
-            return additional.image
-
-        return None
+    # --------------------------------------------------------
+    # Safe media helper
+    # --------------------------------------------------------
 
     def _media_entry(self, field):
-        """
-        Safely return media information without forcing
-        Cloudinary access until required.
-        """
 
         if not field or not field.name:
             return None
 
         file_name = Path(field.name).name
 
-        content_type, _ = mimetypes.guess_type(file_name)
+        content_type, _ = mimetypes.guess_type(
+            file_name
+        )
 
         try:
             url = field.url
+
         except Exception:
+
             logger = logging.getLogger(__name__)
 
             try:
@@ -172,8 +184,12 @@ class GalleryItem(models.Model):
                 pass
 
             url = (
-                getattr(settings, "STATIC_URL", "/static/")
-                + "images/placeholder.svg"
+                getattr(
+                    settings,
+                    "STATIC_URL",
+                    "/static/"
+                )
+                + "images/services/placeholder.svg"
             )
 
         return {
@@ -186,74 +202,97 @@ class GalleryItem(models.Model):
             ),
         }
 
+    # --------------------------------------------------------
+    # ALL gallery media
+    # --------------------------------------------------------
+
     @property
     def gallery_media(self):
-        """
-        Return ALL images belonging to this gallery section.
-
-        This includes:
-        1. Existing generic image
-        2. Existing before image
-        3. Existing after image
-        4. Unlimited additional GalleryMedia images
-        """
 
         media = []
 
-        # Existing image fields
+        # Keep the existing order:
+        #
+        # 1. Generic image
+        # 2. Before image
+        # 3. After image
+        # 4. Additional uploaded gallery images
+
         for field in [
             self.image,
             self.before_image,
             self.after_image,
         ]:
+
             if field and field.name:
-                entry = self._media_entry(field)
+
+                entry = self._media_entry(
+                    field
+                )
 
                 if entry:
                     media.append(entry)
 
-        # Additional uploaded gallery images
-        try:
-            additional_media = self.media_files.filter(
-                media_type="image"
-            ).order_by(
-                "order",
-                "created_at",
-            )
+        # Additional multiple images
+        for extra in self.additional_images.all():
 
-            for media_file in additional_media:
-                if media_file.image and media_file.image.name:
-                    entry = self._media_entry(media_file.image)
+            if extra.image and extra.image.name:
 
-                    if entry:
-                        media.append(entry)
+                entry = self._media_entry(
+                    extra.image
+                )
 
-        except Exception:
-            # Keeps existing gallery pages safe if media records
-            # are unavailable during migration/deployment.
-            pass
+                if entry:
+                    entry["id"] = extra.id
+                    entry["order"] = extra.order
+                    entry["additional"] = True
+
+                    media.append(entry)
 
         return media
 
+    # --------------------------------------------------------
+    # Before media
+    # --------------------------------------------------------
+
     @property
     def before_media(self):
-        if self.before_image and self.before_image.name:
-            return self._media_entry(self.before_image)
+
+        if (
+            self.before_image
+            and self.before_image.name
+        ):
+
+            return self._media_entry(
+                self.before_image
+            )
 
         return None
+
+    # --------------------------------------------------------
+    # After media
+    # --------------------------------------------------------
 
     @property
     def after_media(self):
-        if self.after_image and self.after_image.name:
-            return self._media_entry(self.after_image)
+
+        if (
+            self.after_image
+            and self.after_image.name
+        ):
+
+            return self._media_entry(
+                self.after_image
+            )
 
         return None
 
+    # --------------------------------------------------------
+    # Gallery images
+    # --------------------------------------------------------
+
     @property
     def gallery_images(self):
-        """
-        Return actual image fields/files belonging to this gallery.
-        """
 
         images = []
 
@@ -262,115 +301,57 @@ class GalleryItem(models.Model):
             self.before_image,
             self.after_image,
         ]:
+
             if img and img.name:
                 images.append(img)
 
-        try:
-            additional_media = self.media_files.filter(
-                media_type="image"
-            ).order_by(
-                "order",
-                "created_at",
-            )
+        for extra in self.additional_images.all():
 
-            for media_file in additional_media:
-                if media_file.image and media_file.image.name:
-                    images.append(media_file.image)
-
-        except Exception:
-            pass
+            if extra.image and extra.image.name:
+                images.append(extra.image)
 
         return images
 
 
-class GalleryMedia(models.Model):
+class GalleryImage(models.Model):
     """
-    Additional media belonging to a GalleryItem.
+    Additional images belonging to one GalleryItem.
 
-    One GalleryItem can have unlimited GalleryMedia records.
+    This allows one gallery card to contain unlimited
+    additional images without changing the existing
+    GalleryItem image fields.
     """
-
-    MEDIA_TYPE_CHOICES = [
-        ("image", "Image"),
-        ("video", "Video"),
-    ]
-
-    VIDEO_PLATFORM_CHOICES = [
-        ("youtube", "YouTube"),
-        ("tiktok", "TikTok"),
-        ("instagram", "Instagram"),
-        ("facebook", "Facebook"),
-    ]
 
     gallery = models.ForeignKey(
         GalleryItem,
         on_delete=models.CASCADE,
-        related_name="media_files",
-    )
-
-    media_type = models.CharField(
-        max_length=10,
-        choices=MEDIA_TYPE_CHOICES,
-        default="image",
+        related_name="additional_images",
     )
 
     image = models.ImageField(
-        upload_to="gallery/media/images/",
-        null=True,
-        blank=True,
-    )
-
-    video_platform = models.CharField(
-        max_length=20,
-        choices=VIDEO_PLATFORM_CHOICES,
-        null=True,
-        blank=True,
-    )
-
-    video_url = models.URLField(
-        null=True,
-        blank=True,
-    )
-
-    video_thumbnail = models.ImageField(
-        upload_to="gallery/media/thumbnails/",
-        null=True,
-        blank=True,
+        upload_to="gallery/multiple/",
     )
 
     order = models.PositiveIntegerField(
-        default=0,
+        default=0
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True,
+        auto_now_add=True
     )
 
     class Meta:
         ordering = [
             "order",
             "created_at",
+            "id",
         ]
 
     def __str__(self):
-        if self.image:
-            return f"{self.gallery.title} - {Path(self.image.name).name}"
 
-        return f"{self.gallery.title} - Media #{self.pk}"
+        return (
+            f"{self.gallery.title} "
+            f"– Additional Image #{self.id}"
+        )
 
-    @property
-    def media_url(self):
-        """
-        Safely return the image/video URL.
-        """
 
-        if self.media_type == "image" and self.image:
-            try:
-                return self.image.url
-            except Exception:
-                return None
-
-        if self.video_url:
-            return self.video_url
-
-        return None

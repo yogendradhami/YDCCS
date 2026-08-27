@@ -1,28 +1,809 @@
-{% extends 'dashboard_base.html' %}
-
-{% block title %}{{ page_title }} | YD Dashboard{% endblock %}
-{% block page_title %}{{ page_title }}{% endblock %}
-{% block page_subtitle %}Create or update website gallery items.{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}
+    {{ page_title }} | YD Commercial Cleaning
+{% endblock %}
 
 {% block content %}
 
-<section class="crm-panel">
+<style>
+
+    .gallery-form-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 30px 20px 60px;
+    }
+
+    .gallery-form-header {
+        margin-bottom: 25px;
+    }
+
+    .gallery-form-header h1 {
+        margin: 0 0 8px;
+        font-size: 2rem;
+        color: #1f2937;
+    }
+
+    .gallery-form-header p {
+        margin: 0;
+        color: #6b7280;
+    }
+
+    .gallery-form-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+        border: 1px solid #e5e7eb;
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 7px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #ffffff;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease,
+                    box-shadow 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    }
+
+    .form-group textarea {
+        min-height: 130px;
+        resize: vertical;
+    }
+
+    .image-upload-box {
+        padding: 20px;
+        border: 2px dashed #c7d2fe;
+        border-radius: 12px;
+        background: #f8faff;
+    }
+
+    .image-upload-box label {
+        font-size: 1rem;
+    }
+
+    .upload-help {
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .upload-help strong {
+        color: #374151;
+    }
+
+    .before-after-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .before-box,
+    .after-box {
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .before-box {
+        background: #fff7f7;
+    }
+
+    .after-box {
+        background: #f3fff5;
+    }
+
+    .before-box h3,
+    .after-box h3 {
+        margin: 0 0 12px;
+        font-size: 1rem;
+    }
+
+    .before-box h3 {
+        color: #b91c1c;
+    }
+
+    .after-box h3 {
+        color: #15803d;
+    }
+
+    .existing-images {
+        margin-top: 15px;
+    }
+
+    .existing-images-title {
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 10px;
+    }
+
+    .existing-image-grid {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fill,
+            minmax(120px, 1fr)
+        );
+        gap: 12px;
+    }
+
+    .existing-image-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    .existing-image-card img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .existing-image-name {
+        padding: 7px;
+        font-size: 0.72rem;
+        color: #6b7280;
+        word-break: break-word;
+    }
+
+    .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .checkbox-row input {
+        width: auto;
+    }
+
+    .error-box {
+        margin-bottom: 20px;
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+
+    .field-errors {
+        margin-top: 6px;
+        color: #b91c1c;
+        font-size: 0.85rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 20px;
+        border-radius: 8px;
+        border: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background: #5568d3;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .selected-files {
+        margin-top: 12px;
+        display: none;
+        padding: 10px 12px;
+        background: #eef2ff;
+        border-radius: 8px;
+        color: #3730a3;
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+
+        .gallery-form-card {
+            padding: 20px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full-width {
+            grid-column: auto;
+        }
+
+        .before-after-box {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+    }
+
+</style>
 
 
-    <form method="POST" enctype="multipart/form-data">
+<div class="gallery-form-wrapper">
+
+    <div class="gallery-form-header">
+
+        <h1>
+            {% if "Edit" in page_title %}
+                ✏️ Edit Gallery Item
+            {% else %}
+                🖼️ Add Gallery Item
+            {% endif %}
+        </h1>
+
+        <p>
+            Upload before/after photos and as many
+            additional gallery images as required.
+        </p>
+
+    </div>
+
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        class="gallery-form-card"
+        id="galleryForm"
+    >
+
         {% csrf_token %}
 
-        {{ form.as_p }}
 
-        <button type="submit" class="btn-fill">
-            {{ button_text }}
-        </button>
+        {% if form.non_field_errors %}
 
-        <a href="/dashboard/gallery/" class="btn-outline">
-            Back to Gallery
-        </a>
+            <div class="error-box">
+
+                {{ form.non_field_errors }}
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- ==================================================
+             BASIC INFORMATION
+        =================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+                Basic Information
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="{{ form.title.id_for_label }}">
+                        Title
+                    </label>
+
+                    {{ form.title }}
+
+                    {% if form.title.errors %}
+                        <div class="field-errors">
+                            {{ form.title.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.service_type.id_for_label }}">
+                        Service Type
+                    </label>
+
+                    {{ form.service_type }}
+
+                    {% if form.service_type.errors %}
+                        <div class="field-errors">
+                            {{ form.service_type.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.suburb.id_for_label }}">
+                        Suburb
+                    </label>
+
+                    {{ form.suburb }}
+
+                    {% if form.suburb.errors %}
+                        <div class="field-errors">
+                            {{ form.suburb.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="{{ form.source.id_for_label }}">
+                        Source
+                    </label>
+
+                    {{ form.source }}
+
+                    {% if form.source.errors %}
+                        <div class="field-errors">
+                            {{ form.source.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             BEFORE / AFTER
+        =================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+                Before & After Images
+            </div>
+
+
+            <div class="before-after-box">
+
+
+                <div class="before-box">
+
+                    <h3>
+                        🔴 Before Image
+                    </h3>
+
+                    {{ form.before_image }}
+
+                    <div class="upload-help">
+                        Upload the <strong>before cleaning</strong>
+                        photo.
+                    </div>
+
+                    {% if form.before_image.errors %}
+                        <div class="field-errors">
+                            {{ form.before_image.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="after-box">
+
+                    <h3>
+                        🟢 After Image
+                    </h3>
+
+                    {{ form.after_image }}
+
+                    <div class="upload-help">
+                        Upload the <strong>after cleaning</strong>
+                        photo.
+                    </div>
+
+                    {% if form.after_image.errors %}
+                        <div class="field-errors">
+                            {{ form.after_image.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             MAIN IMAGE
+        =================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+                Main Gallery Image
+            </div>
+
+
+            <div class="image-upload-box">
+
+                <div class="form-group">
+
+                    <label for="{{ form.image.id_for_label }}">
+                        Main Image
+                    </label>
+
+                    {{ form.image }}
+
+                    <div class="upload-help">
+                        Optional. This is the primary generic
+                        gallery image when a before/after pair
+                        is not being used.
+                    </div>
+
+                    {% if form.image.errors %}
+                        <div class="field-errors">
+                            {{ form.image.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             MULTIPLE IMAGES
+        =================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+                Multiple Gallery Images
+            </div>
+
+
+            <div class="image-upload-box">
+
+                <div class="form-group">
+
+                    <label
+                        for="{{ form.additional_images.id_for_label }}"
+                    >
+                        📷 Additional Gallery Images
+                    </label>
+
+                    {{ form.additional_images }}
+
+                    <div
+                        class="upload-help"
+                    >
+                        <strong>
+                            Select multiple images at once.
+                        </strong>
+                        <br>
+                        You can select 1, 5, 10, 20 or more
+                        images. They will all belong to this
+                        same gallery item.
+                        <br><br>
+                        JPG, PNG, WEBP, HEIC and HEIF are supported.
+                    </div>
+
+                    <div
+                        class="selected-files"
+                        id="selectedFiles"
+                    ></div>
+
+                    {% if form.additional_images.errors %}
+                        <div class="field-errors">
+                            {{ form.additional_images.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                {% if form.instance.pk %}
+
+                    {% with existing=form.instance.additional_images.all %}
+
+                        {% if existing %}
+
+                            <div class="existing-images">
+
+                                <div class="existing-images-title">
+                                    Existing Additional Images
+                                </div>
+
+                                <div class="existing-image-grid">
+
+                                    {% for gallery_image in existing %}
+
+                                        <div class="existing-image-card">
+
+                                            {% if gallery_image.image %}
+
+                                                <img
+                                                    src="{{ gallery_image.image.url }}"
+                                                    alt="{{ gallery_image.gallery.title }} additional image {{ forloop.counter }}"
+                                                >
+
+                                            {% endif %}
+
+                                            <div class="existing-image-name">
+
+                                                Image {{ forloop.counter }}
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endwith %}
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             DETAILS
+        =================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+                Details
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group full-width">
+
+                    <label for="{{ form.description.id_for_label }}">
+                        Description
+                    </label>
+
+                    {{ form.description }}
+
+                    {% if form.description.errors %}
+                        <div class="field-errors">
+                            {{ form.description.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                {% if form.job_photo %}
+
+                    <div class="form-group">
+
+                        <label for="{{ form.job_photo.id_for_label }}">
+                            Job Photo
+                        </label>
+
+                        {{ form.job_photo }}
+
+                        {% if form.job_photo.errors %}
+                            <div class="field-errors">
+                                {{ form.job_photo.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="form-group">
+
+                    <div class="checkbox-row">
+
+                        {{ form.featured }}
+
+                        <label
+                            for="{{ form.featured.id_for_label }}"
+                        >
+                            Featured Gallery Item
+                        </label>
+
+                    </div>
+
+                    {% if form.featured.errors %}
+                        <div class="field-errors">
+                            {{ form.featured.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             ACTIONS
+        =================================================== -->
+
+        <div class="form-actions">
+
+            <a
+                href="{% url 'gallery_list' %}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                {{ button_text }}
+            </button>
+
+        </div>
+
     </form>
 
-</section>
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const input =
+            document.getElementById(
+                "{{ form.additional_images.id_for_label }}"
+            );
+
+        const display =
+            document.getElementById(
+                "selectedFiles"
+            );
+
+
+        if (!input || !display) {
+            return;
+        }
+
+
+        input.addEventListener(
+            "change",
+            function () {
+
+                const files =
+                    Array.from(
+                        input.files || []
+                    );
+
+
+                if (!files.length) {
+
+                    display.style.display =
+                        "none";
+
+                    display.textContent =
+                        "";
+
+                    return;
+                }
+
+
+                display.style.display =
+                    "block";
+
+
+                display.textContent =
+                    `✅ ${files.length} image${
+                        files.length === 1
+                            ? ""
+                            : "s"
+                    } selected for upload.`;
+
+            }
+        );
+
+    }
+);
+
+</script>
 
 {% endblock %}

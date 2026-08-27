@@ -1,26 +1,26 @@
-# gallery/admin.py
+# ============================================================
+# YD Commercial Cleaning Services
+# File: gallery/admin.py
+# ============================================================
 
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from .forms import GalleryItemForm, GalleryMediaForm
-from .models import GalleryItem, GalleryMedia
+from .forms import GalleryItemForm
+from .models import GalleryImage
+from .models import GalleryItem
 
 
-class GalleryMediaInline(admin.TabularInline):
-    """
-    Allows multiple additional images to be uploaded
-    inside one GalleryItem.
-    """
+class GalleryImageInline(
+    admin.TabularInline
+):
 
-    model = GalleryMedia
-    form = GalleryMediaForm
+    model = GalleryImage
 
-    extra = 3
+    extra = 1
 
     fields = (
-        "media_type",
         "image",
         "image_preview",
         "order",
@@ -35,33 +35,42 @@ class GalleryMediaInline(admin.TabularInline):
         "created_at",
     )
 
-    verbose_name = "Additional Gallery Image"
-    verbose_name_plural = "Additional Gallery Images"
-
     def image_preview(self, obj):
-        if not obj or not obj.image:
-            return "No image"
 
-        try:
-            return format_html(
-                '<img src="{}" width="120" height="90" '
-                'style="object-fit:cover;border-radius:8px;'
-                'border:1px solid #ddd;" />',
-                obj.image.url,
-            )
-        except Exception:
-            return "Unable to preview"
+        if (
+            obj
+            and obj.image
+        ):
 
-    image_preview.short_description = "Preview"
+            try:
+
+                return format_html(
+                    '<img src="{}" '
+                    'style="width:100px;height:75px;'
+                    'object-fit:cover;border-radius:8px;" />',
+                    obj.image.url,
+                )
+
+            except Exception:
+
+                return "Unable to preview"
+
+        return "No image"
+
+    image_preview.short_description = (
+        "Preview"
+    )
 
 
 @admin.register(GalleryItem)
-class GalleryItemAdmin(admin.ModelAdmin):
+class GalleryItemAdmin(
+    admin.ModelAdmin
+):
 
     form = GalleryItemForm
 
     inlines = [
-        GalleryMediaInline,
+        GalleryImageInline
     ]
 
     list_display = (
@@ -94,10 +103,11 @@ class GalleryItemAdmin(admin.ModelAdmin):
         "updated_at",
         "gallery_preview",
         "job_photo_link",
-        "additional_images_preview",
+        "additional_image_count",
     )
 
     fieldsets = (
+
         (
             "Basic Info",
             {
@@ -109,29 +119,33 @@ class GalleryItemAdmin(admin.ModelAdmin):
                 )
             },
         ),
+
         (
-            "Main Images",
+            "Images",
             {
                 "fields": (
                     "before_image",
                     "after_image",
                     "image",
+                    "additional_images",
                     "gallery_preview",
                 )
             },
         ),
+
         (
-            "Gallery Information",
+            "Details",
             {
                 "fields": (
                     "description",
                     "featured",
                     "job_photo",
                     "job_photo_link",
-                    "additional_images_preview",
+                    "additional_image_count",
                 )
             },
         ),
+
         (
             "Metadata",
             {
@@ -144,7 +158,12 @@ class GalleryItemAdmin(admin.ModelAdmin):
                 ),
             },
         ),
+
     )
+
+    # --------------------------------------------------------
+    # Gallery preview
+    # --------------------------------------------------------
 
     def _build_gallery_media_html(
         self,
@@ -152,31 +171,39 @@ class GalleryItemAdmin(admin.ModelAdmin):
         thumb_size=60,
         max_items=None,
     ):
-        media = list(obj.gallery_media)
+
+        media = list(
+            obj.gallery_media
+        )
 
         if not media:
             return "No image"
 
         if max_items is None:
+
             max_items = len(media)
 
         html_parts = [
-            '<div style="display:flex;gap:8px;'
-            'flex-wrap:wrap;align-items:flex-start;">'
+            '<div style="display:flex;'
+            'gap:8px;flex-wrap:wrap;'
+            'align-items:flex-start;">'
         ]
 
-        for item in media[:max_items]:
+        for item in media[
+            :max_items
+        ]:
 
             if item["is_image"]:
 
                 html_parts.append(
                     format_html(
                         '<div>'
-                        '<img src="{}" width="{}" height="{}" '
+                        '<img src="{}" '
+                        'width="{}" '
+                        'height="{}" '
                         'style="object-fit:cover;'
-                        'border-radius:6px;'
-                        'border:1px solid #ddd;" />'
-                        "</div>",
+                        'border-radius:6px;" />'
+                        '</div>',
                         item["url"],
                         thumb_size,
                         thumb_size,
@@ -188,13 +215,14 @@ class GalleryItemAdmin(admin.ModelAdmin):
                 html_parts.append(
                     format_html(
                         '<div style="min-width:150px;'
-                        'padding:12px;border:1px solid #ddd;'
+                        'padding:12px;'
+                        'border:1px solid #ddd;'
                         'border-radius:6px;">'
-                        "<strong>{}</strong><br>"
-                        '<a href="{}" target="_blank">'
-                        "Open file"
-                        "</a>"
-                        "</div>",
+                        '<strong>{}</strong><br>'
+                        '<a href="{}" '
+                        'target="_blank">'
+                        'Open file</a>'
+                        '</div>',
                         item["name"],
                         item["url"],
                     )
@@ -205,220 +233,145 @@ class GalleryItemAdmin(admin.ModelAdmin):
             html_parts.append(
                 '<span style="align-self:center;'
                 'color:#666;font-size:12px;">'
-                "+ more"
-                "</span>"
+                '+ more'
+                '</span>'
             )
 
-        html_parts.append("</div>")
+        html_parts.append(
+            "</div>"
+        )
 
         return mark_safe(
             "".join(html_parts)
         )
 
+    # --------------------------------------------------------
+    # List preview
+    # --------------------------------------------------------
+
     def image_preview(self, obj):
+
         return self._build_gallery_media_html(
             obj,
             thumb_size=60,
             max_items=4,
         )
 
-    image_preview.short_description = "Preview"
+    image_preview.short_description = (
+        "Preview"
+    )
+
+    # --------------------------------------------------------
+    # Full preview
+    # --------------------------------------------------------
 
     def gallery_preview(self, obj):
+
         return self._build_gallery_media_html(
             obj,
             thumb_size=150,
             max_items=None,
         )
 
-    gallery_preview.short_description = "Gallery Preview"
-
-    def additional_image_count(self, obj):
-        count = obj.media_files.filter(
-            media_type="image"
-        ).count()
-
-        return count
-
-    additional_image_count.short_description = "Extra Images"
-
-    def additional_images_preview(self, obj):
-        media = obj.media_files.filter(
-            media_type="image"
-        ).order_by(
-            "order",
-            "created_at",
-        )
-
-        if not media.exists():
-            return "No additional gallery images yet."
-
-        html = [
-            '<div style="display:flex;'
-            'gap:10px;flex-wrap:wrap;">'
-        ]
-
-        for item in media:
-
-            if not item.image:
-                continue
-
-            try:
-                html.append(
-                    format_html(
-                        '<div style="width:150px;">'
-                        '<img src="{}" width="150" height="110" '
-                        'style="object-fit:cover;'
-                        'border-radius:8px;'
-                        'border:1px solid #ddd;" />'
-                        '<div style="font-size:12px;'
-                        'margin-top:4px;color:#666;">'
-                        "Order: {}"
-                        "</div>"
-                        "</div>",
-                        item.image.url,
-                        item.order,
-                    )
-                )
-            except Exception:
-                continue
-
-        html.append("</div>")
-
-        return mark_safe(
-            "".join(html)
-        )
-
-    additional_images_preview.short_description = (
-        "Current Additional Gallery Images"
+    gallery_preview.short_description = (
+        "Gallery Preview"
     )
 
-    def job_photo_link(self, obj):
+    # --------------------------------------------------------
+    # Additional image count
+    # --------------------------------------------------------
+
+    def additional_image_count(
+        self,
+        obj
+    ):
+
+        if not obj or not obj.pk:
+            return 0
+
+        return obj.additional_images.count()
+
+    additional_image_count.short_description = (
+        "Additional Images"
+    )
+
+    # --------------------------------------------------------
+    # Job photo link
+    # --------------------------------------------------------
+
+    def job_photo_link(
+        self,
+        obj
+    ):
+
         if obj.job_photo:
 
             url = (
-                f"/admin/bookings/jobphoto/"
-                f"{obj.job_photo.id}/change/"
+                "/admin/bookings/"
+                "jobphoto/"
+                f"{obj.job_photo.id}/"
+                "change/"
             )
 
             return format_html(
-                '<a href="{}" target="_blank">'
-                "View Job Photo →"
-                "</a>",
+                '<a href="{}" '
+                'target="_blank">'
+                'View Job Photo →'
+                '</a>',
                 url,
             )
 
         return "Not linked to job photo"
 
-    job_photo_link.short_description = "Linked Job Photo"
+    job_photo_link.short_description = (
+        "Linked Job Photo"
+    )
 
-    def delete_action(self, obj):
+    # --------------------------------------------------------
+    # Delete button
+    # --------------------------------------------------------
+
+    def delete_action(
+        self,
+        obj
+    ):
+
         return format_html(
             '<a class="button" '
             'style="background-color:#d4534f;" '
-            'href="/admin/gallery/galleryitem/{}/delete/">'
-            "Delete"
-            "</a>",
+            'href="/admin/gallery/'
+            'galleryitem/{}/delete/">'
+            'Delete'
+            '</a>',
             obj.pk,
         )
 
-    delete_action.short_description = "Action"
+    delete_action.short_description = (
+        "Action"
+    )
+
+    # --------------------------------------------------------
+    # Readonly source when linked to JobPhoto
+    # --------------------------------------------------------
 
     def get_readonly_fields(
         self,
         request,
-        obj=None,
+        obj=None
     ):
+
         readonly = list(
             self.readonly_fields
         )
 
-        if obj and obj.job_photo:
-            readonly.append("source")
+        if (
+            obj
+            and obj.job_photo
+            and "source" not in readonly
+        ):
+
+            readonly.append(
+                "source"
+            )
 
         return readonly
-
-
-@admin.register(GalleryMedia)
-class GalleryMediaAdmin(admin.ModelAdmin):
-
-    form = GalleryMediaForm
-
-    list_display = (
-        "gallery",
-        "media_type",
-        "image_preview",
-        "order",
-        "created_at",
-    )
-
-    list_filter = (
-        "media_type",
-        "video_platform",
-    )
-
-    search_fields = (
-        "gallery__title",
-    )
-
-    ordering = (
-        "gallery",
-        "order",
-        "created_at",
-    )
-
-    readonly_fields = (
-        "image_preview",
-        "created_at",
-    )
-
-    fieldsets = (
-        (
-            "Gallery",
-            {
-                "fields": (
-                    "gallery",
-                )
-            },
-        ),
-        (
-            "Media",
-            {
-                "fields": (
-                    "media_type",
-                    "image",
-                    "image_preview",
-                    "video_platform",
-                    "video_url",
-                    "video_thumbnail",
-                    "order",
-                )
-            },
-        ),
-        (
-            "Metadata",
-            {
-                "fields": (
-                    "created_at",
-                )
-            },
-        ),
-    )
-
-    def image_preview(self, obj):
-
-        if not obj or not obj.image:
-            return "No image"
-
-        try:
-            return format_html(
-                '<img src="{}" width="150" height="110" '
-                'style="object-fit:cover;'
-                'border-radius:8px;'
-                'border:1px solid #ddd;" />',
-                obj.image.url,
-            )
-        except Exception:
-            return "Unable to preview"
-
-    image_preview.short_description = "Preview"

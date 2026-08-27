@@ -28,6 +28,16 @@ def _build_gallery_groups(gallery_items):
         if first_item.job_photo and first_item.job_photo.booking and first_item.job_photo.booking.customer:
             customer = first_item.job_photo.booking.customer
 
+        preview_media = []
+        for item in items:
+            item_media = []
+            for media in item.gallery_media or []:
+                if media and media.get("is_image"):
+                    item_media.append(media)
+            if item_media:
+                preview_media = item_media
+                break
+
         gallery_groups.append(
             {
                 "customer": customer,
@@ -35,6 +45,8 @@ def _build_gallery_groups(gallery_items):
                 "title": customer.gallery_display_name if customer else first_item.title,
                 "service_type": first_item.service_type,
                 "suburb": customer.suburb_postcode if customer and customer.suburb_postcode else first_item.suburb,
+                "media": preview_media,
+                "primary_media": preview_media[0] if preview_media else None,
             }
         )
 

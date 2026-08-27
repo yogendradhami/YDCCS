@@ -43,7 +43,7 @@ from employees.forms import EmployeeForm
 from employees.models import Employee
 from expenses.models import Expense
 from gallery.forms import GalleryItemForm
-from gallery.models import GalleryItem
+from gallery.models import GalleryItem, GalleryImage
 from google_reviews.calendar_utils import (
     create_or_update_booking_event,
     delete_booking_event,
@@ -1154,33 +1154,67 @@ def delete_employee(request, employee_id):
     )
 
 
+# ============================================================
+# Gallery Dashboard
+# ============================================================
+
 @login_required
 def gallery_list(request):
-    items = GalleryItem.objects.all().order_by("-id")
-    source_count = items.values("source").distinct().count()
+
+    items = (
+        GalleryItem.objects
+        .prefetch_related("additional_images")
+        .all()
+        .order_by("-id")
+    )
 
     return render(
         request,
         "dashboard/gallery/dashboard_gallery_list.html",
         {
             "items": items,
-            "source_count": source_count,
         },
     )
 
+
 @login_required
 def add_gallery_item(request):
+
     if request.method == "POST":
-        form = GalleryItemForm(request.POST, request.FILES)
+
+        form = GalleryItemForm(
+            request.POST,
+            request.FILES,
+        )
 
         if form.is_valid():
-            form.save()
-            messages.success(request, "✅ Gallery item added successfully.")
-            return redirect("gallery_list")
 
-        messages.error(request, "❌ Please check the gallery form.")
+            gallery_item = form.save()
+
+            for uploaded_image in request.FILES.getlist("additional_images"):
+                GalleryImage.objects.create(
+                    gallery=gallery_item,
+                    image=uploaded_image,
+                )
+
+            messages.success(
+                request,
+                "✅ Gallery item added successfully.",
+            )
+
+            return redirect(
+                "gallery_list"
+            )
+
+        messages.error(
+            request,
+            "❌ Please check the gallery form.",
+        )
+
     else:
+
         form = GalleryItemForm()
+
 
     return render(
         request,
@@ -1194,20 +1228,55 @@ def add_gallery_item(request):
 
 
 @login_required
-def edit_gallery_item(request, item_id):
-    item = get_object_or_404(GalleryItem, id=item_id)
+def edit_gallery_item(
+    request,
+    item_id
+):
+
+    item = get_object_or_404(
+        GalleryItem,
+        id=item_id,
+    )
+
 
     if request.method == "POST":
-        form = GalleryItemForm(request.POST, request.FILES, instance=item)
+
+        form = GalleryItemForm(
+            request.POST,
+            request.FILES,
+            instance=item,
+        )
 
         if form.is_valid():
-            form.save()
-            messages.success(request, "✅ Gallery item updated successfully.")
-            return redirect("gallery_list")
 
-        messages.error(request, "❌ Please check the gallery form.")
+            gallery_item = form.save()
+
+            for uploaded_image in request.FILES.getlist("additional_images"):
+                GalleryImage.objects.create(
+                    gallery=gallery_item,
+                    image=uploaded_image,
+                )
+
+            messages.success(
+                request,
+                "✅ Gallery item updated successfully.",
+            )
+
+            return redirect(
+                "gallery_list"
+            )
+
+        messages.error(
+            request,
+            "❌ Please check the gallery form.",
+        )
+
     else:
-        form = GalleryItemForm(instance=item)
+
+        form = GalleryItemForm(
+            instance=item
+        )
+
 
     return render(
         request,
@@ -1221,13 +1290,27 @@ def edit_gallery_item(request, item_id):
 
 
 @login_required
-def delete_gallery_item(request, item_id):
-    item = get_object_or_404(GalleryItem, id=item_id)
+def delete_gallery_item(request,item_id):
+
+    item = get_object_or_404(
+        GalleryItem,
+        id=item_id,
+    )
+
 
     if request.method == "POST":
+
         item.delete()
-        messages.success(request, "✅ Gallery item deleted successfully.")
-        return redirect("gallery_list")
+
+        messages.success(
+            request,
+            "✅ Gallery item deleted successfully.",
+        )
+
+        return redirect(
+            "gallery_list"
+        )
+
 
     return render(
         request,
