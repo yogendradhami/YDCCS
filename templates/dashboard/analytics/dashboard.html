@@ -1,0 +1,783 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Website Analytics | YD Cleaning{% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard/analytics/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="wa-page">
+
+
+<!-- ==================================================
+     HEADER
+=================================================== -->
+<section class="wa-header">
+
+    <div>
+        <div class="wa-eyebrow">
+            <span class="wa-eyebrow-dot"></span>
+            Website Intelligence
+        </div>
+
+        <h1>Website Analytics</h1>
+
+        <p>
+            Understand how visitors discover, navigate and engage
+            with YD Commercial Cleaning.
+        </p>
+    </div>
+
+    <div class="wa-live">
+        <span class="wa-live-dot"></span>
+
+        <div>
+            <strong>{{ active_visitors }}</strong>
+            <span>active visitors</span>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     OVERVIEW
+=================================================== -->
+<section class="wa-section">
+
+    <div class="wa-section-heading">
+
+        <div>
+            <span class="wa-section-kicker">Overview</span>
+            <h2>Website performance</h2>
+        </div>
+
+        <div class="wa-period">
+            <a href="?period=today"
+               class="{% if selected_period == 'today' %}active{% endif %}">
+                Today
+            </a>
+
+            <a href="?period=7days"
+               class="{% if selected_period == '7days' %}active{% endif %}">
+                7 Days
+            </a>
+
+            <a href="?period=30days"
+               class="{% if selected_period == '30days' %}active{% endif %}">
+                30 Days
+            </a>
+        </div>
+
+    </div>
+
+
+    <div class="wa-kpi-grid">
+
+        <div class="wa-kpi-card">
+
+            <div class="wa-kpi-icon">👥</div>
+
+            <div class="wa-kpi-content">
+                <span>Visitors</span>
+
+                <strong>{{ visitors_period }}</strong>
+
+                <small>
+                    Yesterday: {{ visitors_yesterday }}
+                </small>
+            </div>
+
+        </div>
+
+
+        <div class="wa-kpi-card">
+
+            <div class="wa-kpi-icon">◉</div>
+
+            <div class="wa-kpi-content">
+                <span>Sessions</span>
+
+                <strong>{{ sessions_period }}</strong>
+
+                <small>
+                    Total: {{ total_sessions }}
+                </small>
+            </div>
+
+        </div>
+
+
+        <div class="wa-kpi-card">
+
+            <div class="wa-kpi-icon">↗</div>
+
+            <div class="wa-kpi-content">
+                <span>Page Views</span>
+
+                <strong>{{ page_views_period }}</strong>
+
+                <small>
+                    Total: {{ total_page_views }}
+                </small>
+            </div>
+
+        </div>
+
+
+        <div class="wa-kpi-card">
+
+            <div class="wa-kpi-icon">↻</div>
+
+            <div class="wa-kpi-content">
+                <span>Returning Visitors</span>
+
+                <strong>{{ returning_visitors }}</strong>
+
+                <small>
+                    Total visitors: {{ total_visitors }}
+                </small>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     CONVERSIONS
+=================================================== -->
+<section class="wa-section">
+
+    <div class="wa-section-heading">
+
+        <div>
+            <span class="wa-section-kicker">Conversions</span>
+            <h2>Leads &amp; enquiries</h2>
+        </div>
+
+        <span class="wa-period">
+            {{ period_label }}
+        </span>
+
+    </div>
+
+
+    <div class="wa-conversion-grid">
+
+        <div class="wa-conversion-card wa-phone">
+
+            <div class="wa-conversion-top">
+                <span class="wa-conversion-icon">☎</span>
+                <span class="wa-conversion-label">
+                    Phone clicks
+                </span>
+            </div>
+
+            <strong>{{ phone_clicks }}</strong>
+
+            <p>
+                Visitors who clicked to call
+            </p>
+
+        </div>
+
+
+        <div class="wa-conversion-card wa-email">
+
+            <div class="wa-conversion-top">
+                <span class="wa-conversion-icon">✉</span>
+                <span class="wa-conversion-label">
+                    Email clicks
+                </span>
+            </div>
+
+            <strong>{{ email_clicks }}</strong>
+
+            <p>
+                Visitors who clicked an email link
+            </p>
+
+        </div>
+
+
+        <div class="wa-conversion-card wa-quote">
+
+            <div class="wa-conversion-top">
+                <span class="wa-conversion-icon">$</span>
+                <span class="wa-conversion-label">
+                    Quote starts
+                </span>
+            </div>
+
+            <strong>{{ quote_starts }}</strong>
+
+            <p>
+                Quote journeys started
+            </p>
+
+        </div>
+
+
+        <div class="wa-conversion-card wa-success">
+
+            <div class="wa-conversion-top">
+                <span class="wa-conversion-icon">✓</span>
+                <span class="wa-conversion-label">
+                    Quote submissions
+                </span>
+            </div>
+
+            <strong>{{ quote_submissions }}</strong>
+
+            <p>
+                Completed quote enquiries
+            </p>
+
+        </div>
+
+
+        <div class="wa-conversion-card wa-booking">
+
+            <div class="wa-conversion-top">
+                <span class="wa-conversion-icon">▣</span>
+                <span class="wa-conversion-label">
+                    Booking starts
+                </span>
+            </div>
+
+            <strong>{{ booking_starts }}</strong>
+
+            <p>
+                Booking journeys started
+            </p>
+
+        </div>
+
+
+        <div class="wa-conversion-card wa-success">
+
+            <div class="wa-conversion-top">
+                <span class="wa-conversion-icon">✓</span>
+                <span class="wa-conversion-label">
+                    Booking completions
+                </span>
+            </div>
+
+            <strong>{{ booking_completions }}</strong>
+
+            <p>
+                Completed bookings
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     PAGES & SEARCHES
+=================================================== -->
+<section class="wa-two-column">
+
+    <!-- Popular Pages -->
+    <div class="wa-panel">
+
+        <div class="wa-panel-header">
+
+            <div>
+                <span class="wa-panel-kicker">
+                    Navigation
+                </span>
+
+                <h2>Most visited pages</h2>
+            </div>
+
+            <span class="wa-panel-count">
+                Top 10
+            </span>
+
+        </div>
+
+
+        <div class="wa-list">
+
+            {% for page in popular_pages %}
+
+                <div class="wa-list-row">
+
+                    <div class="wa-list-main">
+
+                        <span class="wa-rank">
+                            {{ forloop.counter }}
+                        </span>
+
+                        <div>
+                            <strong>{{ page.page_url }}</strong>
+                            <small>Page views</small>
+                        </div>
+
+                    </div>
+
+                    <strong class="wa-list-value">
+                        {{ page.total }}
+                    </strong>
+
+                </div>
+
+            {% empty %}
+
+                <div class="wa-empty">
+                    <span>◎</span>
+                    <p>No page views recorded yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <!-- Popular Searches -->
+    <div class="wa-panel">
+
+        <div class="wa-panel-header">
+
+            <div>
+                <span class="wa-panel-kicker">
+                    Search behaviour
+                </span>
+
+                <h2>Popular searches</h2>
+            </div>
+
+            <span class="wa-panel-count">
+                Top 10
+            </span>
+
+        </div>
+
+
+        <div class="wa-list">
+
+            {% for search in popular_searches %}
+
+                <div class="wa-list-row">
+
+                    <div class="wa-list-main">
+
+                        <span class="wa-search-icon">⌕</span>
+
+                        <div>
+                            <strong>{{ search.query }}</strong>
+                            <small>Searches</small>
+                        </div>
+                    </div>
+
+                    <strong class="wa-list-value">
+                        {{ search.total }}
+                    </strong>
+
+                </div>
+
+            {% empty %}
+
+                <div class="wa-empty">
+                    <span>⌕</span>
+                    <p>No searches recorded yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     MOST CLICKED ELEMENTS
+=================================================== -->
+<section class="wa-panel wa-full-panel">
+
+    <div class="wa-panel-header">
+
+        <div>
+            <span class="wa-panel-kicker">
+                Interaction
+            </span>
+
+            <h2>Most clicked elements</h2>
+        </div>
+
+        <span class="wa-panel-count">
+            Top 10
+        </span>
+
+    </div>
+
+
+    <div class="wa-click-grid">
+
+        {% for click in popular_clicks %}
+
+            <div class="wa-click-item">
+
+                <div class="wa-click-number">
+                    {{ forloop.counter }}
+                </div>
+
+                <div class="wa-click-content">
+
+                    <strong>{{ click.element }}</strong>
+
+                    <span>
+                        {{ click.event_type }}
+                    </span>
+
+                </div>
+
+                <strong class="wa-click-total">
+                    {{ click.total }}
+                </strong>
+
+            </div>
+
+        {% empty %}
+
+            <div class="wa-empty">
+                <span>⌁</span>
+                <p>No clicks recorded yet.</p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     TECHNOLOGY
+=================================================== -->
+<section class="wa-two-column">
+
+
+    <!-- DEVICES -->
+    <div class="wa-panel">
+
+        <div class="wa-panel-header">
+
+            <div>
+                <span class="wa-panel-kicker">
+                    Technology
+                </span>
+
+                <h2>Devices</h2>
+            </div>
+
+            <span class="wa-panel-count">
+                {{ selected_period|default:"Today" }}
+            </span>
+
+        </div>
+
+
+        <div class="wa-breakdown">
+
+            {% for device in device_breakdown %}
+
+                <div class="wa-breakdown-row">
+
+                    <div class="wa-breakdown-label">
+                        <span>
+                            {{ device.device_type }}
+                        </span>
+
+                        <small>
+                            {{ device.percentage }}%
+                        </small>
+                    </div>
+
+
+                    <div class="wa-breakdown-bar">
+                        <span
+                            style="width: {{ device.percentage }}%;">
+                        </span>
+                    </div>
+
+
+                    <strong>
+                        {{ device.total }}
+                    </strong>
+
+                </div>
+
+            {% empty %}
+
+                <div class="wa-empty">
+                    <p>No device data recorded yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <!-- BROWSERS -->
+    <div class="wa-panel">
+
+        <div class="wa-panel-header">
+
+            <div>
+                <span class="wa-panel-kicker">
+                    Technology
+                </span>
+
+                <h2>Browsers</h2>
+            </div>
+
+            <span class="wa-panel-count">
+                {{ selected_period|default:"Today" }}
+            </span>
+
+        </div>
+
+
+        <div class="wa-breakdown">
+
+            {% for browser in browser_breakdown %}
+
+                <div class="wa-breakdown-row">
+
+                    <div class="wa-breakdown-label">
+                        <span>
+                            {{ browser.browser }}
+                        </span>
+
+                        <small>
+                            {{ browser.percentage }}%
+                        </small>
+                    </div>
+
+
+                    <div class="wa-breakdown-bar">
+                        <span
+                            style="width: {{ browser.percentage }}%;">
+                        </span>
+                    </div>
+
+
+                    <strong>
+                        {{ browser.total }}
+                    </strong>
+
+                </div>
+
+            {% empty %}
+
+                <div class="wa-empty">
+                    <p>No browser data recorded yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     OPERATING SYSTEMS
+=================================================== -->
+<section class="wa-panel wa-full-panel">
+
+    <div class="wa-panel-header">
+
+        <div>
+            <span class="wa-panel-kicker">
+                Technology
+            </span>
+
+            <h2>Operating systems</h2>
+        </div>
+
+        <span class="wa-panel-count">
+            {{ selected_period|default:"Today" }}
+        </span>
+
+    </div>
+
+
+    <div class="wa-breakdown wa-breakdown-os">
+
+        {% for operating_system in operating_system_breakdown %}
+
+            <div class="wa-breakdown-row">
+
+                <div class="wa-breakdown-label">
+
+                    <span>
+                        {{ operating_system.operating_system }}
+                    </span>
+
+                    <small>
+                        {{ operating_system.percentage }}%
+                    </small>
+
+                </div>
+
+
+                <div class="wa-breakdown-bar">
+
+                    <span
+                        style="width: {{ operating_system.percentage }}%;">
+                    </span>
+
+                </div>
+
+
+                <strong>
+                    {{ operating_system.total }}
+                </strong>
+
+            </div>
+
+        {% empty %}
+
+            <div class="wa-empty">
+                <p>
+                    No operating system data recorded yet.
+                </p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     RECENT ACTIVITY
+=================================================== -->
+<section class="wa-panel wa-full-panel">
+
+    <div class="wa-panel-header">
+
+        <div>
+            <span class="wa-panel-kicker">
+                Live feed
+            </span>
+
+            <h2>Recent website activity</h2>
+        </div>
+
+        <div class="wa-feed-status">
+            <span></span>
+            Live
+        </div>
+
+    </div>
+
+
+    <div class="wa-activity-list">
+
+        {% for activity in recent_activity %}
+
+            <div class="wa-activity-row">
+
+                <div class="wa-activity-icon">
+
+                    {% if activity.event_type == "PAGE_VIEW" %}
+                        ↗
+
+                    {% elif activity.event_type == "PHONE_CLICK" %}
+                        ☎
+
+                    {% elif activity.event_type == "EMAIL_CLICK" %}
+                        ✉
+
+                    {% elif activity.event_type == "QUOTE_START" %}
+                        $
+
+                    {% elif activity.event_type == "QUOTE_SUBMIT" %}
+                        ✓
+
+                    {% elif activity.event_type == "BOOKING_START" %}
+                        ▣
+
+                    {% elif activity.event_type == "BOOKING_COMPLETE" %}
+                        ✓
+
+                    {% elif activity.event_type == "SEARCH" %}
+                        ⌕
+
+                    {% else %}
+                        •
+                    {% endif %}
+
+                </div>
+
+
+                <div class="wa-activity-main">
+
+                    <strong>
+                        {{ activity.event_type }}
+                    </strong>
+
+                    {% if activity.element %}
+                        <span>
+                            {{ activity.element }}
+                        </span>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="wa-activity-page">
+
+                    <small>
+                        {{ activity.page_url }}
+                    </small>
+
+                </div>
+
+
+                <time>
+                    {{ activity.created_at|date:"d M Y H:i:s" }}
+                </time>
+
+            </div>
+
+        {% empty %}
+
+            <div class="wa-empty">
+                <span>◷</span>
+                <p>No activity recorded yet.</p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+</div>
+
+{% endblock %}

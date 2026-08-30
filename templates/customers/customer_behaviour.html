@@ -1,0 +1,467 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Customer Behaviour | YD Cleaning{% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard/analytics/customer-behaviour.css' %}">
+{% endblock %}
+
+{% block page_title %}Customer Behaviour{% endblock %}
+
+{% block page_subtitle %}
+Understand how visitors interact with the YD Cleaning website.
+{% endblock %}
+
+{% block content %}
+
+<div class="cb-page">
+
+
+<!-- Header -->
+<div class="cb-header">
+
+    <div>
+        <div class="cb-eyebrow">
+            <span></span>
+            Visitor Intelligence
+        </div>
+
+        <h1>Customer Behaviour</h1>
+
+        <p>
+            See what visitors are doing on your website,
+            what they are interested in and where they convert.
+        </p>
+    </div>
+
+    <div class="cb-live">
+        <span></span>
+        <div>
+            <strong>{{ active_sessions }}</strong>
+            <small>active sessions</small>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Visitor Overview -->
+<section class="cb-section">
+
+    <div class="cb-section-heading">
+        <div>
+            <span>Audience</span>
+            <h2>Visitor overview</h2>
+        </div>
+
+        <span class="cb-period">Last 30 days</span>
+    </div>
+
+    <div class="cb-stats">
+
+        <div class="cb-stat">
+            <div class="cb-stat-icon">👥</div>
+            <span>Visitors Today</span>
+            <strong>{{ visitors_today }}</strong>
+            <small>Current day</small>
+        </div>
+
+        <div class="cb-stat">
+            <div class="cb-stat-icon">◷</div>
+            <span>Visitors — 30 Days</span>
+            <strong>{{ visitors_30_days }}</strong>
+            <small>Rolling 30-day period</small>
+        </div>
+
+        <div class="cb-stat">
+            <div class="cb-stat-icon">◎</div>
+            <span>Total Visitors</span>
+            <strong>{{ total_visitors }}</strong>
+            <small>All recorded visitors</small>
+        </div>
+
+        <div class="cb-stat">
+            <div class="cb-stat-icon">↻</div>
+            <span>Returning Visitors</span>
+            <strong>{{ returning_visitors }}</strong>
+            <small>Visitors who returned</small>
+        </div>
+
+        <div class="cb-stat">
+            <div class="cb-stat-icon">↗</div>
+            <span>Page Views Today</span>
+            <strong>{{ page_views_today }}</strong>
+            <small>Website interactions</small>
+        </div>
+
+        <div class="cb-stat">
+            <div class="cb-stat-icon">▣</div>
+            <span>Page Views — 30 Days</span>
+            <strong>{{ page_views_30_days }}</strong>
+            <small>Rolling 30-day period</small>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Customer Intent -->
+<section class="cb-section">
+
+    <div class="cb-section-heading">
+        <div>
+            <span>Conversions</span>
+            <h2>Customer intent</h2>
+        </div>
+
+        <span class="cb-period">Last 30 days</span>
+    </div>
+
+    <div class="cb-intent-grid">
+
+        <div class="cb-intent">
+            <div class="cb-intent-icon">☎</div>
+            <div>
+                <span>Phone clicks</span>
+                <strong>{{ phone_clicks }}</strong>
+                <small>Call intent</small>
+            </div>
+        </div>
+
+        <div class="cb-intent">
+            <div class="cb-intent-icon">✉</div>
+            <div>
+                <span>Email clicks</span>
+                <strong>{{ email_clicks }}</strong>
+                <small>Email intent</small>
+            </div>
+        </div>
+
+        <div class="cb-intent">
+            <div class="cb-intent-icon">$</div>
+            <div>
+                <span>Quote starts</span>
+                <strong>{{ quote_starts }}</strong>
+                <small>Quote journeys</small>
+            </div>
+        </div>
+
+        <div class="cb-intent">
+            <div class="cb-intent-icon">✓</div>
+            <div>
+                <span>Quote submissions</span>
+                <strong>{{ quote_submissions }}</strong>
+                <small>Completed enquiries</small>
+            </div>
+        </div>
+
+        <div class="cb-intent">
+            <div class="cb-intent-icon">▣</div>
+            <div>
+                <span>Booking starts</span>
+                <strong>{{ booking_starts }}</strong>
+                <small>Booking journeys</small>
+            </div>
+        </div>
+
+        <div class="cb-intent">
+            <div class="cb-intent-icon">✓</div>
+            <div>
+                <span>Booking completions</span>
+                <strong>{{ booking_completions }}</strong>
+                <small>Completed bookings</small>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Pages / Searches -->
+<section class="cb-columns">
+
+    <div class="cb-panel">
+
+        <div class="cb-panel-header">
+            <div>
+                <span>Navigation</span>
+                <h2>Most visited pages</h2>
+            </div>
+
+            <span>Top 15</span>
+        </div>
+
+        <div class="cb-list">
+
+            {% for page in popular_pages %}
+
+                <div class="cb-list-row">
+
+                    <div class="cb-list-left">
+                        <b>{{ forloop.counter }}</b>
+
+                        <div>
+                            <strong>{{ page.page_url }}</strong>
+                            <small>Page views</small>
+                        </div>
+                    </div>
+
+                    <strong>{{ page.total }}</strong>
+
+                </div>
+
+            {% empty %}
+
+                <div class="cb-empty">
+                    <p>No page views recorded yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <div class="cb-panel">
+
+        <div class="cb-panel-header">
+            <div>
+                <span>Search behaviour</span>
+                <h2>Popular searches</h2>
+            </div>
+
+            <span>Top 15</span>
+        </div>
+
+        <div class="cb-list">
+
+            {% for search in popular_searches %}
+
+                <div class="cb-list-row">
+
+                    <div class="cb-list-left">
+                        <b class="cb-search-icon">⌕</b>
+
+                        <div>
+                            <strong>{{ search.query }}</strong>
+                            <small>Website searches</small>
+                        </div>
+                    </div>
+
+                    <strong>{{ search.total }}</strong>
+
+                </div>
+
+            {% empty %}
+
+                <div class="cb-empty">
+                    <p>No searches recorded yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Click Behaviour -->
+<section class="cb-panel cb-full">
+
+    <div class="cb-panel-header">
+        <div>
+            <span>Interaction</span>
+            <h2>Most clicked elements</h2>
+        </div>
+
+        <span>Top 15</span>
+    </div>
+
+    <div class="cb-clicks">
+
+        {% for click in popular_clicks %}
+
+            <div class="cb-click">
+
+                <div class="cb-click-rank">
+                    {{ forloop.counter }}
+                </div>
+
+                <div class="cb-click-info">
+                    <strong>{{ click.element }}</strong>
+                    <small>{{ click.event_type }}</small>
+                </div>
+
+                <strong>{{ click.total }}</strong>
+
+            </div>
+
+        {% empty %}
+
+            <div class="cb-empty">
+                <p>No clicks recorded yet.</p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- Technology -->
+<section class="cb-columns">
+
+    <div class="cb-panel">
+
+        <div class="cb-panel-header">
+            <div>
+                <span>Technology</span>
+                <h2>Visitor devices</h2>
+            </div>
+        </div>
+
+        <div class="cb-device-list">
+
+            {% for device in devices %}
+
+                <div class="cb-device-row">
+
+                    <div>
+                        <strong>{{ device.device_type }}</strong>
+                        <small>Visitors</small>
+                    </div>
+
+                    <strong>{{ device.total }}</strong>
+
+                </div>
+
+            {% empty %}
+
+                <div class="cb-empty">
+                    <p>No device data recorded yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <div class="cb-panel">
+
+        <div class="cb-panel-header">
+            <div>
+                <span>Visitor journey</span>
+                <h2>Behaviour snapshot</h2>
+            </div>
+        </div>
+
+        <div class="cb-insight-list">
+
+            <div>
+                <span>Active sessions</span>
+                <strong>{{ active_sessions }}</strong>
+            </div>
+
+            <div>
+                <span>Sessions today</span>
+                <strong>{{ sessions_today }}</strong>
+            </div>
+
+            <div>
+                <span>Returning visitors</span>
+                <strong>{{ returning_visitors }}</strong>
+            </div>
+
+            <div>
+                <span>30-day page views</span>
+                <strong>{{ page_views_30_days }}</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Recent Activity -->
+<section class="cb-panel cb-full">
+
+    <div class="cb-panel-header">
+        <div>
+            <span>Live feed</span>
+            <h2>Recent website activity</h2>
+        </div>
+
+        <div class="cb-feed-status">
+            <span></span>
+            Live
+        </div>
+    </div>
+
+    <div class="cb-activity">
+
+        {% for activity in recent_activity %}
+
+            <div class="cb-activity-row">
+
+                <div class="cb-activity-icon">
+                    {% if activity.event_type == "PAGE_VIEW" %}
+                        ↗
+                    {% elif activity.event_type == "PHONE_CLICK" %}
+                        ☎
+                    {% elif activity.event_type == "EMAIL_CLICK" %}
+                        ✉
+                    {% elif activity.event_type == "QUOTE_START" %}
+                        $
+                    {% elif activity.event_type == "BOOKING_START" %}
+                        ▣
+                    {% else %}
+                        •
+                    {% endif %}
+                </div>
+
+                <div class="cb-activity-main">
+                    <strong>{{ activity.event_type }}</strong>
+
+                    {% if activity.element %}
+                        <span>{{ activity.element }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="cb-activity-page">
+                    <small>{{ activity.page_url }}</small>
+                </div>
+
+                <time>
+                    {{ activity.created_at|date:"d M Y H:i:s" }}
+                </time>
+
+            </div>
+
+        {% empty %}
+
+            <div class="cb-empty">
+                <p>No activity recorded yet.</p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+</div>
+
+{% endblock %}

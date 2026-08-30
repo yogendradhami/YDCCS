@@ -30,6 +30,7 @@ from .views import (
     create_invoice_from_booking,
     customer_360,
     customer_analytics,
+    customer_behaviour,
     customer_list,
     customer_loyalty,
     customer_profile_360,
@@ -221,6 +222,11 @@ urlpatterns = [
     path("dashboard/email-logs/", email_log_list, name="email_log_list"),
     path(
         "dashboard/customer-analytics/", customer_analytics, name="customer_analytics"
+    ),
+    path(
+        "dashboard/customer-behaviour/",
+        customer_behaviour,
+        name="customer_behaviour",
     ),
     path("dashboard/review-requests/", review_requests, name="review_requests"),
     path(

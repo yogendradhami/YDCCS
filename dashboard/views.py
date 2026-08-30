@@ -8,7 +8,7 @@ def create_activity_log(user, action_type, title, description=""):
         user=user, action_type=action_type, title=title, description=description
     )
 
-
+from datetime import timedelta
 import csv
 from collections import defaultdict
 from datetime import datetime, time, timedelta
@@ -65,7 +65,9 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from google_reviews.calendar_utils import create_or_update_booking_event
-
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count
+from django.utils import timezone
 
 # Company settings form
 from .forms import CompanySettingsForm
@@ -75,6 +77,14 @@ from .models import (
     EmailLog,
     PurchaseOrder,
     ReviewRequestLog,
+
+ 
+)
+from analytics.models import (
+    ActivityEvent,
+    SearchEvent,
+    Visitor,
+    VisitorSession,
 )
 
 
@@ -2278,6 +2288,223 @@ def customer_analytics(request):
         },
     )
 
+
+@login_required
+def customer_behaviour(request):
+    """
+    Website visitor behaviour dashboard.
+
+    This is separate from Customer Analytics.
+
+    Customer Analytics:
+        Tracks existing customers and their business activity.
+
+    Customer Behaviour:
+        Tracks anonymous website visitors and their interactions
+        with the YD Cleaning website.
+    """
+
+    now = timezone.now()
+
+    today_start = now.replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+
+    last_30_days = now - timedelta(days=30)
+
+    # ---------------------------------------------
+    # Visitor statistics
+    # ---------------------------------------------
+
+    total_visitors = Visitor.objects.count()
+
+    visitors_today = Visitor.objects.filter(
+        first_seen__gte=today_start
+    ).count()
+
+    visitors_30_days = Visitor.objects.filter(
+        first_seen__gte=last_30_days
+    ).count()
+
+    returning_visitors = Visitor.objects.filter(
+        is_returning=True
+    ).count()
+
+    # ---------------------------------------------
+    # Session statistics
+    # ---------------------------------------------
+
+    sessions_today = VisitorSession.objects.filter(
+        started_at__gte=today_start
+    ).count()
+
+    active_sessions = VisitorSession.objects.filter(
+        is_active=True,
+        last_activity__gte=now - timedelta(minutes=5),
+    ).count()
+
+    # ---------------------------------------------
+    # Page views
+    # ---------------------------------------------
+
+    page_views_today = ActivityEvent.objects.filter(
+        event_type="PAGE_VIEW",
+        created_at__gte=today_start,
+    ).count()
+
+    page_views_30_days = ActivityEvent.objects.filter(
+        event_type="PAGE_VIEW",
+        created_at__gte=last_30_days,
+    ).count()
+
+    # ---------------------------------------------
+    # Customer intent / conversion actions
+    # ---------------------------------------------
+
+    phone_clicks = ActivityEvent.objects.filter(
+        event_type="PHONE_CLICK",
+        created_at__gte=last_30_days,
+    ).count()
+
+    email_clicks = ActivityEvent.objects.filter(
+        event_type="EMAIL_CLICK",
+        created_at__gte=last_30_days,
+    ).count()
+
+    quote_starts = ActivityEvent.objects.filter(
+        event_type="QUOTE_START",
+        created_at__gte=last_30_days,
+    ).count()
+
+    quote_submissions = ActivityEvent.objects.filter(
+        event_type="QUOTE_SUBMIT",
+        created_at__gte=last_30_days,
+    ).count()
+
+    booking_starts = ActivityEvent.objects.filter(
+        event_type="BOOKING_START",
+        created_at__gte=last_30_days,
+    ).count()
+
+    booking_completions = ActivityEvent.objects.filter(
+        event_type="BOOKING_COMPLETE",
+        created_at__gte=last_30_days,
+    ).count()
+
+    # ---------------------------------------------
+    # Most visited pages
+    # ---------------------------------------------
+
+    popular_pages = (
+        ActivityEvent.objects
+        .filter(
+            event_type="PAGE_VIEW",
+            created_at__gte=last_30_days,
+        )
+        .exclude(page_url="")
+        .values("page_url")
+        .annotate(total=Count("id"))
+        .order_by("-total")[:15]
+    )
+
+    # ---------------------------------------------
+    # Most clicked elements
+    # ---------------------------------------------
+
+    popular_clicks = (
+        ActivityEvent.objects
+        .filter(
+            event_type__in=[
+                "CLICK",
+                "CTA_CLICK",
+                "PHONE_CLICK",
+                "EMAIL_CLICK",
+                "QUOTE_START",
+                "BOOKING_START",
+            ],
+            created_at__gte=last_30_days,
+        )
+        .exclude(element="")
+        .values(
+            "event_type",
+            "element",
+        )
+        .annotate(total=Count("id"))
+        .order_by("-total")[:15]
+    )
+
+    # ---------------------------------------------
+    # Popular website searches
+    # ---------------------------------------------
+
+    popular_searches = (
+        SearchEvent.objects
+        .filter(
+            created_at__gte=last_30_days,
+        )
+        .values("query")
+        .annotate(total=Count("id"))
+        .order_by("-total")[:15]
+    )
+
+    # ---------------------------------------------
+    # Device breakdown
+    # ---------------------------------------------
+
+    devices = (
+        Visitor.objects
+        .exclude(device_type="")
+        .values("device_type")
+        .annotate(total=Count("id"))
+        .order_by("-total")
+    )
+
+    # ---------------------------------------------
+    # Recent visitor activity
+    # ---------------------------------------------
+
+    recent_activity = (
+        ActivityEvent.objects
+        .select_related("visitor", "session")
+        .order_by("-created_at")[:30]
+    )
+
+    context = {
+        "total_visitors": total_visitors,
+        "visitors_today": visitors_today,
+        "visitors_30_days": visitors_30_days,
+        "returning_visitors": returning_visitors,
+
+        "sessions_today": sessions_today,
+        "active_sessions": active_sessions,
+
+        "page_views_today": page_views_today,
+        "page_views_30_days": page_views_30_days,
+
+        "phone_clicks": phone_clicks,
+        "email_clicks": email_clicks,
+        "quote_starts": quote_starts,
+        "quote_submissions": quote_submissions,
+        "booking_starts": booking_starts,
+        "booking_completions": booking_completions,
+
+        "popular_pages": popular_pages,
+        "popular_clicks": popular_clicks,
+        "popular_searches": popular_searches,
+
+        "devices": devices,
+
+        "recent_activity": recent_activity,
+    }
+
+    return render(
+        request,
+        "customers/customer_behaviour.html",
+        context,
+    )
 
 @login_required
 def review_requests(request):
@@ -5623,3 +5850,6 @@ def _build_dashboard_gallery_groups(gallery_items):
         )
 
     return gallery_groups
+
+
+
