@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static seo_tags %}
 
 {% block title %}
-Professional Cleaning Services Adelaide | YD Commercial Cleaning
+Cleaning Services Adelaide | YD Commercial Cleaning
 {% endblock %}
 
 {% block meta_description %}
@@ -11,6 +11,19 @@ Trusted cleaning services in Adelaide for homes, offices, end-of-lease and comme
 
 {% block meta_keywords %}
 commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide, end of lease cleaning adelaide, professional cleaners adelaide, local cleaning services
+{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{% autoescape off %}
+{{ organization_schema }}
+{% endautoescape %}
+</script>
+<script type="application/ld+json">
+{% autoescape off %}
+{{ website_schema }}
+{% endautoescape %}
+</script>
 {% endblock %}
 
 {% block extra_css %}
@@ -74,20 +87,14 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
         </div>
 
         <div class="hero-visual-card reveal">
-            <h3>Why Adelaide Homeowners & Businesses Choose YD Cleaning</h3>
+            <h2>Why Adelaide Homeowners & Businesses Choose YD Cleaning</h2>
             <ul class="hero-feature-list">
-                
-                <li>Local Adelaide Knowledge</li>
-                <li>We understand Adelaide homes, rental inspections and commercial cleaning requirements.</li>
-
-                    <li>Professional Cleaning Standards
-
-                <li>Our cleaning process focuses on high-touch areas, hygiene, presentation and consistent results.</li>
-                <li>Reliable Communication</li>
-                <li>From your first enquiry to completion, we keep communication simple and transparent.</li>
-                <li>Flexible bookings for homes, offices and commercial sites</li>
-                <li>Meticulous attention to detail and consistent quality</li>
-                <li>Friendly local team with honest, upfront quotes</li>
+                <li><strong>Local Adelaide Knowledge</strong> — We understand Adelaide homes, rental inspections and commercial cleaning requirements.</li>
+                <li><strong>Professional Cleaning Standards</strong> — Our cleaning process focuses on high-touch areas, hygiene, presentation and consistent results.</li>
+                <li><strong>Reliable Communication</strong> — From your first enquiry to completion, we keep communication simple and transparent.</li>
+                <li><strong>Flexible Bookings</strong> — For homes, offices and commercial sites at times that suit you.</li>
+                <li><strong>Meticulous Attention to Detail</strong> — Consistent quality on every visit.</li>
+                <li><strong>Friendly Local Team</strong> — Honest, upfront quotes with no hidden fees.</li>
             </ul>
             <div class="hero-quick-stats">
                 <div class="hero-stat">
@@ -100,15 +107,6 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="trust-strip reveal">
-    <div class="container trust-grid">
-        <div>✅ Fully insured cleaning specialists</div>
-        <div>✅ Free quotes and no hidden fees</div>
-        <div>✅ Trusted by homes and businesses</div>
-        <div>✅ Local Adelaide team</div>
     </div>
 </section>
 
@@ -283,7 +281,7 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
         <div class="home-services-cta">
             <div>
                 <p class="home-services-cta-eyebrow">Need Professional Cleaning?</p>
-                <h3>Request a free quote today and let our experienced team make your property spotless.</h3>
+                <strong style="font-size:1.2em;display:block;margin:0.5rem 0;">Request a free quote today and let our experienced team make your property spotless.</strong>
             </div>
             <div class="home-services-cta-actions">
                 <a href="#quote" class="home-services-cta-btn home-services-cta-btn-primary">Get Free Quote</a>
@@ -309,7 +307,7 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
         </div>
 
         <div class="benefit-card reveal">
-            <h3>What you can expect from every booking</h3>
+            <strong style="font-size:1.1em;display:block;margin-bottom:1rem;">What you can expect from every booking</strong>
             <ul>
                 <li>Professional, fully trained cleaning staff</li>
                 <li>Flexible scheduling including after-hours visits</li>
@@ -409,7 +407,7 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
         <div class="home-reviews-grid">
             <div class="home-review-summary">
                 <span class="eyebrow">Live review signal</span>
-                <h3>Trusted across Adelaide for professional, reliable cleaning.</h3>
+                <strong style="font-size:1.1em;display:block;margin-bottom:1rem;">Trusted across Adelaide for professional, reliable cleaning.</strong>
                 <div class="home-review-rating">
                     <strong>{{ average_rating }}</strong>
                     <span>Average rating from {{ google_review_count }} reviews</span>

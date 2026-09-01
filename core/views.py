@@ -7,7 +7,7 @@
 import copy
 import os
 import logging
-
+import signal
 
 from django.conf import settings
 from django.contrib import messages
@@ -61,6 +61,34 @@ from notifications.models import Notification
 from .models import TestimonialVideo
 
 logger = logging.getLogger(__name__)
+
+
+def _timeout_handler(signum, frame):
+    """Handler for timeout signals."""
+    raise TimeoutError("Operation timed out")
+
+
+def _call_with_timeout(func, timeout_seconds, *args, **kwargs):
+    """Execute func with a timeout. Returns the result or empty list on timeout."""
+    try:
+        # Note: signal.alarm() only works on Unix/Linux, not Windows/macOS
+        # Use try-except to gracefully fall back to direct execution
+        try:
+            signal.signal(signal.SIGALRM, _timeout_handler)
+            signal.alarm(timeout_seconds)
+        except (AttributeError, ValueError):
+            # signal.alarm not available; just call directly
+            return func(*args, **kwargs)
+        
+        result = func(*args, **kwargs)
+        signal.alarm(0)  # Cancel the alarm
+        return result
+    except (TimeoutError, Exception):
+        try:
+            signal.alarm(0)
+        except (AttributeError, ValueError):
+            pass
+        return []
 
 
 def _slugify_area(area):
@@ -192,14 +220,33 @@ def home(request):
     google_reviews = cache.get("homepage_google_reviews")
 
     if not google_reviews:
+        # Try to get public reviews with a timeout
         google_reviews = get_public_google_reviews(limit=6)
-        cache.set(
-            "homepage_google_reviews",
-            google_reviews,
-            3600
-        )
+        if google_reviews:
+            cache.set("homepage_google_reviews", google_reviews, 3600)
+    
     if not google_reviews:
-        google_reviews = get_google_reviews_api()
+        # Try API with timeout (max 3 seconds for homepage performance)
+        try:
+            signal_available = hasattr(signal, 'alarm')
+            if signal_available:
+                signal.signal(signal.SIGALRM, _timeout_handler)
+                signal.alarm(3)
+            google_reviews = get_google_reviews_api()
+            if signal_available:
+                signal.alarm(0)
+        except (TimeoutError, Exception):
+            try:
+                if signal_available:
+                    signal.alarm(0)
+            except:
+                pass
+            google_reviews = []
+        
+        if google_reviews:
+            cache.set("homepage_google_reviews", google_reviews, 3600)
+    
+    # Fallback to featured reviews
     if not google_reviews:
         google_reviews = [
             {

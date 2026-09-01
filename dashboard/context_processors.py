@@ -46,14 +46,14 @@ def company_settings(request):
 
 
 def seo_context(request):
-    """Provide default SEO meta description and keywords."""
+    """Provide default SEO meta description and keywords for every page."""
     return {
-        "default_seo_description": "Professional commercial cleaning services in Adelaide. Expert office, house and end-of-lease cleaning.",
-        "default_seo_keywords": "commercial cleaning Adelaide, office cleaning, house cleaning, end of lease cleaning, bond cleaning, window cleaning",
-        "open_graph_image": "/static/img/og-image.png",
-        "twitter_image": "/static/img/twitter-image.png",
+        "default_seo_description": "Professional cleaning services in Adelaide. Expert residential, office, end-of-lease and commercial cleaning by YD Commercial Cleaning Services.",
+        "default_seo_keywords": "cleaning services adelaide, commercial cleaning, office cleaning, house cleaning, end of lease cleaning, bond cleaning, window cleaning, carpet cleaning",
+        "open_graph_image": "https://ydcleaning.com.au/static/images/logo.jpeg",
+        "twitter_image": "https://ydcleaning.com.au/static/images/logo.jpeg",
         "site_url": "https://ydcleaning.com.au",
-        "same_as_urls": '["https://www.facebook.com/ydcommercialcleaning","https://www.instagram.com/ydcommercialcleaning"]',
+        "same_as_urls": '["https://www.facebook.com/ydcommercialcleaning","https://www.instagram.com/ydcommercialcleaning","https://www.tiktok.com/@yd_cleaning3"]',
         "service_area_list": '["Adelaide","South Australia"]',
         "address_street": "Adelaide",
         "address_locality": "Adelaide",
