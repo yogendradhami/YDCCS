@@ -376,9 +376,9 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                 {% for item in gallery_items %}
                     <div class="home-gallery-card">
                         {% if item.primary_image %}
-                            <img src="{{ item.primary_image.url }}" alt="{{ item.title }}">
+                            <img src="{{ item.primary_image.url }}" alt="{{ item.title }}" loading="lazy" decoding="async">
                         {% else %}
-                            <img src="{% static 'images/services/placeholder.svg' %}" alt="{{ item.title }}">
+                            <img src="{% static 'images/services/placeholder.svg' %}" alt="{{ item.title }}" loading="lazy" decoding="async">
                         {% endif %}
                         <h4>{{ item.title }}</h4>
                         <p>{{ item.service_type }}</p>
@@ -577,13 +577,13 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 
                 <div class="field-row">
                     <div class="form-group">
-                        <label>Full Name *</label>
+                        <label for="{{ form.name.id_for_label }}">Full Name *</label>
                         {{ form.name }}
                         <div class="text-danger">{{ form.name.errors }}</div>
                     </div>
 
                     <div class="form-group">
-                        <label>Email Address *</label>
+                        <label for="{{ form.email.id_for_label }}">Email Address *</label>
                         {{ form.email }}
                         <div class="text-danger">{{ form.email.errors }}</div>
                     </div>
@@ -591,13 +591,13 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 
                 <div class="field-row">
                     <div class="form-group">
-                        <label>Phone Number *</label>
+                        <label for="{{ form.phone.id_for_label }}">Phone Number *</label>
                         {{ form.phone }}
                         <div class="text-danger">{{ form.phone.errors }}</div>
                     </div>
 
                     <div class="form-group">
-                        <label>Property Type *</label>
+                        <label for="{{ form.property_type.id_for_label }}">Property Type *</label>
                         {{ form.property_type }}
                         <div class="text-danger">{{ form.property_type.errors }}</div>
                     </div>
@@ -605,13 +605,13 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 
                 <div class="field-row">
                     <div class="form-group">
-                        <label>Suburb / Postcode *</label>
+                        <label for="{{ form.suburb_postcode.id_for_label }}">Suburb / Postcode *</label>
                         {{ form.suburb_postcode }}
                         <div class="text-danger">{{ form.suburb_postcode.errors }}</div>
                     </div>
 
                     <div class="form-group">
-                        <label>Preferred Date *</label>
+                        <label for="{{ form.preferred_date.id_for_label }}">Preferred Date *</label>
                         {{ form.preferred_date }}
                         <div class="text-danger">{{ form.preferred_date.errors }}</div>
                     </div>
@@ -621,30 +621,30 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                     <summary>Optional details</summary>
                     <div class="field-row">
                         <div class="form-group">
-                            <label>Bedrooms</label>
+                            <label for="{{ form.bedrooms.id_for_label }}">Bedrooms</label>
                             {{ form.bedrooms }}
                         </div>
 
                         <div class="form-group">
-                            <label>Bathrooms</label>
+                            <label for="{{ form.bathrooms.id_for_label }}">Bathrooms</label>
                             {{ form.bathrooms }}
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>How Did You Hear About Us?</label>
+                        <label for="{{ form.lead_source.id_for_label }}">How Did You Hear About Us?</label>
                         {{ form.lead_source }}
                         <div class="text-danger">{{ form.lead_source.errors }}</div>
                     </div>
 
                     <div class="form-group">
-                        <label>Upload Property Images (optional)</label>
+                        <label for="{{ form.property_images.id_for_label }}">Upload Property Images (optional)</label>
                         {{ form.property_images }}
                         <div class="text-danger">{{ form.property_images.errors }}</div>
                     </div>
 
                     <div class="form-group">
-                        <label>Additional Details / Message</label>
+                        <label for="{{ form.message.id_for_label }}">Additional Details / Message</label>
                         {{ form.message }}
                         <div class="text-danger">{{ form.message.errors }}</div>
                     </div>
@@ -652,11 +652,11 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                     <div class="form-group">
                         <label>Optional add-ons</label>
                         <div class="addon-grid">
-                            <label class="addon-option">{{ form.window_cleaning }} <span>Window Cleaning</span></label>
-                            <label class="addon-option">{{ form.carpet_shampooing }} <span>Carpet Shampooing</span></label>
-                            <label class="addon-option">{{ form.grout_cleaning }} <span>Grout Cleaning</span></label>
-                            <label class="addon-option">{{ form.upholstery_cleaning }} <span>Upholstery Cleaning</span></label>
-                            <label class="addon-option">{{ form.laundry_service }} <span>Laundry Service</span></label>
+                            <label class="addon-option" for="{{ form.window_cleaning.id_for_label }}">{{ form.window_cleaning }} <span>Window Cleaning</span></label>
+                            <label class="addon-option" for="{{ form.carpet_shampooing.id_for_label }}">{{ form.carpet_shampooing }} <span>Carpet Shampooing</span></label>
+                            <label class="addon-option" for="{{ form.grout_cleaning.id_for_label }}">{{ form.grout_cleaning }} <span>Grout Cleaning</span></label>
+                            <label class="addon-option" for="{{ form.upholstery_cleaning.id_for_label }}">{{ form.upholstery_cleaning }} <span>Upholstery Cleaning</span></label>
+                            <label class="addon-option" for="{{ form.laundry_service.id_for_label }}">{{ form.laundry_service }} <span>Laundry Service</span></label>
                         </div>
                     </div>
                 </details>
@@ -687,17 +687,30 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
 
 {% endblock %}
 {% block extra_js %}
-    {% if form.recaptcha_site_key %}
-        <script src="https://www.google.com/recaptcha/api.js?render={{ form.recaptcha_site_key }}"></script>
-    {% endif %}
-
     <script>
+        // Load reCAPTCHA only when quote form is focused (deferred for performance)
+        let recaptchaLoaded = false;
+        const siteKey = "{{ form.recaptcha_site_key }}";
+        
+        function loadRecaptcha() {
+            if (!recaptchaLoaded && siteKey) {
+                recaptchaLoaded = true;
+                const script = document.createElement('script');
+                script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+                script.async = true;
+                document.body.appendChild(script);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             const quoteForm = document.querySelector("#quote form");
             if (!quoteForm) return;
 
+            // Load reCAPTCHA on form focus or interaction
+            quoteForm.addEventListener('focusin', loadRecaptcha, { once: true });
+            quoteForm.addEventListener('click', loadRecaptcha, { once: true });
+
             const recaptchaField = quoteForm.querySelector('input[name="g_recaptcha_response"]');
-            const siteKey = "{{ form.recaptcha_site_key }}";
             const submitBtn = quoteForm.querySelector('.quote-submit');
             
             let isSubmitting = false;
@@ -711,6 +724,9 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                 }
 
                 event.preventDefault();
+
+                // Ensure reCAPTCHA is loaded before submission
+                loadRecaptcha();
 
                 // Check if reCAPTCHA is configured
                 if (!siteKey || typeof grecaptcha === "undefined" || !recaptchaField) {
@@ -733,6 +749,17 @@ commercial cleaning adelaide, office cleaning adelaide, house cleaning adelaide,
                         if (submitBtn) submitBtn.disabled = false;
                         quoteForm.submit();
                         return;
+                    }
+
+                    // Wait for reCAPTCHA to load if not ready
+                    let attempts = 0;
+                    while (typeof grecaptcha === "undefined" && attempts < 50) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                    }
+
+                    if (typeof grecaptcha === "undefined") {
+                        throw new Error("reCAPTCHA failed to load");
                     }
 
                     // Execute reCAPTCHA v3 on production

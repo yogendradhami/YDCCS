@@ -138,3 +138,39 @@ def breadcrumb_schema(items):
         "itemListElement": breadcrumb_items
     }
     return json.dumps(schema)
+
+@register.filter
+def cloudinary_optimize(image_url, width=None):
+    """Optimize Cloudinary image URL with f_auto, q_auto, and optional width.
+    
+    Usage: {{ item.image.url|cloudinary_optimize:"400" }}
+    Applies: format=auto, quality=auto, and width transformation for better performance.
+    """
+    if not image_url or "res.cloudinary.com" not in str(image_url):
+        return image_url
+    
+    try:
+        # Split the URL at /upload/ to inject transformation params
+        url_str = str(image_url)
+        if "/upload/" in url_str:
+            parts = url_str.split("/upload/")
+            if len(parts) == 2:
+                base_url = parts[0]
+                resource_path = parts[1]
+                
+                # Build transformations: format=auto, quality=auto, width=X (if specified)
+                transforms = ["f_auto", "q_auto"]
+                if width:
+                    try:
+                        transforms.append(f"w_{int(width)}")
+                        transforms.append("c_scale")  # Scale to fit width
+                    except (ValueError, TypeError):
+                        pass
+                
+                # Combine transformations
+                transform_string = ",".join(transforms)
+                return f"{base_url}/upload/{transform_string}/{resource_path}"
+    except Exception:
+        pass
+    
+    return image_url
