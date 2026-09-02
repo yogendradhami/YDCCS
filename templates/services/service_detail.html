@@ -96,7 +96,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
 {% block og_image %}
 {% if service.hero_image %}
-{{ service.hero_image.url }}
+{{ service.hero_image }}
 {% else %}
 {{ open_graph_image }}
 {% endif %}
@@ -106,7 +106,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
 {% block twitter_image %}
 {% if service.hero_image %}
-{{ service.hero_image.url }}
+{{ service.hero_image }}
 {% else %}
 {{ twitter_image }}
 {% endif %}
@@ -136,7 +136,18 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                 {% if service.hero_image %}
 
                 <img
-                    src="{{ service.hero_image.url }}"
+                    src="{{ service.hero_image }}"
+                    alt="{{ service.title|cut:' Adelaide' }} service in {{ location|default:'Adelaide' }} Adelaide"
+                    loading="lazy"
+                    decoding="async"
+                    width="1200"
+                    height="800"
+                >
+
+                {% elif service.slug %}
+
+                <img
+                    src="{% static 'images/services/' %}{{ service.slug }}.svg"
                     alt="{{ service.title|cut:' Adelaide' }} service in {{ location|default:'Adelaide' }} Adelaide"
                     loading="lazy"
                     decoding="async"
@@ -1371,7 +1382,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
         "url": "https://ydcleaning.com.au",
         "telephone": "+61 430 049 865",
         "email": "info@ydcleaning.com.au",
-        "image": "{% if service.hero_image %}{{ service.hero_image.url }}{% else %}https://ydcleaning.com.au/static/images/logo.jpeg{% endif %}",
+        "image": "{% if service.hero_image %}{{ service.hero_image }}{% else %}https://ydcleaning.com.au/static/images/logo.jpeg{% endif %}",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Adelaide",

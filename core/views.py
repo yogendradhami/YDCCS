@@ -934,15 +934,43 @@ def _normalize_related_services(related_services):
     return normalized
 
 
+def _get_service_hero_image_path(service_slug):
+    if not service_slug:
+        return "/static/images/logo.jpeg"
+
+    static_dir = os.path.join(settings.BASE_DIR, "static", "images", "services")
+    candidates = [
+        f"{service_slug}.webp",
+        f"{service_slug}.jpg",
+        f"{service_slug}.svg",
+        f"{service_slug}-adelaide.webp",
+        f"{service_slug}-adelaide.jpg",
+        f"{service_slug}-adelaide.svg",
+    ]
+
+    for fname in candidates:
+        if os.path.exists(os.path.join(static_dir, fname)):
+            return f"/static/images/services/{fname}"
+
+    return "/static/images/logo.jpeg"
+
+
 def _service_context_from_model(service_obj):
+    slug = getattr(service_obj, "slug", "")
+    hero_image = getattr(service_obj, "hero_image", None)
+    hero_url = hero_image.url if hero_image else None
+    if not hero_url:
+        hero_url = _get_service_hero_image_path(slug)
+
     return {
+        "slug": slug,
         "title": service_obj.name,
         "heading": service_obj.name,
         "description": service_obj.description,
         "overview": service_obj.overview,
         "included": service_obj.included or [],
         "packages": service_obj.packages or [],
-        "hero_image": service_obj.hero_image.url if getattr(service_obj, 'hero_image', None) else "/static/images/logo.jpeg",
+        "hero_image": hero_url,
         # Rich optional fields — provide safe defaults so templates can render consistently
         "gallery": getattr(service_obj, "gallery_images", []) or [],
         "problems": getattr(service_obj, "problems", []) or [],
@@ -960,24 +988,11 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
     definition = SERVICE_DEFINITIONS.get(service_slug)
     if not definition:
         return None
-    # Prefer SVG, then WEBP, then JPG static files if they exist under static/images/services
-    static_dir = os.path.join(settings.BASE_DIR, "static", "images", "services")
-    candidates = [
-        f"{service_slug}.webp",
-        f"{service_slug}.jpg",
-        f"{service_slug}.svg",
-    ]
-
-    chosen = None
-    for fname in candidates:
-        if os.path.exists(os.path.join(static_dir, fname)):
-            chosen = fname
-            break
-
-    hero_path = f"/static/images/services/{chosen}" if chosen else "/static/images/logo.jpeg"
+    hero_path = _get_service_hero_image_path(service_slug)
 
     # Build a rich context merging available definition fields and sensible defaults
     return {
+        "slug": service_slug,
         "title": definition.get("title", definition.get("service_name", "Cleaning Service")),
         "location_content": definition.get("location_content", {}).get(
             location_name.lower().replace(" ", "-"),
