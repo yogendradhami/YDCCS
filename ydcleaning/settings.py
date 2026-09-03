@@ -9,66 +9,134 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
+
 import os
-import dj_database_url
+import sys
 import warnings
 from pathlib import Path
 
+import dj_database_url
 import environ
 
-# Allow OAuth over HTTP during local development only.
-if os.environ.get("DJANGO_DEBUG", "").lower() in ("1", "true", "yes"):
-    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
-# Load environment variables from a .env file when present (local dev)
+# ==========================================================
+# ENVIRONMENT CONFIGURATION
+# ==========================================================
+
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
 )
-# `.env` read will be performed after `BASE_DIR` is defined further below.
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 SITE_URL = "https://ydcleaning.com.au"
 SITE_ID = 1
 
 
+# ==========================================================
+# LOAD LOCAL ENVIRONMENT FILES
+# ==========================================================
 
-# Read local .env if present
+# Read local .env if present.
 if (BASE_DIR / ".env").exists():
     env.read_env(str(BASE_DIR / ".env"))
+
 if (BASE_DIR / ".env.local").exists():
     env.read_env(str(BASE_DIR / ".env.local"))
 
+
+# ==========================================================
+# DEBUG / PRODUCTION CONFIGURATION
+# ==========================================================
+
+DEBUG = env.bool(
+    "DJANGO_DEBUG",
+    default=False,
+)
+
+IS_PRODUCTION = env.bool(
+    "IS_PRODUCTION",
+    default=False,
+)
+
+# Never allow DEBUG in an explicitly configured production
+# environment.
+if IS_PRODUCTION and DEBUG:
+    raise RuntimeError(
+        "DJANGO_DEBUG=True is not allowed when IS_PRODUCTION=True."
+    )
+
+
+# ==========================================================
+# SECRET KEY
+# ==========================================================
+
+if IS_PRODUCTION:
+    # Production MUST provide a strong secret through the
+    # environment. Never use a fallback secret in production.
+    SECRET_KEY = env.str("DJANGO_SECRET_KEY")
+else:
+    # Development-only fallback.
+    # Prefer setting DJANGO_SECRET_KEY in .env.local.
+    SECRET_KEY = env.str(
+        "DJANGO_SECRET_KEY",
+        default="dev-only-change-this-secret-key",
+    )
+
+
+# ==========================================================
+# LOCAL DEVELOPMENT OAUTH
+# ==========================================================
+
 # Allow OAuth over HTTP during local development only.
-if env.bool("DJANGO_DEBUG", default=False):
+if DEBUG:
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
-RECAPTCHA_SITE_KEY = env.str("RECAPTCHA_SITE_KEY", default="")
-RECAPTCHA_SECRET_KEY = env.str("RECAPTCHA_SECRET_KEY", default="")
+# ==========================================================
+# ALLOWED HOSTS
+# ==========================================================
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str(
-    "DJANGO_SECRET_KEY",
-    default="change-me-local",
+# DJANGO_ALLOWED_HOSTS takes priority when configured.
+_allowed = env.str(
+    "DJANGO_ALLOWED_HOSTS",
+    default="",
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# Use the typed `env` helper for booleans in place of raw os.environ checks.
-DEBUG = env.bool("DJANGO_DEBUG", default=False)
-
-# ALLOWED_HOSTS can be provided as a comma-separated string in
-# `DJANGO_ALLOWED_HOSTS` or as a list via `ALLOWED_HOSTS`.
-_allowed = env.str("DJANGO_ALLOWED_HOSTS", default="")
 if _allowed:
-    ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
+    ALLOWED_HOSTS = [
+        host.strip()
+        for host in _allowed.split(",")
+        if host.strip()
+    ]
 else:
-    ALLOWED_HOSTS = env.list( "ALLOWED_HOSTS", default=[ "127.0.0.1", "localhost", ".onrender.com", "ydcleaning.com.au", "www.ydcleaning.com.au", ], )
+    ALLOWED_HOSTS = [
+        "127.0.0.1",
+        "localhost",
+        "ydcleaning.com.au",
+        "www.ydcleaning.com.au",
+    ]
 
-# Application definition
+
+# ==========================================================
+# reCAPTCHA
+# ==========================================================
+
+RECAPTCHA_SITE_KEY = env.str(
+    "RECAPTCHA_SITE_KEY",
+    default="",
+)
+
+RECAPTCHA_SECRET_KEY = env.str(
+    "RECAPTCHA_SECRET_KEY",
+    default="",
+)
+
+
+# ==========================================================
+# APPLICATION DEFINITION
+# ==========================================================
 
 INSTALLED_APPS = [
     # Django apps
@@ -85,10 +153,9 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.sitemaps",
 
-
     # Cloudinary
-    'cloudinary_storage',
-    'cloudinary',
+    "cloudinary_storage",
+    "cloudinary",
 
     # My apps
     "core",
@@ -116,14 +183,14 @@ INSTALLED_APPS = [
     "rosters",
     "expenses",
     "support",
-    'analytics',
-
-
-
- 
+    "analytics",
 ]
 
-# Cloudinary Media Storage Configuration
+
+# ==========================================================
+# CLOUDINARY MEDIA STORAGE
+# ==========================================================
+
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": env.str("CLOUDINARY_CLOUD_NAME"),
     "API_KEY": env.str("CLOUDINARY_API_KEY"),
@@ -143,14 +210,25 @@ STORAGES = {
     },
 }
 
-# When running tests, use local file storage to avoid external Cloudinary uploads
-import sys
-if any(arg.startswith('test') for arg in sys.argv):
-    STORAGES['default'] = {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+
+# ==========================================================
+# TEST MEDIA STORAGE
+# ==========================================================
+
+# When running tests, use local file storage to avoid external
+# Cloudinary uploads.
+if any(arg.startswith("test") for arg in sys.argv):
+    STORAGES["default"] = {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     }
-    MEDIA_ROOT = BASE_DIR / 'test_media'
-    MEDIA_URL = '/media/'
+
+    MEDIA_ROOT = BASE_DIR / "test_media"
+    MEDIA_URL = "/media/"
+
+
+# ==========================================================
+# MIDDLEWARE
+# ==========================================================
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -176,12 +254,24 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
+# ==========================================================
+# URL CONFIGURATION
+# ==========================================================
+
 ROOT_URLCONF = "ydcleaning.urls"
+
+
+# ==========================================================
+# TEMPLATES
+# ==========================================================
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [
+            BASE_DIR / "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -197,13 +287,19 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "ydcleaning.wsgi.application"
-# ====================================================
-# Django Channels / WebSocket Configuration
-# ====================================================
 
+# ==========================================================
+# WSGI / ASGI
+# ==========================================================
+
+WSGI_APPLICATION = "ydcleaning.wsgi.application"
 
 ASGI_APPLICATION = "ydcleaning.asgi.application"
+
+
+# ==========================================================
+# DJANGO CHANNELS / WEBSOCKET
+# ==========================================================
 
 CHANNEL_LAYERS = {
     "default": {
@@ -211,20 +307,31 @@ CHANNEL_LAYERS = {
     },
 }
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# Support DATABASE_URL for production; default to SQLite for local development
+# ==========================================================
+# DATABASE
+# ==========================================================
+
+# Support DATABASE_URL for production;
+# default to SQLite for local development.
 DATABASES = {
-    "default": env.db("DATABASE_URL", default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
+    "default": env.db(
+        "DATABASE_URL",
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    )
 }
 
 # Reuse PostgreSQL connections to reduce connection overhead.
 DATABASES["default"]["CONN_MAX_AGE"] = 60
 
+
 # ==========================================================
-# Cache configuration
+# CACHE
 # ==========================================================
+
+# Kept unchanged intentionally.
+# Cache behaviour will be reviewed separately after inspecting
+# core.middleware.CacheHeaderMiddleware.
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -233,38 +340,53 @@ CACHES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+# ==========================================================
+# PASSWORD VALIDATION
+# ==========================================================
 
-# Strong password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
         ),
     },
     {
-        "NAME": ("django.contrib.auth.password_validation.MinimumLengthValidator"),
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        ),
         "OPTIONS": {
             "min_length": 10,
         },
     },
     {
-        "NAME": ("django.contrib.auth.password_validation.CommonPasswordValidator"),
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
     },
     {
-        "NAME": ("django.contrib.auth.password_validation.NumericPasswordValidator"),
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        ),
     },
 ]
 
-# Customer portal login/logout redirects (single canonical definition)
+
+# ==========================================================
+# CUSTOMER PORTAL LOGIN / LOGOUT
+# ==========================================================
+
 LOGIN_URL = "/portal/login/"
 LOGIN_REDIRECT_URL = "/portal/dashboard/"
 LOGOUT_REDIRECT_URL = "/portal/login/"
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
+# ==========================================================
+# INTERNATIONALIZATION
+# ==========================================================
 
 LANGUAGE_CODE = "en-us"
 
@@ -273,13 +395,24 @@ TIME_ZONE = "Australia/Adelaide"
 USE_I18N = True
 
 USE_TZ = True
+
+
+# ==========================================================
+# SECURITY HEADERS
+# ==========================================================
+
 SECURE_BROWSER_XSS_FILTER = True
+
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 X_FRAME_OPTIONS = "DENY"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+
+# ==========================================================
+# STATIC FILES
+# ==========================================================
 
 STATIC_URL = "/static/"
 
@@ -290,121 +423,250 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
+# ==========================================================
+# MEDIA
+# ==========================================================
+
+# Media files are stored in Cloudinary.
+# No local MEDIA_ROOT required outside tests.
 
 
-# Media files are stored in Cloudinary
-# No local MEDIA_ROOT required
-
-
+# ==========================================================
+# DEFAULT PRIMARY KEY
+# ==========================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# (Email / external keys consolidated later in this file.)
 
-# ====================================================
-# Stripe Payment Settings
-# Use Stripe test keys first
-# ====================================================
+# ==========================================================
+# STRIPE PAYMENT SETTINGS
+# ==========================================================
 
-STRIPE_SECRET_KEY = env.str("STRIPE_SECRET_KEY", default="")
-STRIPE_PUBLISHABLE_KEY = env.str("STRIPE_PUBLISHABLE_KEY", default="")
-STRIPE_CURRENCY = env.str("STRIPE_CURRENCY", default="aud")
+STRIPE_SECRET_KEY = env.str(
+    "STRIPE_SECRET_KEY",
+    default="",
+)
 
-# (Redirect settings already defined above.)
+STRIPE_PUBLISHABLE_KEY = env.str(
+    "STRIPE_PUBLISHABLE_KEY",
+    default="",
+)
 
-# Removed plaintext credentials and duplicates; use environment variables.
+STRIPE_CURRENCY = env.str(
+    "STRIPE_CURRENCY",
+    default="aud",
+)
 
-# ====================================================
-# REAL EMAIL SETTINGS - GMAIL SMTP
-# Used for quote emails and password reset emails
-# ====================================================
+
+# ==========================================================
+# EMAIL SETTINGS
+# ==========================================================
 
 EMAIL_BACKEND = env.str(
     "DJANGO_EMAIL_BACKEND",
     default="core.email_backends.resend.ResendEmailBackend",
 )
 
-EMAIL_HOST = env.str("EMAIL_HOST", default="smtp.gmail.com")
-EMAIL_PORT = env.int("EMAIL_PORT", default=587)
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
-EMAIL_TIMEOUT = 10
-EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
+EMAIL_HOST = env.str(
+    "EMAIL_HOST",
+    default="smtp.gmail.com",
+)
 
-if DEBUG and EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend" and (
-    not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD
+EMAIL_PORT = env.int(
+    "EMAIL_PORT",
+    default=587,
+)
+
+EMAIL_USE_TLS = env.bool(
+    "EMAIL_USE_TLS",
+    default=True,
+)
+
+EMAIL_USE_SSL = env.bool(
+    "EMAIL_USE_SSL",
+    default=False,
+)
+
+EMAIL_TIMEOUT = 10
+
+EMAIL_HOST_USER = env.str(
+    "EMAIL_HOST_USER",
+    default="",
+)
+
+EMAIL_HOST_PASSWORD = env.str(
+    "EMAIL_HOST_PASSWORD",
+    default="",
+)
+
+
+# In DEBUG mode, if the project explicitly uses Django SMTP
+# but credentials are missing, use the console backend.
+if (
+    DEBUG
+    and EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
+    and (
+        not EMAIL_HOST_USER
+        or not EMAIL_HOST_PASSWORD
+    )
 ):
     warnings.warn(
         "EMAIL_HOST_USER and/or EMAIL_HOST_PASSWORD are not set. "
-        "Falling back to django.core.mail.backends.console.EmailBackend in DEBUG mode.",
+        "Falling back to django.core.mail.backends.console.EmailBackend "
+        "in DEBUG mode.",
         RuntimeWarning,
     )
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+    EMAIL_BACKEND = (
+        "django.core.mail.backends.console.EmailBackend"
+    )
+
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = False
 
-DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="")
-if EMAIL_HOST_USER and EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend" and EMAIL_HOST == "smtp.gmail.com":
-    if not DEFAULT_FROM_EMAIL or "no-reply" in DEFAULT_FROM_EMAIL.lower() or "noreply" in DEFAULT_FROM_EMAIL.lower():
-        DEFAULT_FROM_EMAIL = f"YD Commercial Cleaning <{EMAIL_HOST_USER}>"
+
+DEFAULT_FROM_EMAIL = env.str(
+    "DEFAULT_FROM_EMAIL",
+    default="",
+)
+
+if (
+    EMAIL_HOST_USER
+    and EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
+    and EMAIL_HOST == "smtp.gmail.com"
+):
+    if (
+        not DEFAULT_FROM_EMAIL
+        or "no-reply" in DEFAULT_FROM_EMAIL.lower()
+        or "noreply" in DEFAULT_FROM_EMAIL.lower()
+    ):
+        DEFAULT_FROM_EMAIL = (
+            f"YD Commercial Cleaning <{EMAIL_HOST_USER}>"
+        )
+
 
 if not DEFAULT_FROM_EMAIL:
-    DEFAULT_FROM_EMAIL = "YD Commercial Cleaning <noreply@localhost>"
+    DEFAULT_FROM_EMAIL = (
+        "YD Commercial Cleaning <noreply@localhost>"
+    )
 
-ADMIN_EMAIL = env.str("ADMIN_EMAIL", default="")
 
-# ====================================================
-# Google OAuth Settings
-# ====================================================
+ADMIN_EMAIL = env.str(
+    "ADMIN_EMAIL",
+    default="",
+)
 
-GOOGLE_CLIENT_ID = env.str("GOOGLE_CLIENT_ID", default="")
-GOOGLE_CLIENT_SECRET = env.str("GOOGLE_CLIENT_SECRET", default="")
-GOOGLE_REDIRECT_URI = env.str( "GOOGLE_REDIRECT_URI", default="https://ydcleaning.com.au/google/oauth/callback/" )
+
+# ==========================================================
+# GOOGLE OAUTH
+# ==========================================================
+
+GOOGLE_CLIENT_ID = env.str(
+    "GOOGLE_CLIENT_ID",
+    default="",
+)
+
+GOOGLE_CLIENT_SECRET = env.str(
+    "GOOGLE_CLIENT_SECRET",
+    default="",
+)
+
+GOOGLE_REDIRECT_URI = env.str(
+    "GOOGLE_REDIRECT_URI",
+    default=(
+        "https://ydcleaning.com.au/"
+        "google/oauth/callback/"
+    ),
+)
+
 GOOGLE_EMPLOYEE_REDIRECT_URI = env.str(
     "GOOGLE_EMPLOYEE_REDIRECT_URI",
-    default="http://127.0.0.1:8000/employee/google/oauth/callback/",
+    default=(
+        "http://127.0.0.1:8000/"
+        "employee/google/oauth/callback/"
+    ),
 )
-# ====================================================
-# Resend Email API
-# ====================================================
 
-RESEND_API_KEY = env.str("RESEND_API_KEY", default="")
 
-TWILIO_ACCOUNT_SID = env.str("TWILIO_ACCOUNT_SID", default="")
-TWILIO_AUTH_TOKEN = env.str("TWILIO_AUTH_TOKEN", default="")
-TWILIO_PHONE_NUMBER = env.str("TWILIO_PHONE_NUMBER", default="")
+# ==========================================================
+# RESEND
+# ==========================================================
 
-# =========================================================
-# SECURITY / HTTPS
-# =========================================================
+RESEND_API_KEY = env.str(
+    "RESEND_API_KEY",
+    default="",
+)
 
+
+# ==========================================================
+# TWILIO
+# ==========================================================
+
+TWILIO_ACCOUNT_SID = env.str(
+    "TWILIO_ACCOUNT_SID",
+    default="",
+)
+
+TWILIO_AUTH_TOKEN = env.str(
+    "TWILIO_AUTH_TOKEN",
+    default="",
+)
+
+TWILIO_PHONE_NUMBER = env.str(
+    "TWILIO_PHONE_NUMBER",
+    default="",
+)
+
+
+# ==========================================================
+# HTTPS / PROXY SECURITY
+# ==========================================================
+
+# Render terminates HTTPS at the proxy and forwards the
+# original protocol through X-Forwarded-Proto.
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
 )
 
-# Render/production uses HTTPS.
-# Local development uses plain HTTP.
-IS_PRODUCTION = env.bool(
-    "IS_PRODUCTION",
-    default=False,
-)
 
+# Redirect HTTP to HTTPS in production.
+# Local development remains HTTP by default.
 SECURE_SSL_REDIRECT = env.bool(
     "SECURE_SSL_REDIRECT",
     default=IS_PRODUCTION,
 )
+
+
+# ==========================================================
+# SESSION COOKIE SECURITY
+# ==========================================================
 
 SESSION_COOKIE_SECURE = env.bool(
     "SESSION_COOKIE_SECURE",
     default=IS_PRODUCTION,
 )
 
+SESSION_COOKIE_HTTPONLY = True
+
+SESSION_COOKIE_SAMESITE = "Lax"
+
+
+# ==========================================================
+# CSRF COOKIE SECURITY
+# ==========================================================
+
 CSRF_COOKIE_SECURE = env.bool(
     "CSRF_COOKIE_SECURE",
     default=IS_PRODUCTION,
 )
+
+CSRF_COOKIE_SAMESITE = "Lax"
+
+
+# ==========================================================
+# CSRF TRUSTED ORIGINS
+# ==========================================================
 
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
@@ -414,6 +676,14 @@ CSRF_TRUSTED_ORIGINS = env.list(
     ],
 )
 
+
+# ==========================================================
+# HSTS
+# ==========================================================
+
+# HSTS is intentionally disabled for now.
+# Enable only after confirming all required HTTPS subdomains,
+# OAuth callbacks, assets, APIs and integrations work correctly.
 SECURE_HSTS_SECONDS = env.int(
     "SECURE_HSTS_SECONDS",
     default=0,
@@ -430,13 +700,24 @@ SECURE_HSTS_PRELOAD = env.bool(
 )
 
 
-# Simple logging to surface issues during CI / dev
+# ==========================================================
+# LOGGING
+# ==========================================================
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
     "root": {
         "handlers": ["console"],
-        "level": env.str("DJANGO_LOG_LEVEL", default="INFO"),
+        "level": env.str(
+            "DJANGO_LOG_LEVEL",
+            default="INFO",
+        ),
     },
 }
+
