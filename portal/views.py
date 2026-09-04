@@ -179,7 +179,7 @@ def portal_dashboard(request):
 
     return render(
         request,
-        "portal_dashboard.html",
+        "portal/portal_dashboard.html",
         {
             "customer": customer,
             "bookings": bookings,
