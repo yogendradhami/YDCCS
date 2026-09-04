@@ -475,3 +475,890 @@
         padding: 60px 0;
     }
 }
+
+
+/* ============================================================
+   ADELAIDE LOCAL SEO HUB
+   Page-scoped styles for /local/index/adelaide/
+   ============================================================ */
+
+.adelaide-location-index {
+    --adelaide-navy: #0b1f3a;
+    --adelaide-navy-dark: #07162a;
+    --adelaide-blue: #1769e0;
+    --adelaide-blue-dark: #0d4fae;
+    --adelaide-blue-soft: #eef5ff;
+    --adelaide-text: #172033;
+    --adelaide-muted: #5d6878;
+    --adelaide-border: #dce3ec;
+    --adelaide-bg: #f7f9fc;
+    --adelaide-white: #ffffff;
+}
+
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.adelaide-location-index .adelaide-index-hero {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            120deg,
+            var(--adelaide-navy-dark) 0%,
+            var(--adelaide-navy) 48%,
+            var(--adelaide-blue-dark) 100%
+        );
+    color: #fff;
+    padding: 88px 0 76px;
+}
+
+.adelaide-location-index .adelaide-hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(255, 255, 255, 0.10),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 10% 90%,
+            rgba(23, 105, 224, 0.25),
+            transparent 32%
+        );
+}
+
+.adelaide-location-index .adelaide-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.adelaide-location-index .adelaide-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 6px 13px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.adelaide-location-index .adelaide-index-hero h1 {
+    max-width: 850px;
+    margin: 0 auto 22px;
+    color: #fff;
+    font-size: clamp(2.2rem, 5vw, 4.4rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+}
+
+.adelaide-location-index .adelaide-hero-lead {
+    max-width: 760px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.90);
+    font-size: 1.12rem;
+    line-height: 1.75;
+}
+
+.adelaide-location-index .adelaide-hero-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 13px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+}
+
+.adelaide-location-index .adelaide-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 12px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 800;
+    line-height: 1.2;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.adelaide-location-index .adelaide-btn:hover {
+    transform: translateY(-2px);
+}
+
+.adelaide-location-index .adelaide-btn-primary {
+    background: #fff;
+    color: var(--adelaide-navy);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+.adelaide-location-index .adelaide-btn-primary:hover {
+    background: #f4f7fb;
+    color: var(--adelaide-navy-dark);
+}
+
+.adelaide-location-index .adelaide-btn-light {
+    border: 1px solid rgba(255, 255, 255, 0.40);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.adelaide-location-index .adelaide-btn-light:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.adelaide-location-index .adelaide-trust-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 920px;
+    margin: 48px auto 0;
+}
+
+.adelaide-location-index .adelaide-trust-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 10px 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.90);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.adelaide-location-index .adelaide-trust-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 21px;
+    height: 21px;
+    flex: 0 0 21px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   SHARED SECTION STYLES
+   ============================================================ */
+
+.adelaide-location-index .adelaide-section-kicker {
+    display: block;
+    margin-bottom: 11px;
+    color: var(--adelaide-blue);
+    font-size: 0.74rem;
+    line-height: 1.3;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+}
+
+.adelaide-location-index .adelaide-section-heading {
+    max-width: 720px;
+    margin: 0 auto 42px;
+    text-align: center;
+}
+
+.adelaide-location-index .adelaide-section-heading h2,
+.adelaide-location-index .adelaide-coverage-header h2,
+.adelaide-location-index .adelaide-local-content h2 {
+    margin: 0 0 14px;
+    color: var(--adelaide-text);
+    font-size: clamp(1.75rem, 3vw, 2.6rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+}
+
+.adelaide-location-index .adelaide-section-heading p,
+.adelaide-location-index .adelaide-coverage-header p {
+    margin: 0;
+    color: var(--adelaide-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+
+/* ============================================================
+   INTRO
+   ============================================================ */
+
+.adelaide-location-index .adelaide-intro-section {
+    padding: 82px 0;
+    background: #fff;
+}
+
+.adelaide-location-index .adelaide-intro-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
+    gap: 60px;
+    align-items: center;
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.adelaide-location-index .adelaide-intro-main h2 {
+    margin: 0 0 20px;
+    color: var(--adelaide-text);
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+}
+
+.adelaide-location-index .adelaide-intro-main p {
+    margin: 0 0 15px;
+    color: var(--adelaide-muted);
+    font-size: 1rem;
+    line-height: 1.8;
+}
+
+.adelaide-location-index .adelaide-intro-links {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+}
+
+.adelaide-location-index .adelaide-intro-links a {
+    color: var(--adelaide-blue);
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.adelaide-location-index .adelaide-intro-links a span {
+    display: inline-block;
+    margin-left: 5px;
+    transition: transform 0.2s ease;
+}
+
+.adelaide-location-index .adelaide-intro-links a:hover span {
+    transform: translateX(4px);
+}
+
+.adelaide-location-index .adelaide-intro-card {
+    padding: 32px;
+    border: 1px solid var(--adelaide-border);
+    border-radius: 14px;
+    background: linear-gradient(145deg, #fff 0%, #f5f8fc 100%);
+    box-shadow: 0 18px 50px rgba(11, 31, 58, 0.08);
+}
+
+.adelaide-location-index .adelaide-intro-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    background: var(--adelaide-blue-soft);
+    color: var(--adelaide-blue);
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.adelaide-location-index .adelaide-intro-card h3 {
+    margin: 0 0 12px;
+    color: var(--adelaide-text);
+    font-size: 1.3rem;
+}
+
+.adelaide-location-index .adelaide-intro-card p {
+    margin: 0 0 20px;
+    color: var(--adelaide-muted);
+    line-height: 1.7;
+}
+
+.adelaide-location-index .adelaide-intro-card a {
+    color: var(--adelaide-blue);
+    text-decoration: none;
+    font-weight: 900;
+}
+
+
+/* ============================================================
+   SERVICES
+   ============================================================ */
+
+.adelaide-location-index .adelaide-services-section {
+    padding: 86px 0;
+    background: var(--adelaide-bg);
+}
+
+.adelaide-location-index .adelaide-services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.adelaide-location-index .adelaide-service-card {
+    position: relative;
+    min-height: 245px;
+    padding: 30px;
+    border: 1px solid var(--adelaide-border);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 30px rgba(11, 31, 58, 0.045);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.adelaide-location-index .adelaide-service-card:hover {
+    transform: translateY(-4px);
+    border-color: #c6d4e5;
+    box-shadow: 0 18px 45px rgba(11, 31, 58, 0.10);
+}
+
+.adelaide-location-index .adelaide-service-number {
+    margin-bottom: 24px;
+    color: #b3bfd0;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+}
+
+.adelaide-location-index .adelaide-service-card h3 {
+    margin: 0 0 12px;
+    color: var(--adelaide-text);
+    font-size: 1.22rem;
+    line-height: 1.25;
+}
+
+.adelaide-location-index .adelaide-service-card p {
+    margin: 0 0 22px;
+    color: var(--adelaide-muted);
+    font-size: 0.92rem;
+    line-height: 1.65;
+}
+
+.adelaide-location-index .adelaide-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--adelaide-blue);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 900;
+}
+
+.adelaide-location-index .adelaide-card-link span {
+    transition: transform 0.2s ease;
+}
+
+.adelaide-location-index .adelaide-card-link:hover span {
+    transform: translateX(4px);
+}
+
+
+/* ============================================================
+   COVERAGE / A-Z
+   ============================================================ */
+
+.adelaide-location-index .adelaide-coverage-section {
+    padding: 88px 0;
+    background: #fff;
+}
+
+.adelaide-location-index .adelaide-coverage-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.adelaide-location-index .adelaide-coverage-header > div:first-child {
+    max-width: 760px;
+}
+
+.adelaide-location-index .adelaide-coverage-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 125px;
+    min-height: 105px;
+    padding: 18px;
+    border: 1px solid var(--adelaide-border);
+    border-radius: 12px;
+    background: var(--adelaide-bg);
+}
+
+.adelaide-location-index .adelaide-coverage-badge strong {
+    color: var(--adelaide-navy);
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.adelaide-location-index .adelaide-coverage-badge span {
+    margin-top: 8px;
+    color: var(--adelaide-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+
+/* Alphabet */
+
+.adelaide-location-index .adelaide-alphabet {
+    display: grid;
+    grid-template-columns: repeat(13, minmax(36px, 1fr));
+    gap: 8px;
+    max-width: 980px;
+    margin: 0 auto 38px;
+}
+
+.adelaide-location-index .adelaide-alphabet a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    border: 1px solid var(--adelaide-border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--adelaide-text);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 900;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.adelaide-location-index .adelaide-alphabet a:hover {
+    border-color: var(--adelaide-blue);
+    color: var(--adelaide-blue);
+    transform: translateY(-1px);
+}
+
+.adelaide-location-index .adelaide-alphabet a.active {
+    border-color: var(--adelaide-blue);
+    background: var(--adelaide-blue);
+    color: #fff;
+}
+
+
+/* Suburbs */
+
+.adelaide-location-index .adelaide-suburbs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.adelaide-location-index .adelaide-suburb-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 88px;
+    padding: 17px 42px 17px 18px;
+    border: 1px solid var(--adelaide-border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--adelaide-text);
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(11, 31, 58, 0.035);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.adelaide-location-index .adelaide-suburb-card:hover {
+    border-color: #b8cce5;
+    box-shadow: 0 10px 26px rgba(11, 31, 58, 0.08);
+    transform: translateY(-2px);
+}
+
+.adelaide-location-index .adelaide-suburb-name {
+    color: var(--adelaide-text);
+    font-size: 0.88rem;
+    line-height: 1.35;
+    font-weight: 800;
+}
+
+.adelaide-location-index .adelaide-suburb-postcode {
+    margin-top: 6px;
+    color: var(--adelaide-muted);
+    font-size: 0.75rem;
+}
+
+.adelaide-location-index .adelaide-suburb-arrow {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    color: var(--adelaide-blue);
+    font-size: 1rem;
+    font-weight: 900;
+    transform: translateY(-50%);
+}
+
+
+/* Empty */
+
+.adelaide-location-index .adelaide-empty-state {
+    padding: 40px;
+    border: 1px solid var(--adelaide-border);
+    border-radius: 12px;
+    background: var(--adelaide-bg);
+    text-align: center;
+}
+
+.adelaide-location-index .adelaide-empty-state h3 {
+    margin: 0 0 8px;
+    color: var(--adelaide-text);
+}
+
+.adelaide-location-index .adelaide-empty-state p {
+    margin: 0;
+    color: var(--adelaide-muted);
+}
+
+
+/* ============================================================
+   BENEFITS
+   ============================================================ */
+
+.adelaide-location-index .adelaide-benefits-section {
+    padding: 88px 0;
+    background: var(--adelaide-bg);
+}
+
+.adelaide-location-index .adelaide-benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.adelaide-location-index .adelaide-benefit-card {
+    padding: 28px;
+    border: 1px solid var(--adelaide-border);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.adelaide-location-index .adelaide-benefit-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    background: var(--adelaide-blue-soft);
+    color: var(--adelaide-blue);
+    font-weight: 900;
+}
+
+.adelaide-location-index .adelaide-benefit-card h3 {
+    margin: 0 0 10px;
+    color: var(--adelaide-text);
+    font-size: 1.08rem;
+}
+
+.adelaide-location-index .adelaide-benefit-card p {
+    margin: 0;
+    color: var(--adelaide-muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+
+/* ============================================================
+   LOCAL SEO CONTENT
+   ============================================================ */
+
+.adelaide-location-index .adelaide-local-content {
+    padding: 82px 0;
+    background: #fff;
+}
+
+.adelaide-location-index .adelaide-local-content-inner {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.adelaide-location-index .adelaide-local-content h2 {
+    margin-bottom: 24px;
+}
+
+.adelaide-location-index .adelaide-local-content p {
+    margin: 0 0 17px;
+    color: var(--adelaide-muted);
+    font-size: 1rem;
+    line-height: 1.8;
+}
+
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+
+.adelaide-location-index .adelaide-final-cta {
+    position: relative;
+    overflow: hidden;
+    padding: 82px 0;
+    background:
+        linear-gradient(
+            120deg,
+            var(--adelaide-navy-dark),
+            var(--adelaide-navy)
+        );
+    color: #fff;
+}
+
+.adelaide-location-index .adelaide-cta-pattern {
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    top: -260px;
+    right: -160px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 0 0 60px rgba(255, 255, 255, 0.015),
+        0 0 0 120px rgba(255, 255, 255, 0.012);
+}
+
+.adelaide-location-index .adelaide-final-cta-content {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.adelaide-location-index .adelaide-kicker-light {
+    color: #a9c9ff;
+}
+
+.adelaide-location-index .adelaide-final-cta h2 {
+    margin: 0 0 15px;
+    color: #fff;
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+}
+
+.adelaide-location-index .adelaide-final-cta p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.84);
+    line-height: 1.7;
+}
+
+.adelaide-location-index .adelaide-final-actions {
+    display: flex;
+    justify-content: center;
+    gap: 13px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+}
+
+.adelaide-location-index .adelaide-btn-outline-light {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #fff;
+}
+
+.adelaide-location-index .adelaide-btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.10);
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 1024px) {
+
+    .adelaide-location-index .adelaide-services-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .adelaide-location-index .adelaide-suburbs-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .adelaide-location-index .adelaide-benefits-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .adelaide-location-index .adelaide-alphabet {
+        grid-template-columns: repeat(9, minmax(36px, 1fr));
+    }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .adelaide-location-index .adelaide-index-hero {
+        padding: 64px 0 58px;
+    }
+
+    .adelaide-location-index .adelaide-index-hero h1 {
+        font-size: clamp(2rem, 9vw, 3rem);
+    }
+
+    .adelaide-location-index .adelaide-hero-lead {
+        font-size: 1rem;
+        line-height: 1.65;
+    }
+
+    .adelaide-location-index .adelaide-hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .adelaide-location-index .adelaide-hero-actions .adelaide-btn {
+        width: 100%;
+    }
+
+    .adelaide-location-index .adelaide-trust-row {
+        grid-template-columns: repeat(2, 1fr);
+        margin-top: 35px;
+    }
+
+    .adelaide-location-index .adelaide-trust-item {
+        font-size: 0.74rem;
+    }
+
+    .adelaide-location-index .adelaide-intro-section,
+    .adelaide-location-index .adelaide-services-section,
+    .adelaide-location-index .adelaide-coverage-section,
+    .adelaide-location-index .adelaide-benefits-section,
+    .adelaide-location-index .adelaide-local-content {
+        padding: 62px 0;
+    }
+
+    .adelaide-location-index .adelaide-intro-grid {
+        grid-template-columns: 1fr;
+        gap: 35px;
+    }
+
+    .adelaide-location-index .adelaide-services-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .adelaide-location-index .adelaide-coverage-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .adelaide-location-index .adelaide-coverage-badge {
+        min-width: 105px;
+        min-height: 90px;
+    }
+
+    .adelaide-location-index .adelaide-alphabet {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+    }
+
+    .adelaide-location-index .adelaide-alphabet a {
+        min-height: 40px;
+    }
+
+    .adelaide-location-index .adelaide-suburbs-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .adelaide-location-index .adelaide-suburb-card {
+        min-height: 82px;
+        padding: 14px 35px 14px 14px;
+    }
+
+    .adelaide-location-index .adelaide-suburb-name {
+        font-size: 0.8rem;
+    }
+
+    .adelaide-location-index .adelaide-benefits-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .adelaide-location-index .adelaide-final-cta {
+        padding: 64px 0;
+    }
+
+    .adelaide-location-index .adelaide-final-actions {
+        flex-direction: column;
+    }
+
+    .adelaide-location-index .adelaide-final-actions .adelaide-btn {
+        width: 100%;
+    }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .adelaide-location-index .adelaide-trust-row {
+        grid-template-columns: 1fr;
+    }
+
+    .adelaide-location-index .adelaide-suburbs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .adelaide-location-index .adelaide-intro-links {
+        flex-direction: column;
+        gap: 14px;
+    }
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .adelaide-location-index *,
+    .adelaide-location-index *::before,
+    .adelaide-location-index *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+.adelaide-location-index a:focus-visible {
+    outline: 3px solid #7db4ff;
+    outline-offset: 3px;
+}

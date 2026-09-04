@@ -746,8 +746,30 @@ def local_area_index(request, letter="a"):
     matching_areas = _get_letter_areas(letter)
 
     services = _get_adelaide_services()
-    page_title = f"Adelaide Local Services - {current_letter}"
-    page_description = f"Explore cleaning services and suburbs in Adelaide that start with {current_letter}."
+
+    # The no-letter URL is the main Adelaide local SEO hub.
+    is_adelaide_hub = (
+        getattr(request.resolver_match, "url_name", None)
+        == "local_area_index_default"
+    )
+
+    if is_adelaide_hub:
+        page_title = "Professional Cleaning Services Adelaide | YD Commercial Cleaning"
+        page_description = (
+            "Professional cleaning services in Adelaide, SA for homes, offices "
+            "and commercial properties. Explore Adelaide suburbs, cleaning "
+            "services and request a free quote from YD Commercial Cleaning."
+        )
+    else:
+        page_title = (
+            f"Adelaide Cleaning Areas Starting With {current_letter} | "
+            "YD Commercial Cleaning"
+        )
+        page_description = (
+            f"Explore Adelaide suburbs and professional cleaning services for "
+            f"areas starting with {current_letter}. Get a free quote from "
+            "YD Commercial Cleaning."
+        )
 
     context = {
         "location_name": location_name,
@@ -757,7 +779,9 @@ def local_area_index(request, letter="a"):
         "current_letter": current_letter,
         "matching_areas": matching_areas,
         "services": services,
+        "is_adelaide_hub": is_adelaide_hub,
     }
+
     return render(request, "services/location_index.html", context)
 
 
