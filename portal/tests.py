@@ -103,3 +103,56 @@ class CustomerRegistrationTests(TestCase):
 		self.assertRedirects(response, "/portal/login/")
 		self.assertEqual(len(mail.outbox), 1)
 		self.assertIn("/portal/verify-email/existing-token/", mail.outbox[0].body)
+
+	def test_customer_password_change_rejects_wrong_current_password(self):
+		user = User.objects.create_user(
+			username="password@example.com",
+			password="Original password 123!",
+		)
+		Customer.objects.create(
+			user=user,
+			full_name="Password Customer",
+			phone="0400123456",
+			email_verified=True,
+		)
+		self.client.force_login(user)
+
+		response = self.client.post(
+			"/portal/profile/",
+			{
+				"form_type": "password",
+				"old_password": "wrong password",
+				"new_password1": "New secure password 456!",
+				"new_password2": "New secure password 456!",
+			},
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(user.check_password("Original password 123!"))
+
+	def test_customer_password_change_updates_password(self):
+		user = User.objects.create_user(
+			username="password2@example.com",
+			password="Original password 123!",
+		)
+		Customer.objects.create(
+			user=user,
+			full_name="Password Customer",
+			phone="0400123456",
+			email_verified=True,
+		)
+		self.client.force_login(user)
+
+		response = self.client.post(
+			"/portal/profile/",
+			{
+				"form_type": "password",
+				"old_password": "Original password 123!",
+				"new_password1": "New secure password 456!",
+				"new_password2": "New secure password 456!",
+			},
+		)
+
+		self.assertRedirects(response, "/portal/profile/")
+		user.refresh_from_db()
+		self.assertTrue(user.check_password("New secure password 456!"))
