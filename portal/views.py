@@ -16,9 +16,14 @@ from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.urls import reverse
+from django.utils.crypto import get_random_string
 
 from attendance.models import AttendanceLog
 from bookings.models import Booking
@@ -28,7 +33,37 @@ from invoices.models import Invoice
 from notifications.models import Notification
 from reports.models import CleaningReport
 
-from .forms import CustomerPasswordForm, CustomerProfileForm, CustomerRegisterForm
+from .forms import (
+    CustomerPasswordForm,
+    CustomerProfileForm,
+    CustomerRegisterForm,
+    ResendVerificationForm,
+)
+
+
+def send_customer_verification_email(request, customer):
+    if not customer.verification_token:
+        customer.verification_token = get_random_string(64)
+        customer.save(update_fields=["verification_token"])
+
+    verification_url = request.build_absolute_uri(
+        reverse("verify_customer_email", args=[customer.verification_token])
+    )
+    sent = send_mail(
+        "Verify your YD Cleaning customer account",
+        (
+            f"Hi {customer.full_name},\n\n"
+            "Please verify your email address by opening this link:\n"
+            f"{verification_url}\n\n"
+            "If you did not create this account, you can ignore this email."
+        ),
+        settings.DEFAULT_FROM_EMAIL,
+        [customer.email],
+        fail_silently=False,
+    )
+    if sent != 1:
+        raise RuntimeError("The verification email could not be queued.")
+    return sent
 
 
 def portal_register(request):
@@ -37,35 +72,37 @@ def portal_register(request):
         form = CustomerRegisterForm(request.POST)
 
         if form.is_valid():
-            full_name = form.cleaned_data["full_name"]
-            email = form.cleaned_data["email"]
-            phone = form.cleaned_data["phone"]
-            address = form.cleaned_data["address"]
-            suburb_postcode = form.cleaned_data["suburb_postcode"]
+            with transaction.atomic():
+                full_name = form.cleaned_data["full_name"]
+                email = form.cleaned_data["email"]
+                phone = form.cleaned_data["phone"]
+                address = form.cleaned_data["address"]
+                suburb_postcode = form.cleaned_data["suburb_postcode"]
 
-            # Create Django user account.
-            user = User.objects.create_user(
-                username=email,
-                email=email,
-                password=form.cleaned_data["password"],
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=form.cleaned_data["password"],
+                )
+
+                customer = Customer.objects.create(
+                    user=user,
+                    full_name=full_name or user.username,
+                    email=email,
+                    phone=phone,
+                    address=address,
+                    suburb_postcode=suburb_postcode,
+                    property_type="House",
+                    verification_token=get_random_string(64),
+                )
+
+                send_customer_verification_email(request, customer)
+
+            messages.success(
+                request,
+                "✅ Account created. Check your email to verify your account.",
             )
-
-            # Create linked customer profile.
-            Customer.objects.create(
-                user=user,
-                full_name=full_name or user.username,
-                email=email,
-                phone=phone,
-                address=address,
-                suburb_postcode=suburb_postcode,
-                property_type="House",
-            )
-
-            login(request, user)
-
-            messages.success(request, "✅ Customer account created successfully.")
-
-            return redirect("portal_dashboard")
+            return redirect("portal_login")
 
         messages.error(request, "❌ Please check the registration form.")
 
@@ -73,6 +110,38 @@ def portal_register(request):
         form = CustomerRegisterForm()
 
     return render(request, "portal/portal_register.html", {"form": form})
+
+
+def resend_customer_verification(request):
+    if request.method == "POST":
+        form = ResendVerificationForm(request.POST)
+        if form.is_valid():
+            customer = Customer.objects.filter(
+                email__iexact=form.cleaned_data["email"]
+            ).first()
+            if customer and not customer.email_verified and customer.user_id:
+                send_customer_verification_email(request, customer)
+            messages.success(
+                request,
+                "If that account needs verification, a new email has been sent.",
+            )
+            return redirect("portal_login")
+    else:
+        form = ResendVerificationForm()
+    return render(
+        request,
+        "portal/portal_resend_verification.html",
+        {"form": form},
+    )
+
+
+def verify_customer_email(request, token):
+    customer = get_object_or_404(Customer, verification_token=token)
+    customer.email_verified = True
+    customer.verification_token = None
+    customer.save(update_fields=["email_verified", "verification_token"])
+    messages.success(request, "Your email address has been verified successfully.")
+    return redirect("portal_login")
 
 
 def portal_login(request):
@@ -84,9 +153,17 @@ def portal_login(request):
             user = form.get_user()
 
             # Make sure this user has a customer profile.
-            if not hasattr(user, "customer_profile"):
+            customer = getattr(user, "customer_profile", None)
+            if customer is None:
                 messages.error(
                     request, "❌ This account is not linked to a customer profile."
+                )
+                return redirect("portal_login")
+
+            if not customer.email_verified and customer.verification_token:
+                messages.error(
+                    request,
+                    "Please verify your email address before signing in.",
                 )
                 return redirect("portal_login")
 

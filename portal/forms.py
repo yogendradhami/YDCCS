@@ -182,6 +182,17 @@ class CustomerLoginForm(AuthenticationForm):
     )
 
 
+class ResendVerificationForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter your email address",
+            }
+        )
+    )
+
+
 class CustomerProfileForm(forms.ModelForm):
     # Customer profile update form.
     class Meta:

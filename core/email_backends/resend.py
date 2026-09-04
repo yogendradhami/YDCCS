@@ -47,7 +47,18 @@ class ResendEmailBackend(BaseEmailBackend):
                 if self._send(message):
                     sent_count += 1
 
-            except Exception:
+            # except Exception:
+            #     if not self.fail_silently:
+            #         raise
+
+            except Exception as exc:
+                print(
+                    "RESEND EMAIL ERROR:",
+                    type(exc).__name__,
+                    str(exc),
+                    flush=True,
+                )
+
                 if not self.fail_silently:
                     raise
 
@@ -145,6 +156,20 @@ class ResendEmailBackend(BaseEmailBackend):
             if resend_attachments:
                 payload["attachments"] = resend_attachments
 
+        # response = resend.Emails.send(payload)
+
+        # return bool(response)
+
         response = resend.Emails.send(payload)
+
+        print(
+            "RESEND EMAIL SENT:",
+            {
+                "subject": message.subject,
+                "recipient_count": len(recipients),
+                "response": str(response),
+            },
+            flush=True,
+        )
 
         return bool(response)

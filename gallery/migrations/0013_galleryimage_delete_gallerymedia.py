@@ -4,6 +4,18 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 
+def copy_legacy_gallery_images(apps, schema_editor):
+    GalleryImage = apps.get_model("gallery", "GalleryImage")
+    GalleryMedia = apps.get_model("gallery", "GalleryMedia")
+
+    for media in GalleryMedia.objects.filter(media_type="image").exclude(image=""):
+        GalleryImage.objects.get_or_create(
+            gallery_id=media.gallery_id,
+            image=media.image,
+            defaults={"order": media.order},
+        )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -38,6 +50,10 @@ class Migration(migrations.Migration):
             options={
                 "ordering": ["order", "created_at", "id"],
             },
+        ),
+        migrations.RunPython(
+            copy_legacy_gallery_images,
+            migrations.RunPython.noop,
         ),
         migrations.DeleteModel(
             name="GalleryMedia",

@@ -21,6 +21,16 @@ class Customer(models.Model):
 
     full_name = models.CharField(max_length=150)
     email = models.EmailField(blank=True)
+    email_verified = models.BooleanField(
+        default=False,
+        help_text="Has customer verified email address?",
+    )
+    verification_token = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Email verification token",
+    )
     phone = models.CharField(max_length=30)
     address = models.CharField(max_length=255, blank=True)
 

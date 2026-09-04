@@ -21,6 +21,16 @@ urlpatterns = [
     path("portal/register/", views.portal_register, name="portal_register"),
     path("portal/login/", views.portal_login, name="portal_login"),
     path("portal/logout/", views.portal_logout, name="portal_logout"),
+    path(
+        "portal/verify-email/<str:token>/",
+        views.verify_customer_email,
+        name="verify_customer_email",
+    ),
+    path(
+        "portal/resend-verification/",
+        views.resend_customer_verification,
+        name="resend_customer_verification",
+    ),
     # Customer dashboard
     path("portal/dashboard/", views.portal_dashboard, name="portal_dashboard"),
     # Customer profile

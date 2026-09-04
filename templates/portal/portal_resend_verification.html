@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Resend Verification Email | YD Commercial Cleaning{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <h1>Verify Your Email</h1>
+                <p>Enter your account email and we will send a fresh verification link.</p>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_email">Email Address</label>
+                    {{ form.email }}
+                    <div class="text-danger">{{ form.email.errors }}</div>
+                </div>
+                <button type="submit" class="btn-fill full-width">Send Verification Email</button>
+                <div class="auth-links center">
+                    <a href="{% url 'portal_login' %}">Back to login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -24,6 +24,8 @@ class RoleAccessMiddleware:
             "/media/",
             "/portal/login/",
             "/portal/register/",
+            "/portal/verify-email/",
+            "/portal/resend-verification/",
             "/portal/logout/",
             "/portal/password-reset/",
             "/employee/login/",
