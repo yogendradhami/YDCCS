@@ -56,6 +56,10 @@ from google_reviews.review_utils import (
     get_public_google_reviews,
 )
 
+from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
+from .adelaide_local_content import ADELAIDE_LOCAL_CONTENT
+from .suburbs_data import ADELAIDE_SUBURBS
+
 from bookings.forms import BookingForm
 from notifications.models import Notification
 from .models import TestimonialVideo
@@ -96,49 +100,48 @@ def _slugify_area(area):
 
 
 def _get_adelaide_services():
-    return [
-        {
-            "slug": "commercial-cleaning-adelaide",
-            "name": "Commercial Cleaning",
-            "service_name": "Commercial Cleaning",
-            "description": "Reliable commercial cleaning for offices, shops, warehouses and business premises across Adelaide.",
-            "url": "/services/commercial-cleaning-adelaide/",
-            "included": ["Office cleaning", "Retail cleaning", "Warehouse cleaning"],
-        },
-        {
-            "slug": "office-cleaning-adelaide",
-            "name": "Office Cleaning",
-            "service_name": "Office Cleaning",
-            "description": "Keep your workplace clean, fresh and professional with regular office cleaning services tailored to your business needs.",
-            "url": "/services/office-cleaning-adelaide/",
-            "included": ["Reception areas", "Shared workspaces", "Desks and meeting rooms"],
-        },
-        {
-            "slug": "end-of-lease-cleaning-adelaide",
-            "name": "End of Lease Cleaning",
-            "service_name": "End of Lease Cleaning",
-            "description": "Detailed end-of-lease cleaning for tenants, landlords and property managers across Adelaide.",
-            "url": "/services/end-of-lease-cleaning-adelaide/",
-            "included": ["Bond cleaning", "Kitchen deep clean", "Carpet steam cleaning"],
-        },
-        {
-            "slug": "house-cleaning-adelaide",
-            "name": "House Cleaning",
-            "service_name": "House Cleaning",
-            "description": "Affordable and reliable house cleaning for Adelaide homes, including regular cleans, one-off cleans and deep cleaning.",
-            "url": "/services/house-cleaning-adelaide/",
-            "included": ["Living rooms", "Bedrooms", "Bathrooms"],
-        },
-        {
-            "slug": "window-cleaning-adelaide",
-            "name": "Window Cleaning",
-            "service_name": "Window Cleaning",
-            "description": "Interior and exterior window cleaning for homes, offices and commercial spaces across Adelaide.",
-            "url": "/services/window-cleaning-adelaide/",
-            "included": ["Interior glass", "Exterior glass", "Frame and sill cleaning"],
-        },
-    ]
+    """
+    Return all active services for Adelaide local pages.
 
+    Uses the existing Service model so newly added active services
+    automatically appear on Adelaide suburb pages without requiring
+    another manual update here.
+    """
+    services = []
+
+    active_services = Service.objects.filter(
+        is_active=True
+    ).order_by("name", "slug")
+
+    for service in active_services:
+        service_name = getattr(service, "name", None)
+
+        if not service_name:
+            service_name = getattr(service, "service_name", None)
+
+        if not service_name:
+            service_name = service.slug.replace("-", " ").title()
+
+        description = getattr(service, "description", None)
+
+        if not description:
+            description = (
+                f"Professional {service_name.lower()} services "
+                f"available across Adelaide."
+            )
+
+        services.append(
+            {
+                "slug": service.slug,
+                "name": service_name,
+                "service_name": service_name,
+                "description": description,
+                "url": f"/services/{service.slug}/",
+                "included": [],
+            }
+        )
+
+    return services
 
 def _get_letter_areas(letter):
     return [
@@ -747,6 +750,11 @@ def local_area_index(request, letter="a"):
 
     services = _get_adelaide_services()
 
+    matching_areas_by_letter = {
+        letter: _get_letter_areas(letter)
+        for letter in "abcdefghijklmnopqrstuvwxyz"
+    }
+
     # The no-letter URL is the main Adelaide local SEO hub.
     is_adelaide_hub = (
         getattr(request.resolver_match, "url_name", None)
@@ -779,42 +787,272 @@ def local_area_index(request, letter="a"):
         "current_letter": current_letter,
         "matching_areas": matching_areas,
         "services": services,
+        "matching_areas_by_letter": matching_areas_by_letter,
         "is_adelaide_hub": is_adelaide_hub,
     }
 
     return render(request, "services/location_index.html", context)
 
-
 def local_suburb_detail(request, area_slug):
     location_name = "Adelaide"
-    suburb = _get_suburb_by_slug(area_slug)
-    if not suburb:
+
+
+
+    # ---------------------------------------------------------
+    # 1. Prefer controlled Adelaide content
+    # ---------------------------------------------------------
+    suburb_data = ADELAIDE_LOCAL_AREAS.get(area_slug)
+
+    # ---------------------------------------------------------
+    # 2. If there is no controlled page yet, find the suburb
+    #    in the existing statewide suburb dataset.
+    #
+    #    IMPORTANT:
+    #    We are NOT modifying suburbs_data.py.
+    # ---------------------------------------------------------
+    if not suburb_data:
+        for areas in ADELAIDE_SUBURBS.values():
+            for area in areas:
+                if _slugify_area(area) == area_slug:
+                    suburb_data = {
+                        "name": area["name"],
+                        "postcode": area["postcode"],
+                        "letter": area_slug[:1].upper(),
+                    }
+                    break
+
+            if suburb_data:
+                break
+
+    # ---------------------------------------------------------
+    # 3. Preserve the existing fallback behaviour for genuinely
+    #    unknown URLs.
+    # ---------------------------------------------------------
+    if not suburb_data:
         return redirect("local_services")
 
+    suburb_name = suburb_data["name"]
+    postcode = suburb_data.get("postcode", "")
+
+    # Apply unique content when a suburb has a dedicated content record.
+    unique_content = ADELAIDE_LOCAL_CONTENT.get(area_slug)
+
+    if unique_content:
+        suburb_data = {
+            **suburb_data,
+            **unique_content,
+        }
+
+    # ---------------------------------------------------------
+    # 4. Existing Adelaide services
+    # ---------------------------------------------------------
     services = _get_adelaide_services()
-    db_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
+
+    # ---------------------------------------------------------
+    # 5. Existing featured reviews
+    # ---------------------------------------------------------
+    db_reviews = Review.objects.filter(
+        featured=True
+    ).order_by("-created_at")[:3]
+
     google_reviews = [
-        {"reviewer_name": r.customer_name, "review_text": r.review_text}
+        {
+            "reviewer_name": r.customer_name,
+            "review_text": r.review_text,
+        }
         for r in db_reviews
     ]
 
-    page_title = f"{suburb['name']} Cleaning Services"
-    page_description = f"Professional cleaning services for {suburb['name']}, {location_name}."
+    # ---------------------------------------------------------
+    # 6. SEO title / description
+    #
+    #    Controlled pages use their custom SEO data.
+    #    Fallback pages get safe generated metadata.
+    # ---------------------------------------------------------
+    page_title = suburb_data.get(
+        "seo_title",
+        f"{suburb_name} Cleaning Services | YD Commercial Cleaning",
+    )
 
+    page_description = suburb_data.get(
+        "meta_description",
+        (
+            f"Professional cleaning services in {suburb_name}, "
+            f"Adelaide for homes, offices, rental properties and businesses. "
+            f"Request a free quote from YD Commercial Cleaning."
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # 7. FAQ section
+    # ---------------------------------------------------------
+    faq_section = _get_faq_section(
+        "suburb_detail",
+        suburb_name=suburb_name,
+        location_name=location_name,
+    )
+
+    # ---------------------------------------------------------
+    # 8. Nearby areas
+    #
+    #    Only controlled nearby pages become clickable.
+    #    This preserves the safe behaviour already implemented.
+    # ---------------------------------------------------------
+    nearby_area_links = []
+
+    for nearby_name in suburb_data.get("nearby_areas", []):
+        for nearby_slug, nearby_data in ADELAIDE_LOCAL_AREAS.items():
+            if nearby_data.get("name") == nearby_name:
+                nearby_area_links.append(
+                    {
+                        "name": nearby_data["name"],
+                        "postcode": nearby_data.get("postcode", ""),
+                        "slug": nearby_slug,
+                    }
+                )
+                break
+
+    # ---------------------------------------------------------
+    # 9. Fallback content for suburbs that don't yet have a
+    #    dedicated controlled content record.
+    #
+    #    Aberfoyle Park and future controlled pages keep their
+    #    unique content unchanged.
+    # ---------------------------------------------------------
+    local_intro = suburb_data.get("intro")
+
+    if not local_intro:
+        local_intro = (
+            f"YD Commercial Cleaning provides professional cleaning "
+            f"services for homes, rental properties, offices and businesses "
+            f"in {suburb_name}, Adelaide. Whether you need regular cleaning, "
+            f"a one-off clean, end-of-lease cleaning or commercial cleaning, "
+            f"we can tailor the service to your property's requirements."
+        )
+
+    local_overview = suburb_data.get("local_overview")
+
+    if not local_overview:
+        local_overview = (
+            f"{suburb_name} includes residential properties, local businesses "
+            f"and workplaces with different cleaning requirements. Our "
+            f"cleaning services can be tailored to the size, condition and "
+            f"use of your property."
+        )
+
+    residential_content = suburb_data.get("residential_content")
+
+    if not residential_content:
+        residential_content = (
+            f"For homes in {suburb_name}, cleaning can be arranged around "
+            f"your household routine and the condition of the property. "
+            f"Regular cleaning can cover kitchens, bathrooms, living areas "
+            f"and floors, while a deeper clean can provide additional "
+            f"attention when required."
+        )
+
+    commercial_content = suburb_data.get("commercial_content")
+
+    if not commercial_content:
+        commercial_content = (
+            f"Businesses and workplaces in {suburb_name} can benefit from "
+            f"consistent cleaning to maintain presentation, hygiene and a "
+            f"comfortable environment for staff and visitors. Cleaning "
+            f"schedules can be arranged around operating hours and the "
+            f"requirements of the workplace."
+        )
+
+    why_local = suburb_data.get("why_local")
+
+    if not why_local:
+        why_local = (
+            f"Choosing a cleaning provider familiar with Adelaide properties "
+            f"can make it easier to plan the right scope of work, communicate "
+            f"clearly and arrange a practical cleaning schedule for your "
+            f"{suburb_name} property."
+        )
+
+    # ---------------------------------------------------------
+    # 10. Fallback nearby-area display.
+    #
+    #     Keep the template compatible with the existing design.
+    # ---------------------------------------------------------
+    nearby_areas = suburb_data.get("nearby_areas", [])
+
+    # ---------------------------------------------------------
+    # 11. Fallback local FAQs
+    # ---------------------------------------------------------
+    local_faqs = suburb_data.get("faqs")
+
+    if not local_faqs:
+        local_faqs = [
+            {
+                "question": (
+                    f"Do you provide cleaning services in {suburb_name}?"
+                ),
+                "answer": (
+                    f"Yes. YD Commercial Cleaning provides residential and "
+                    f"commercial cleaning services in {suburb_name} and "
+                    f"surrounding Adelaide areas."
+                ),
+            },
+            {
+                "question": (
+                    f"What cleaning services are available in {suburb_name}?"
+                ),
+                "answer": (
+                    "Depending on your property and requirements, services "
+                    "can include house cleaning, office cleaning, commercial "
+                    "cleaning, end-of-lease cleaning and window cleaning."
+                ),
+            },
+            {
+                "question": (
+                    f"Can I request a cleaning quote for my "
+                    f"{suburb_name} property?"
+                ),
+                "answer": (
+                    f"Yes. Contact YD Commercial Cleaning with your property "
+                    f"type, location and cleaning requirements and we can "
+                    f"provide a tailored quote."
+                ),
+            },
+        ]
+
+    # ---------------------------------------------------------
+    # 12. Render the SAME new Adelaide suburb template
+    # ---------------------------------------------------------
     context = {
         "location_name": location_name,
-        "suburb_name": suburb["name"],
+        "suburb_name": suburb_name,
+        "suburb": suburb_data,
+        "postcode": postcode,
+
         "page_title": page_title,
         "page_description": page_description,
+
         "services": services,
         "google_reviews": google_reviews,
-        "faq_section": _get_faq_section(
-            "suburb_detail",
-            suburb_name=suburb["name"],
-            location_name=location_name,
-        ),
+
+        "faq_section": faq_section,
+
+        "local_intro": local_intro,
+        "local_overview": local_overview,
+        "residential_content": residential_content,
+        "commercial_content": commercial_content,
+        "why_local": why_local,
+
+        "nearby_areas": nearby_areas,
+        "nearby_area_links": nearby_area_links,
+
+        "local_faqs": local_faqs,
     }
-    return render(request, "services/suburb_detail.html", context)
+
+    return render(
+        request,
+        "services/suburb_detail.html",
+        context,
+    )
 
 
 # ====================================================
