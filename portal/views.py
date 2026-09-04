@@ -14,7 +14,8 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -27,26 +28,27 @@ from invoices.models import Invoice
 from notifications.models import Notification
 from reports.models import CleaningReport
 
-from .forms import CustomerPasswordForm, CustomerProfileForm
+from .forms import CustomerPasswordForm, CustomerProfileForm, CustomerRegisterForm
 
 
 def portal_register(request):
     # Customer account registration view.
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
-
-        # These fields come from your existing registration template.
-        full_name = request.POST.get("full_name", "")
-        email = request.POST.get("email", "")
-        phone = request.POST.get("phone", "")
-        address = request.POST.get("address", "")
-        suburb_postcode = request.POST.get("suburb_postcode", "")
+        form = CustomerRegisterForm(request.POST)
 
         if form.is_valid():
+            full_name = form.cleaned_data["full_name"]
+            email = form.cleaned_data["email"]
+            phone = form.cleaned_data["phone"]
+            address = form.cleaned_data["address"]
+            suburb_postcode = form.cleaned_data["suburb_postcode"]
+
             # Create Django user account.
-            user = form.save()
-            user.email = email
-            user.save()
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                password=form.cleaned_data["password"],
+            )
 
             # Create linked customer profile.
             Customer.objects.create(
@@ -68,7 +70,7 @@ def portal_register(request):
         messages.error(request, "❌ Please check the registration form.")
 
     else:
-        form = UserCreationForm()
+        form = CustomerRegisterForm()
 
     return render(request, "portal/portal_register.html", {"form": form})
 

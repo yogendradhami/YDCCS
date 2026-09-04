@@ -16,7 +16,7 @@ from employees.models import Employee
 from invoices.models import Invoice
 from leave_management.models import LeaveRequest
 from quotes.models import QuoteRequest
-from support.models import SupportTicket
+from support.models import LiveChatConversation, SupportTicket
 
 
 def notification_context(request):
@@ -100,7 +100,10 @@ def notification_context(request):
             "roster": request.user.notifications.filter(
                 notification_type="roster", is_read=False
             ).count(),
-            "support": SupportTicket.objects.filter(status="open").count(),
+            "support": (
+                SupportTicket.objects.filter(status="open").count()
+                + LiveChatConversation.objects.filter(status="waiting").count()
+            ),
         }
 
         notification_counts["equipment"] = Equipment.objects.filter(
@@ -150,6 +153,30 @@ def notification_context(request):
         notification_counts["attendance_analytics"] = LeaveRequest.objects.filter(
             status="pending"
         ).count()
+
+        # Keep every sidebar badge key defined. Some dashboard areas are
+        # informational and currently have no pending-state model, so they
+        # intentionally remain zero until a real alert source exists.
+        sidebar_count_keys = (
+            "loyalty",
+            "customer_analytics",
+            "site_images",
+            "blog",
+            "services",
+            "bonuses",
+            "profit_loss",
+            "gst_report",
+            "finance_trends",
+            "review_request",
+            "review_analytics",
+            "campaigns",
+            "campaign_performance",
+            "business_kpis",
+            "email",
+            "email_logs",
+        )
+        for key in sidebar_count_keys:
+            notification_counts.setdefault(key, 0)
 
     else:
         notifications = []

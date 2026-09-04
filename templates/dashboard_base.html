@@ -621,6 +621,69 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const bell = document.getElementById("notificationBell");
+    const count = document.getElementById("notificationCount");
+    const dropdown = document.querySelector(".crm-notification-box .notification-dropdown");
+    if (!bell || !count || !dropdown) return;
+
+    function getCookie(name) {
+        return document.cookie.split(";").map(function (cookie) {
+            return cookie.trim();
+        }).find(function (cookie) {
+            return cookie.indexOf(name + "=") === 0;
+        })?.slice(name.length + 1) || "";
+    }
+
+    function renderNotifications(items) {
+        dropdown.innerHTML = "<h4>Notifications</h4>";
+        if (!items.length) {
+            dropdown.insertAdjacentHTML("beforeend", "<p>No notifications yet.</p>");
+            return;
+        }
+        items.forEach(function (item) {
+            const link = document.createElement("a");
+            link.href = item.link || "#";
+            if (!item.is_read) link.className = "unread";
+            link.innerHTML = "<strong></strong><small></small><em></em>";
+            link.querySelector("strong").textContent = item.title;
+            link.querySelector("small").textContent = item.message;
+            link.querySelector("em").textContent = item.created_at;
+            dropdown.appendChild(link);
+        });
+    }
+
+    function refreshNotifications() {
+        fetch("{% url 'notification_status' %}", {
+            credentials: "same-origin",
+            headers: {"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"},
+            cache: "no-store"
+        }).then(function (response) {
+            if (!response.ok) throw new Error("Notification request failed");
+            return response.json();
+        }).then(function (data) {
+            if (!data.success) return;
+            count.textContent = data.unread_count;
+            count.style.display = data.unread_count ? "inline-flex" : "none";
+            renderNotifications(data.notifications);
+        }).catch(function () {});
+    }
+
+    bell.addEventListener("click", function () {
+        fetch("{% url 'mark_notifications_read' %}", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {"X-CSRFToken": getCookie("csrftoken"), "X-Requested-With": "XMLHttpRequest"}
+        }).then(function () {
+            refreshNotifications();
+        }).catch(function () {});
+    });
+
+    refreshNotifications();
+    window.setInterval(refreshNotifications, 30000);
+});
+</script>
 
 </body>
 </html>

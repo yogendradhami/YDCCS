@@ -1,6 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
@@ -9,12 +12,13 @@ from customers.models import Customer
 from notifications.models import Notification
 
 from .chat_faq import FAQ_RESPONSES
-from .forms import SupportTicketForm
+from .forms import SupportTicketForm, SupportTicketReplyForm
 from .models import (
     ChatEnquiry,
     LiveChatConversation,
     LiveChatMessage,
     SupportTicket,
+    SupportTicketReply,
 )
 
 
@@ -106,12 +110,120 @@ def customer_tickets(request):
     )
 
 
+@login_required
+def ticket_detail(request, ticket_id):
+    ticket = get_object_or_404(
+        SupportTicket.objects.select_related("customer"), id=ticket_id
+    )
+
+    if not request.user.is_staff and ticket.customer.user_id != request.user.id:
+        return JsonResponse({"success": False, "message": "Access denied."}, status=403)
+
+    return render(
+        request,
+        "support/ticket_detail.html",
+        {
+            "ticket": ticket,
+            "replies": ticket.replies.select_related("author").all(),
+            "reply_form": SupportTicketReplyForm(),
+            "is_staff_view": request.user.is_staff,
+        },
+    )
+
+
+@login_required
+@require_POST
+def ticket_reply(request, ticket_id):
+    ticket = get_object_or_404(SupportTicket, id=ticket_id)
+
+    if request.user.is_staff or ticket.customer.user_id != request.user.id:
+        return JsonResponse({"success": False, "message": "Access denied."}, status=403)
+    if ticket.status == "closed":
+        messages.error(request, "Closed tickets cannot receive new replies.")
+        return redirect("ticket_detail", ticket_id=ticket.id)
+
+    form = SupportTicketReplyForm(request.POST)
+    if form.is_valid():
+        reply = form.save(commit=False)
+        reply.ticket = ticket
+        reply.author = request.user
+        reply.save()
+        ticket.status = "open"
+        ticket.save(update_fields=["status", "updated_at"])
+        for staff_user in User.objects.filter(is_staff=True):
+            Notification.objects.create(
+                user=staff_user,
+                title="Customer Replied to Support Ticket",
+                message=f"{ticket.customer.full_name} replied to: {ticket.subject}",
+                notification_type="system",
+                link=f"/portal/support/{ticket.id}/",
+            )
+        messages.success(request, "Your reply was sent to support.")
+    else:
+        messages.error(request, "Please enter a valid reply.")
+    return redirect("ticket_detail", ticket_id=ticket.id)
+
+
+@login_required
+@require_POST
+def ticket_update(request, ticket_id):
+    if not request.user.is_staff:
+        return JsonResponse({"success": False, "message": "Staff access required."}, status=403)
+
+    ticket = get_object_or_404(SupportTicket, id=ticket_id)
+    allowed_statuses = {choice[0] for choice in SupportTicket.STATUS_CHOICES}
+    allowed_priorities = {choice[0] for choice in SupportTicket.PRIORITY_CHOICES}
+    status = request.POST.get("status", ticket.status)
+    priority = request.POST.get("priority", ticket.priority)
+    if status not in allowed_statuses or priority not in allowed_priorities:
+        messages.error(request, "Invalid ticket status or priority.")
+        return redirect("ticket_detail", ticket_id=ticket.id)
+
+    ticket.status = status
+    ticket.priority = priority
+    ticket.save(update_fields=["status", "priority", "updated_at"])
+
+    Notification.objects.create(
+        user=ticket.customer.user,
+        title="Support Ticket Updated",
+        message=(
+            f"Your ticket '{ticket.subject}' is now "
+            f"{ticket.get_status_display().lower()} with "
+            f"{ticket.get_priority_display().lower()} priority."
+        ),
+        notification_type="system",
+        link=f"/portal/support/{ticket.id}/",
+    )
+
+    reply_form = SupportTicketReplyForm(request.POST)
+    if reply_form.is_valid() and reply_form.cleaned_data["message"]:
+        reply = reply_form.save(commit=False)
+        reply.ticket = ticket
+        reply.author = request.user
+        reply.save()
+        Notification.objects.create(
+            user=ticket.customer.user,
+            title="Support Ticket Updated",
+            message=f"Support replied to: {ticket.subject}",
+            notification_type="system",
+            link=f"/portal/support/{ticket.id}/",
+        )
+
+    messages.success(request, "Support ticket updated successfully.")
+    return redirect("ticket_detail", ticket_id=ticket.id)
+
 # =========================================================
 # SUPPORT DASHBOARD
 # =========================================================
 
 @login_required
 def support_dashboard(request):
+
+    if not request.user.is_staff:
+        return JsonResponse(
+            {"success": False, "message": "Staff access required."},
+            status=403,
+        )
 
     # =====================================================
     # SUPPORT TICKETS
@@ -207,6 +319,12 @@ def support_dashboard(request):
 @login_required
 @require_GET
 def live_chat_counts(request):
+
+    if not request.user.is_staff:
+        return JsonResponse(
+            {"success": False, "message": "Staff access required."},
+            status=403,
+        )
 
     live_chats = (
         LiveChatConversation.objects.filter(
@@ -510,17 +628,23 @@ def live_chat_takeover(
         id=conversation_id,
     )
 
-    conversation.status = "active"
+    with transaction.atomic():
+        conversation = LiveChatConversation.objects.select_for_update().get(
+            id=conversation_id
+        )
 
-    conversation.assigned_to = request.user
+        if conversation.status == "active" and conversation.assigned_to_id == request.user.id:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "status": conversation.status,
+                    "assigned_to": request.user.get_full_name() or request.user.username,
+                }
+            )
 
-    conversation.save(
-        update_fields=[
-            "status",
-            "assigned_to",
-            "updated_at",
-        ]
-    )
+        conversation.status = "active"
+        conversation.assigned_to = request.user
+        conversation.save(update_fields=["status", "assigned_to", "updated_at"])
 
     LiveChatMessage.objects.create(
         conversation=conversation,
@@ -530,6 +654,18 @@ def live_chat_takeover(
             f"{request.user.get_full_name() or request.user.username} "
             "has taken over this conversation."
         ),
+    )
+
+    async_to_sync(get_channel_layer()).group_send(
+        f"live_chat_{conversation.id}",
+        {
+            "type": "chat_system",
+            "message": (
+                f"{request.user.get_full_name() or request.user.username} "
+                "has taken over this conversation."
+            ),
+            "status": "active",
+        },
     )
 
     return JsonResponse(
@@ -570,14 +706,16 @@ def live_chat_close(
         id=conversation_id,
     )
 
-    conversation.status = "closed"
+    with transaction.atomic():
+        conversation = LiveChatConversation.objects.select_for_update().get(
+            id=conversation_id
+        )
 
-    conversation.save(
-        update_fields=[
-            "status",
-            "updated_at",
-        ]
-    )
+        if conversation.status == "closed":
+            return JsonResponse({"success": True, "status": "closed"})
+
+        conversation.status = "closed"
+        conversation.save(update_fields=["status", "updated_at"])
 
     LiveChatMessage.objects.create(
         conversation=conversation,
@@ -587,6 +725,18 @@ def live_chat_close(
             "This conversation was closed by "
             f"{request.user.get_full_name() or request.user.username}."
         ),
+    )
+
+    async_to_sync(get_channel_layer()).group_send(
+        f"live_chat_{conversation.id}",
+        {
+            "type": "chat_system",
+            "message": (
+                "This conversation was closed by "
+                f"{request.user.get_full_name() or request.user.username}."
+            ),
+            "status": "closed",
+        },
     )
 
     return JsonResponse(

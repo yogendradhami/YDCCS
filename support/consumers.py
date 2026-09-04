@@ -1,9 +1,10 @@
 import asyncio
 from datetime import timedelta
 
-from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.utils import timezone
 
 from .chat_faq import FAQ_RESPONSES
@@ -36,6 +37,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
 
         self.conversation_id = None
         self.conversation = None
+        self.session_key = None
         self.is_staff = False
         self.room_group_name = None
 
@@ -137,6 +139,18 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
             "conversation_id"
         )
 
+        if conversation_id is not None:
+            try:
+                conversation_id = int(conversation_id)
+            except (TypeError, ValueError):
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Invalid conversation ID.",
+                    }
+                )
+                return
+
         # =================================================
         # UPDATE STAFF STATUS
         # =================================================
@@ -185,6 +199,8 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
                     )
 
                     return
+
+                self.session_key = session_key
 
                 conversation = await self.get_or_create_customer_conversation(
                     session_key=session_key,
@@ -370,6 +386,17 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
 
         self.conversation_id = conversation.id
 
+        if not self.is_staff:
+            session_key = str(content.get("session_key", "")).strip()
+            if session_key != self.session_key:
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "This conversation is not available to this chat session.",
+                    }
+                )
+                return
+
         # =================================================
         # IMPORTANT:
         #
@@ -534,6 +561,15 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
                 )
             ).strip()
 
+            if len(message) > 2000:
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Message cannot exceed 2000 characters.",
+                    }
+                )
+                return
+
             if not message:
 
                 await self.send_json(
@@ -594,6 +630,15 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
                 )
             ).strip()
 
+            if len(message) > 2000:
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "Message cannot exceed 2000 characters.",
+                    }
+                )
+                return
+
             if not message:
 
                 await self.send_json(
@@ -607,13 +652,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
 
                 return
 
-            sender_name = (
-                content.get(
-                    "sender_name",
-                    "",
-                )
-                or "Website Visitor"
-            )
+            sender_name = conversation.name or "Website Visitor"
 
             await self.save_message(
                 conversation.id,
@@ -800,7 +839,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
     # INACTIVITY CHECK
     # =====================================================
 
-    @sync_to_async
+    @database_sync_to_async
     def check_inactivity(
         self,
         conversation,
@@ -850,23 +889,24 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
         # Automatically close.
         # -------------------------------------------------
 
-        conversation.status = "closed"
+        with transaction.atomic():
+            current = LiveChatConversation.objects.select_for_update().get(
+                id=conversation.id
+            )
 
-        conversation.updated_at = now
+            if current.status == "closed":
+                return True
 
-        conversation.save(
-            update_fields=[
-                "status",
-                "updated_at",
-            ]
-        )
+            current.status = "closed"
+            current.updated_at = now
+            current.save(update_fields=["status", "updated_at"])
 
         # -------------------------------------------------
         # Create ONE system message.
         # -------------------------------------------------
 
         LiveChatMessage.objects.create(
-            conversation=conversation,
+            conversation=current,
             sender_type="system",
             sender_name="YD Cleaning Support",
             message=(
@@ -885,7 +925,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
     # GET OR CREATE CUSTOMER CONVERSATION
     # =====================================================
 
-    @sync_to_async
+    @database_sync_to_async
     def get_or_create_customer_conversation(
         self,
         session_key,
@@ -894,13 +934,30 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
         phone,
     ):
 
-        conversation = (
-            LiveChatConversation.objects
-            .filter(
-                session_key=session_key,
+        with transaction.atomic():
+            conversation, created = (
+                LiveChatConversation.objects.select_for_update().get_or_create(
+                    session_key=session_key,
+                    defaults={
+                        "name": name or "Website Visitor",
+                        "email": email,
+                        "phone": phone,
+                        "status": "waiting",
+                    },
+                )
             )
-            .first()
-        )
+
+            if created:
+                LiveChatMessage.objects.create(
+                    conversation=conversation,
+                    sender_type="system",
+                    sender_name="YD Cleaning",
+                    message=(
+                        "You are connected to YD Commercial "
+                        "Cleaning live chat."
+                    ),
+                )
+                return conversation
 
         # -------------------------------------------------
         # Existing conversation.
@@ -908,23 +965,14 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
 
         if conversation:
 
-            # If it was previously closed, start a new
-            # conversation using the same browser session.
+            # Keep one conversation per browser session across refreshes.
             if conversation.status == "closed":
-
-                conversation = (
-                    LiveChatConversation.objects.create(
-                        name=name,
-                        email=email,
-                        phone=phone,
-                        session_key=(
-                            f"{session_key}-{timezone.now().timestamp()}"
-                        ),
-                        status="waiting",
-                    )
+                conversation.status = "waiting"
+                conversation.assigned_to = None
+                conversation.updated_at = timezone.now()
+                conversation.save(
+                    update_fields=["status", "assigned_to", "updated_at"]
                 )
-
-                return conversation
 
             # Update visitor details when available.
 
@@ -963,39 +1011,11 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
 
             return conversation
 
-        # -------------------------------------------------
-        # Create new customer conversation.
-        # -------------------------------------------------
-
-        conversation = (
-            LiveChatConversation.objects.create(
-                name=name or "Website Visitor",
-                email=email,
-                phone=phone,
-                session_key=session_key,
-                status="waiting",
-            )
-        )
-
-        # -------------------------------------------------
-        # Create initial system message.
-        # -------------------------------------------------
-
-        LiveChatMessage.objects.create(
-            conversation=conversation,
-            sender_type="system",
-            sender_name="YD Cleaning",
-            message=(
-                "You are connected to YD Commercial "
-                "Cleaning live chat."
-            ),
-        )
-
         return conversation
 
 
 
-    @sync_to_async
+    @database_sync_to_async
     def get_conversation(
         self,
         conversation_id,
@@ -1019,7 +1039,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
     # SAVE MESSAGE
     # =====================================================
 
-    @sync_to_async
+    @database_sync_to_async
     def save_message(
         self,
         conversation_id,
@@ -1045,7 +1065,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
     # TOUCH CONVERSATION
     # =====================================================
 
-    @sync_to_async
+    @database_sync_to_async
     def touch_conversation(
         self,
         conversation_id,
@@ -1077,7 +1097,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
     # TAKEOVER
     # =====================================================
 
-    @sync_to_async
+    @database_sync_to_async
     def takeover_conversation(
         self,
         conversation_id,
@@ -1120,7 +1140,7 @@ class LiveChatConsumer(AsyncJsonWebsocketConsumer):
     # CLOSE CONVERSATION
     # =====================================================
 
-    @sync_to_async
+    @database_sync_to_async
     def close_conversation(
         self,
         conversation_id,

@@ -1,0 +1,87 @@
+{% extends is_staff_view|yesno:"dashboard_base.html,base.html" %}
+
+{% block title %}Support Ticket | {{ ticket.subject }}{% endblock %}
+{% block page_title %}Support Ticket{% endblock %}
+{% block page_subtitle %}Track updates and communicate with YD Cleaning support.{% endblock %}
+
+{% block content %}
+<main class="ticket-page {% if is_staff_view %}ticket-page-staff{% else %}ticket-page-customer{% endif %}">
+<section class="ticket-shell">
+    <div class="ticket-header">
+        <div>
+            <span class="ticket-eyebrow">YD Cleaning Support</span>
+            <h1>{{ ticket.subject }}</h1>
+            <p>{% if is_staff_view %}{{ ticket.customer.full_name }} · {% endif %}Created {{ ticket.created_at|date:"d M Y H:i" }}</p>
+        </div>
+        <div class="ticket-badges">
+            <span class="ticket-badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+            <span class="ticket-badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }} priority</span>
+        </div>
+    </div>
+
+    <div class="ticket-original">
+        <strong>Original request</strong>
+        <p>{{ ticket.message|linebreaksbr }}</p>
+    </div>
+
+    {% if replies %}
+    <div class="ticket-replies">
+        <h2>Conversation</h2>
+        {% for reply in replies %}
+        <article class="ticket-reply">
+            <strong>{% if reply.author == ticket.customer.user %}You{% else %}YD Cleaning Support{% endif %}</strong>
+            <small>{{ reply.created_at|date:"d M Y H:i" }}</small>
+            <p>{{ reply.message|linebreaksbr }}</p>
+        </article>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if is_staff_view %}
+    <form method="post" action="{% url 'ticket_update' ticket.id %}" class="ticket-form ticket-action-form">
+        {% csrf_token %}
+        <div class="form-grid">
+            <div class="ticket-field">
+                <label for="ticket-status">Status</label>
+                <select id="ticket-status" name="status" class="form-control">
+                    {% for value, label in ticket.STATUS_CHOICES %}
+                    <option value="{{ value }}"{% if ticket.status == value %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="ticket-field">
+                <label for="ticket-priority">Priority</label>
+                <select id="ticket-priority" name="priority" class="form-control">
+                    {% for value, label in ticket.PRIORITY_CHOICES %}
+                    <option value="{{ value }}"{% if ticket.priority == value %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="ticket-field">
+            <label for="staff-reply">Reply to customer (optional)</label>
+            {{ reply_form.message }}
+        </div>
+        <button type="submit" class="primary-btn">Save Ticket</button>
+    </form>
+    {% elif ticket.status != 'closed' %}
+    <form method="post" action="{% url 'ticket_reply' ticket.id %}" class="ticket-form ticket-action-form">
+        {% csrf_token %}
+        <div class="ticket-field">
+            <label for="customer-reply">Send a reply</label>
+            {{ reply_form.message }}
+        </div>
+        <button type="submit" class="primary-btn">Send Reply</button>
+    </form>
+    {% endif %}
+
+    <a href="{% if is_staff_view %}{% url 'support_dashboard' %}{% else %}{% url 'customer_tickets' %}{% endif %}" class="ticket-back">Back to Tickets</a>
+</section>
+</main>
+<style>
+.ticket-page{padding:32px 0 64px}.ticket-page-customer{background:#f4f8fb;min-height:calc(100vh - 180px)}
+.ticket-page-customer .ticket-shell{max-width:920px;margin:0 auto}.ticket-shell{padding:28px;border-radius:14px;background:#fff;box-shadow:0 12px 34px rgba(15,43,70,.08)}
+.ticket-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding-bottom:22px;border-bottom:1px solid #e5edf3}.ticket-eyebrow{display:block;color:#0072ce;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}.ticket-header h1{margin:0;color:#12344d;font-size:clamp(24px,3vw,36px)}.ticket-header p{margin:8px 0 0;color:#6b7d8c}.ticket-badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.ticket-badge{padding:7px 11px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}.status-open{background:#e3f1ff;color:#0066b3}.status-in_progress{background:#fff2ce;color:#8a5a00}.status-resolved{background:#e0f6e9;color:#177245}.status-closed{background:#f0f2f4;color:#586774}.priority-urgent{background:#ffe4e4;color:#a52323}.priority-high{background:#fff0d8;color:#9a5700}.priority-medium,.priority-low{background:#eef3f7;color:#476174}.ticket-original{margin:24px 0;padding:20px;border-left:4px solid #0072ce;background:#f5f9fc;border-radius:4px;color:#29465a}.ticket-original p{margin:10px 0 0;line-height:1.7}.ticket-replies{margin-top:28px}.ticket-replies h2{color:#12344d;font-size:21px}.ticket-reply{padding:16px 0;border-bottom:1px solid #e5edf3}.ticket-reply strong{color:#12344d}.ticket-reply small{color:#8293a0;margin-left:10px}.ticket-reply p{margin:8px 0 0;color:#405869;line-height:1.65}.ticket-form{margin-top:28px;padding-top:22px;border-top:1px solid #e5edf3}.ticket-form .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.ticket-field{margin-bottom:18px}.ticket-field label{display:block;color:#29465a;font-weight:700;margin-bottom:7px}.ticket-field input,.ticket-field textarea,.ticket-field select{width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd9e3;border-radius:6px;background:#fff;color:#19384d}.ticket-field textarea{min-height:120px;resize:vertical}.ticket-form .primary-btn{border:0;cursor:pointer;background:#0072ce;color:#fff;padding:12px 20px;border-radius:6px;font-weight:700}.ticket-back{display:inline-block;margin-top:22px;color:#0072ce;font-weight:700;text-decoration:none}.ticket-page-staff{padding:0 0 40px}.ticket-page-staff .ticket-shell{box-shadow:none;border:1px solid #e2e8f0}.ticket-page-staff .ticket-header h1{font-size:28px}
+@media(max-width:700px){.ticket-page{padding:20px 12px 48px}.ticket-shell{padding:20px}.ticket-header{display:block}.ticket-badges{justify-content:flex-start;margin-top:16px}.ticket-form .form-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}

@@ -46,6 +46,29 @@ class SupportTicket(models.Model):
         return self.subject
 
 
+class SupportTicketReply(models.Model):
+    ticket = models.ForeignKey(
+        SupportTicket,
+        on_delete=models.CASCADE,
+        related_name="replies",
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="support_ticket_replies",
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Reply to ticket #{self.ticket_id}"
+
+
 class ChatEnquiry(models.Model):
 
     ENQUIRY_TYPE_CHOICES = [

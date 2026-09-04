@@ -1252,6 +1252,9 @@
             let liveChatSocket = null;
             let liveChatConnecting = false;
             let liveChatSending = false;
+            let liveChatReconnectTimer = null;
+            let liveChatReconnectAttempts = 0;
+            let liveChatWanted = false;
 
 
             /* =================================================
@@ -1480,6 +1483,8 @@
 
             function connectLiveChat() {
 
+                liveChatWanted = true;
+
                 if (
                     liveChatSocket &&
                     (
@@ -1526,6 +1531,8 @@
 
                 liveChatSocket.onopen =
                     function () {
+
+                        liveChatReconnectAttempts = 0;
 
                         console.log(
                             "YD Live Chat connected"
@@ -1685,6 +1692,8 @@
                                 "chat_closed"
                             ) {
 
+                                liveChatWanted = false;
+
                                 addLiveChatSystemMessage(
                                     data.message ||
                                     "This conversation has been closed."
@@ -1756,6 +1765,20 @@
                             liveChatStatus.textContent =
                                 "🔴 Disconnected";
 
+                        }
+
+                        if (liveChatWanted && !liveChatReconnectTimer) {
+                            const delay = Math.min(
+                                30000,
+                                2000 * Math.pow(2, liveChatReconnectAttempts++)
+                            );
+                            liveChatReconnectTimer = setTimeout(
+                                function () {
+                                    liveChatReconnectTimer = null;
+                                    connectLiveChat();
+                                },
+                                delay
+                            );
                         }
 
                     };
@@ -1850,6 +1873,18 @@
                ================================================= */
 
             function closeLiveChat() {
+
+                liveChatWanted = false;
+
+                if (liveChatReconnectTimer) {
+                    clearTimeout(liveChatReconnectTimer);
+                    liveChatReconnectTimer = null;
+                }
+
+                if (liveChatSocket) {
+                    liveChatSocket.close();
+                    liveChatSocket = null;
+                }
 
                 if (
                     liveChatContainer

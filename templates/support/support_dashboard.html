@@ -469,6 +469,7 @@ Manage customer support tickets, complaints, service requests and live website c
                     <th>Status</th>
                     <th>Created</th>
                     <th>Updated</th>
+                    <th>Action</th>
                 </tr>
 
             </thead>
@@ -569,6 +570,10 @@ Manage customer support tickets, complaints, service requests and live website c
 
                     <td>
                         {{ ticket.updated_at|date:"d M Y" }}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'ticket_detail' ticket.id %}" class="primary-btn">Manage</a>
                     </td>
 
                 </tr>
@@ -1204,6 +1209,7 @@ Manage customer support tickets, complaints, service requests and live website c
 
     let selectedConversationId = null;
     let staffSocket = null;
+    let conversationLoadToken = 0;
 
     const emptyState =
         document.getElementById("liveChatEmpty");
@@ -1513,8 +1519,15 @@ Manage customer support tickets, complaints, service requests and live website c
         conversationId
     ){
 
+        const loadToken = ++conversationLoadToken;
+
         selectedConversationId =
             conversationId;
+
+        if(staffSocket){
+            staffSocket.close();
+            staffSocket = null;
+        }
 
 
         document
@@ -1558,6 +1571,10 @@ Manage customer support tickets, complaints, service requests and live website c
 
             const data =
                 await response.json();
+
+            if(loadToken !== conversationLoadToken){
+                return;
+            }
 
 
             if(!data.success){

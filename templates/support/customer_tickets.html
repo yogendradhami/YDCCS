@@ -111,6 +111,8 @@ Track support requests, service issues and customer enquiries.
                         Last Updated
                     </th>
 
+                    <th>Action</th>
+
                 </tr>
 
             </thead>
@@ -200,6 +202,10 @@ Track support requests, service issues and customer enquiries.
 
                     <td>
                         {{ ticket.updated_at|date:"d M Y" }}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'ticket_detail' ticket.id %}" class="primary-btn">View</a>
                     </td>
 
                 </tr>

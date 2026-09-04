@@ -12,6 +12,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import RegexValidator
 
 from customers.models import Customer
 
@@ -20,6 +21,12 @@ class CustomerRegisterForm(forms.Form):
     # Customer full name field
     full_name = forms.CharField(
         max_length=150,
+        validators=[
+            RegexValidator(
+                r"^[^\W\d_]+(?:[ '\-][^\W\d_]+)*$",
+                "Enter a valid name using letters, spaces, apostrophes, or hyphens.",
+            )
+        ],
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
@@ -41,6 +48,9 @@ class CustomerRegisterForm(forms.Form):
     # Customer phone field
     phone = forms.CharField(
         max_length=30,
+        validators=[
+            RegexValidator(r"^[+()\d][+()\d -]{7,24}$", "Enter a valid phone number.")
+        ],
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
@@ -52,6 +62,10 @@ class CustomerRegisterForm(forms.Form):
     # Customer address field
     address = forms.CharField(
         required=False,
+        max_length=255,
+        validators=[
+            RegexValidator(r"^[\w\s.,'#/\-]+$", "Enter a valid address.")
+        ],
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
@@ -63,6 +77,13 @@ class CustomerRegisterForm(forms.Form):
     # Customer suburb/postcode field
     suburb_postcode = forms.CharField(
         required=False,
+        max_length=150,
+        validators=[
+            RegexValidator(
+                r"^[^\W\d_][^\d\n]*\s+\d{4}$",
+                "Enter a suburb and 4-digit postcode, for example Prospect 5082.",
+            )
+        ],
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
@@ -93,9 +114,11 @@ class CustomerRegisterForm(forms.Form):
 
     def clean_email(self):
         # Prevent duplicate customer account email.
-        email = self.cleaned_data.get("email")
+        email = self.cleaned_data["email"].strip().lower()
 
-        if User.objects.filter(username=email).exists():
+        if User.objects.filter(username__iexact=email).exists() or Customer.objects.filter(
+            email__iexact=email
+        ).exists():
             raise forms.ValidationError("An account with this email already exists.")
 
         return email
@@ -103,8 +126,26 @@ class CustomerRegisterForm(forms.Form):
     def clean_password(self):
         # Use Django's built-in password strength validators.
         password = self.cleaned_data.get("password")
-        validate_password(password)
+        if password:
+            validate_password(password)
         return password
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"].strip()
+        digit_count = sum(character.isdigit() for character in phone)
+
+        if digit_count < 8 or digit_count > 15:
+            raise forms.ValidationError("Enter a valid phone number.")
+
+        return phone
+
+    def clean_address(self):
+        address = self.cleaned_data["address"].strip()
+
+        if address and not any(character.isalnum() for character in address):
+            raise forms.ValidationError("Enter a valid address.")
+
+        return address
 
     def clean(self):
         # Confirm both passwords match.

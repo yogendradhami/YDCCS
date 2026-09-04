@@ -4,7 +4,10 @@ from .models import (
     ChatEnquiry,
     ChatConversation,
     ChatMessage,
+    LiveChatConversation,
+    LiveChatMessage,
     SupportTicket,
+    SupportTicketReply,
 )
 
 
@@ -28,6 +31,15 @@ class SupportTicketAdmin(admin.ModelAdmin):
         "subject",
         "customer__full_name",
     )
+
+
+@admin.register(SupportTicketReply)
+class SupportTicketReplyAdmin(admin.ModelAdmin):
+
+    list_display = ("ticket", "author", "created_at")
+    search_fields = ("message", "ticket__subject", "ticket__customer__full_name")
+    readonly_fields = ("created_at",)
+    ordering = ("-created_at",)
 
 @admin.register(ChatEnquiry)
 class ChatEnquiryAdmin(admin.ModelAdmin):
@@ -127,4 +139,37 @@ class ChatMessageAdmin(admin.ModelAdmin):
         "created_at",
     )
 
+    ordering = ("-created_at",)
+
+
+@admin.register(LiveChatConversation)
+class LiveChatConversationAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "name",
+        "email",
+        "status",
+        "assigned_to",
+        "created_at",
+        "updated_at",
+    )
+    list_filter = ("status", "created_at")
+    search_fields = ("name", "email", "phone", "session_key")
+    readonly_fields = ("created_at", "updated_at")
+    ordering = ("-updated_at",)
+
+
+@admin.register(LiveChatMessage)
+class LiveChatMessageAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "conversation",
+        "sender_type",
+        "sender_name",
+        "created_at",
+    )
+    list_filter = ("sender_type", "created_at")
+    search_fields = ("message", "sender_name")
+    readonly_fields = ("created_at",)
     ordering = ("-created_at",)
