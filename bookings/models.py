@@ -55,6 +55,14 @@ class Booking(models.Model):
 
     notes = models.TextField(blank=True)
 
+    idempotency_key = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -301,11 +301,31 @@ ASGI_APPLICATION = "ydcleaning.asgi.application"
 # DJANGO CHANNELS / WEBSOCKET
 # ==========================================================
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
+REDIS_URL = env.str(
+    "REDIS_URL",
+    default="",
+).strip()
+
+if IS_PRODUCTION and not REDIS_URL:
+    raise RuntimeError(
+        "REDIS_URL must be configured when IS_PRODUCTION=True."
+    )
+
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
 
 
 # ==========================================================

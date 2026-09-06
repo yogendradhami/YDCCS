@@ -35,6 +35,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 from attendance.models import AttendanceLog
 from bookings.forms import BookingForm
 from bookings.models import Booking
+from bookings.services import create_booking
 from contracts.models import CleaningContract
 from customers.forms import CustomerForm
 from customers.models import Customer
@@ -54,6 +55,7 @@ from leave_management.models import LeaveRequest
 from notifications.models import Notification
 from payroll.models import PayrollRecord
 from quotes.models import QuoteRequest
+from quotes.services import convert_quote_to_booking as convert_quote_service
 from reviews.forms import ReviewForm
 from reviews.models import Review
 from rosters.models import Roster
@@ -488,80 +490,16 @@ def update_quote_status(request, quote_id):
             if new_status == "booked" and old_status != "booked":
 
                 try:
-                    customer = Customer.objects.filter(
-                        email=quote.email
-                    ).first()
-
-                    if not customer:
-                        customer = Customer.objects.create(
-                            full_name=quote.name,
-                            email=quote.email,
-                            phone=quote.phone,
-                            property_type=quote.property_type,
-                            suburb_postcode=quote.suburb_postcode,
-                            notes=quote.message,
-                        )
-                    else:
-                        if not customer.phone:
-                            customer.phone = quote.phone
-
-                        if not customer.suburb_postcode:
-                            customer.suburb_postcode = quote.suburb_postcode
-
-                        if not customer.property_type:
-                            customer.property_type = quote.property_type
-
-                        customer.save()
-
-                    service_type = "House Cleaning"
-
-                    if quote.property_type == "Office":
-                        service_type = "Office Cleaning"
-
-                    elif quote.property_type == "Commercial Property":
-                        service_type = "Commercial Cleaning"
-
-                    elif quote.property_type == "End of Lease Property":
-                        service_type = "End of Lease Cleaning"
-
-                    booking = Booking.objects.filter(
-                        customer=customer,
+                    booking, _ = convert_quote_service(
+                        quote_id=quote.id,
                         booking_date=quote.preferred_date or timezone.localdate(),
-                        quoted_price=quote.estimated_price,
-                        notes=quote.message,
-                    ).first()
-
-                    if not booking:
-                        booking = Booking.objects.create(
-                            customer=customer,
-                            service_type=service_type,
-                            booking_date=(
-                                quote.preferred_date
-                                or timezone.localdate()
-                            ),
-                            booking_time="09:00",
-                            address=customer.address or "Address not provided",
-                            suburb_postcode=quote.suburb_postcode,
-                            quoted_price=quote.estimated_price,
-                            status="pending",
-                            notes=quote.message,
-                        )
-
-                    # --------------------------------------------------
-                    # Sync booking with Google Calendar.
-                    # --------------------------------------------------
-                    try:
-                        create_or_update_booking_event(booking)
-                    except Exception as error:
-                        messages.warning(
-                            request,
-                            f"Booking created, but Google Calendar sync failed: {error}",
-                        )
-
+                        booking_time=time(9, 0),
+                    )
                     messages.success(
                         request,
                         f"Quote booked successfully. Booking #{booking.id} created.",
                     )
+                    return redirect("lead_list")
 
                 except Exception as error:
                     messages.error(
@@ -761,7 +699,18 @@ def add_booking(request):
         form = BookingForm(request.POST)
 
         if form.is_valid():
-            booking = form.save()
+            booking, _ = create_booking(
+                customer=form.cleaned_data["customer"],
+                service_type=form.cleaned_data["service_type"],
+                booking_date=form.cleaned_data["booking_date"],
+                booking_time=form.cleaned_data["booking_time"],
+                address=form.cleaned_data["address"],
+                suburb_postcode=form.cleaned_data["suburb_postcode"],
+                quoted_price=form.cleaned_data["quoted_price"],
+                assigned_employee=form.cleaned_data.get("assigned_employee"),
+                notes=form.cleaned_data.get("notes", ""),
+                trusted_assignment=True,
+            )
 
             try:
                 from rosters.services import sync_booking_roster
@@ -5407,52 +5356,16 @@ def convert_quote_to_booking(request, quote_id):
 
     quote = get_object_or_404(QuoteRequest, id=quote_id)
 
-    customer = Customer.objects.filter(email=quote.email).first()
-
-    if not customer:
-
-        customer = Customer.objects.create(
-            full_name=quote.name,
-            email=quote.email,
-            phone=quote.phone,
-            property_type=quote.property_type,
-            suburb_postcode=quote.suburb_postcode,
-            notes=quote.message,
+    try:
+        booking, _ = convert_quote_service(
+            quote_id=quote.id,
+            booking_date=quote.preferred_date or timezone.localdate(),
+            booking_time=time(9, 0),
         )
+    except ValueError as error:
+        messages.error(request, str(error))
+        return redirect("lead_list")
 
-    if not customer.phone:
-        customer.phone = quote.phone
-
-    if not customer.suburb_postcode:
-        customer.suburb_postcode = quote.suburb_postcode
-
-    if not customer.property_type:
-        customer.property_type = quote.property_type
-
-    customer.save()
-
-    service_type = "House Cleaning"
-
-    if quote.property_type == "Office":
-        service_type = "Office Cleaning"
-
-    elif quote.property_type == "Commercial Property":
-        service_type = "Commercial Cleaning"
-
-    elif quote.property_type == "End of Lease Property":
-        service_type = "End of Lease Cleaning"
-
-    booking = Booking.objects.create(
-        customer=customer,
-        service_type=service_type,
-        booking_date=quote.preferred_date or timezone.localdate(),
-        booking_time="09:00",
-        address=customer.address or "Address not provided",
-        suburb_postcode=quote.suburb_postcode,
-        quoted_price=quote.estimated_price,
-        status="pending",
-        notes=quote.message,
-    )
     try:
         create_or_update_booking_event(booking)
     except Exception as error:
@@ -5461,13 +5374,8 @@ def convert_quote_to_booking(request, quote_id):
             f"Booking created, but Google Calendar sync failed: {error}",
         )
 
-    quote.status = "booked"
-    quote.save()
-
     messages.success(request, "Quote converted to booking successfully.")
-
     return redirect("booking_list")
-
 
 @login_required
 def create_invoice_from_booking(request, booking_id):

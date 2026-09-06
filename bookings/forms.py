@@ -121,6 +121,39 @@ class BookingForm(forms.ModelForm):
         return cleaned_data
 
 
+class PublicBookingForm(forms.ModelForm):
+    name = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    phone = forms.CharField(max_length=30)
+
+    class Meta:
+        model = Booking
+        fields = [
+            "name",
+            "email",
+            "phone",
+            "service_type",
+            "booking_date",
+            "booking_time",
+            "address",
+            "suburb_postcode",
+            "notes",
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        booking_date = cleaned_data.get("booking_date")
+        booking_time = cleaned_data.get("booking_time")
+        if booking_date and booking_time:
+            conflict = Booking.objects.filter(
+                booking_date=booking_date,
+                booking_time=booking_time,
+            ).exclude(status="cancelled").exists()
+            if conflict:
+                raise forms.ValidationError("That booking time is not available.")
+        return cleaned_data
+
+
 class JobPhotoForm(forms.ModelForm):
 
     employee_signature = forms.ImageField(required=False)

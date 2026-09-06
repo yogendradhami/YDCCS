@@ -216,6 +216,48 @@ class LiveChatConversation(models.Model):
         ("closed", "Closed"),
     ]
 
+    MODE_CHOICES = [
+        ("ai", "AI"),
+        ("waiting_for_human", "Waiting for Human"),
+        ("human", "Human"),
+        ("closed", "Closed"),
+    ]
+
+    INTENT_CHOICES = [
+        ("general_question", "General Question"),
+        ("service_enquiry", "Service Enquiry"),
+        ("pricing_enquiry", "Pricing Enquiry"),
+        ("quote_request", "Quote Request"),
+        ("booking_enquiry", "Booking Enquiry"),
+        ("existing_booking", "Existing Booking"),
+        ("complaint", "Complaint"),
+        ("invoice_question", "Invoice Question"),
+        ("payment_question", "Payment Question"),
+        ("human_agent", "Human Agent"),
+        ("other", "Other"),
+        ("unknown", "Unknown"),
+    ]
+
+    SERVICE_CHOICES = [
+        ("commercial_cleaning", "Commercial Cleaning"),
+        ("office_cleaning", "Office Cleaning"),
+        ("window_cleaning", "Window Cleaning"),
+        ("oven_cleaning", "Oven Cleaning"),
+        ("carpet_cleaning", "Carpet Cleaning"),
+        ("spring_cleaning", "Spring Cleaning"),
+        ("deep_cleaning", "Deep Cleaning"),
+        ("end_of_lease_cleaning", "End of Lease Cleaning"),
+        ("other", "Other"),
+    ]
+
+    LEAD_STATUS_CHOICES = [
+        ("none", "None"),
+        ("collecting", "Collecting"),
+        ("qualified", "Qualified"),
+        ("converted", "Converted"),
+        ("lost", "Lost"),
+    ]
+
     name = models.CharField(max_length=150)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
@@ -229,6 +271,38 @@ class LiveChatConversation(models.Model):
         max_length=20,
         choices=STATUS_CHOICES,
         default="waiting",
+    )
+
+    mode = models.CharField(
+        max_length=30,
+        choices=MODE_CHOICES,
+        default="ai",
+        db_index=True,
+    )
+
+    intent = models.CharField(
+        max_length=30,
+        choices=INTENT_CHOICES,
+        default="unknown",
+        db_index=True,
+    )
+
+    service = models.CharField(
+        max_length=40,
+        choices=SERVICE_CHOICES,
+        blank=True,
+    )
+
+    lead_status = models.CharField(
+        max_length=20,
+        choices=LEAD_STATUS_CHOICES,
+        default="none",
+        db_index=True,
+    )
+
+    conversation_state = models.JSONField(
+        default=dict,
+        blank=True,
     )
 
     assigned_to = models.ForeignKey(

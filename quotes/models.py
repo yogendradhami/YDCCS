@@ -94,6 +94,14 @@ class QuoteRequest(models.Model):
     # -------------------------------
     admin_notes = models.TextField(blank=True)
 
+    idempotency_key = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
     # -------------------------------
     # Timestamp
     # -------------------------------

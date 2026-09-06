@@ -643,8 +643,11 @@ def live_chat_takeover(
             )
 
         conversation.status = "active"
+        conversation.mode = "human"
         conversation.assigned_to = request.user
-        conversation.save(update_fields=["status", "assigned_to", "updated_at"])
+        conversation.save(
+            update_fields=["status", "mode", "assigned_to", "updated_at"]
+        )
 
     LiveChatMessage.objects.create(
         conversation=conversation,
@@ -656,7 +659,7 @@ def live_chat_takeover(
         ),
     )
 
-    async_to_sync(get_channel_layer()).group_send(
+    async_to_sync(get_channel_layer().group_send)(
         f"live_chat_{conversation.id}",
         {
             "type": "chat_system",
@@ -715,7 +718,8 @@ def live_chat_close(
             return JsonResponse({"success": True, "status": "closed"})
 
         conversation.status = "closed"
-        conversation.save(update_fields=["status", "updated_at"])
+        conversation.mode = "closed"
+        conversation.save(update_fields=["status", "mode", "updated_at"])
 
     LiveChatMessage.objects.create(
         conversation=conversation,
@@ -727,7 +731,7 @@ def live_chat_close(
         ),
     )
 
-    async_to_sync(get_channel_layer()).group_send(
+    async_to_sync(get_channel_layer().group_send)(
         f"live_chat_{conversation.id}",
         {
             "type": "chat_system",

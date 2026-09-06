@@ -47,6 +47,7 @@ from quotes.email_service import (
     send_customer_quote_email,
 )
 from quotes.forms import QuoteRequestForm
+from quotes.services import create_quote_request
 from quotes.models import QuoteImage
 from reviews.models import Review
 from services.models import Service
@@ -60,7 +61,9 @@ from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
 from .adelaide_local_content import ADELAIDE_LOCAL_CONTENT
 from .suburbs_data import ADELAIDE_SUBURBS
 
-from bookings.forms import BookingForm
+from bookings.forms import BookingForm, PublicBookingForm
+from bookings.services import create_booking
+from customers.services import resolve_customer
 from notifications.models import Notification
 from .models import TestimonialVideo
 
@@ -278,47 +281,13 @@ def home(request):
 
         if form.is_valid():
 
-            quote = form.save(commit=False)
-
-            base_price = 120
-
-            base_price += int(quote.bedrooms or 0) * 30
-            base_price += int(quote.bathrooms or 0) * 20
-
-            if quote.property_type == "Office":
-                base_price += 150
-
-            elif quote.property_type == "Commercial Property":
-                base_price += 250
-
-            elif quote.property_type == "End of Lease Property":
-                base_price += 300
-
-            if quote.window_cleaning:
-                base_price += 50
-
-            if quote.carpet_shampooing:
-                base_price += 100
-
-            if quote.grout_cleaning:
-                base_price += 75
-
-            if quote.upholstery_cleaning:
-                base_price += 60
-
-            if quote.laundry_service:
-                base_price += 60
-
-            quote.estimated_price = base_price
-
             uploaded_images = form.cleaned_data.get("property_images", [])
 
             try:
-                with transaction.atomic():
-                    quote.save()
-
-                    for image in uploaded_images:
-                        QuoteImage.objects.create(quote=quote, image=image)
+                quote, _ = create_quote_request(
+                    form=form,
+                    images=uploaded_images,
+                )
 
                 customer_email_sent = send_customer_quote_email(quote)
                 admin_email_sent = send_admin_quote_email(quote)
@@ -2088,10 +2057,26 @@ def booking_terms(request):
 
 def booking(request):
     if request.method == "POST":
-        form = BookingForm(request.POST)
+        form = PublicBookingForm(request.POST)
 
         if form.is_valid():
-            booking = form.save()
+            customer, _ = resolve_customer(
+                email=form.cleaned_data["email"],
+                name=form.cleaned_data["name"],
+                phone=form.cleaned_data["phone"],
+                address=form.cleaned_data["address"],
+                suburb_postcode=form.cleaned_data["suburb_postcode"],
+                create=True,
+            )
+            booking, _ = create_booking(
+                customer=customer,
+                service_type=form.cleaned_data["service_type"],
+                booking_date=form.cleaned_data["booking_date"],
+                booking_time=form.cleaned_data["booking_time"],
+                address=form.cleaned_data["address"],
+                suburb_postcode=form.cleaned_data["suburb_postcode"],
+                notes=form.cleaned_data.get("notes", ""),
+            )
 
             try:
                 from google_reviews.calendar_utils import create_or_update_booking_event

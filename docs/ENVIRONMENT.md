@@ -20,6 +20,9 @@ DJANGO_SECRET_KEY=change-me-local
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 
+# Channels / WebSocket layer
+REDIS_URL=
+
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
@@ -42,6 +45,8 @@ STRIPE_CURRENCY=aud
 If you prefer using `python-dotenv`, install it and update your workflow, but note the repo already includes an internal loader so installing `python-dotenv` is optional.
 
 Security checklist before publishing
+
+`REDIS_URL` configures the Django Channels communication layer. Leave it empty for local development to use the in-memory layer. Production with `IS_PRODUCTION=True` requires a Redis URL. Use `redis://` for an unencrypted provider connection or `rediss://` when the provider requires TLS. Keep the real URL, including any password, only in deployment environment variables. Redis is used for Channels communication, not as the primary application database.
 
 - Ensure `DEBUG=False` in production.
 - Set `DJANGO_ALLOWED_HOSTS` to the production host(s).
