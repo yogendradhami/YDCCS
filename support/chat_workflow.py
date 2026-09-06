@@ -949,6 +949,98 @@ def handle_message(
             "needs_human": False,
         }
 
+
+    # =========================================================
+    # RESTART COMPLETED WORKFLOW
+    #
+    # If a previous quote/booking was already submitted,
+    # an explicit new request must start a fresh workflow.
+    #
+    # This also handles conversations created before the
+    # workflow-reset fix was added.
+    # =========================================================
+
+    if (
+        workflow_type in {
+            "quote",
+            "booking",
+        }
+        and workflow.get("step") == "submitted"
+        and intent in {
+            "quote_request",
+            "booking_enquiry",
+        }
+    ):
+
+        if intent == "quote_request":
+
+            state["workflow"] = {
+                "type": "quote",
+                "step": "start",
+                "awaiting_confirmation": False,
+            }
+
+            state["quote"] = {}
+
+            for key in QUOTE_FIELDS:
+
+                if entities.get(key):
+
+                    state["quote"][key] = (
+                        _property_type(
+                            entities[key]
+                        )
+                        if key == "property_type"
+                        else entities[key]
+                    )
+
+            reply, _ = _quote_reply(
+                state
+            )
+
+            return {
+                "reply": reply,
+                "action": "collect_quote",
+                "state": state,
+                "state_updated": True,
+                "needs_human": False,
+            }
+
+        state["workflow"] = {
+            "type": "booking",
+            "step": "start",
+            "awaiting_confirmation": False,
+        }
+
+        state["booking"] = {}
+
+        if service:
+            state["booking"]["service"] = service
+
+        for key in (
+            "preferred_date",
+            "preferred_time",
+            "suburb",
+            "address",
+        ):
+
+            if entities.get(key):
+                state["booking"][key] = (
+                    entities[key]
+                )
+
+        reply, _ = _booking_reply(
+            state
+        )
+
+        return {
+            "reply": reply,
+            "action": "collect_booking",
+            "state": state,
+            "state_updated": True,
+            "needs_human": False,
+        }
+
     # =========================================================
     # WORKFLOW SWITCH
     #

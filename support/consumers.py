@@ -1762,6 +1762,10 @@ class LiveChatConsumer(
     # MARK WORKFLOW COMPLETED
     # =====================================================
 
+     # =====================================================
+    # MARK WORKFLOW COMPLETED
+    # =====================================================
+
     @database_sync_to_async
     def mark_workflow_completed(
         self,
@@ -1781,23 +1785,29 @@ class LiveChatConsumer(
             state or {}
         )
 
-        workflow = dict(
-            new_state.get("workflow")
+        # -------------------------------------------------
+        # Keep customer details for future conversations,
+        # but clear the completed workflow so a new quote
+        # or booking starts fresh.
+        # -------------------------------------------------
+
+        customer_state = dict(
+            new_state.get("customer")
             or {}
         )
 
-        workflow.update(
-            {
-                "type": workflow_type,
-                "step": "submitted",
-                "awaiting_confirmation": False,
-                "record_id": record_id,
-            }
+        new_state["customer"] = (
+            customer_state
         )
 
-        new_state["workflow"] = (
-            workflow
-        )
+        new_state["quote"] = {}
+        new_state["booking"] = {}
+
+        new_state["workflow"] = {
+            "type": "none",
+            "step": "idle",
+            "awaiting_confirmation": False,
+        }
 
         conversation.conversation_state = (
             new_state
@@ -1816,7 +1826,7 @@ class LiveChatConsumer(
                 "updated_at",
             ]
         )
-
+        
     # =====================================================
     # HANDOFF TO HUMAN
     # =====================================================
