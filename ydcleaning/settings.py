@@ -282,6 +282,7 @@ TEMPLATES = [
                 "dashboard.context_processors.company_settings",
                 "dashboard.context_processors.seo_context",
                 "core.context_processors.faq_section",
+                "core.context_processors.global_why_choose",
             ],
         },
     },

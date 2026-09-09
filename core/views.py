@@ -66,6 +66,7 @@ from bookings.services import create_booking
 from customers.services import resolve_customer
 from notifications.models import Notification
 from .models import TestimonialVideo
+from .why_choose_data import WHY_CHOOSE_PAGE_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -328,6 +329,7 @@ def home(request):
             "average_rating": average_rating,
             "google_review_count": google_review_count,
             "faq_section": _get_faq_section("home"),
+            "why_choose_section": _get_page_why_choose("home"),
         },
     )
 
@@ -595,8 +597,14 @@ def blog(request):
 
 
 def about(request):
-    return render(request, "pages/about.html", {"faq_section": _get_faq_section("about")})
-
+    return render(
+        request,
+        "pages/about.html",
+        {
+            "faq_section": _get_faq_section("about"),
+            "why_choose_section": _get_page_why_choose("about"),
+        },
+    )
 
 def pricing(request):
     return render(request, "pages/pricing.html")
@@ -657,24 +665,54 @@ def team(request):
 
 
 def corporate(request):
-    return render(request, "pages/corporate.html", {"faq_section": _get_faq_section("corporate")})
-
+    return render(
+        request,
+        "pages/corporate.html",
+        {
+            "faq_section": _get_faq_section("corporate"),
+            "why_choose_section": _get_page_why_choose("corporate"),
+        },
+    )
 
 def insurance(request):
-    return render(request, "pages/insurance.html", {"faq_section": _get_faq_section("insurance")})
-
+    return render(
+        request,
+        "pages/insurance.html",
+        {
+            "faq_section": _get_faq_section("insurance"),
+            "why_choose_section": _get_page_why_choose("insurance"),
+        },
+    )
 
 def referral_program(request):
-    return render(request, "pages/referral_program.html", {"faq_section": _get_faq_section("referral_program")})
-
+    return render(
+        request,
+        "pages/referral_program.html",
+        {
+            "faq_section": _get_faq_section("referral_program"),
+            "why_choose_section": _get_page_why_choose("referral"),
+        },
+    )
 
 def eco_friendly_cleaning(request):
-    return render(request, "pages/eco_friendly_cleaning.html", {"faq_section": _get_faq_section("eco_friendly_cleaning")})
-
+    return render(
+        request,
+        "pages/eco_friendly_cleaning.html",
+        {
+            "faq_section": _get_faq_section("eco_friendly_cleaning"),
+            "why_choose_section": _get_page_why_choose("eco-friendly"),
+        },
+    )
 
 def emergency_cleaning(request):
-    return render(request, "pages/emergency_cleaning.html", {"faq_section": _get_faq_section("emergency_cleaning")})
-
+    return render(
+        request,
+        "pages/emergency_cleaning.html",
+        {
+            "faq_section": _get_faq_section("emergency_cleaning"),
+            "why_choose_section": _get_page_why_choose("emergency"),
+        },
+    )
 
 def rss_xml(request):
     posts = BlogPost.objects.filter(published=True).order_by("-published_at")[:20]
@@ -1276,522 +1314,489 @@ def legacy_service_redirect(request, service_slug):
     )
 
 
-def _get_why_choose_context(request, service=None, location=None, suburb_name=None):
+def _get_why_choose_context(
+    request,
+    service=None,
+    location=None,
+    suburb_name=None,
+):
     """
-    Build page-specific content for the globally rendered
-    'Why Choose YD Commercial Cleaning?' section.
+    Build page-specific Why Choose Us content.
 
-    The section remains reusable across the site while its
-    messaging changes according to the current page/service.
+    Priority:
+    1. Exact service profile
+    2. Location/suburb profile
+    3. Existing page-specific fallback
+    4. Generic fallback
     """
 
     path = request.path.lower()
 
-    # ----------------------------------------------------
-    # Service-specific content
-    # ----------------------------------------------------
+    # ========================================================
+    # SERVICE-SPECIFIC CONTENT
+    # ========================================================
+
     if service:
-        service_title = service.get("title") or service.get("heading") or ""
-        service_name = service_title.replace(" Adelaide", "").strip()
-        service_key = service_name.lower()
 
-        service_profiles = {
-            "commercial cleaning": {
-                "heading": "Why Choose YD for Commercial Cleaning?",
-                "intro": (
-                    "Reliable commercial cleaning for Adelaide businesses, "
-                    "with professional teams, flexible scheduling and "
-                    "consistent cleaning standards."
-                ),
-                "cards": [
-                    {
-                        "icon": "🏢",
-                        "title": "Business-Focused Cleaning",
-                        "text": (
-                            "Cleaning plans designed for offices, retail spaces, "
-                            "warehouses and other commercial properties across Adelaide."
-                        ),
-                    },
-                    {
-                        "icon": "🛡️",
-                        "title": "Fully Insured Teams",
-                        "text": (
-                            "Work with a professional cleaning team backed by "
-                            "appropriate insurance and clear service standards."
-                        ),
-                    },
-                    {
-                        "icon": "📅",
-                        "title": "Flexible Scheduling",
-                        "text": (
-                            "Daily, weekly or scheduled commercial cleaning "
-                            "arranged around your business operations."
-                        ),
-                    },
-                    {
-                        "icon": "✅",
-                        "title": "Consistent Quality",
-                        "text": (
-                            "A structured cleaning process with quality checks "
-                            "to help maintain a consistently professional workplace."
-                        ),
-                    },
-                    {
-                        "icon": "💬",
-                        "title": "Clear Communication",
-                        "text": (
-                            "Straightforward quotes, responsive communication "
-                            "and clear expectations before cleaning begins."
-                        ),
-                    },
-                    {
-                        "icon": "📍",
-                        "title": "Local Adelaide Service",
-                        "text": (
-                            "A local cleaning team serving businesses across "
-                            "Adelaide and surrounding areas."
-                        ),
-                    },
-                ],
-            },
+        service_slug = (
+            service.get("slug")
+            or service.get("service_slug")
+            or ""
+        )
 
-            "office cleaning": {
-                "heading": "Why Choose YD for Office Cleaning?",
-                "intro": (
-                    "Keep your Adelaide workplace clean, hygienic and professional "
-                    "with dependable office cleaning tailored around your team."
-                ),
-                "cards": [
-                    {
-                        "icon": "🧑‍💼",
-                        "title": "Professional Workplaces",
-                        "text": (
-                            "Detailed cleaning for workstations, meeting rooms, "
-                            "shared areas, kitchens and staff spaces."
-                        ),
-                    },
-                    {
-                        "icon": "🧼",
-                        "title": "Hygiene-Focused Cleaning",
-                        "text": (
-                            "Regular cleaning and sanitisation of high-touch "
-                            "and shared workplace areas."
-                        ),
-                    },
-                    {
-                        "icon": "🌙",
-                        "title": "After-Hours Options",
-                        "text": (
-                            "Flexible scheduling can help minimise disruption "
-                            "to your staff, customers and daily operations."
-                        ),
-                    },
-                    {
-                        "icon": "📋",
-                        "title": "Structured Service",
-                        "text": (
-                            "Consistent cleaning routines and quality checks "
-                            "help maintain your workplace to a professional standard."
-                        ),
-                    },
-                    {
-                        "icon": "🛡️",
-                        "title": "Fully Insured",
-                        "text": (
-                            "Choose a professional cleaning provider with "
-                            "appropriate insurance and service standards."
-                        ),
-                    },
-                    {
-                        "icon": "📍",
-                        "title": "Adelaide Local Team",
-                        "text": (
-                            "Reliable office cleaning services for workplaces "
-                            "across Adelaide and surrounding suburbs."
-                        ),
-                    },
-                ],
-            },
+        service_slug = service_slug.lower().strip("/")
 
-            "end of lease cleaning": {
-                "heading": "Why Choose YD for End of Lease Cleaning?",
-                "intro": (
-                    "Move out with confidence with detailed end of lease cleaning "
-                    "for Adelaide tenants, landlords and property managers."
-                ),
-                "cards": [
-                    {
-                        "icon": "🏠",
-                        "title": "Inspection-Focused Cleaning",
-                        "text": (
-                            "Detailed cleaning of kitchens, bathrooms, floors, "
-                            "surfaces and other areas commonly checked during inspections."
-                        ),
-                    },
-                    {
-                        "icon": "🧽",
-                        "title": "Deep Kitchen & Bathroom Cleaning",
-                        "text": (
-                            "Targeted cleaning for grease, grime, bathrooms, "
-                            "fixtures, tiles and other high-use areas."
-                        ),
-                    },
-                    {
-                        "icon": "🧹",
-                        "title": "Detailed Property Cleaning",
-                        "text": (
-                            "Attention to floors, skirting, walls, windows and "
-                            "other areas that can affect the final presentation."
-                        ),
-                    },
-                    {
-                        "icon": "📋",
-                        "title": "Clear Cleaning Process",
-                        "text": (
-                            "A structured approach helps make sure important "
-                            "areas are covered before your property handover."
-                        ),
-                    },
-                    {
-                        "icon": "⏱️",
-                        "title": "Flexible Scheduling",
-                        "text": (
-                            "Cleaning appointments organised around your moving "
-                            "date and property handover requirements."
-                        ),
-                    },
-                    {
-                        "icon": "💬",
-                        "title": "Transparent Quotes",
-                        "text": (
-                            "Clear pricing and service expectations before the "
-                            "cleaning team starts work."
-                        ),
-                    },
-                ],
-            },
+        # Remove common location suffixes where required.
+        if service_slug.endswith("-adelaide"):
+            service_slug = service_slug[:-9]
 
-            "bond cleaning": {
-                "heading": "Why Choose YD for Bond Cleaning?",
-                "intro": (
-                    "Detailed Adelaide bond cleaning designed to help tenants "
-                    "prepare their rental property for inspection and handover."
-                ),
-                "cards": [
-                    {
-                        "icon": "🔎",
-                        "title": "Inspection Ready",
-                        "text": (
-                            "Focused cleaning of the areas landlords and property "
-                            "managers commonly inspect."
-                        ),
-                    },
-                    {
-                        "icon": "🍳",
-                        "title": "Kitchen Deep Cleaning",
-                        "text": (
-                            "Detailed cleaning for ovens, appliances, benches, "
-                            "cupboards and kitchen surfaces."
-                        ),
-                    },
-                    {
-                        "icon": "🚿",
-                        "title": "Bathroom Detail",
-                        "text": (
-                            "Bathrooms receive focused attention to surfaces, "
-                            "fixtures, tiles and grout."
-                        ),
-                    },
-                    {
-                        "icon": "🧹",
-                        "title": "Whole-Property Cleaning",
-                        "text": (
-                            "Floors, walls, skirting, windows and other key areas "
-                            "are included according to your cleaning requirements."
-                        ),
-                    },
-                    {
-                        "icon": "📅",
-                        "title": "Move-Out Scheduling",
-                        "text": (
-                            "Flexible appointments to work around your moving "
-                            "and property handover timeline."
-                        ),
-                    },
-                    {
-                        "icon": "🛡️",
-                        "title": "Professional Service",
-                        "text": (
-                            "A reliable local cleaning team focused on detailed "
-                            "results and clear communication."
-                        ),
-                    },
-                ],
-            },
-        }
+        service_key = f"service:{service_slug}"
 
-        profile = service_profiles.get(service_key)
+        service_config = WHY_CHOOSE_PAGE_CONFIG.get(service_key)
 
-        if profile:
-            return profile
+        if service_config:
+            return copy.deepcopy(service_config)
 
-        # ------------------------------------------------
-        # Generic service fallback
-        # Uses existing SEO/service data where possible.
-        # ------------------------------------------------
-        benefits = service.get("benefits") or []
-        included = service.get("included") or []
+        # ----------------------------------------------------
+        # Safe service fallback
+        # ----------------------------------------------------
 
-        cards = [
-            {
-                "icon": "🛡️",
-                "title": "Fully Insured Cleaning",
-                "text": (
-                    "Professional cleaning delivered with appropriate insurance "
-                    "and clear service standards."
-                ),
-            },
-            {
-                "icon": "📍",
-                "title": f"Local {location or 'Adelaide'} Service",
-                "text": (
-                    f"Reliable {service_name.lower()} delivered by a local team "
-                    f"serving {location or 'Adelaide'} and surrounding areas."
-                ),
-            },
-            {
-                "icon": "🧹",
-                "title": "Detailed Cleaning Process",
-                "text": (
-                    "A structured approach focused on the cleaning requirements "
-                    "of your property and service."
-                ),
-            },
-            {
-                "icon": "📅",
-                "title": "Flexible Scheduling",
-                "text": (
-                    "Appointments arranged around your property, business, "
-                    "rental or project requirements."
-                ),
-            },
-            {
-                "icon": "💬",
-                "title": "Transparent Communication",
-                "text": (
-                    "Clear quotes and straightforward communication before "
-                    "your cleaning service begins."
-                ),
-            },
-            {
-                "icon": "⭐",
-                "title": "Quality-Focused Results",
-                "text": (
-                    "We focus on delivering a thorough, professional result "
-                    "suited to your cleaning requirements."
-                ),
-            },
-        ]
+        service_title = (
+            service.get("title")
+            or service.get("heading")
+            or service_slug.replace("-", " ").title()
+        )
 
-        # If the service has meaningful benefits, use one as a subtle
-        # service-specific supporting card.
-        if benefits:
-            cards[-1]["text"] = (
-                f"{benefits[0]}. Our team combines this service requirement "
-                "with a professional, detail-focused cleaning approach."
-            )
+        service_name = (
+            service_title
+            .replace(" Adelaide", "")
+            .strip()
+        )
+
+        service_location = location or "Adelaide"
 
         return {
-            "heading": f"Why Choose YD for {service_name}?",
-            "intro": (
-                f"Professional {service_name.lower()} for "
-                f"{location or 'Adelaide'}, delivered by a reliable local "
-                "cleaning team with a focus on quality and service."
+            "heading": (
+                f"Why Choose YD for "
+                f"{service_name} in {service_location}?"
             ),
-            "cards": cards,
+            "intro": (
+                f"Professional {service_name.lower()} in "
+                f"{service_location}, with a practical approach "
+                f"to quality, communication and reliable service."
+            ),
+            "cards": [
+                {
+                    "icon": "🧼",
+                    "title": "Service-Focused Cleaning",
+                    "text": (
+                        f"Cleaning planned around the specific "
+                        f"requirements of {service_name.lower()}."
+                    ),
+                },
+                {
+                    "icon": "🔎",
+                    "title": "Attention to Detail",
+                    "text": (
+                        "Important areas are considered according "
+                        "to the condition and requested cleaning scope."
+                    ),
+                },
+                {
+                    "icon": "📋",
+                    "title": "Clear Cleaning Scope",
+                    "text": (
+                        "We discuss the property and requested "
+                        "service requirements before cleaning begins."
+                    ),
+                },
+                {
+                    "icon": "📅",
+                    "title": "Flexible Scheduling",
+                    "text": (
+                        f"Arrange {service_name.lower()} around "
+                        "your preferred timing and property access."
+                    ),
+                },
+                {
+                    "icon": "💬",
+                    "title": "Clear Communication",
+                    "text": (
+                        "Straightforward communication helps "
+                        "customers understand the service arrangement."
+                    ),
+                },
+                {
+                    "icon": "📍",
+                    "title": f"Local {service_location} Service",
+                    "text": (
+                        f"Professional cleaning support for "
+                        f"{service_location} and surrounding areas."
+                    ),
+                },
+            ],
         }
 
-    # ----------------------------------------------------
-    # Suburb/local page
-    # ----------------------------------------------------
+    # ========================================================
+    # SUBURB / LOCATION CONTENT
+    # ========================================================
+
     if suburb_name:
+
         return {
-            "heading": f"Why Choose YD Cleaning in {suburb_name}?",
+            "heading": (
+                f"Why Choose YD Cleaning in {suburb_name}?"
+            ),
             "intro": (
-                f"Looking for reliable cleaning services in {suburb_name}, Adelaide? "
-                "YD Commercial Cleaning provides professional, locally focused "
-                "cleaning for homes, businesses and rental properties."
+                f"Local cleaning services for homes, rentals and "
+                f"businesses in {suburb_name}, with flexible "
+                f"bookings and professional service."
             ),
             "cards": [
                 {
                     "icon": "📍",
                     "title": f"Local {suburb_name} Service",
                     "text": (
-                        f"Professional cleaning services for homes and businesses "
-                        f"in {suburb_name} and nearby Adelaide suburbs."
+                        f"We provide cleaning support for properties "
+                        f"in {suburb_name} and surrounding Adelaide areas."
                     ),
                 },
                 {
-                    "icon": "🛡️",
-                    "title": "Fully Insured Team",
+                    "icon": "🏠",
+                    "title": "Residential Cleaning",
                     "text": (
-                        "Book with confidence with a professional cleaning team "
-                        "committed to safe and reliable service."
+                        "Cleaning options are available for homes, "
+                        "rental properties and moving-related cleaning."
                     ),
                 },
                 {
-                    "icon": "🧹",
-                    "title": "Professional Cleaning",
+                    "icon": "🏢",
+                    "title": "Commercial Cleaning",
                     "text": (
-                        "Detailed cleaning options for residential, commercial "
-                        "and rental properties."
+                        "Businesses can arrange cleaning around "
+                        "their workplace requirements and schedules."
                     ),
-                },
-                {
-                    "icon": "⏱️",
-                    "title": "Flexible Scheduling",
-                    "text": (
-                        "Convenient cleaning appointments arranged around your "
-                        "home, workplace or property requirements."
-                    ),
-                },
-                {
-                    "icon": "💬",
-                    "title": "Clear Quotes",
-                    "text": (
-                        "Straightforward communication and transparent service "
-                        "expectations before work begins."
-                    ),
-                },
-                {
-                    "icon": "⭐",
-                    "title": "Quality-Focused Service",
-                    "text": (
-                        "We focus on reliable results and a professional customer "
-                        "experience from booking through completion."
-                    ),
-                },
-            ],
-        }
-
-    # ----------------------------------------------------
-    # Special site pages
-    # ----------------------------------------------------
-    page_profiles = {
-        "/insurance/": {
-            "heading": "Why Choose YD for Safe & Reliable Cleaning?",
-            "intro": (
-                "Professional cleaning backed by clear service standards, "
-                "insurance and a strong commitment to customer confidence."
-            ),
-        },
-        "/emergency-cleaning/": {
-            "heading": "Why Choose YD for Emergency Cleaning?",
-            "intro": (
-                "When unexpected cleaning problems need attention, our Adelaide "
-                "team focuses on responsive communication and practical solutions."
-            ),
-        },
-        "/eco-friendly-cleaning/": {
-            "heading": "Why Choose YD for Eco-Friendly Cleaning?",
-            "intro": (
-                "Thoughtful cleaning practices designed to maintain a high "
-                "standard of cleanliness while considering people and the environment."
-            ),
-        },
-    }
-
-    profile = next(
-        (
-            profile
-            for page_path, profile in page_profiles.items()
-            if path.startswith(page_path)
-        ),
-        None,
-    )
-
-    if profile:
-        return {
-            **profile,
-            "cards": [
-                {
-                    "icon": "🛡️",
-                    "title": "Professional Standards",
-                    "text": "Reliable cleaning delivered with clear processes and professional service standards.",
-                },
-                {
-                    "icon": "📍",
-                    "title": "Local Adelaide Team",
-                    "text": "A local cleaning provider serving Adelaide homes, businesses and properties.",
-                },
-                {
-                    "icon": "🧹",
-                    "title": "Detailed Results",
-                    "text": "Cleaning focused on the specific requirements of your property and service.",
-                },
-                {
-                    "icon": "💬",
-                    "title": "Clear Communication",
-                    "text": "Straightforward quotes, booking information and communication throughout your service.",
                 },
                 {
                     "icon": "📅",
                     "title": "Flexible Scheduling",
-                    "text": "Cleaning appointments arranged around your property and scheduling requirements.",
+                    "text": (
+                        "Discuss suitable dates, times and cleaning "
+                        "frequency for your property."
+                    ),
                 },
                 {
-                    "icon": "⭐",
-                    "title": "Customer Focused",
-                    "text": "We aim to provide a dependable experience and professional cleaning results.",
+                    "icon": "💬",
+                    "title": "Clear Communication",
+                    "text": (
+                        "We keep service requirements and booking "
+                        "details straightforward."
+                    ),
+                },
+                {
+                    "icon": "✅",
+                    "title": "Quality-Focused Results",
+                    "text": (
+                        "Our cleaning approach focuses on practical, "
+                        "thorough and presentable results."
+                    ),
                 },
             ],
         }
 
-    # ----------------------------------------------------
-    # Default global fallback
-    # ----------------------------------------------------
+    # ========================================================
+    # PAGE-SPECIFIC STATIC CONTENT
+    # ========================================================
+
+    page_map = {
+        "/": "home",
+        "/about/": "about",
+        "/corporate-cleaning/": "corporate",
+        "/insurance/": "insurance",
+        "/referral-program/": "referral",
+        "/eco-friendly-cleaning/": "eco-friendly",
+        "/emergency-cleaning/": "emergency",
+        "/careers/": "careers",
+        "/contact/": "contact",
+        "/privacy-policy/": "privacy",
+        "/terms/": "terms",
+        "/booking-terms/": "booking-terms",
+    }
+
+    normalized_path = path.rstrip("/") + "/"
+
+    page_key = page_map.get(normalized_path)
+
+    if page_key:
+        config = WHY_CHOOSE_PAGE_CONFIG.get(page_key)
+
+        if config:
+            return copy.deepcopy(config)
+
+    # ========================================================
+    # GLOBAL FALLBACK
+    # ========================================================
+
     return {
         "heading": "Why Choose YD Commercial Cleaning?",
         "intro": (
-            "Trusted Adelaide cleaning specialists providing professional, "
-            "reliable and detail-focused cleaning for homes, businesses and properties."
+            "Professional cleaning services across Adelaide "
+            "with reliable communication, flexible scheduling "
+            "and quality-focused cleaning."
         ),
         "cards": [
             {
-                "icon": "🛡️",
-                "title": "Fully Insured Cleaning",
-                "text": "Professional cleaning backed by appropriate insurance and clear service standards.",
-            },
-            {
-                "icon": "📍",
-                "title": "Reliable Local Team",
-                "text": "A local Adelaide cleaning team focused on dependable service and professional results.",
-            },
-            {
                 "icon": "⭐",
-                "title": "Quality-Focused Results",
-                "text": "A detail-focused approach designed around the requirements of your property.",
+                "title": "Professional Service",
+                "text": (
+                    "A professional approach to every cleaning "
+                    "requirement."
+                ),
             },
             {
-                "icon": "⏱️",
+                "icon": "🧼",
+                "title": "Quality-Focused Cleaning",
+                "text": (
+                    "Structured cleaning designed around the "
+                    "requirements of your property."
+                ),
+            },
+            {
+                "icon": "📅",
                 "title": "Flexible Scheduling",
-                "text": "Convenient booking options for homes, businesses, rental properties and commercial sites.",
+                "text": (
+                    "Cleaning arrangements can be planned "
+                    "around your preferred timing."
+                ),
             },
             {
                 "icon": "💬",
-                "title": "Transparent Communication",
-                "text": "Clear quotes and straightforward communication so you know what to expect.",
+                "title": "Clear Communication",
+                "text": (
+                    "Straightforward communication before, "
+                    "during and after service."
+                ),
             },
             {
-                "icon": "🧹",
-                "title": "Tailored Cleaning Plans",
-                "text": "Cleaning services adapted to your property, schedule and specific requirements.",
+                "icon": "📍",
+                "title": "Adelaide Service",
+                "text": (
+                    "Cleaning support available across Adelaide "
+                    "and surrounding areas."
+                ),
+            },
+            {
+                "icon": "🤝",
+                "title": "Customer-Focused Approach",
+                "text": (
+                    "Cleaning requirements are considered around "
+                    "your property and requested outcome."
+                ),
             },
         ],
     }
 
 
+def _build_service_faq_section(service, service_slug, location):
+    """
+    Build a service-specific FAQ section.
 
+    Existing service FAQs are used first.
+    A small fallback is provided for older services
+    that do not yet have FAQ data.
+    """
+
+    service_title = service.get("title", "Cleaning Service")
+    service_name = service.get("service_name", service_title)
+
+    raw_faqs = service.get("faqs") or []
+
+    entries = []
+
+    for item in raw_faqs:
+
+        if not isinstance(item, dict):
+            continue
+
+        question = (
+            item.get("question")
+            or item.get("q")
+            or item.get("title")
+        )
+
+        answer = (
+            item.get("answer")
+            or item.get("a")
+            or item.get("description")
+        )
+
+        if question and answer:
+
+            try:
+                answer = str(answer).format(
+                    location=location,
+                    location_name=location,
+                    service_title=service_title,
+                    service_name=service_name,
+                )
+            except (KeyError, ValueError):
+                answer = str(answer)
+
+            entries.append(
+                {
+                    "question": str(question),
+                    "answer": answer,
+                }
+            )
+
+    if entries:
+
+        return {
+            "page_key": f"service:{service_slug}",
+            "section_class": (
+                "section faq-section service-faq-section"
+            ),
+            "title": f"{service_title} FAQs",
+            "description": (
+                f"Common questions about "
+                f"{service_title.lower()} in {location}, "
+                f"including preparation, inclusions and "
+                f"what to expect from the cleaning process."
+            ),
+            "entries": entries,
+        }
+
+    return {
+        "page_key": f"service:{service_slug}",
+        "section_class": (
+            "section faq-section service-faq-section"
+        ),
+        "title": f"{service_title} FAQs",
+        "description": (
+            f"Useful answers about {service_title.lower()} "
+            f"for customers across {location}."
+        ),
+        "entries": [
+            {
+                "question": (
+                    f"What is included in "
+                    f"{service_title.lower()}?"
+                ),
+                "answer": (
+                    f"Our {service_title.lower()} service "
+                    f"is tailored to the property and scope "
+                    f"of work. The cleaning team focuses on "
+                    f"the areas most relevant to the service "
+                    f"and confirms the requested scope before "
+                    f"work begins."
+                ),
+            },
+            {
+                "question": (
+                    f"Who is {service_title.lower()} "
+                    f"suitable for?"
+                ),
+                "answer": (
+                    f"{service_title} can be arranged for "
+                    f"suitable residential and commercial "
+                    f"properties depending on the service "
+                    f"requirements. We can discuss your "
+                    f"property and recommend the appropriate "
+                    f"cleaning scope."
+                ),
+            },
+            {
+                "question": (
+                    f"Can I request "
+                    f"{service_title.lower()} in {location}?"
+                ),
+                "answer": (
+                    f"Yes. YD Commercial Cleaning Services "
+                    f"provides {service_title.lower()} across "
+                    f"{location} and surrounding Adelaide "
+                    f"areas, subject to availability."
+                ),
+            },
+            {
+                "question": (
+                    f"How do I get a quote for "
+                    f"{service_title.lower()}?"
+                ),
+                "answer": (
+                    f"Send us the property details and the "
+                    f"type of {service_title.lower()} you "
+                    f"require. We can then review the scope "
+                    f"and provide a tailored quote."
+                ),
+            },
+        ],
+    }
+
+
+def _build_why_choose_section(why_choose):
+    """
+    Normalise Why Choose Us data for the shared template.
+    """
+
+    if not why_choose:
+        return None
+
+    cards = why_choose.get("cards") or why_choose.get("items") or []
+
+    items = []
+
+    for card in cards:
+        if not isinstance(card, dict):
+            continue
+
+        title = card.get("title") or ""
+        description = (
+            card.get("description")
+            or card.get("text")
+            or ""
+        )
+
+        if not title and not description:
+            continue
+
+        items.append(
+            {
+                "icon": card.get("icon", ""),
+                "title": title,
+                "description": description,
+                "featured": card.get("featured", False),
+            }
+        )
+
+    if not items:
+        return None
+
+    return {
+        "title": (
+            why_choose.get("title")
+            or why_choose.get("heading")
+            or "Why Choose YD Commercial Cleaning?"
+        ),
+        "description": (
+            why_choose.get("description")
+            or why_choose.get("intro")
+            or ""
+        ),
+        "items": items,
+    }
+
+
+def _get_page_why_choose(page_key):
+    """
+    Return page-specific Why Choose Us content.
+    """
+
+    config = WHY_CHOOSE_PAGE_CONFIG.get(page_key)
+
+    if not config:
+        return None
+
+    return _build_why_choose_section(copy.deepcopy(config))
 
 
 def service_page(request, service_slug):
@@ -1860,21 +1865,23 @@ def service_page(request, service_slug):
             "service_url": service_url,
             "location": location,
             "location_definition": location_definition,
-            "why_choose": _get_why_choose_context(
-                request,
-                service=service,
-                location=location,
+            "why_choose_section": _build_why_choose_section(
+                _get_why_choose_context(
+                    request,
+                    service=service,
+                    location=location,
+                )
             ),
 
             "google_reviews": google_reviews,
             "service_review_count": service_review_count,
             "service_average_rating": service_average_rating,
             "hide_default_faq": True,
-            "faq_section": _get_faq_section(
-                "service_detail",
-                service_title=service["title"].replace(" Adelaide", ""),
-                location_name=location,
-            ),
+            "faq_section": _build_service_faq_section(
+            service=service,
+            service_slug=normalized_slug,
+            location=location,
+        ),
         }
     )
 
@@ -2027,29 +2034,49 @@ def careers(request):
     else:
         form = CareerApplicationForm()
 
-    return render(request, "pages/careers.html", {"form": form, "faq_section": _get_faq_section("careers")})
-
+    return render(
+        request,
+        "pages/careers.html",
+        {
+            "form": form,
+            "faq_section": _get_faq_section("careers"),
+            "why_choose_section": _get_page_why_choose("careers"),
+        },
+    )
 
 def terms(request):
-    return render(request, "pages/terms.html", {"faq_section": _get_faq_section("terms")})
-
+    return render(
+        request,
+        "pages/terms.html",
+        {
+            "faq_section": _get_faq_section("terms"),
+            "why_choose_section": _get_page_why_choose("terms"),
+        },
+    )
 
 def privacy(request):
-    return render(request, "pages/privacy.html", {"faq_section": _get_faq_section("privacy")})
-
+    return render(
+        request,
+        "pages/privacy.html",
+        {
+            "faq_section": _get_faq_section("privacy"),
+            "why_choose_section": _get_page_why_choose("privacy"),
+        },
+    )
 
 def legal(request):
     return render(request, "pages/legal.html")
 
 
 def booking_terms(request):
-
     return render(
         request,
         "pages/booking_terms.html",
-        {"faq_section": _get_faq_section("booking_terms")},
+        {
+            "faq_section": _get_faq_section("booking_terms"),
+            "why_choose_section": _get_page_why_choose("booking-terms"),
+        },
     )
-
 
 
 
