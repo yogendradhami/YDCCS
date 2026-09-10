@@ -9,6 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      CLOUDINARY_CLOUD_NAME: ci-test
+      CLOUDINARY_API_KEY: ci-test
+      CLOUDINARY_API_SECRET: ci-test
     strategy:
       matrix:
         python-version: [3.13]
