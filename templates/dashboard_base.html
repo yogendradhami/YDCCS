@@ -57,6 +57,21 @@
                         {% endif %}
                     </a>
 
+                    {% comment %} <a href="/dashboard/quote-requests/">
+                        <span>Quote Requests</span>
+                        {% if notification_counts.quote_request %}
+                            <span class="side-badge">{{ notification_counts.quote_request }}</span>
+                        {% endif %}  {% endcomment %}
+
+                    <a href="/dashboard/corporate-leads/">
+                        <span>Corporate Leads</span>
+                        {% if notification_counts.corporate_leads %}
+                            <span class="side-badge">{{ notification_counts.corporate_leads }}</span>
+                        {% endif %}
+                    </a>
+
+
+
                     <a href="/dashboard/quote-followups/">
 
                         <span>Quote Follow-Ups</span>

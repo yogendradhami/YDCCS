@@ -1,0 +1,812 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Corporate Leads | Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-page corporate-leads-page">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1>Corporate Leads</h1>
+            <p>
+                Manage corporate enquiries, B2B opportunities and
+                multi-site cleaning prospects.
+            </p>
+        </div>
+
+        <div class="page-header-actions">
+            <a href="{% url 'dashboard_home' %}" class="btn btn-secondary">
+                ← Dashboard
+            </a>
+        </div>
+    </div>
+
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-card-label">Total Leads</div>
+            <div class="stat-card-value">{{ total_leads }}</div>
+        </div>
+
+        <div class="stat-card stat-new">
+            <div class="stat-card-label">New</div>
+            <div class="stat-card-value">{{ new_leads }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-label">Open Opportunities</div>
+            <div class="stat-card-value">{{ open_leads }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-label">Created Today</div>
+            <div class="stat-card-value">{{ leads_today }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-label">Won</div>
+            <div class="stat-card-value">{{ won_leads }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-label">Unassigned</div>
+            <div class="stat-card-value">{{ unassigned_leads }}</div>
+        </div>
+
+    </div>
+
+
+    <!-- Status Overview -->
+    <div class="status-overview">
+
+        <div class="status-overview-header">
+            <h2>Lead Pipeline</h2>
+            <span>Corporate opportunity pipeline</span>
+        </div>
+
+       
+        <div class="pipeline-grid">
+
+            <a href="?status=new"
+            class="pipeline-item {% if status_filter == 'new' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.new|default:"0" }}</span>
+                <span class="pipeline-label">New</span>
+            </a>
+
+            <a href="?status=contacted"
+            class="pipeline-item {% if status_filter == 'contacted' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.contacted|default:"0" }}</span>
+                <span class="pipeline-label">Contacted</span>
+            </a>
+
+            <a href="?status=qualified"
+            class="pipeline-item {% if status_filter == 'qualified' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.qualified|default:"0" }}</span>
+                <span class="pipeline-label">Qualified</span>
+            </a>
+
+            <a href="?status=proposal_sent"
+            class="pipeline-item {% if status_filter == 'proposal_sent' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.proposal_sent|default:"0" }}</span>
+                <span class="pipeline-label">Proposal Sent</span>
+            </a>
+
+            <a href="?status=negotiating"
+            class="pipeline-item {% if status_filter == 'negotiating' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.negotiating|default:"0" }}</span>
+                <span class="pipeline-label">Negotiating</span>
+            </a>
+
+            <a href="?status=won"
+            class="pipeline-item {% if status_filter == 'won' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.won|default:"0" }}</span>
+                <span class="pipeline-label">Won</span>
+            </a>
+
+            <a href="?status=lost"
+            class="pipeline-item {% if status_filter == 'lost' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.lost|default:"0" }}</span>
+                <span class="pipeline-label">Lost</span>
+            </a>
+
+            <a href="?status=on_hold"
+            class="pipeline-item {% if status_filter == 'on_hold' %}active{% endif %}">
+                <span class="pipeline-count">{{ status_counts.on_hold|default:"0" }}</span>
+                <span class="pipeline-label">On Hold</span>
+            </a>
+
+        </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="filter-card">
+
+        <form method="get">
+
+            <div class="filter-grid">
+
+                <div class="filter-field search-field">
+                    <label for="corporate-search">Search</label>
+
+                    <input
+                        id="corporate-search"
+                        type="text"
+                        name="q"
+                        value="{{ search_query }}"
+                        placeholder="Search name, company, email or location..."
+                    >
+                </div>
+
+
+                <div class="filter-field">
+                    <label for="corporate-status">Status</label>
+
+                    <select id="corporate-status" name="status">
+
+                        <option value="">All statuses</option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if status_filter == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+
+                <div class="filter-field">
+                    <label for="corporate-type">Lead Type</label>
+
+                    <select id="corporate-type" name="lead_type">
+
+                        <option value="">All lead types</option>
+
+                        {% for value, label in lead_type_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if lead_type_filter == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+
+                <div class="filter-field">
+                    <label for="corporate-assigned">Assigned</label>
+
+                    <select id="corporate-assigned" name="assigned">
+
+                        <option value="">Everyone</option>
+
+                        <option
+                            value="unassigned"
+                            {% if assigned_filter == "unassigned" %}selected{% endif %}
+                        >
+                            Unassigned
+                        </option>
+
+                        {% for user in staff_users %}
+
+                            <option
+                                value="{{ user.id }}"
+                                {% if assigned_filter == user.id|stringformat:"s" %}selected{% endif %}
+                            >
+                                {% if user.get_full_name %}
+                                    {{ user.get_full_name }}
+                                {% else %}
+                                    {{ user.username }}
+                                {% endif %}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+            </div>
+
+
+            <div class="filter-actions">
+
+                <button type="submit" class="btn btn-primary">
+                    Apply Filters
+                </button>
+
+                <a
+                    href="{% url 'corporate_lead_list' %}"
+                    class="btn btn-secondary"
+                >
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- Leads -->
+    <div class="table-card">
+
+        <div class="table-card-header">
+
+            <div>
+                <h2>Corporate Enquiries</h2>
+
+                <p>
+                    {% if leads %}
+                        {{ leads|length }} lead{{ leads|length|pluralize }} displayed
+                    {% else %}
+                        No corporate leads found
+                    {% endif %}
+                </p>
+            </div>
+
+        </div>
+
+
+        {% if leads %}
+
+            <div class="table-responsive">
+
+                <table class="corporate-leads-table">
+
+                    <thead>
+                        <tr>
+                            <th>Lead</th>
+                            <th>Company</th>
+                            <th>Type</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Assigned</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for lead in leads %}
+
+                            <tr>
+
+                                <td>
+                                    <div class="lead-person">
+
+                                        <strong>
+                                            {{ lead.full_name }}
+                                        </strong>
+
+                                        {% if lead.job_title %}
+                                            <span>
+                                                {{ lead.job_title }}
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+                                </td>
+
+
+                                <td>
+                                    <div class="company-cell">
+
+                                        <strong>
+                                            {{ lead.company_name }}
+                                        </strong>
+
+                                        {% if lead.industry %}
+                                            <span>
+                                                {{ lead.industry }}
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+                                </td>
+
+
+                                <td>
+                                    <span class="type-badge">
+                                        {{ lead.lead_type_display_name }}
+                                    </span>
+                                </td>
+
+
+                                <td>
+                                    <div class="contact-cell">
+
+                                        {% if lead.email %}
+                                            <a href="mailto:{{ lead.email }}">
+                                                {{ lead.email }}
+                                            </a>
+                                        {% endif %}
+
+                                        {% if lead.phone %}
+                                            <span>
+                                                {{ lead.phone }}
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+                                </td>
+
+
+                                <td>
+                                    <span class="status-badge status-{{ lead.status }}">
+                                        {{ lead.status_display_name }}
+                                    </span>
+                                </td>
+
+
+                                <td>
+
+                                    {% if lead.assigned_to %}
+
+                                        {% if lead.assigned_to.get_full_name %}
+                                            {{ lead.assigned_to.get_full_name }}
+                                        {% else %}
+                                            {{ lead.assigned_to.username }}
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        <span class="unassigned">
+                                            Unassigned
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+                                    <time datetime="{{ lead.created_at|date:'c' }}">
+                                        {{ lead.created_at|date:"d M Y" }}
+                                    </time>
+                                </td>
+
+
+                                <td>
+                                    <a
+                                        href="{% url 'corporate_lead_detail' lead.id %}"
+                                        class="view-lead"
+                                    >
+                                        View →
+                                    </a>
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ◎
+                </div>
+
+                <h3>No Corporate Leads Found</h3>
+
+                <p>
+                    Corporate enquiries submitted through the website
+                    will appear here.
+                </p>
+
+                {% if search_query or status_filter or lead_type_filter or assigned_filter %}
+
+                    <a
+                        href="{% url 'corporate_lead_list' %}"
+                        class="btn btn-secondary"
+                    >
+                        Clear Filters
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<style>
+
+.corporate-leads-page {
+    padding-bottom: 40px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.page-header h1 {
+    margin: 0 0 7px;
+    font-size: 30px;
+    font-weight: 750;
+}
+
+.page-header p {
+    margin: 0;
+    opacity: .72;
+}
+
+.page-header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.stat-card {
+    padding: 20px;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    background: var(--card-bg, #fff);
+}
+
+.stat-card-label {
+    font-size: 13px;
+    opacity: .68;
+    margin-bottom: 8px;
+}
+
+.stat-card-value {
+    font-size: 28px;
+    font-weight: 750;
+}
+
+.status-overview,
+.filter-card,
+.table-card {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 16px;
+    background: var(--card-bg, #fff);
+    margin-bottom: 22px;
+}
+
+.status-overview {
+    padding: 22px;
+}
+
+.status-overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.status-overview-header h2,
+.table-card-header h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.status-overview-header span,
+.table-card-header p {
+    font-size: 13px;
+    opacity: .65;
+}
+
+.pipeline-grid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.pipeline-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    background: rgba(0,0,0,.035);
+    color: inherit;
+    transition: .2s ease;
+}
+
+.pipeline-item:hover,
+.pipeline-item.active {
+    transform: translateY(-1px);
+    background: rgba(0,0,0,.08);
+}
+
+.pipeline-count {
+    font-size: 22px;
+    font-weight: 750;
+}
+
+.pipeline-label {
+    font-size: 12px;
+    opacity: .7;
+}
+
+.filter-card {
+    padding: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 14px;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.filter-field label {
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.filter-field input,
+.filter-field select {
+    width: 100%;
+    min-height: 43px;
+    border: 1px solid rgba(0,0,0,.14);
+    border-radius: 9px;
+    padding: 9px 11px;
+    background: inherit;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 9px;
+    text-decoration: none;
+    border: 0;
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.btn-primary {
+    background: #111827;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: rgba(0,0,0,.07);
+    color: inherit;
+}
+
+.table-card {
+    overflow: hidden;
+}
+
+.table-card-header {
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(0,0,0,.07);
+}
+
+.table-card-header p {
+    margin: 5px 0 0;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.corporate-leads-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1050px;
+}
+
+.corporate-leads-table th {
+    text-align: left;
+    padding: 13px 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    opacity: .62;
+    background: rgba(0,0,0,.025);
+}
+
+.corporate-leads-table td {
+    padding: 16px;
+    border-top: 1px solid rgba(0,0,0,.06);
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+.lead-person,
+.company-cell,
+.contact-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.lead-person span,
+.company-cell span,
+.contact-cell span {
+    font-size: 12px;
+    opacity: .62;
+}
+
+.contact-cell a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.contact-cell a:hover {
+    text-decoration: underline;
+}
+
+.type-badge,
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.type-badge {
+    background: rgba(0,0,0,.07);
+}
+
+.status-new {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-contacted {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-qualified {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-proposal_sent {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.status-negotiating {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+.status-won {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-lost {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.status-on_hold {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.unassigned {
+    opacity: .55;
+    font-style: italic;
+}
+
+.view-lead {
+    text-decoration: none;
+    font-weight: 700;
+    color: inherit;
+    white-space: nowrap;
+}
+
+.view-lead:hover {
+    text-decoration: underline;
+}
+
+.empty-state {
+    padding: 65px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 35px;
+    opacity: .35;
+    margin-bottom: 10px;
+}
+
+.empty-state h3 {
+    margin: 0 0 7px;
+}
+
+.empty-state p {
+    opacity: .65;
+    margin: 0 0 20px;
+}
+
+@media (max-width: 1200px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .pipeline-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .page-header {
+        flex-direction: column;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pipeline-grid,
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+{% endblock %}

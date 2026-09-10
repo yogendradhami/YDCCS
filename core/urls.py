@@ -16,7 +16,7 @@ from .views import (
     careers,
     case_studies,
     contact,
-    corporate,
+    
     eco_friendly_cleaning,
     emergency_cleaning,
     faq,
@@ -91,7 +91,7 @@ urlpatterns = [
     path("faq/", faq, name="faq"),
     path("blog/", blog, name="blog"),
     path("blog/<slug:blog_slug>/", blog_detail, name="blog_detail"),
-    path("corporate/", corporate, name="corporate"),
+
     path("insurance/", insurance, name="insurance"),
     path("referral-program/", referral_program, name="referral_program"),
     path("eco-friendly-cleaning/", eco_friendly_cleaning, name="eco_friendly_cleaning"),

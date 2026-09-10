@@ -1,5 +1,10 @@
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
+from corporate.dashboard_views import (
+    corporate_lead_list,
+    corporate_lead_detail,
+    corporate_lead_update,
+)
 
 from .views import (
     activity_log_list,
@@ -137,6 +142,23 @@ urlpatterns = [
     path("dashboard/careers/<int:application_id>/resume/preview/", preview_resume, name="career_resume_preview"),
     path("dashboard/settings/", company_settings, name="company_settings"),
     path("dashboard/leads/", lead_list, name="lead_list"),
+    # Corporate B2B Leads
+    path(
+        "dashboard/corporate-leads/",
+        corporate_lead_list,
+        name="corporate_lead_list",
+    ),
+    path(
+        "dashboard/corporate-leads/<int:lead_id>/",
+        corporate_lead_detail,
+        name="corporate_lead_detail",
+    ),
+    path(
+        "dashboard/corporate-leads/<int:lead_id>/update/",
+        corporate_lead_update,
+        name="corporate_lead_update",
+    ),
+
     path(
         "dashboard/update-status/<int:quote_id>/",
         update_quote_status,

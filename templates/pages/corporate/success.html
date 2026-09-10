@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+Thank You | YD Commercial Cleaning
+{% endblock %}
+
+{% block content %}
+
+<section class="corporate-form-page">
+    <div class="container">
+
+        <h1>Thank You</h1>
+
+        <p>
+            Your corporate enquiry has been successfully submitted.
+        </p>
+
+        <p>
+            A member of the YD Commercial Cleaning team will
+            contact you shortly.
+        </p>
+
+        <a href="{% url 'corporate:proposal' %}">
+            Return to Corporate Services
+        </a>
+
+    </div>
+</section>
+
+{% endblock %}

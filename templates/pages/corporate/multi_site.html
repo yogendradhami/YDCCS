@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+Multi-Site Cleaning Solutions | YD Commercial Cleaning
+{% endblock %}
+
+{% block content %}
+
+<section class="corporate-form-page">
+    <div class="container">
+
+        <h1>Discuss Multi-Site Cleaning</h1>
+
+        <p>
+            Tell us about your locations, operational requirements
+            and multi-site cleaning needs.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit">
+                Discuss Multi-Site Cleaning
+            </button>
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

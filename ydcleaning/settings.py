@@ -184,6 +184,8 @@ INSTALLED_APPS = [
     "expenses",
     "support",
     "analytics",
+    "corporate",
+
 ]
 
 

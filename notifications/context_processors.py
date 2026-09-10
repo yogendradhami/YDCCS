@@ -17,7 +17,7 @@ from invoices.models import Invoice
 from leave_management.models import LeaveRequest
 from quotes.models import QuoteRequest
 from support.models import LiveChatConversation, SupportTicket
-
+from corporate.models import CorporateLead
 
 def notification_context(request):
     if request.user.is_authenticated:
@@ -61,6 +61,7 @@ def notification_context(request):
             "quote": request.user.notifications.filter(
                 notification_type="quote", is_read=False
             ).count(),
+            "corporate_leads": CorporateLead.objects.filter(status="new").count(),
             "booking": request.user.notifications.filter(
                 notification_type="booking", is_read=False
             ).count(),

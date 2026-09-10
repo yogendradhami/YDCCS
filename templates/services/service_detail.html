@@ -1,3 +1,4 @@
+django
 <!-- ===================================================
      YD Commercial Cleaning Services
      File: service_detail.html
@@ -13,103 +14,209 @@
 {% endblock %}
 
 
-{% block title %}{{ service.title|cut:" Adelaide" }} in {{ location|default:"Adelaide" }} Adelaide | YD Commercial Cleaning{% endblock %}
+{% block title %}
+{{ service.title|cut:" Adelaide" }} in {{ location|default:"Adelaide" }} Adelaide | YD Commercial Cleaning
+{% endblock %}
 
 
-{% block scripts %}
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function(){
+(function () {
 
-    document.querySelectorAll('.faq-question').forEach(function(btn){
+    function initServiceFaqs() {
 
-        btn.setAttribute('aria-expanded', 'false');
+        var faqButtons = document.querySelectorAll(
+            '.service-faqs .faq-question'
+        );
 
-        btn.addEventListener('click', function(){
+        if (!faqButtons.length) {
+            return;
+        }
 
-            var item = btn.closest('.faq-item');
-            var isOpen = item.classList.toggle('open');
+        faqButtons.forEach(function (button) {
 
-            btn.setAttribute(
-                'aria-expanded',
-                isOpen ? 'true' : 'false'
-            );
+            if (button.dataset.faqInitialized === 'true') {
+                return;
+            }
+
+            button.dataset.faqInitialized = 'true';
+
+            button.addEventListener('click', function (event) {
+
+                event.preventDefault();
+
+                var item = button.closest('.faq-item');
+
+                if (!item) {
+                    return;
+                }
+
+                var answer = item.querySelector('.faq-answer');
+
+                if (!answer) {
+                    return;
+                }
+
+                var isOpen =
+                    button.getAttribute('aria-expanded') === 'true';
+
+                if (isOpen) {
+
+                    button.setAttribute(
+                        'aria-expanded',
+                        'false'
+                    );
+
+                    item.classList.remove('open');
+
+                    answer.hidden = true;
+
+                } else {
+
+                    button.setAttribute(
+                        'aria-expanded',
+                        'true'
+                    );
+
+                    item.classList.add('open');
+
+                    answer.hidden = false;
+
+                }
+
+            });
 
         });
 
-    });
+    }
 
-});
+    if (document.readyState === 'loading') {
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            initServiceFaqs
+        );
+
+    } else {
+
+        initServiceFaqs();
+
+    }
+
+})();
 </script>
 {% endblock %}
 
 
 
 {% block meta_description %}
+
 {% if location %}
+
 Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+
 {% else %}
+
 Professional {{ service.title }} Adelaide service by YD Commercial Cleaning Services.
+
 {% endif %}
+
 {% endblock %}
 
 
 
 {% block og_title %}
+
 {% if location %}
+
 {{ service.title|cut:" Adelaide" }} in {{ location }} Adelaide | YD Commercial Cleaning Services
+
 {% else %}
+
 {{ service.title }} Adelaide | YD Commercial Cleaning Services
+
 {% endif %}
+
 {% endblock %}
 
 
 
 {% block og_description %}
+
 {% if location %}
+
 Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+
 {% else %}
+
 {{ service.meta_description|default:service.description }}
+
 {% endif %}
+
 {% endblock %}
 
 
 
 {% block twitter_title %}
+
 {% if location %}
+
 {{ service.title|cut:" Adelaide" }} in {{ location }} Adelaide | YD Commercial Cleaning Services
+
 {% else %}
+
 {{ service.title }} Adelaide | YD Commercial Cleaning Services
+
 {% endif %}
+
 {% endblock %}
 
 
 
 {% block twitter_description %}
+
 {% if location %}
+
 Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+
 {% else %}
+
 {{ service.meta_description|default:service.description }}
+
 {% endif %}
+
 {% endblock %}
 
 
 
 {% block og_image %}
+
 {% if service.hero_image %}
+
 {{ service.hero_image }}
+
 {% else %}
+
 {{ open_graph_image }}
+
 {% endif %}
+
 {% endblock %}
 
 
 
 {% block twitter_image %}
+
 {% if service.hero_image %}
+
 {{ service.hero_image }}
+
 {% else %}
+
 {{ twitter_image }}
+
 {% endif %}
+
 {% endblock %}
 
 
@@ -174,19 +281,28 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
             <div class="split-content">
 
                 <span class="hero-badge">
+
                     Professional {{ service.title|cut:" Adelaide" }} Services
+
                     {% if location %}
                     in {{ location }}
                     {% endif %}
+
                 </span>
 
 
                 <h1>
+
                     {% if location %}
+
                     {{ clean_title }} in {{ location }}
+
                     {% else %}
+
                     {{ clean_title }} Adelaide
+
                     {% endif %}
+
                 </h1>
 
 
@@ -276,12 +392,15 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                 </span>
 
                 <h2>
+
                     About {{ service.title|cut:" Adelaide" }}
+
                     {% if location %}
                     in {{ location }}
                     {% else %}
                     in Adelaide
                     {% endif %}
+
                 </h2>
 
 
@@ -338,13 +457,17 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                 </span>
 
                 <h2>
+
                     Why Professional {{ service.title|cut:" Adelaide" }}
+
                     {% if location %}
                     in {{ location }}
                     {% else %}
                     in Adelaide
                     {% endif %}
+
                     Matters
+
                 </h2>
 
 
@@ -670,6 +793,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                     {% for step in service.process %}
 
                     <li>
+
                         <span class="process-number">
                             {{ forloop.counter }}
                         </span>
@@ -677,6 +801,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                         <span class="process-text">
                             {{ step }}
                         </span>
+
                     </li>
 
                     {% endfor %}
@@ -691,7 +816,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
             <!-- FAQ -->
 
-            {% if service.faqs %}
+            {% if faq_section and faq_section.entries %}
 
             <div class="service-section-block">
 
@@ -699,14 +824,24 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                     FAQ
                 </span>
 
+
                 <h2>
-                    Frequently Asked Questions
+                    {{ faq_section.title|default:"Frequently Asked Questions" }}
                 </h2>
+
+
+                {% if faq_section.description %}
+
+                <p>
+                    {{ faq_section.description }}
+                </p>
+
+                {% endif %}
 
 
                 <div class="service-faqs">
 
-                    {% for qa in service.faqs %}
+                    {% for qa in faq_section.entries %}
 
                     <div class="faq-item">
 
@@ -714,22 +849,31 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                             type="button"
                             class="faq-question"
                             aria-expanded="false"
+                            aria-controls="service-faq-answer-{{ forloop.counter }}"
                         >
+
                             <span>
-                                {{ qa.q }}
+                                {{ qa.question }}
                             </span>
 
-                            <span class="faq-toggle" aria-hidden="true">
+                            <span
+                                class="faq-toggle"
+                                aria-hidden="true"
+                            >
                                 +
                             </span>
 
                         </button>
 
 
-                        <div class="faq-answer">
+                        <div
+                            id="service-faq-answer-{{ forloop.counter }}"
+                            class="faq-answer"
+                            hidden
+                        >
 
                             <p>
-                                {{ qa.a }}
+                                {{ qa.answer }}
                             </p>
 
                         </div>
@@ -755,7 +899,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                 </span>
 
                 <h2>
-                    Service Packages & Pricing
+                    Service Packages &amp; Pricing
                 </h2>
 
 
@@ -842,7 +986,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                 </span>
 
                 <h2>
-                    Before & After
+                    Before &amp; After
                 </h2>
 
 
@@ -908,6 +1052,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                     {% for p in service.problems %}
 
                     <li>
+
                         <span class="problem-icon" aria-hidden="true">
                             ✓
                         </span>
@@ -915,6 +1060,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                         <span>
                             {{ p }}
                         </span>
+
                     </li>
 
                     {% endfor %}
@@ -950,7 +1096,6 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                         Service Type
                     </span>
 
-
                     <strong>
 
                         {{ service.title|cut:" Adelaide" }}
@@ -969,7 +1114,6 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                     <span>
                         Starting Price
                     </span>
-
 
                     <strong>
 
@@ -992,16 +1136,13 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
                     Final price depends on property size, condition and cleaning
                     requirements.
-
                     Contact YD Commercial Cleaning Services for an accurate quote.
 
                 </p>
 
 
                 <a href="{% url 'contact' %}" class="btn-fill">
-
                     Get Full Quote
-
                 </a>
 
             </div>
@@ -1115,7 +1256,10 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
                 <div class="sidebar-actions">
 
-                    <a href="tel:0430049865" class="btn-fill full-width">
+                    <a
+                        href="tel:0430049865"
+                        class="btn-fill full-width"
+                    >
                         Call Now
                     </a>
 
@@ -1252,16 +1396,13 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
                     {{ related.label }}
                 </span>
 
+
                 <span class="related-service-location">
 
                     {% if location %}
-
                     {{ location }}
-
                     {% else %}
-
                     Adelaide
-
                     {% endif %}
 
                     <span aria-hidden="true">
@@ -1426,8 +1567,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
             "name": "{{ package.name|escapejs }}",
             "description": "{{ package.description|escapejs }}",
             "priceCurrency": "AUD"
-          }
-          {% if not forloop.last %},{% endif %}
+          }{% if not forloop.last %},{% endif %}
           {% endfor %}
         ]
       }

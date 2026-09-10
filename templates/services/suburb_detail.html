@@ -866,12 +866,15 @@
 
 
     <!-- =========================================================
-         FAQ
+     FAQ
+     Canonical suburb-specific FAQ section
     ========================================================== -->
-    {% if local_faqs %}
+    {% if faq_section and faq_section.entries %}
 
-    <section class="adelaide-coverage-section">
-
+    <section
+        class="adelaide-coverage-section"
+        id="suburb-faq"
+    >
         <div class="container">
 
             <div class="adelaide-section-heading">
@@ -881,20 +884,23 @@
                 </span>
 
                 <h2>
-                    Cleaning Services in {{ suburb_name }} — FAQs
+                    {{ faq_section.title }}
                 </h2>
 
-                <p>
-                    Answers to common questions about arranging cleaning
-                    services in {{ suburb_name }}.
-                </p>
+                {% if faq_section.description %}
+
+                    <p>
+                        {{ faq_section.description }}
+                    </p>
+
+                {% endif %}
 
             </div>
 
 
             <div class="adelaide-services-grid">
 
-                {% for faq in local_faqs %}
+                {% for faq in faq_section.entries %}
 
                     <article class="adelaide-service-card">
 
@@ -927,7 +933,6 @@
             </div>
 
         </div>
-
     </section>
 
     {% endif %}

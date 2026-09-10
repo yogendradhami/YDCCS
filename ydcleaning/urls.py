@@ -12,6 +12,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("analytics/", include(("analytics.urls", "analytics"), namespace="analytics")),
     path("", include("dashboard.urls")),
+    # Corporate
+    path(
+        "corporate/",
+        include("corporate.urls"),
+    ),
+
+
     path("", include("payroll.urls")),
     path("", include("invoices.urls")),
     path("", include("portal.urls")),
@@ -28,4 +35,5 @@ urlpatterns = [
     path("", include("google_reviews.urls")),
     path("", include("support.urls")),
     path("", include("core.urls")),
+
 ]

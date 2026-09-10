@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+Request a Corporate Proposal | YD Commercial Cleaning
+{% endblock %}
+
+{% block content %}
+
+<section class="corporate-form-page">
+    <div class="container">
+
+        <h1>Request a Corporate Proposal</h1>
+
+        <p>
+            Tell us about your business and cleaning requirements.
+            Our team will prepare a suitable corporate cleaning solution.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit">
+                Request Corporate Proposal
+            </button>
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

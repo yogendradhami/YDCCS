@@ -67,6 +67,8 @@ from customers.services import resolve_customer
 from notifications.models import Notification
 from .models import TestimonialVideo
 from .why_choose_data import WHY_CHOOSE_PAGE_CONFIG
+from .service_faq_data import get_service_faqs
+
 
 logger = logging.getLogger(__name__)
 
@@ -664,15 +666,7 @@ def team(request):
     )
 
 
-def corporate(request):
-    return render(
-        request,
-        "pages/corporate.html",
-        {
-            "faq_section": _get_faq_section("corporate"),
-            "why_choose_section": _get_page_why_choose("corporate"),
-        },
-    )
+
 
 def insurance(request):
     return render(
@@ -987,7 +981,11 @@ def local_suburb_detail(request, area_slug):
     nearby_areas = suburb_data.get("nearby_areas", [])
 
     # ---------------------------------------------------------
-    # 11. Fallback local FAQs
+    # 11. Build ONE canonical FAQ section
+    #
+    #     The shared FAQ component uses faq_section.
+    #     Keep local_faqs available for backward compatibility,
+    #     but do not create a second FAQ section from it.
     # ---------------------------------------------------------
     local_faqs = suburb_data.get("faqs")
 
@@ -998,9 +996,9 @@ def local_suburb_detail(request, area_slug):
                     f"Do you provide cleaning services in {suburb_name}?"
                 ),
                 "answer": (
-                    f"Yes. YD Commercial Cleaning provides residential and "
-                    f"commercial cleaning services in {suburb_name} and "
-                    f"surrounding Adelaide areas."
+                    f"Yes. YD Commercial Cleaning Services provides "
+                    f"residential and commercial cleaning services in "
+                    f"{suburb_name} and surrounding Adelaide areas."
                 ),
             },
             {
@@ -1019,12 +1017,31 @@ def local_suburb_detail(request, area_slug):
                     f"{suburb_name} property?"
                 ),
                 "answer": (
-                    f"Yes. Contact YD Commercial Cleaning with your property "
-                    f"type, location and cleaning requirements and we can "
-                    f"provide a tailored quote."
+                    f"Yes. Contact YD Commercial Cleaning Services with your "
+                    f"property type, location and cleaning requirements and "
+                    f"we can provide a tailored quote."
                 ),
             },
         ]
+
+    # ---------------------------------------------------------
+    # IMPORTANT:
+    # Use the suburb-specific FAQs as the ONE public FAQ section.
+    # This prevents the template from needing a separate
+    # local_faqs FAQ component.
+    # ---------------------------------------------------------
+    faq_section = {
+        "page_key": f"suburb:{area_slug}",
+        "section_class": "section faq-section suburb-faq-section",
+        "title": f"{suburb_name} Cleaning FAQs",
+        "description": (
+            f"Common questions about cleaning services in "
+            f"{suburb_name}, Adelaide, including residential, "
+            f"commercial and end-of-lease cleaning."
+        ),
+        "entries": local_faqs,
+    }
+
 
     # ---------------------------------------------------------
     # 12. Render the SAME new Adelaide suburb template
@@ -1041,6 +1058,7 @@ def local_suburb_detail(request, area_slug):
         "services": services,
         "google_reviews": google_reviews,
 
+        # ONE canonical FAQ section
         "faq_section": faq_section,
 
         "local_intro": local_intro,
@@ -1052,7 +1070,7 @@ def local_suburb_detail(request, area_slug):
         "nearby_areas": nearby_areas,
         "nearby_area_links": nearby_area_links,
 
-        "local_faqs": local_faqs,
+  
     }
 
     return render(
@@ -1247,7 +1265,12 @@ def _service_context_from_model(service_obj):
         "benefits": getattr(service_obj, "benefits", []) or [],
         "ideal_for": getattr(service_obj, "ideal_for", []) or [],
         "industries": getattr(service_obj, "industries", []) or [],
-        "faqs": getattr(service_obj, "faqs", []) or [],
+
+        "faqs": (
+            getattr(service_obj, "faqs", [])
+            or get_service_faqs(service_obj.slug)
+            or []
+        ),
         "related_services": _normalize_related_services(getattr(service_obj, "related_services", []) or []),
         "locations": getattr(service_obj, "locations", []) or [],
     }
@@ -1282,7 +1305,11 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
         "benefits": definition.get("benefits", []),
         "ideal_for": definition.get("ideal_for", []),
         "industries": definition.get("industries", []),
-        "faqs": definition.get("faqs", []),
+        "faqs": (
+            definition.get("faqs")
+            or get_service_faqs(service_slug)
+            or []
+        ),
         "related_services": _normalize_related_services(definition.get("related_services", [])),
         "locations": definition.get("locations", [location_name]),
     }
