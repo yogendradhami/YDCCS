@@ -34,6 +34,9 @@ jobs:
         env:
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/test_db
           DJANGO_SETTINGS_MODULE: ydcleaning.settings
+          CLOUDINARY_CLOUD_NAME: ci-test
+          CLOUDINARY_API_KEY: ci-test
+          CLOUDINARY_API_SECRET: ci-test
         run: |
           python manage.py migrate --noinput
           python manage.py test core
