@@ -39,4 +39,5 @@ jobs:
           CLOUDINARY_API_SECRET: ci-test
         run: |
           python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
           python manage.py test core

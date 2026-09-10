@@ -86,7 +86,12 @@ class SmokeTest(TestCase):
         body = resp.content.decode("utf-8")
         self.assertIn("User-agent: *", body)
         self.assertIn("Allow: /", body)
-        self.assertNotIn("Disallow: /", body)
+        robots_lines = {
+            line.strip()
+            for line in body.splitlines()
+            if line.strip()
+        }
+        self.assertNotIn("Disallow: /", robots_lines)
         self.assertIn("Sitemap:", body)
 
     def test_testimonials_page_includes_live_google_reviews_section(self):
