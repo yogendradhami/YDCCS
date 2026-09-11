@@ -41,6 +41,7 @@ from .views import (
     local_suburb_detail,
     booking,
     legacy_service_redirect,
+    marketing_signup,
     
 
 )
@@ -74,6 +75,11 @@ urlpatterns = [
     
     # Main pages
     path("", home, name="home"),
+    path(
+        "newsletter/subscribe/",
+        marketing_signup,
+        name="marketing_signup",
+    ),
     path("about/", about, name="about"),
     path("pricing/", pricing, name="pricing"),
     path("team/", team, name="team"),

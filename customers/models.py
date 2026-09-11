@@ -82,3 +82,41 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.full_name
+
+
+
+class MarketingSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+
+    consent_given = models.BooleanField(
+        default=False,
+        help_text="Has the subscriber explicitly agreed to receive promotional emails?",
+    )
+
+    consented_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    source = models.CharField(
+        max_length=100,
+        default="homepage_clean20",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.email

@@ -3,22 +3,21 @@
 {% load static seo_tags %}
 
 {% block title %}
-    Cleaning Services Adelaide | YD Commercial Cleaning
+Cleaning Services Adelaide | YD Commercial Cleaning Services
 {% endblock %}
 
 {% block meta_description %}
-    Professional cleaning services in Adelaide for homes, offices, rental properties and commercial spaces. YD Commercial Cleaning provides reliable residential and commercial cleaning with flexible bookings and free quotes.
+Professional cleaning services in Adelaide for homes, offices, rental properties and commercial spaces. YD Commercial Cleaning provides reliable residential and commercial cleaning with flexible bookings and free quotes.
 {% endblock %}
 
 {% block meta_keywords %}
-    cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelaide, house cleaning Adelaide, professional cleaners Adelaide, end of lease cleaning Adelaide, bond cleaning Adelaide, window cleaning Adelaide
+cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelaide, house cleaning Adelaide, professional cleaners Adelaide, end of lease cleaning Adelaide, bond cleaning Adelaide, window cleaning Adelaide
 {% endblock %}
 
 {% block structured_data %}
-    {{ organization_schema|safe }}
-    {{ website_schema|safe }}
+{{ organization_schema|safe }}
+{{ website_schema|safe }}
 {% endblock %}
-
 
 {% block extra_css %}
 
@@ -32,197 +31,94 @@
 
 {% endblock extra_css %}
 
-
 {% block content %}
 
 <main class="yd-homepage">
 
 
-    <!-- =====================================================
-         HERO
-         ===================================================== -->
+<!-- =====================================================
+     HERO
+     ===================================================== -->
 
-    <section class="hero-section" id="home">
+<section class="hero-section" id="home">
 
-        <video
-            id="heroVideo"
-            class="hero-video"
-            autoplay
-            muted
-            loop
-            playsinline
-            preload="metadata"
-            poster="{% static 'images/hero-cleaning-poster.webp' %}"
-            aria-hidden="true"
+    <video
+        id="heroVideo"
+        class="hero-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster="{% static 'images/hero-cleaning-poster.webp' %}"
+        aria-hidden="true"
+    >
+        <source
+            src="https://res.cloudinary.com/yd-commercial-cleaning/video/upload/v1787021334/testimonial-videos/fujal5mx7vdtoew5jgr2.mp4"
+            type="video/mp4"
         >
-            <source
-                src="https://res.cloudinary.com/yd-commercial-cleaning/video/upload/v1787021334/testimonial-videos/fujal5mx7vdtoew5jgr2.mp4"
-                type="video/mp4"
-            >
-        </video>
+    </video>
 
-        <div class="hero-overlay" aria-hidden="true"></div>
+    <div class="hero-overlay" aria-hidden="true"></div>
 
-        <div class="container hero-grid">
+    <div class="container hero-grid">
 
-            <div class="hero-content reveal">
+        <div class="hero-content reveal">
 
-                <div class="hero-badge">
-                    <span class="hero-badge-dot"></span>
-                    Professional Cleaning Services Adelaide
-                </div>
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                Professional Cleaning Services Adelaide
+            </div>
 
-                <h1>
-                    Professional Cleaning Services
-                    <span>for Adelaide Homes &amp; Businesses</span>
-                </h1>
+            <h1>
+                Professional Cleaning Services
+                <span>for Adelaide Homes &amp; Businesses</span>
+            </h1>
 
-                <p class="hero-lead">
-                    YD Commercial Cleaning provides dependable residential,
-                    office and commercial cleaning across Adelaide. From
-                    routine home cleaning and deep cleans to end-of-lease,
-                    office and commercial cleaning, we help keep your property
-                    clean, presentable and ready for everyday life.
-                </p>
+            <p class="hero-lead">
+                YD Commercial Cleaning provides dependable residential,
+                office and commercial cleaning across Adelaide. From
+                routine home cleaning and deep cleans to end-of-lease,
+                office and commercial cleaning, we help keep your property
+                clean, presentable and ready for everyday life.
+            </p>
 
-                <div class="hero-actions">
+            <div class="hero-actions">
 
-                    <a href="#quote" class="btn btn-primary hero-cta">
-                        Get a Free Quote
-                    </a>
+                <a href="#quote" class="btn btn-primary hero-cta">
+                    Get a Free Quote
+                </a>
 
-                    <a
-                        href="tel:0430049865"
-                        class="btn btn-outline-light hero-phone"
-                    >
-                        <span class="phone-icon">☎</span>
-                        0430 049 865
-                    </a>
-
-                </div>
-
-                <div class="hero-trust">
-
-                    <div class="hero-trust-item">
-                        <span class="trust-check">✓</span>
-                        <span>Fully Insured</span>
-                    </div>
-
-                    <div class="hero-trust-item">
-                        <span class="trust-check">✓</span>
-                        <span>Local Adelaide Team</span>
-                    </div>
-
-                    <div class="hero-trust-item">
-                        <span class="trust-check">✓</span>
-                        <span>Free Quotes</span>
-                    </div>
-
-                    <div class="hero-trust-item">
-                        <span class="trust-check">✓</span>
-                        <span>Flexible Scheduling</span>
-                    </div>
-
-                </div>
+                <a
+                    href="tel:0430049865"
+                    class="btn btn-outline-light hero-phone"
+                >
+                    <span class="phone-icon">☎</span>
+                    0430 049 865
+                </a>
 
             </div>
 
+            <div class="hero-trust">
 
-            <div class="hero-visual-card reveal">
-
-                <div class="hero-card-top">
-
-                    <div class="hero-card-icon">
-                        ✨
-                    </div>
-
-                    <div>
-
-                        <span class="hero-card-label">
-                            YD Cleaning Difference
-                        </span>
-
-                        <h2>
-                            A cleaner property without the hassle
-                        </h2>
-
-                    </div>
-
+                <div class="hero-trust-item">
+                    <span class="trust-check">✓</span>
+                    <span>Fully Insured</span>
                 </div>
 
-
-                <div class="hero-feature-list">
-
-                    <div class="hero-feature">
-
-                        <span>✓</span>
-
-                        <div>
-
-                            <strong>Local Adelaide Service</strong>
-
-                            <p>
-                                Cleaning support tailored to local homes,
-                                workplaces and commercial properties.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="hero-feature">
-
-                        <span>✓</span>
-
-                        <div>
-
-                            <strong>Professional Standards</strong>
-
-                            <p>
-                                A practical cleaning approach focused on
-                                detail, presentation and consistency.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="hero-feature">
-
-                        <span>✓</span>
-
-                        <div>
-
-                            <strong>Flexible Bookings</strong>
-
-                            <p>
-                                Cleaning schedules can be organised around
-                                your property and routine.
-                            </p>
-
-                        </div>
-
-                    </div>
-
+                <div class="hero-trust-item">
+                    <span class="trust-check">✓</span>
+                    <span>Local Adelaide Team</span>
                 </div>
 
+                <div class="hero-trust-item">
+                    <span class="trust-check">✓</span>
+                    <span>Free Quotes</span>
+                </div>
 
-                <div class="hero-card-footer">
-
-                    <div>
-                        <strong>Free Quote</strong>
-                        <span>No obligation</span>
-                    </div>
-
-                    <a
-                        href="#quote"
-                        aria-label="Request a free cleaning quote"
-                    >
-                        →
-                    </a>
-
+                <div class="hero-trust-item">
+                    <span class="trust-check">✓</span>
+                    <span>Flexible Scheduling</span>
                 </div>
 
             </div>
@@ -230,583 +126,165 @@
         </div>
 
 
-        <div class="hero-scroll-indicator" aria-hidden="true">
-            <span></span>
-            Scroll to explore
-        </div>
+        <div class="hero-visual-card reveal">
 
-    </section>
+            <div class="hero-card-top">
 
+                <div class="hero-card-icon">
+                    ✨
+                </div>
 
-    <!-- =====================================================
-         INTRO / SEO SECTION
-         ===================================================== -->
+                <div>
 
-    <section class="home-intro-section section-light">
-
-        <div class="container">
-
-            <div class="intro-grid">
-
-                <div class="intro-heading reveal">
-
-                    <span class="section-eyebrow">
-                        Cleaning Services Adelaide
+                    <span class="hero-card-label">
+                        YD Cleaning Difference
                     </span>
 
                     <h2>
-                        Reliable cleaning for the places
-                        <span>that matter to you</span>
+                        A cleaner property without the hassle
                     </h2>
 
                 </div>
 
+            </div>
 
-                <div class="intro-content reveal">
 
-                    <p class="large-text">
-                        A clean property should make life easier, not create
-                        another task on your list. YD Commercial Cleaning
-                        Services provides professional cleaning solutions for
-                        Adelaide homes, rental properties, offices and
-                        commercial spaces.
-                    </p>
+            <div class="hero-feature-list">
 
-                    <p>
-                        Whether you need regular house cleaning, a detailed
-                        deep clean, end-of-lease cleaning or ongoing workplace
-                        cleaning, our services can be tailored to the size,
-                        condition and purpose of your property.
-                    </p>
+                <div class="hero-feature">
 
-                    <p>
-                        We focus on practical communication, careful cleaning
-                        and dependable service so you can return to a cleaner,
-                        fresher and more presentable environment.
-                    </p>
+                    <span>✓</span>
 
-                    <a href="#services" class="text-link">
-                        Explore our cleaning services
-                        <span>→</span>
-                    </a>
+                    <div>
+
+                        <strong>Local Adelaide Service</strong>
+
+                        <p>
+                            Cleaning support tailored to local homes,
+                            workplaces and commercial properties.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hero-feature">
+
+                    <span>✓</span>
+
+                    <div>
+
+                        <strong>Professional Standards</strong>
+
+                        <p>
+                            A practical cleaning approach focused on
+                            detail, presentation and consistency.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="hero-feature">
+
+                    <span>✓</span>
+
+                    <div>
+
+                        <strong>Flexible Bookings</strong>
+
+                        <p>
+                            Cleaning schedules can be organised around
+                            your property and routine.
+                        </p>
+
+                    </div>
 
                 </div>
 
             </div>
 
-        </div>
 
-    </section>
+            <div class="hero-card-footer">
 
-
-    <!-- =====================================================
-         WHY CHOOSE US
-         ===================================================== -->
-
-    <section class="why-section section-white">
-
-        <div class="container">
-
-            <div class="section-heading reveal">
-
-                <span class="section-eyebrow">
-                    Why Choose YD Cleaning
-                </span>
-
-                <h2>
-                    Professional cleaning with a
-                    <span>local Adelaide approach</span>
-                </h2>
-
-                <p>
-                    We combine professional cleaning practices with
-                    straightforward communication and flexible service
-                    options for residential and commercial customers.
-                </p>
-
-            </div>
-
-
-            <div class="benefits-grid">
-
-                <article class="benefit-card reveal">
-
-                    <div class="benefit-number">01</div>
-                    <div class="benefit-icon">🏠</div>
-
-                    <h3>
-                        Residential Cleaning
-                    </h3>
-
-                    <p>
-                        Keep your home fresh and manageable with regular,
-                        deep and detailed cleaning designed around your
-                        household.
-                    </p>
-
-                </article>
-
-
-                <article class="benefit-card reveal">
-
-                    <div class="benefit-number">02</div>
-                    <div class="benefit-icon">🏢</div>
-
-                    <h3>
-                        Commercial Cleaning
-                    </h3>
-
-                    <p>
-                        Maintain clean, professional workplaces, retail
-                        environments and commercial properties with a
-                        practical cleaning schedule.
-                    </p>
-
-                </article>
-
-
-                <article class="benefit-card reveal">
-
-                    <div class="benefit-number">03</div>
-                    <div class="benefit-icon">🔎</div>
-
-                    <h3>
-                        Attention to Detail
-                    </h3>
-
-                    <p>
-                        We focus on the areas that influence how a property
-                        feels and looks, including kitchens, bathrooms,
-                        floors, surfaces and high-use spaces.
-                    </p>
-
-                </article>
-
-
-                <article class="benefit-card reveal">
-
-                    <div class="benefit-number">04</div>
-                    <div class="benefit-icon">📅</div>
-
-                    <h3>
-                        Flexible Scheduling
-                    </h3>
-
-                    <p>
-                        Tell us what you need cleaned and when you need it.
-                        We work with you to find a suitable cleaning
-                        arrangement.
-                    </p>
-
-                </article>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         PROCESS
-         ===================================================== -->
-
-    <section class="process-section">
-
-        <div class="container">
-
-            <div class="section-heading section-heading-light reveal">
-
-                <span class="section-eyebrow">
-                    How It Works
-                </span>
-
-                <h2>
-                    Simple cleaning from
-                    <span>quote to completion</span>
-                </h2>
-
-                <p>
-                    Getting professional cleaning support does not need to be
-                    complicated. Our process is designed to keep your booking
-                    straightforward.
-                </p>
-
-            </div>
-
-
-            <div class="process-grid">
-
-                <article class="process-card reveal">
-
-                    <div class="process-number">01</div>
-
-                    <h3>
-                        Tell Us What You Need
-                    </h3>
-
-                    <p>
-                        Share your property type, location, cleaning
-                        requirements and preferred date.
-                    </p>
-
-                </article>
-
-
-                <article class="process-card reveal">
-
-                    <div class="process-number">02</div>
-
-                    <h3>
-                        Receive Your Quote
-                    </h3>
-
-                    <p>
-                        We review the scope of work and provide a tailored
-                        quote based on your cleaning requirements.
-                    </p>
-
-                </article>
-
-
-                <article class="process-card reveal">
-
-                    <div class="process-number">03</div>
-
-                    <h3>
-                        We Clean Your Property
-                    </h3>
-
-                    <p>
-                        Our team completes the agreed cleaning service with
-                        attention to the areas that matter most.
-                    </p>
-
-                </article>
-
-
-                <article class="process-card reveal">
-
-                    <div class="process-number">04</div>
-
-                    <h3>
-                        Enjoy the Difference
-                    </h3>
-
-                    <p>
-                        Return to a cleaner, fresher and more presentable
-                        home, workplace or commercial property.
-                    </p>
-
-                </article>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         SERVICES
-         ===================================================== -->
-
-    <section
-        class="services-section section-light"
-        id="services"
-    >
-
-        <div class="container">
-
-            <div class="section-heading reveal">
-
-                <span class="section-eyebrow">
-                    Our Services
-                </span>
-
-                <h2>
-                    Cleaning services for
-                    <span>Adelaide properties</span>
-                </h2>
-
-                <p>
-                    Choose the cleaning service that best matches your
-                    property and requirements. For a tailored solution,
-                    contact our team for a free quote.
-                </p>
-
-            </div>
-
-
-            {% if services %}
-
-                <div class="services-grid">
-
-                    {% for service in services|slice:":6" %}
-
-                        <article class="service-card reveal">
-
-                            <div class="service-card-top">
-
-                                <div class="service-icon">
-
-                                    {% if service.slug == 'bond-cleaning' %}
-                                        🏠
-                                    {% elif service.slug == 'regular-house-cleaning' %}
-                                        🧹
-                                    {% elif service.slug == 'deep-cleaning' %}
-                                        ✨
-                                    {% elif service.slug == 'office-cleaning' %}
-                                        🏢
-                                    {% elif service.slug == 'carpet-steam-cleaning' %}
-                                        🧼
-                                    {% elif service.slug == 'window-cleaning' %}
-                                        🪟
-                                    {% else %}
-                                        ✦
-                                    {% endif %}
-
-                                </div>
-
-                                <span class="service-arrow">
-                                    →
-                                </span>
-
-                            </div>
-
-
-                            <h3>
-                                {{ service.name }}
-                            </h3>
-
-
-                            {% if service.description %}
-
-                                <p>
-                                    {{ service.description|truncatechars:180 }}
-                                </p>
-
-                            {% else %}
-
-                                <p>
-                                    Professional cleaning tailored to your
-                                    property's needs and cleaning schedule.
-                                </p>
-
-                            {% endif %}
-
-
-                            {% if service.included_items %}
-
-                                <ul class="service-includes">
-
-                                    {% for item in service.included_items|slice:":3" %}
-
-                                        <li>
-                                            <span>✓</span>
-                                            {{ item }}
-                                        </li>
-
-                                    {% endfor %}
-
-                                </ul>
-
-                            {% endif %}
-
-
-                            <a
-                                href="{{ service.get_absolute_url }}"
-                                class="service-link"
-                            >
-                                View service
-                                <span>→</span>
-                            </a>
-
-                        </article>
-
-                    {% endfor %}
-
+                <div>
+                    <strong>Free Quote</strong>
+                    <span>No obligation</span>
                 </div>
 
-            {% else %}
+                <a
+                    href="#quote"
+                    aria-label="Request a free cleaning quote"
+                >
+                    →
+                </a>
 
-                <div class="services-grid">
+            </div>
 
-                    <article class="service-card reveal">
+        </div>
 
-                        <div class="service-card-top">
-                            <div class="service-icon">🏢</div>
-                            <span class="service-arrow">→</span>
-                        </div>
-
-                        <h3>
-                            Commercial Cleaning Adelaide
-                        </h3>
-
-                        <p>
-                            Professional cleaning for offices, workplaces,
-                            retail spaces and commercial properties.
-                        </p>
-
-                        <a
-                            href="/services/commercial-cleaning-adelaide/"
-                            class="service-link"
-                        >
-                            Explore commercial cleaning
-                            <span>→</span>
-                        </a>
-
-                    </article>
+    </div>
 
 
-                    <article class="service-card reveal">
+    <div class="hero-scroll-indicator" aria-hidden="true">
+        <span></span>
+        Scroll to explore
+    </div>
 
-                        <div class="service-card-top">
-                            <div class="service-icon">🏢</div>
-                            <span class="service-arrow">→</span>
-                        </div>
-
-                        <h3>
-                            Office Cleaning Adelaide
-                        </h3>
-
-                        <p>
-                            Keep your workplace clean, organised and
-                            professional with flexible office cleaning.
-                        </p>
-
-                        <a
-                            href="/services/office-cleaning/"
-                            class="service-link"
-                        >
-                            Explore office cleaning
-                            <span>→</span>
-                        </a>
-
-                    </article>
+</section>
 
 
-                    <article class="service-card reveal">
+<!-- =====================================================
+     INTRO / SEO SECTION
+     ===================================================== -->
 
-                        <div class="service-card-top">
-                            <div class="service-icon">🏠</div>
-                            <span class="service-arrow">→</span>
-                        </div>
+<section class="home-intro-section section-light">
 
-                        <h3>
-                            End of Lease Cleaning
-                        </h3>
+    <div class="container">
 
-                        <p>
-                            Detailed cleaning for rental properties before
-                            final inspection, handover or moving.
-                        </p>
+        <div class="intro-grid">
 
-                        <a
-                            href="/services/bond-cleaning/"
-                            class="service-link"
-                        >
-                            Explore bond cleaning
-                            <span>→</span>
-                        </a>
+            <div class="intro-heading reveal">
 
-                    </article>
+                <span class="section-eyebrow">
+                    Cleaning Services Adelaide
+                </span>
+
+                <h2>
+                    Reliable cleaning for the places
+                    <span>that matter to you</span>
+                </h2>
+
+            </div>
 
 
-                    <article class="service-card reveal">
+            <div class="intro-content reveal">
 
-                        <div class="service-card-top">
-                            <div class="service-icon">🧹</div>
-                            <span class="service-arrow">→</span>
-                        </div>
-
-                        <h3>
-                            Regular House Cleaning
-                        </h3>
-
-                        <p>
-                            Ongoing cleaning for busy households that want
-                            a consistently fresh and comfortable home.
-                        </p>
-
-                        <a
-                            href="/services/regular-house-cleaning-adelaide/"
-                            class="service-link"
-                        >
-                            Explore house cleaning
-                            <span>→</span>
-                        </a>
-
-                    </article>
-
-
-                    <article class="service-card reveal">
-
-                        <div class="service-card-top">
-                            <div class="service-icon">🧼</div>
-                            <span class="service-arrow">→</span>
-                        </div>
-
-                        <h3>
-                            Carpet Steam Cleaning
-                        </h3>
-
-                        <p>
-                            Professional carpet cleaning to refresh
-                            high-use areas and improve the appearance of
-                            your floors.
-                        </p>
-
-                        <a
-                            href="/services/carpet-steam-cleaning-adelaide/"
-                            class="service-link"
-                        >
-                            Explore carpet cleaning
-                            <span>→</span>
-                        </a>
-
-                    </article>
-
-
-                    <article class="service-card reveal">
-
-                        <div class="service-card-top">
-                            <div class="service-icon">🪟</div>
-                            <span class="service-arrow">→</span>
-                        </div>
-
-                        <h3>
-                            Window Cleaning Adelaide
-                        </h3>
-
-                        <p>
-                            Interior and exterior window cleaning to help
-                            keep your property bright, clear and presentable.
-                        </p>
-
-                        <a
-                            href="/services/window-cleaning-adelaide/"
-                            class="service-link"
-                        >
-                            Explore window cleaning
-                            <span>→</span>
-                        </a>
-
-                    </article>
-
-                </div>
-
-            {% endif %}
-
-
-            <div class="services-bottom-cta reveal">
-
-                <p>
-                    Need a cleaning service that is not listed above?
+                <p class="large-text">
+                    A clean property should make life easier, not create
+                    another task on your list. YD Commercial Cleaning
+                    Services provides professional cleaning solutions for
+                    Adelaide homes, rental properties, offices and
+                    commercial spaces.
                 </p>
 
-                <a href="#quote" class="text-link">
-                    Tell us what you need
+                <p>
+                    Whether you need regular house cleaning, a detailed
+                    deep clean, end-of-lease cleaning or ongoing workplace
+                    cleaning, our services can be tailored to the size,
+                    condition and purpose of your property.
+                </p>
+
+                <p>
+                    We focus on practical communication, careful cleaning
+                    and dependable service so you can return to a cleaner,
+                    fresher and more presentable environment.
+                </p>
+
+                <a href="#services" class="text-link">
+                    Explore our cleaning services
                     <span>→</span>
                 </a>
 
@@ -814,990 +292,1594 @@
 
         </div>
 
-    </section>
+    </div>
+
+</section>
 
 
-    <!-- =====================================================
-         PROPERTY TYPES / SEO CONTENT
-         ===================================================== -->
+<!-- =====================================================
+     WHY CHOOSE US
+     ===================================================== -->
 
-    <section class="property-section section-white">
+<section class="why-section section-white">
 
-        <div class="container">
+    <div class="container">
 
-            <div class="property-grid">
+        <div class="section-heading reveal">
 
-                <div class="property-content reveal">
+            <span class="section-eyebrow">
+                Why Choose YD Cleaning
+            </span>
 
-                    <span class="section-eyebrow">
-                        Cleaning for Different Properties
-                    </span>
+            <h2>
+                Professional cleaning with a
+                <span>local Adelaide approach</span>
+            </h2>
 
-                    <h2>
-                        One professional cleaning team
-                        <span>for different property needs</span>
-                    </h2>
-
-                    <p>
-                        Every property has different cleaning priorities.
-                        A family home may need recurring cleaning and
-                        detailed kitchen and bathroom care, while an office
-                        may require consistent presentation around employees
-                        and customers.
-                    </p>
-
-                    <p>
-                        YD Commercial Cleaning works across a range of
-                        property types and can help you choose a practical
-                        cleaning service based on your property's needs.
-                    </p>
-
-                    <a href="#quote" class="btn btn-primary">
-                        Discuss Your Cleaning Needs
-                    </a>
-
-                </div>
-
-
-                <div class="property-list reveal">
-
-                    <div class="property-item">
-
-                        <span class="property-icon">🏡</span>
-
-                        <div>
-
-                            <h3>Homes &amp; Apartments</h3>
-
-                            <p>
-                                Regular, deep and one-off residential
-                                cleaning.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="property-item">
-
-                        <span class="property-icon">🔑</span>
-
-                        <div>
-
-                            <h3>Rental &amp; Move-Out Properties</h3>
-
-                            <p>
-                                Detailed cleaning before inspection,
-                                handover or a new tenancy.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="property-item">
-
-                        <span class="property-icon">💼</span>
-
-                        <div>
-
-                            <h3>Offices &amp; Workplaces</h3>
-
-                            <p>
-                                Professional cleaning to support a clean
-                                and presentable working environment.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="property-item">
-
-                        <span class="property-icon">🏬</span>
-
-                        <div>
-
-                            <h3>Commercial Properties</h3>
-
-                            <p>
-                                Cleaning solutions for customer-facing and
-                                operational commercial spaces.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="property-item">
-
-                        <span class="property-icon">🏗️</span>
-
-                        <div>
-
-                            <h3>Post-Renovation Spaces</h3>
-
-                            <p>
-                                Cleaning support after building,
-                                renovation or improvement work.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="property-item">
-
-                        <span class="property-icon">🏠</span>
-
-                        <div>
-
-                            <h3>Property Management Needs</h3>
-
-                            <p>
-                                Flexible cleaning support for properties
-                                preparing for tenants or inspections.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
+            <p>
+                We combine professional cleaning practices with
+                straightforward communication and flexible service
+                options for residential and commercial customers.
+            </p>
 
         </div>
 
-    </section>
 
+        <div class="benefits-grid">
 
-    <!-- =====================================================
-         ADELAIDE SERVICE AREAS
-         ===================================================== -->
+            <article class="benefit-card reveal">
 
-    <section class="areas-section">
+                <div class="benefit-number">01</div>
+                <div class="benefit-icon">🏠</div>
 
-        <div class="container">
-
-            <div class="areas-layout">
-
-                <div class="areas-heading reveal">
-
-                    <span class="section-eyebrow">
-                        Local Adelaide Cleaning
-                    </span>
-
-                    <h2>
-                        Serving Adelaide and
-                        <span>surrounding suburbs</span>
-                    </h2>
-
-                    <p>
-                        Our local service approach allows us to support
-                        residential and commercial customers across
-                        Adelaide and nearby suburbs.
-                    </p>
-
-                    <a href="#quote" class="btn btn-primary">
-                        Check Your Area
-                    </a>
-
-                </div>
-
-
-                <div class="areas-list reveal">
-
-                    <div class="area-pill">
-                        Adelaide CBD
-                    </div>
-
-                    <div class="area-pill">
-                        North Adelaide
-                    </div>
-
-                    <div class="area-pill">
-                        Prospect
-                    </div>
-
-                    <div class="area-pill">
-                        Mawson Lakes
-                    </div>
-
-                    <div class="area-pill">
-                        Norwood
-                    </div>
-
-                    <div class="area-pill">
-                        Unley
-                    </div>
-
-                    <div class="area-pill">
-                        Burnside
-                    </div>
-
-                    <div class="area-pill">
-                        Glenelg
-                    </div>
-
-                    <div class="area-pill">
-                        Modbury
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         GALLERY
-         ===================================================== -->
-
-    {% if gallery_items %}
-
-    <section class="gallery-section section-light">
-
-        <div class="container">
-
-            <div class="section-heading reveal">
-
-                <span class="section-eyebrow">
-                    Our Work
-                </span>
-
-                <h2>
-                    See the difference a
-                    <span>professional clean can make</span>
-                </h2>
+                <h3>
+                    Residential Cleaning
+                </h3>
 
                 <p>
-                    Explore examples from our cleaning work across
-                    residential and commercial properties.
+                    Keep your home fresh and manageable with regular,
+                    deep and detailed cleaning designed around your
+                    household.
                 </p>
 
-            </div>
+            </article>
 
 
-            <div class="home-gallery-grid">
+            <article class="benefit-card reveal">
 
-                {% for item in gallery_items|slice:":6" %}
+                <div class="benefit-number">02</div>
+                <div class="benefit-icon">🏢</div>
 
-                    <a
-                        href="/gallery/"
-                        class="home-gallery-item reveal"
-                    >
+                <h3>
+                    Commercial Cleaning
+                </h3>
 
-                        {% if item.primary_image %}
+                <p>
+                    Maintain clean, professional workplaces, retail
+                    environments and commercial properties with a
+                    practical cleaning schedule.
+                </p>
 
-                            <img
-                                src="{{ item.primary_image.url }}"
-                                alt="{{ item.title|default:'Professional cleaning work in Adelaide' }}"
-                                loading="lazy"
-                            >
-
-                        {% endif %}
+            </article>
 
 
-                        <div class="gallery-overlay">
+            <article class="benefit-card reveal">
 
-                            <div>
+                <div class="benefit-number">03</div>
+                <div class="benefit-icon">🔎</div>
 
-                                <span>
-                                    {{ item.service_type|default:"Cleaning Service" }}
-                                </span>
+                <h3>
+                    Attention to Detail
+                </h3>
 
-                                <h3>
-                                    {{ item.title|default:"YD Cleaning Service" }}
-                                </h3>
+                <p>
+                    We focus on the areas that influence how a property
+                    feels and looks, including kitchens, bathrooms,
+                    floors, surfaces and high-use spaces.
+                </p>
+
+            </article>
+
+
+            <article class="benefit-card reveal">
+
+                <div class="benefit-number">04</div>
+                <div class="benefit-icon">📅</div>
+
+                <h3>
+                    Flexible Scheduling
+                </h3>
+
+                <p>
+                    Tell us what you need cleaned and when you need it.
+                    We work with you to find a suitable cleaning
+                    arrangement.
+                </p>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PROCESS
+     ===================================================== -->
+
+<section class="process-section">
+
+    <div class="container">
+
+        <div class="section-heading section-heading-light reveal">
+
+            <span class="section-eyebrow">
+                How It Works
+            </span>
+
+            <h2>
+                Simple cleaning from
+                <span>quote to completion</span>
+            </h2>
+
+            <p>
+                Getting professional cleaning support does not need to be
+                complicated. Our process is designed to keep your booking
+                straightforward.
+            </p>
+
+        </div>
+
+
+        <div class="process-grid">
+
+            <article class="process-card reveal">
+
+                <div class="process-number">01</div>
+
+                <h3>
+                    Tell Us What You Need
+                </h3>
+
+                <p>
+                    Share your property type, location, cleaning
+                    requirements and preferred date.
+                </p>
+
+            </article>
+
+
+            <article class="process-card reveal">
+
+                <div class="process-number">02</div>
+
+                <h3>
+                    Receive Your Quote
+                </h3>
+
+                <p>
+                    We review the scope of work and provide a tailored
+                    quote based on your cleaning requirements.
+                </p>
+
+            </article>
+
+
+            <article class="process-card reveal">
+
+                <div class="process-number">03</div>
+
+                <h3>
+                    We Clean Your Property
+                </h3>
+
+                <p>
+                    Our team completes the agreed cleaning service with
+                    attention to the areas that matter most.
+                </p>
+
+            </article>
+
+
+            <article class="process-card reveal">
+
+                <div class="process-number">04</div>
+
+                <h3>
+                    Enjoy the Difference
+                </h3>
+
+                <p>
+                    Return to a cleaner, fresher and more presentable
+                    home, workplace or commercial property.
+                </p>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     SERVICES
+     ===================================================== -->
+
+<section
+    class="services-section section-light"
+    id="services"
+>
+
+    <div class="container">
+
+        <div class="section-heading reveal">
+
+            <span class="section-eyebrow">
+                Our Services
+            </span>
+
+            <h2>
+                Cleaning services for
+                <span>Adelaide properties</span>
+            </h2>
+
+            <p>
+                Choose the cleaning service that best matches your
+                property and requirements. For a tailored solution,
+                contact our team for a free quote.
+            </p>
+
+        </div>
+
+
+        {% if services %}
+
+            <div class="services-grid">
+
+                {% for service in services|slice:":6" %}
+
+                    <article class="service-card reveal">
+
+                        <div class="service-card-top">
+
+                            <div class="service-icon">
+
+                                {% if service.slug == 'bond-cleaning' %}
+                                    🏠
+                                {% elif service.slug == 'regular-house-cleaning' %}
+                                    🧹
+                                {% elif service.slug == 'deep-cleaning' %}
+                                    ✨
+                                {% elif service.slug == 'office-cleaning' %}
+                                    🏢
+                                {% elif service.slug == 'carpet-steam-cleaning' %}
+                                    🧼
+                                {% elif service.slug == 'window-cleaning' %}
+                                    🪟
+                                {% else %}
+                                    ✦
+                                {% endif %}
 
                             </div>
 
-                            <span class="gallery-arrow">
+                            <span class="service-arrow">
                                 →
                             </span>
 
                         </div>
 
-                    </a>
+
+                        <h3>
+                            {{ service.name }}
+                        </h3>
+
+
+                        {% if service.description %}
+
+                            <p>
+                                {{ service.description|truncatechars:180 }}
+                            </p>
+
+                        {% else %}
+
+                            <p>
+                                Professional cleaning tailored to your
+                                property's needs and cleaning schedule.
+                            </p>
+
+                        {% endif %}
+
+
+                        {% if service.included_items %}
+
+                            <ul class="service-includes">
+
+                                {% for item in service.included_items|slice:":3" %}
+
+                                    <li>
+                                        <span>✓</span>
+                                        {{ item }}
+                                    </li>
+
+                                {% endfor %}
+
+                            </ul>
+
+                        {% endif %}
+
+
+                        <a
+                            href="{{ service.get_absolute_url }}"
+                            class="service-link"
+                        >
+                            View service
+                            <span>→</span>
+                        </a>
+
+                    </article>
 
                 {% endfor %}
 
             </div>
 
+        {% else %}
 
-            <div class="center-cta reveal">
+            <div class="services-grid">
 
-                <a href="/gallery/" class="btn btn-secondary">
-                    View Full Gallery
+                <article class="service-card reveal">
+
+                    <div class="service-card-top">
+                        <div class="service-icon">🏢</div>
+                        <span class="service-arrow">→</span>
+                    </div>
+
+                    <h3>
+                        Commercial Cleaning Adelaide
+                    </h3>
+
+                    <p>
+                        Professional cleaning for offices, workplaces,
+                        retail spaces and commercial properties.
+                    </p>
+
+                    <a
+                        href="/services/commercial-cleaning-adelaide/"
+                        class="service-link"
+                    >
+                        Explore commercial cleaning
+                        <span>→</span>
+                    </a>
+
+                </article>
+
+
+                <article class="service-card reveal">
+
+                    <div class="service-card-top">
+                        <div class="service-icon">🏢</div>
+                        <span class="service-arrow">→</span>
+                    </div>
+
+                    <h3>
+                        Office Cleaning Adelaide
+                    </h3>
+
+                    <p>
+                        Keep your workplace clean, organised and
+                        professional with flexible office cleaning.
+                    </p>
+
+                    <a
+                        href="/services/office-cleaning/"
+                        class="service-link"
+                    >
+                        Explore office cleaning
+                        <span>→</span>
+                    </a>
+
+                </article>
+
+
+                <article class="service-card reveal">
+
+                    <div class="service-card-top">
+                        <div class="service-icon">🏠</div>
+                        <span class="service-arrow">→</span>
+                    </div>
+
+                    <h3>
+                        End of Lease Cleaning
+                    </h3>
+
+                    <p>
+                        Detailed cleaning for rental properties before
+                        final inspection, handover or moving.
+                    </p>
+
+                    <a
+                        href="/services/bond-cleaning/"
+                        class="service-link"
+                    >
+                        Explore bond cleaning
+                        <span>→</span>
+                    </a>
+
+                </article>
+
+
+                <article class="service-card reveal">
+
+                    <div class="service-card-top">
+                        <div class="service-icon">🧹</div>
+                        <span class="service-arrow">→</span>
+                    </div>
+
+                    <h3>
+                        Regular House Cleaning
+                    </h3>
+
+                    <p>
+                        Ongoing cleaning for busy households that want
+                        a consistently fresh and comfortable home.
+                    </p>
+
+                    <a
+                        href="/services/regular-house-cleaning-adelaide/"
+                        class="service-link"
+                    >
+                        Explore house cleaning
+                        <span>→</span>
+                    </a>
+
+                </article>
+
+
+                <article class="service-card reveal">
+
+                    <div class="service-card-top">
+                        <div class="service-icon">🧼</div>
+                        <span class="service-arrow">→</span>
+                    </div>
+
+                    <h3>
+                        Carpet Steam Cleaning
+                    </h3>
+
+                    <p>
+                        Professional carpet cleaning to refresh
+                        high-use areas and improve the appearance of
+                        your floors.
+                    </p>
+
+                    <a
+                        href="/services/carpet-steam-cleaning-adelaide/"
+                        class="service-link"
+                    >
+                        Explore carpet cleaning
+                        <span>→</span>
+                    </a>
+
+                </article>
+
+
+                <article class="service-card reveal">
+
+                    <div class="service-card-top">
+                        <div class="service-icon">🪟</div>
+                        <span class="service-arrow">→</span>
+                    </div>
+
+                    <h3>
+                        Window Cleaning Adelaide
+                    </h3>
+
+                    <p>
+                        Interior and exterior window cleaning to help
+                        keep your property bright, clear and presentable.
+                    </p>
+
+                    <a
+                        href="/services/window-cleaning-adelaide/"
+                        class="service-link"
+                    >
+                        Explore window cleaning
+                        <span>→</span>
+                    </a>
+
+                </article>
+
+            </div>
+
+        {% endif %}
+
+
+        <div class="services-bottom-cta reveal">
+
+            <p>
+                Need a cleaning service that is not listed above?
+            </p>
+
+            <a href="#quote" class="text-link">
+                Tell us what you need
+                <span>→</span>
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PROPERTY TYPES / SEO CONTENT
+     ===================================================== -->
+
+<section class="property-section section-white">
+
+    <div class="container">
+
+        <div class="property-grid">
+
+            <div class="property-content reveal">
+
+                <span class="section-eyebrow">
+                    Cleaning for Different Properties
+                </span>
+
+                <h2>
+                    One professional cleaning team
+                    <span>for different property needs</span>
+                </h2>
+
+                <p>
+                    Every property has different cleaning priorities.
+                    A family home may need recurring cleaning and
+                    detailed kitchen and bathroom care, while an office
+                    may require consistent presentation around employees
+                    and customers.
+                </p>
+
+                <p>
+                    YD Commercial Cleaning works across a range of
+                    property types and can help you choose a practical
+                    cleaning service based on your property's needs.
+                </p>
+
+                <a href="#quote" class="btn btn-primary">
+                    Discuss Your Cleaning Needs
                 </a>
+
+            </div>
+
+
+            <div class="property-list reveal">
+
+                <div class="property-item">
+
+                    <span class="property-icon">🏡</span>
+
+                    <div>
+
+                        <h3>Homes &amp; Apartments</h3>
+
+                        <p>
+                            Regular, deep and one-off residential
+                            cleaning.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="property-item">
+
+                    <span class="property-icon">🔑</span>
+
+                    <div>
+
+                        <h3>Rental &amp; Move-Out Properties</h3>
+
+                        <p>
+                            Detailed cleaning before inspection,
+                            handover or a new tenancy.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="property-item">
+
+                    <span class="property-icon">💼</span>
+
+                    <div>
+
+                        <h3>Offices &amp; Workplaces</h3>
+
+                        <p>
+                            Professional cleaning to support a clean
+                            and presentable working environment.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="property-item">
+
+                    <span class="property-icon">🏬</span>
+
+                    <div>
+
+                        <h3>Commercial Properties</h3>
+
+                        <p>
+                            Cleaning solutions for customer-facing and
+                            operational commercial spaces.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="property-item">
+
+                    <span class="property-icon">🏗️</span>
+
+                    <div>
+
+                        <h3>Post-Renovation Spaces</h3>
+
+                        <p>
+                            Cleaning support after building,
+                            renovation or improvement work.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="property-item">
+
+                    <span class="property-icon">🏠</span>
+
+                    <div>
+
+                        <h3>Property Management Needs</h3>
+
+                        <p>
+                            Flexible cleaning support for properties
+                            preparing for tenants or inspections.
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
 
         </div>
 
-    </section>
+    </div>
 
-    {% endif %}
+</section>
 
 
-    <!-- =====================================================
-         GOOGLE REVIEWS
-         ===================================================== -->
+<!-- =====================================================
+     ADELAIDE SERVICE AREAS
+     ===================================================== -->
 
-    {% if google_reviews %}
+<section class="areas-section">
 
-    <section class="reviews-section section-white">
+    <div class="container">
 
-        <div class="container">
+        <div class="areas-layout">
 
-            <div class="section-heading reveal">
+            <div class="areas-heading reveal">
 
                 <span class="section-eyebrow">
-                    Customer Reviews
+                    Local Adelaide Cleaning
                 </span>
 
                 <h2>
-                    Trusted by Adelaide
-                    <span>customers</span>
+                    Serving Adelaide and
+                    <span>surrounding suburbs</span>
                 </h2>
 
                 <p>
-                    See what customers have shared about their experience
-                    with YD Commercial Cleaning.
+                    Our local service approach allows us to support
+                    residential and commercial customers across
+                    Adelaide and nearby suburbs.
                 </p>
 
+                <a href="#quote" class="btn btn-primary">
+                    Check Your Area
+                </a>
+
             </div>
 
 
-            <div class="reviews-summary reveal">
+            <div class="areas-list reveal">
 
-                <div class="rating-number">
-                    {{ average_rating|default:"5.0" }}
+                <div class="area-pill">
+                    Adelaide CBD
                 </div>
 
-                <div class="rating-content">
+                <div class="area-pill">
+                    North Adelaide
+                </div>
 
-                    <div
-                        class="rating-stars"
-                        aria-label="Customer rating"
-                    >
-                        ★★★★★
+                <div class="area-pill">
+                    Prospect
+                </div>
+
+                <div class="area-pill">
+                    Mawson Lakes
+                </div>
+
+                <div class="area-pill">
+                    Norwood
+                </div>
+
+                <div class="area-pill">
+                    Unley
+                </div>
+
+                <div class="area-pill">
+                    Burnside
+                </div>
+
+                <div class="area-pill">
+                    Glenelg
+                </div>
+
+                <div class="area-pill">
+                    Modbury
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     GALLERY
+     ===================================================== -->
+
+{% if gallery_items %}
+
+<section class="gallery-section section-light">
+
+    <div class="container">
+
+        <div class="section-heading reveal">
+
+            <span class="section-eyebrow">
+                Our Work
+            </span>
+
+            <h2>
+                See the difference a
+                <span>professional clean can make</span>
+            </h2>
+
+            <p>
+                Explore examples from our cleaning work across
+                residential and commercial properties.
+            </p>
+
+        </div>
+
+
+        <div class="home-gallery-grid">
+
+            {% for item in gallery_items|slice:":6" %}
+
+                <a
+                    href="/gallery/"
+                    class="home-gallery-item reveal"
+                >
+
+                    {% if item.primary_image %}
+
+                        <img
+                            src="{{ item.primary_image.url }}"
+                            alt="{{ item.title|default:'Professional cleaning work in Adelaide' }}"
+                            loading="lazy"
+                        >
+
+                    {% endif %}
+
+
+                    <div class="gallery-overlay">
+
+                        <div>
+
+                            <span>
+                                {{ item.service_type|default:"Cleaning Service" }}
+                            </span>
+
+                            <h3>
+                                {{ item.title|default:"YD Cleaning Service" }}
+                            </h3>
+
+                        </div>
+
+                        <span class="gallery-arrow">
+                            →
+                        </span>
+
                     </div>
 
-                    <strong>
-                        Google Customer Reviews
-                    </strong>
+                </a>
 
-                    <span>
-                        Based on {{ google_review_count|default:"0" }} reviews
-                    </span>
+            {% endfor %}
 
+        </div>
+
+
+        <div class="center-cta reveal">
+
+            <a href="/gallery/" class="btn btn-secondary">
+                View Full Gallery
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
+<!-- =====================================================
+     GOOGLE REVIEWS
+     ===================================================== -->
+
+{% if google_reviews %}
+
+<section class="reviews-section section-white">
+
+    <div class="container">
+
+        <div class="section-heading reveal">
+
+            <span class="section-eyebrow">
+                Customer Reviews
+            </span>
+
+            <h2>
+                Trusted by Adelaide
+                <span>customers</span>
+            </h2>
+
+            <p>
+                See what customers have shared about their experience
+                with YD Commercial Cleaning.
+            </p>
+
+        </div>
+
+
+        <div class="reviews-summary reveal">
+
+            <div class="rating-number">
+                {{ average_rating|default:"5.0" }}
+            </div>
+
+            <div class="rating-content">
+
+                <div
+                    class="rating-stars"
+                    aria-label="Customer rating"
+                >
+                    ★★★★★
                 </div>
+
+                <strong>
+                    Google Customer Reviews
+                </strong>
+
+                <span>
+                    Based on {{ google_review_count|default:"0" }} reviews
+                </span>
 
             </div>
 
-
-            <div class="reviews-carousel-wrapper">
-
-                <button
-                    type="button"
-                    class="review-carousel-control review-prev"
-                    aria-label="Previous review"
-                >
-                    ←
-                </button>
+        </div>
 
 
-                <div class="home-reviews-viewport">
+        <div class="reviews-carousel-wrapper">
 
-                    <div class="home-reviews-track">
+            <button
+                type="button"
+                class="review-carousel-control review-prev"
+                aria-label="Previous review"
+            >
+                ←
+            </button>
 
-                        {% for review in google_reviews %}
 
-                            <article class="home-review-slide">
+            <div class="home-reviews-viewport">
 
-                                <div class="review-card">
+                <div class="home-reviews-track">
 
-                                    <div class="review-card-header">
+                    {% for review in google_reviews %}
 
-                                        <div class="review-avatar">
-                                            {{ review.reviewer_name|default:"C"|slice:":1"|upper }}
-                                        </div>
+                        <article class="home-review-slide">
 
-                                        <div>
+                            <div class="review-card">
 
-                                            <strong>
-                                                {{ review.reviewer_name|default:"Customer" }}
-                                            </strong>
+                                <div class="review-card-header">
 
-                                            {% if review.suburb %}
-
-                                                <span>
-                                                    {{ review.suburb }}
-                                                </span>
-
-                                            {% endif %}
-
-                                        </div>
-
+                                    <div class="review-avatar">
+                                        {{ review.reviewer_name|default:"C"|slice:":1"|upper }}
                                     </div>
 
+                                    <div>
 
-                                    <div class="review-stars">
+                                        <strong>
+                                            {{ review.reviewer_name|default:"Customer" }}
+                                        </strong>
 
-                                        {% if review.rating %}
+                                        {% if review.suburb %}
 
-                                            {% for i in "12345" %}
-
-                                                {% if forloop.counter <= review.rating %}
-                                                    ★
-                                                {% else %}
-                                                    ☆
-                                                {% endif %}
-
-                                            {% endfor %}
-
-                                        {% else %}
-
-                                            ★★★★★
+                                            <span>
+                                                {{ review.suburb }}
+                                            </span>
 
                                         {% endif %}
 
                                     </div>
 
-
-                                    <p>
-                                        "{{ review.comment }}"
-                                    </p>
+                                </div>
 
 
-                                    {% if review.created_at %}
+                                <div class="review-stars">
 
-                                        <time
-                                            datetime="{{ review.created_at|date:'Y-m-d' }}"
-                                        >
-                                            {{ review.created_at|date:"d M Y" }}
-                                        </time>
+                                    {% if review.rating %}
+
+                                        {% for i in "12345" %}
+
+                                            {% if forloop.counter <= review.rating %}
+                                                ★
+                                            {% else %}
+                                                ☆
+                                            {% endif %}
+
+                                        {% endfor %}
+
+                                    {% else %}
+
+                                        ★★★★★
 
                                     {% endif %}
 
                                 </div>
 
-                            </article>
 
-                        {% endfor %}
+                                <p>
+                                    "{{ review.comment }}"
+                                </p>
 
-                    </div>
+
+                                {% if review.created_at %}
+
+                                    <time
+                                        datetime="{{ review.created_at|date:'Y-m-d' }}"
+                                    >
+                                        {{ review.created_at|date:"d M Y" }}
+                                    </time>
+
+                                {% endif %}
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
 
                 </div>
-
-
-                <button
-                    type="button"
-                    class="review-carousel-control review-next"
-                    aria-label="Next review"
-                >
-                    →
-                </button>
 
             </div>
 
 
-            <div
-                class="review-carousel-dots"
-                aria-label="Review navigation"
-            ></div>
+            <button
+                type="button"
+                class="review-carousel-control review-next"
+                aria-label="Next review"
+            >
+                →
+            </button>
 
         </div>
 
-    </section>
 
-    {% endif %}
+        <div
+            class="review-carousel-dots"
+            aria-label="Review navigation"
+        ></div>
+
+    </div>
+
+</section>
+
+{% endif %}
 
 
-    <!-- =====================================================
-         FAQ — SINGLE HOMEPAGE FAQ
-         ===================================================== -->
+<!-- =====================================================
+     CLEAN20 EMAIL SIGNUP
+     ===================================================== -->
 
-    <section
-        class="home-faq-section"
-        id="faq"
-    >
+<section class="newsletter-section" id="newsletter-signup">
 
-        <div class="container">
+    <div class="container">
 
-            <div class="section-heading home-faq-heading reveal">
+        <div class="newsletter-card">
+
+            <div class="newsletter-content">
 
                 <span class="section-eyebrow">
-                    Frequently Asked Questions
+                    SPECIAL OFFER
                 </span>
 
                 <h2>
-                    Questions about cleaning
-                    <span>services in Adelaide?</span>
+                    Get <span>20% Off Your First Cleaning</span>
                 </h2>
 
                 <p>
-                    Find answers to common questions about our residential,
-                    office and commercial cleaning services.
+                    Join the YD Commercial Cleaning mailing list and
+                    receive cleaning offers, helpful tips and updates.
                 </p>
 
             </div>
 
 
-            <div class="home-faq-list">
+            <div class="newsletter-form-wrapper">
+
+                <form
+                    method="post"
+                    action="{% url 'marketing_signup' %}"
+                    class="newsletter-form"
+                >
+
+                    {% csrf_token %}
 
 
-                <!-- FAQ 1 -->
+                    <div class="newsletter-field">
 
-                <article class="home-faq-item reveal">
+                        <label for="{{ marketing_form.email.id_for_label }}">
+                            Email address
+                        </label>
 
-                    <button
-                        type="button"
-                        class="home-faq-question"
-                        aria-expanded="false"
-                        aria-controls="faq-answer-1"
-                        id="faq-question-1"
-                    >
-
-                        <span>
-                            What cleaning services does YD Commercial Cleaning provide?
-                        </span>
-
-                        <span
-                            class="home-faq-icon"
-                            aria-hidden="true"
-                        >
-                            +
-                        </span>
-
-                    </button>
-
-
-                    <div
-                        class="home-faq-answer"
-                        id="faq-answer-1"
-                        role="region"
-                        aria-labelledby="faq-question-1"
-                        hidden
-                    >
-
-                        <p>
-                            We provide residential and commercial cleaning
-                            services across Adelaide, including regular house
-                            cleaning, deep cleaning, end-of-lease cleaning,
-                            office cleaning, commercial cleaning, carpet
-                            cleaning and window cleaning.
-                        </p>
+                        {{ marketing_form.email }}
 
                     </div>
 
-                </article>
 
+                    <label class="newsletter-consent">
 
-                <!-- FAQ 2 -->
-
-                <article class="home-faq-item reveal">
-
-                    <button
-                        type="button"
-                        class="home-faq-question"
-                        aria-expanded="false"
-                        aria-controls="faq-answer-2"
-                        id="faq-question-2"
-                    >
+                        {{ marketing_form.consent }}
 
                         <span>
-                            Do you provide regular cleaning services?
+                            I agree to receive promotional emails from
+                            YD Commercial Cleaning Services.
                         </span>
 
-                        <span
-                            class="home-faq-icon"
-                            aria-hidden="true"
-                        >
-                            +
-                        </span>
+                    </label>
 
+
+                    <button
+                        type="submit"
+                        class="newsletter-submit"
+                    >
+                        Get 20% Off
+                        <span aria-hidden="true">→</span>
                     </button>
 
 
-                    <div
-                        class="home-faq-answer"
-                        id="faq-answer-2"
-                        role="region"
-                        aria-labelledby="faq-question-2"
-                        hidden
-                    >
+                    <p class="newsletter-privacy">
+                        Unsubscribe anytime. We respect your privacy.
+                    </p>
 
-                        <p>
-                            Yes. We can arrange recurring cleaning for homes,
-                            offices and commercial properties. The cleaning
-                            frequency can be discussed based on your property,
-                            routine and cleaning requirements.
-                        </p>
-
-                    </div>
-
-                </article>
-
-
-                <!-- FAQ 3 -->
-
-                <article class="home-faq-item reveal">
-
-                    <button
-                        type="button"
-                        class="home-faq-question"
-                        aria-expanded="false"
-                        aria-controls="faq-answer-3"
-                        id="faq-question-3"
-                    >
-
-                        <span>
-                            How is the cleaning price calculated?
-                        </span>
-
-                        <span
-                            class="home-faq-icon"
-                            aria-hidden="true"
-                        >
-                            +
-                        </span>
-
-                    </button>
-
-
-                    <div
-                        class="home-faq-answer"
-                        id="faq-answer-3"
-                        role="region"
-                        aria-labelledby="faq-question-3"
-                        hidden
-                    >
-
-                        <p>
-                            Cleaning prices depend on factors such as the
-                            property size, type of cleaning, condition of the
-                            property and scope of work. We provide a tailored
-                            quote so you understand the expected service
-                            before the booking.
-                        </p>
-
-                    </div>
-
-                </article>
-
-
-                <!-- FAQ 4 -->
-
-                <article class="home-faq-item reveal">
-
-                    <button
-                        type="button"
-                        class="home-faq-question"
-                        aria-expanded="false"
-                        aria-controls="faq-answer-4"
-                        id="faq-question-4"
-                    >
-
-                        <span>
-                            Do you offer end-of-lease and bond cleaning?
-                        </span>
-
-                        <span
-                            class="home-faq-icon"
-                            aria-hidden="true"
-                        >
-                            +
-                        </span>
-
-                    </button>
-
-
-                    <div
-                        class="home-faq-answer"
-                        id="faq-answer-4"
-                        role="region"
-                        aria-labelledby="faq-question-4"
-                        hidden
-                    >
-
-                        <p>
-                            Yes. End-of-lease cleaning can help prepare a
-                            rental property for final inspection, handover
-                            or a new occupant. The cleaning scope can be
-                            discussed based on the property and required
-                            level of detail.
-                        </p>
-
-                    </div>
-
-                </article>
-
-
-                <!-- FAQ 5 -->
-
-                <article class="home-faq-item reveal">
-
-                    <button
-                        type="button"
-                        class="home-faq-question"
-                        aria-expanded="false"
-                        aria-controls="faq-answer-5"
-                        id="faq-question-5"
-                    >
-
-                        <span>
-                            Which Adelaide suburbs do you service?
-                        </span>
-
-                        <span
-                            class="home-faq-icon"
-                            aria-hidden="true"
-                        >
-                            +
-                        </span>
-
-                    </button>
-
-
-                    <div
-                        class="home-faq-answer"
-                        id="faq-answer-5"
-                        role="region"
-                        aria-labelledby="faq-question-5"
-                        hidden
-                    >
-
-                        <p>
-                            We service Adelaide CBD and surrounding areas,
-                            including Prospect, Mawson Lakes, Glenelg,
-                            Norwood, Unley, Burnside and Modbury. If you are
-                            unsure whether we cover your suburb, contact us
-                            and we can confirm service availability.
-                        </p>
-
-                    </div>
-
-                </article>
-
-
-                <!-- FAQ 6 -->
-
-                <article class="home-faq-item reveal">
-
-                    <button
-                        type="button"
-                        class="home-faq-question"
-                        aria-expanded="false"
-                        aria-controls="faq-answer-6"
-                        id="faq-question-6"
-                    >
-
-                        <span>
-                            Can commercial cleaning be scheduled outside normal business hours?
-                        </span>
-
-                        <span
-                            class="home-faq-icon"
-                            aria-hidden="true"
-                        >
-                            +
-                        </span>
-
-                    </button>
-
-
-                    <div
-                        class="home-faq-answer"
-                        id="faq-answer-6"
-                        role="region"
-                        aria-labelledby="faq-question-6"
-                        hidden
-                    >
-
-                        <p>
-                            For many commercial cleaning requirements,
-                            cleaning can be organised around operating hours
-                            to minimise disruption to employees, customers
-                            and visitors. Availability depends on the
-                            property and requested schedule.
-                        </p>
-
-                    </div>
-
-                </article>
-
+                </form>
 
             </div>
 
+        </div>
 
-            <div class="home-faq-cta reveal">
+    </div>
 
-                <div>
+</section>
 
-                    <strong>
-                        Still have questions?
-                    </strong>
+
+<!-- =====================================================
+     FAQ — SINGLE HOMEPAGE FAQ
+     ===================================================== -->
+
+<section
+    class="home-faq-section"
+    id="faq"
+>
+
+    <div class="container">
+
+        <div class="section-heading home-faq-heading reveal">
+
+            <span class="section-eyebrow">
+                Frequently Asked Questions
+            </span>
+
+            <h2>
+                Questions about cleaning
+                <span>services in Adelaide?</span>
+            </h2>
+
+            <p>
+                Find answers to common questions about our residential,
+                office and commercial cleaning services.
+            </p>
+
+        </div>
+
+
+        <div class="home-faq-list">
+
+
+            <!-- FAQ 1 -->
+
+            <article class="home-faq-item reveal">
+
+                <button
+                    type="button"
+                    class="home-faq-question"
+                    aria-expanded="false"
+                    aria-controls="faq-answer-1"
+                    id="faq-question-1"
+                >
 
                     <span>
-                        Tell us about your property and cleaning requirements.
+                        What cleaning services does YD Commercial Cleaning provide?
                     </span>
 
-                </div>
+                    <span
+                        class="home-faq-icon"
+                        aria-hidden="true"
+                    >
+                        +
+                    </span>
 
-                <a
-                    href="#quote"
-                    class="btn btn-primary"
+                </button>
+
+
+                <div
+                    class="home-faq-answer"
+                    id="faq-answer-1"
+                    role="region"
+                    aria-labelledby="faq-question-1"
+                    hidden
                 >
-                    Get a Free Quote
-                </a>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         QUOTE CTA
-         ===================================================== -->
-
-    <section class="quote-banner">
-
-        <div class="container">
-
-            <div class="quote-banner-inner reveal">
-
-                <div>
-
-                    <span class="section-eyebrow">
-                        Ready for a Cleaner Property?
-                    </span>
-
-                    <h2>
-                        Let's make cleaning
-                        <span>one less thing to worry about.</span>
-                    </h2>
 
                     <p>
-                        Tell us what you need cleaned and request a free,
-                        no-obligation quote from YD Commercial Cleaning.
+                        We provide residential and commercial cleaning
+                        services across Adelaide, including regular house
+                        cleaning, deep cleaning, end-of-lease cleaning,
+                        office cleaning, commercial cleaning, carpet
+                        cleaning and window cleaning.
                     </p>
 
                 </div>
 
-                <a
-                    href="#quote"
-                    class="btn btn-light"
-                >
-                    Request My Free Quote
-                </a>
+            </article>
 
-            </div>
+
+            <!-- FAQ 2 -->
+
+            <article class="home-faq-item reveal">
+
+                <button
+                    type="button"
+                    class="home-faq-question"
+                    aria-expanded="false"
+                    aria-controls="faq-answer-2"
+                    id="faq-question-2"
+                >
+
+                    <span>
+                        Do you provide regular cleaning services?
+                    </span>
+
+                    <span
+                        class="home-faq-icon"
+                        aria-hidden="true"
+                    >
+                        +
+                    </span>
+
+                </button>
+
+
+                <div
+                    class="home-faq-answer"
+                    id="faq-answer-2"
+                    role="region"
+                    aria-labelledby="faq-question-2"
+                    hidden
+                >
+
+                    <p>
+                        Yes. We can arrange recurring cleaning for homes,
+                        offices and commercial properties. The cleaning
+                        frequency can be discussed based on your property,
+                        routine and cleaning requirements.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- FAQ 3 -->
+
+            <article class="home-faq-item reveal">
+
+                <button
+                    type="button"
+                    class="home-faq-question"
+                    aria-expanded="false"
+                    aria-controls="faq-answer-3"
+                    id="faq-question-3"
+                >
+
+                    <span>
+                        How is the cleaning price calculated?
+                    </span>
+
+                    <span
+                        class="home-faq-icon"
+                        aria-hidden="true"
+                    >
+                        +
+                    </span>
+
+                </button>
+
+
+                <div
+                    class="home-faq-answer"
+                    id="faq-answer-3"
+                    role="region"
+                    aria-labelledby="faq-question-3"
+                    hidden
+                >
+
+                    <p>
+                        Cleaning prices depend on factors such as the
+                        property size, type of cleaning, condition of the
+                        property and scope of work. We provide a tailored
+                        quote so you understand the expected service
+                        before the booking.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- FAQ 4 -->
+
+            <article class="home-faq-item reveal">
+
+                <button
+                    type="button"
+                    class="home-faq-question"
+                    aria-expanded="false"
+                    aria-controls="faq-answer-4"
+                    id="faq-question-4"
+                >
+
+                    <span>
+                        Do you offer end-of-lease and bond cleaning?
+                    </span>
+
+                    <span
+                        class="home-faq-icon"
+                        aria-hidden="true"
+                    >
+                        +
+                    </span>
+
+                </button>
+
+
+                <div
+                    class="home-faq-answer"
+                    id="faq-answer-4"
+                    role="region"
+                    aria-labelledby="faq-question-4"
+                    hidden
+                >
+
+                    <p>
+                        Yes. End-of-lease cleaning can help prepare a
+                        rental property for final inspection, handover
+                        or a new occupant. The cleaning scope can be
+                        discussed based on the property and required
+                        level of detail.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- FAQ 5 -->
+
+            <article class="home-faq-item reveal">
+
+                <button
+                    type="button"
+                    class="home-faq-question"
+                    aria-expanded="false"
+                    aria-controls="faq-answer-5"
+                    id="faq-question-5"
+                >
+
+                    <span>
+                        Which Adelaide suburbs do you service?
+                    </span>
+
+                    <span
+                        class="home-faq-icon"
+                        aria-hidden="true"
+                    >
+                        +
+                    </span>
+
+                </button>
+
+
+                <div
+                    class="home-faq-answer"
+                    id="faq-answer-5"
+                    role="region"
+                    aria-labelledby="faq-question-5"
+                    hidden
+                >
+
+                    <p>
+                        We service Adelaide CBD and surrounding areas,
+                        including Prospect, Mawson Lakes, Glenelg,
+                        Norwood, Unley, Burnside and Modbury. If you are
+                        unsure whether we cover your suburb, contact us
+                        and we can confirm service availability.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- FAQ 6 -->
+
+            <article class="home-faq-item reveal">
+
+                <button
+                    type="button"
+                    class="home-faq-question"
+                    aria-expanded="false"
+                    aria-controls="faq-answer-6"
+                    id="faq-question-6"
+                >
+
+                    <span>
+                        Can commercial cleaning be scheduled outside normal business hours?
+                    </span>
+
+                    <span
+                        class="home-faq-icon"
+                        aria-hidden="true"
+                    >
+                        +
+                    </span>
+
+                </button>
+
+
+                <div
+                    class="home-faq-answer"
+                    id="faq-answer-6"
+                    role="region"
+                    aria-labelledby="faq-question-6"
+                    hidden
+                >
+
+                    <p>
+                        For many commercial cleaning requirements,
+                        cleaning can be organised around operating hours
+                        to minimise disruption to employees, customers
+                        and visitors. Availability depends on the
+                        property and requested schedule.
+                    </p>
+
+                </div>
+
+            </article>
+
 
         </div>
 
-    </section>
+
+        <div class="home-faq-cta reveal">
+
+            <div>
+
+                <strong>
+                    Still have questions?
+                </strong>
+
+                <span>
+                    Tell us about your property and cleaning requirements.
+                </span>
+
+            </div>
+
+            <a
+                href="#quote"
+                class="btn btn-primary"
+            >
+                Get a Free Quote
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
 
 
-    <!-- =====================================================
-         QUOTE FORM
-         ===================================================== -->
+<!-- =====================================================
+     QUOTE CTA
+     ===================================================== -->
 
-    <section
-        class="quote-section"
-        id="quote"
-    >
+<section class="quote-banner">
 
-        <div class="container">
+    <div class="container">
 
-            <div class="quote-layout">
+        <div class="quote-banner-inner reveal">
+
+            <div>
+
+                <span class="section-eyebrow">
+                    Ready for a Cleaner Property?
+                </span>
+
+                <h2>
+                    Let's make cleaning
+                    <span>one less thing to worry about.</span>
+                </h2>
+
+                <p>
+                    Tell us what you need cleaned and request a free,
+                    no-obligation quote from YD Commercial Cleaning.
+                </p>
+
+            </div>
+
+            <a
+                href="#quote"
+                class="btn btn-light"
+            >
+                Request My Free Quote
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
 
 
-                <div class="quote-info reveal">
+<!-- =====================================================
+     QUOTE FORM
+     ===================================================== -->
 
-                    <span class="section-eyebrow">
-                        Get Started
-                    </span>
+<section
+    class="quote-section"
+    id="quote"
+>
 
-                    <h2>
-                        Request your
-                        <span>free cleaning quote</span>
-                    </h2>
+    <div class="container">
 
-                    <p>
-                        Give us a few details about your property and the
-                        cleaning service you need. Our team can then review
-                        your request and discuss the next steps with you.
-                    </p>
+        <div class="quote-layout">
 
 
-                    <div class="quote-contact-list">
+            <div class="quote-info reveal">
 
-                        <div class="quote-contact-item">
+                <span class="section-eyebrow">
+                    Get Started
+                </span>
 
-                            <span class="quote-contact-icon">
-                                ☎
-                            </span>
+                <h2>
+                    Request your
+                    <span>free cleaning quote</span>
+                </h2>
 
-                            <div>
+                <p>
+                    Give us a few details about your property and the
+                    cleaning service you need. Our team can then review
+                    your request and discuss the next steps with you.
+                </p>
 
-                                <span>Call us</span>
 
-                                <a href="tel:0430049865">
-                                    0430 049 865
-                                </a>
+                <div class="quote-contact-list">
 
-                            </div>
+                    <div class="quote-contact-item">
+
+                        <span class="quote-contact-icon">
+                            ☎
+                        </span>
+
+                        <div>
+
+                            <span>Call us</span>
+
+                            <a href="tel:0430049865">
+                                0430 049 865
+                            </a>
 
                         </div>
 
+                    </div>
 
-                        <div class="quote-contact-item">
 
-                            <span class="quote-contact-icon">
-                                ✉
-                            </span>
+                    <div class="quote-contact-item">
 
-                            <div>
+                        <span class="quote-contact-icon">
+                            ✉
+                        </span>
 
-                                <span>Email</span>
+                        <div>
 
-                                <a href="mailto:info@ydcleaning.com.au">
-                                    info@ydcleaning.com.au
-                                </a>
+                            <span>Email</span>
 
-                            </div>
+                            <a href="mailto:info@ydcleaning.com.au">
+                                info@ydcleaning.com.au
+                            </a>
 
                         </div>
 
+                    </div>
 
-                        <div class="quote-contact-item">
 
-                            <span class="quote-contact-icon">
-                                ✓
-                            </span>
+                    <div class="quote-contact-item">
 
-                            <div>
+                        <span class="quote-contact-icon">
+                            ✓
+                        </span>
 
-                                <span>Service</span>
+                        <div>
 
-                                <strong>
-                                    Adelaide &amp; surrounding areas
-                                </strong>
+                            <span>Service</span>
 
-                            </div>
+                            <strong>
+                                Adelaide &amp; surrounding areas
+                            </strong>
 
                         </div>
 
@@ -1805,259 +1887,45 @@
 
                 </div>
 
+            </div>
 
-                <div class="quote-form-wrapper reveal">
 
-                    {% if form.non_field_errors %}
+            <div class="quote-form-wrapper reveal">
 
-                        <div class="form-alert">
-                            {{ form.non_field_errors }}
-                        </div>
+                {% if form.non_field_errors %}
 
-                    {% endif %}
+                    <div class="form-alert">
+                        {{ form.non_field_errors }}
+                    </div>
 
+                {% endif %}
 
-                    <form
-                        method="post"
-                        enctype="multipart/form-data"
-                        action="#quote"
-                        class="quote-form"
-                        id="quoteForm"
-                    >
 
-                        {% csrf_token %}
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                    action="#quote"
+                    class="quote-form"
+                    id="quoteForm"
+                >
 
+                    {% csrf_token %}
 
-                        <div class="form-row">
 
-                            <div class="form-field">
-
-                                <label for="{{ form.name.id_for_label }}">
-                                    Full Name *
-                                </label>
-
-                                {{ form.name }}
-
-                                {% if form.name.errors %}
-
-                                    <div class="field-error">
-                                        {{ form.name.errors }}
-                                    </div>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <div class="form-field">
-
-                                <label for="{{ form.email.id_for_label }}">
-                                    Email *
-                                </label>
-
-                                {{ form.email }}
-
-                                {% if form.email.errors %}
-
-                                    <div class="field-error">
-                                        {{ form.email.errors }}
-                                    </div>
-
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="form-row">
-
-                            <div class="form-field">
-
-                                <label for="{{ form.phone.id_for_label }}">
-                                    Phone *
-                                </label>
-
-                                {{ form.phone }}
-
-                                {% if form.phone.errors %}
-
-                                    <div class="field-error">
-                                        {{ form.phone.errors }}
-                                    </div>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <div class="form-field">
-
-                                <label for="{{ form.property_type.id_for_label }}">
-                                    Property Type
-                                </label>
-
-                                {{ form.property_type }}
-
-                                {% if form.property_type.errors %}
-
-                                    <div class="field-error">
-                                        {{ form.property_type.errors }}
-                                    </div>
-
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="form-row">
-
-                            <div class="form-field">
-
-                                <label for="{{ form.suburb_postcode.id_for_label }}">
-                                    Suburb / Postcode
-                                </label>
-
-                                {{ form.suburb_postcode }}
-
-                                {% if form.suburb_postcode.errors %}
-
-                                    <div class="field-error">
-                                        {{ form.suburb_postcode.errors }}
-                                    </div>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <div class="form-field">
-
-                                <label for="{{ form.preferred_date.id_for_label }}">
-                                    Preferred Date
-                                </label>
-
-                                {{ form.preferred_date }}
-
-                                {% if form.preferred_date.errors %}
-
-                                    <div class="field-error">
-                                        {{ form.preferred_date.errors }}
-                                    </div>
-
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="form-row">
-
-                            <div class="form-field">
-
-                                <label for="{{ form.bedrooms.id_for_label }}">
-                                    Bedrooms
-                                </label>
-
-                                {{ form.bedrooms }}
-
-                            </div>
-
-
-                            <div class="form-field">
-
-                                <label for="{{ form.bathrooms.id_for_label }}">
-                                    Bathrooms
-                                </label>
-
-                                {{ form.bathrooms }}
-
-                            </div>
-
-                        </div>
-
+                    <div class="form-row">
 
                         <div class="form-field">
 
-                            <label for="{{ form.lead_source.id_for_label }}">
-                                How did you hear about us?
+                            <label for="{{ form.name.id_for_label }}">
+                                Full Name *
                             </label>
 
-                            {{ form.lead_source }}
+                            {{ form.name }}
 
-                        </div>
-
-
-                        <div class="form-field">
-
-                            <label for="{{ form.property_images.id_for_label }}">
-                                Property Images
-                            </label>
-
-                            {{ form.property_images }}
-
-                            <small>
-                                Optional — images can help us understand
-                                the property and cleaning requirements.
-                            </small>
-
-                        </div>
-
-
-                        <fieldset class="addons-fieldset">
-
-                            <legend>
-                                Optional Cleaning Add-ons
-                            </legend>
-
-
-                            <div class="addons-grid">
-
-                                <label class="addon-option">
-                                    {{ form.window_cleaning }}
-                                    <span>Window Cleaning</span>
-                                </label>
-
-                                <label class="addon-option">
-                                    {{ form.carpet_shampooing }}
-                                    <span>Carpet Shampooing</span>
-                                </label>
-
-                                <label class="addon-option">
-                                    {{ form.grout_cleaning }}
-                                    <span>Grout Cleaning</span>
-                                </label>
-
-                                <label class="addon-option">
-                                    {{ form.upholstery_cleaning }}
-                                    <span>Upholstery Cleaning</span>
-                                </label>
-
-                                <label class="addon-option">
-                                    {{ form.laundry_service }}
-                                    <span>Laundry Service</span>
-                                </label>
-
-                            </div>
-
-                        </fieldset>
-
-
-                        <div class="form-field">
-
-                            <label for="{{ form.message.id_for_label }}">
-                                Tell us about your cleaning requirements
-                            </label>
-
-                            {{ form.message }}
-
-                            {% if form.message.errors %}
+                            {% if form.name.errors %}
 
                                 <div class="field-error">
-                                    {{ form.message.errors }}
+                                    {{ form.name.errors }}
                                 </div>
 
                             {% endif %}
@@ -2065,78 +1933,292 @@
                         </div>
 
 
-                        {% if form.recaptcha_site_key %}
+                        <div class="form-field">
 
-                            <input
-                                type="hidden"
-                                name="g-recaptcha-response"
-                                id="g-recaptcha-response"
-                            >
+                            <label for="{{ form.email.id_for_label }}">
+                                Email *
+                            </label>
 
-                        {% endif %}
+                            {{ form.email }}
 
+                            {% if form.email.errors %}
 
-                        <button
-                            type="submit"
-                            class="btn btn-primary quote-submit"
-                        >
+                                <div class="field-error">
+                                    {{ form.email.errors }}
+                                </div>
 
-                            <span>
-                                Request My Free Quote
-                            </span>
-
-                            <span aria-hidden="true">
-                                →
-                            </span>
-
-                        </button>
-
-
-                        <p class="form-privacy">
-
-                            By submitting this form, you agree to our
-
-                            <a href="/privacy-policy/">
-                                Privacy Policy
-                            </a>
-
-                            and
-
-                            <a href="/terms/">
-                                Terms &amp; Conditions
-                            </a>.
-
-                        </p>
-
-
-                        <div class="form-direct-contact">
-
-                            Prefer to speak with us?
-
-                            <a href="tel:0430049865">
-                                Call 0430 049 865
-                            </a>
+                            {% endif %}
 
                         </div>
 
-                    </form>
+                    </div>
 
-                </div>
+
+                    <div class="form-row">
+
+                        <div class="form-field">
+
+                            <label for="{{ form.phone.id_for_label }}">
+                                Phone *
+                            </label>
+
+                            {{ form.phone }}
+
+                            {% if form.phone.errors %}
+
+                                <div class="field-error">
+                                    {{ form.phone.errors }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-field">
+
+                            <label for="{{ form.property_type.id_for_label }}">
+                                Property Type
+                            </label>
+
+                            {{ form.property_type }}
+
+                            {% if form.property_type.errors %}
+
+                                <div class="field-error">
+                                    {{ form.property_type.errors }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-field">
+
+                            <label for="{{ form.suburb_postcode.id_for_label }}">
+                                Suburb / Postcode
+                            </label>
+
+                            {{ form.suburb_postcode }}
+
+                            {% if form.suburb_postcode.errors %}
+
+                                <div class="field-error">
+                                    {{ form.suburb_postcode.errors }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-field">
+
+                            <label for="{{ form.preferred_date.id_for_label }}">
+                                Preferred Date
+                            </label>
+
+                            {{ form.preferred_date }}
+
+                            {% if form.preferred_date.errors %}
+
+                                <div class="field-error">
+                                    {{ form.preferred_date.errors }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-field">
+
+                            <label for="{{ form.bedrooms.id_for_label }}">
+                                Bedrooms
+                            </label>
+
+                            {{ form.bedrooms }}
+
+                        </div>
+
+
+                        <div class="form-field">
+
+                            <label for="{{ form.bathrooms.id_for_label }}">
+                                Bathrooms
+                            </label>
+
+                            {{ form.bathrooms }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="{{ form.lead_source.id_for_label }}">
+                            How did you hear about us?
+                        </label>
+
+                        {{ form.lead_source }}
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label for="{{ form.property_images.id_for_label }}">
+                            Property Images
+                        </label>
+
+                        {{ form.property_images }}
+
+                        <small>
+                            Optional — images can help us understand
+                            the property and cleaning requirements.
+                        </small>
+
+                    </div>
+
+
+                    <fieldset class="addons-fieldset">
+
+                        <legend>
+                            Optional Cleaning Add-ons
+                        </legend>
+
+
+                        <div class="addons-grid">
+
+                            <label class="addon-option">
+                                {{ form.window_cleaning }}
+                                <span>Window Cleaning</span>
+                            </label>
+
+                            <label class="addon-option">
+                                {{ form.carpet_shampooing }}
+                                <span>Carpet Shampooing</span>
+                            </label>
+
+                            <label class="addon-option">
+                                {{ form.grout_cleaning }}
+                                <span>Grout Cleaning</span>
+                            </label>
+
+                            <label class="addon-option">
+                                {{ form.upholstery_cleaning }}
+                                <span>Upholstery Cleaning</span>
+                            </label>
+
+                            <label class="addon-option">
+                                {{ form.laundry_service }}
+                                <span>Laundry Service</span>
+                            </label>
+
+                        </div>
+
+                    </fieldset>
+
+
+                    <div class="form-field">
+
+                        <label for="{{ form.message.id_for_label }}">
+                            Tell us about your cleaning requirements
+                        </label>
+
+                        {{ form.message }}
+
+                        {% if form.message.errors %}
+
+                            <div class="field-error">
+                                {{ form.message.errors }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    {% if form.recaptcha_site_key %}
+
+                        <input
+                            type="hidden"
+                            name="g-recaptcha-response"
+                            id="g-recaptcha-response"
+                        >
+
+                    {% endif %}
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary quote-submit"
+                    >
+
+                        <span>
+                            Request My Free Quote
+                        </span>
+
+                        <span aria-hidden="true">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    <p class="form-privacy">
+
+                        By submitting this form, you agree to our
+
+                        <a href="/privacy-policy/">
+                            Privacy Policy
+                        </a>
+
+                        and
+
+                        <a href="/terms/">
+                            Terms &amp; Conditions
+                        </a>.
+
+                    </p>
+
+
+                    <div class="form-direct-contact">
+
+                        Prefer to speak with us?
+
+                        <a href="tel:0430049865">
+                            Call 0430 049 865
+                        </a>
+
+                    </div>
+
+                </form>
 
             </div>
 
         </div>
 
-    </section>
+    </div>
+
+</section>
 
 
 </main>
 
 {% endblock content %}
 
-
 {% block extra_js %}
-
 
 <!-- =========================================================
      FAQ ACCORDION
@@ -2323,7 +2405,6 @@
 })();
 </script>
 
-
 {% if form.recaptcha_site_key %}
 
 <script>
@@ -2482,11 +2563,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {% endif %}
 
-
 <script
     src="{% static 'js/pages/home-page.js' %}"
     defer
 ></script>
-
 
 {% endblock extra_js %}

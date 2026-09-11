@@ -37,8 +37,8 @@ from bookings.forms import BookingForm
 from bookings.models import Booking
 from bookings.services import create_booking
 from contracts.models import CleaningContract
-from customers.forms import CustomerForm
-from customers.models import Customer
+from customers.forms import CustomerForm, MarketingSignupForm
+from customers.models import Customer, MarketingSubscriber
 from dashboard.models import CampaignLog, CleaningSupply, Equipment, Vehicle, CareerApplication
 from employees.forms import EmployeeForm
 from employees.models import Employee
@@ -72,7 +72,12 @@ from django.db.models import Count
 from django.utils import timezone
 
 # Company settings form
-from .forms import CompanySettingsForm
+from .forms import (
+    CampaignLogForm,
+    CompanySettingsForm,
+    MarketingSubscriberForm,
+)
+
 from .models import (
     ActivityLog,
     CompanySettings,
@@ -2862,8 +2867,333 @@ def employee_bonuses(request):
 
 
 @login_required
-def campaign_center(request):
+def dashboard_newsletter_subscribe(request):
+    if request.method != "POST":
+        return redirect("campaign_center")
 
+    form = MarketingSignupForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(
+            request,
+            "Please enter a valid email address and confirm newsletter consent.",
+        )
+        return redirect("campaign_center")
+
+    email = form.cleaned_data["email"]
+
+    subscriber, created = MarketingSubscriber.objects.get_or_create(
+        email=email,
+        defaults={
+            "consent_given": True,
+            "consented_at": timezone.now(),
+            "source": "dashboard_newsletter",
+            "is_active": True,
+        },
+    )
+
+    if not created:
+        subscriber.consent_given = True
+        subscriber.consented_at = timezone.now()
+        subscriber.is_active = True
+        subscriber.save(
+            update_fields=[
+                "consent_given",
+                "consented_at",
+                "is_active",
+                "updated_at",
+            ]
+        )
+
+    customer_subject = "Welcome to YD Commercial Cleaning Services"
+
+    customer_message = f"""Hello,
+
+Thank you for subscribing to the YD Commercial Cleaning Services newsletter.
+
+You will now receive our latest cleaning offers, updates and promotions.
+
+Thank you,
+YD Commercial Cleaning Services
+"""
+
+    company_subject = "New Newsletter Subscriber"
+
+    company_message = f"""A new newsletter subscriber has been added.
+
+Email: {email}
+Source: Dashboard Newsletter
+Status: Active
+"""
+
+    try:
+        send_mail(
+            customer_subject,
+            customer_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+
+        EmailLog.objects.create(
+            sent_by=request.user,
+            email_type="system",
+            recipient_name="Newsletter Subscriber",
+            recipient_email=email,
+            subject=customer_subject,
+            related_object="Newsletter Subscription",
+        )
+
+        admin_email = getattr(settings, "ADMIN_EMAIL", "").strip()
+
+        if admin_email:
+            send_mail(
+                company_subject,
+                company_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [admin_email],
+                fail_silently=False,
+            )
+
+            EmailLog.objects.create(
+                sent_by=request.user,
+                email_type="system",
+                recipient_name="YD Commercial Cleaning Services",
+                recipient_email=admin_email,
+                subject=company_subject,
+                related_object="Newsletter Subscription",
+            )
+
+        create_activity_log(
+            request.user,
+            "customer",
+            "Newsletter Subscriber Added",
+            f"Newsletter subscriber added: {email}",
+        )
+
+        messages.success(
+            request,
+            f"Newsletter subscription saved and confirmation sent to {email}.",
+        )
+
+    except Exception:
+        logging.exception("Newsletter subscription email failed for %s", email)
+
+        messages.warning(
+            request,
+            f"Newsletter subscription was saved for {email}, but the email notification could not be sent.",
+        )
+
+    return redirect("campaign_center")
+
+
+@login_required
+def newsletter_subscriber_detail(request, subscriber_id):
+    subscriber = get_object_or_404(
+        MarketingSubscriber,
+        id=subscriber_id,
+    )
+
+    return render(
+        request,
+        "dashboard/marketing/newsletter_subscriber_detail.html",
+        {
+            "subscriber": subscriber,
+        },
+    )
+
+
+@login_required
+def edit_newsletter_subscriber(request, subscriber_id):
+    subscriber = get_object_or_404(
+        MarketingSubscriber,
+        id=subscriber_id,
+    )
+
+    if request.method == "POST":
+        form = MarketingSubscriberForm(
+            request.POST,
+            instance=subscriber,
+        )
+
+        if form.is_valid():
+            updated_subscriber = form.save()
+
+            create_activity_log(
+                request.user,
+                "customer",
+                "Newsletter Subscriber Updated",
+                f"Newsletter subscriber {updated_subscriber.email} was updated.",
+            )
+
+            messages.success(
+                request,
+                "✅ Newsletter subscriber updated successfully.",
+            )
+
+            return redirect("campaign_center")
+
+        messages.error(
+            request,
+            "❌ Please check the newsletter subscriber form.",
+        )
+
+    else:
+        form = MarketingSubscriberForm(instance=subscriber)
+
+    return render(
+        request,
+        "dashboard/marketing/newsletter_subscriber_form.html",
+        {
+            "form": form,
+            "subscriber": subscriber,
+            "page_title": "Edit Newsletter Subscriber",
+            "button_text": "Update Subscriber",
+        },
+    )
+
+
+@login_required
+def delete_newsletter_subscriber(request, subscriber_id):
+    subscriber = get_object_or_404(
+        MarketingSubscriber,
+        id=subscriber_id,
+    )
+
+    subscriber_email = subscriber.email
+
+    if request.method == "POST":
+        subscriber.delete()
+
+        create_activity_log(
+            request.user,
+            "customer",
+            "Newsletter Subscriber Deleted",
+            f"Newsletter subscriber {subscriber_email} was removed.",
+        )
+
+        messages.success(
+            request,
+            "✅ Newsletter subscriber deleted successfully.",
+        )
+
+        return redirect("campaign_center")
+
+    return render(
+        request,
+        "shared/confirm_delete.html",
+        {
+            "object_name": subscriber_email,
+            "cancel_url": "/dashboard/campaigns/",
+        },
+    )
+
+
+@login_required
+def campaign_history_detail(request, campaign_id):
+    campaign = get_object_or_404(
+        CampaignLog,
+        id=campaign_id,
+    )
+
+    return render(
+        request,
+        "dashboard/marketing/campaign_history_detail.html",
+        {
+            "campaign": campaign,
+        },
+    )
+
+
+@login_required
+def edit_campaign_history(request, campaign_id):
+    campaign = get_object_or_404(
+        CampaignLog,
+        id=campaign_id,
+    )
+
+    if request.method == "POST":
+        form = CampaignLogForm(
+            request.POST,
+            instance=campaign,
+        )
+
+        if form.is_valid():
+            updated_campaign = form.save()
+
+            create_activity_log(
+                request.user,
+                "campaign",
+                "Campaign History Updated",
+                f"Campaign history '{updated_campaign.title}' was updated.",
+            )
+
+            messages.success(
+                request,
+                "✅ Campaign history updated successfully.",
+            )
+
+            return redirect("campaign_center")
+
+        messages.error(
+            request,
+            "❌ Please check the campaign form.",
+        )
+
+    else:
+        form = CampaignLogForm(instance=campaign)
+
+    return render(
+        request,
+        "dashboard/marketing/campaign_history_form.html",
+        {
+            "form": form,
+            "campaign": campaign,
+            "page_title": "Edit Campaign History",
+            "button_text": "Update Campaign",
+        },
+    )
+
+
+@login_required
+def delete_campaign_history(request, campaign_id):
+    campaign = get_object_or_404(
+        CampaignLog,
+        id=campaign_id,
+    )
+
+    campaign_title = campaign.title
+
+    if request.method == "POST":
+        campaign.delete()
+
+        create_activity_log(
+            request.user,
+            "campaign",
+            "Campaign History Deleted",
+            f"Campaign history '{campaign_title}' was removed.",
+        )
+
+        messages.success(
+            request,
+            "✅ Campaign history deleted successfully.",
+        )
+
+        return redirect("campaign_center")
+
+    return render(
+        request,
+        "shared/confirm_delete.html",
+        {
+            "object_name": campaign_title,
+            "cancel_url": "/dashboard/campaigns/",
+        },
+    )
+
+
+
+@login_required
+def campaign_center(request):
     vip_customers = Customer.objects.filter(total_revenue__gte=1000)
 
     inactive_customers = Customer.objects.annotate(
@@ -2876,6 +3206,15 @@ def campaign_center(request):
 
     campaign_history = CampaignLog.objects.all()[:20]
 
+    newsletter_subscribers = MarketingSubscriber.objects.all()
+
+    newsletter_subscriber_count = newsletter_subscribers.count()
+
+    active_newsletter_subscriber_count = newsletter_subscribers.filter(
+        is_active=True,
+        consent_given=True,
+    ).count()
+
     return render(
         request,
         "dashboard/marketing/campaign_center.html",
@@ -2885,9 +3224,11 @@ def campaign_center(request):
             "review_count": review_opportunities.count(),
             "campaigns_sent": campaigns_sent,
             "campaign_history": campaign_history,
+            "newsletter_subscribers": newsletter_subscribers,
+            "newsletter_subscriber_count": newsletter_subscriber_count,
+            "active_newsletter_subscriber_count": active_newsletter_subscriber_count,
         },
     )
-
 
 @login_required
 def send_vip_campaign(request):

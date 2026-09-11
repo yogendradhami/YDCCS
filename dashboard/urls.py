@@ -119,6 +119,13 @@ from .views import (
     vip_campaigns,
     faq_question_list,
     faq_question_reply,
+    dashboard_newsletter_subscribe,
+    newsletter_subscriber_detail,
+    edit_newsletter_subscriber,
+    delete_newsletter_subscriber,
+    campaign_history_detail,
+    edit_campaign_history,
+    delete_campaign_history,
 )
 
 urlpatterns = [
@@ -267,6 +274,27 @@ urlpatterns = [
     path("dashboard/campaigns/", campaign_center, name="campaign_center"),
     path("dashboard/campaigns/send-vip/", send_vip_campaign, name="send_vip_campaign"),
     path(
+        "dashboard/newsletter/subscribe/",
+        dashboard_newsletter_subscribe,
+        name="dashboard_newsletter_subscribe",
+    ),
+
+    path(
+        "dashboard/newsletter/<int:subscriber_id>/",
+        newsletter_subscriber_detail,
+        name="newsletter_subscriber_detail",
+    ),
+    path(
+        "dashboard/newsletter/<int:subscriber_id>/edit/",
+        edit_newsletter_subscriber,
+        name="edit_newsletter_subscriber",
+    ),
+    path(
+        "dashboard/newsletter/<int:subscriber_id>/delete/",
+        delete_newsletter_subscriber,
+        name="delete_newsletter_subscriber",
+    ),
+    path(
         "dashboard/campaigns/send-inactive/",
         send_inactive_campaign,
         name="send_inactive_campaign",
@@ -285,6 +313,22 @@ urlpatterns = [
         "dashboard/campaign-performance/",
         campaign_performance,
         name="campaign_performance",
+    ),
+
+    path(
+        "dashboard/campaigns/history/<int:campaign_id>/",
+        campaign_history_detail,
+        name="campaign_history_detail",
+    ),
+    path(
+        "dashboard/campaigns/history/<int:campaign_id>/edit/",
+        edit_campaign_history,
+        name="edit_campaign_history",
+    ),
+    path(
+        "dashboard/campaigns/history/<int:campaign_id>/delete/",
+        delete_campaign_history,
+        name="delete_campaign_history",
     ),
     path("dashboard/profit-loss/", profit_loss_dashboard, name="profit_loss_dashboard"),
     path("dashboard/business-kpis/", business_kpis, name="business_kpis"),

@@ -68,7 +68,11 @@ from notifications.models import Notification
 from .models import TestimonialVideo
 from .why_choose_data import WHY_CHOOSE_PAGE_CONFIG
 from .service_faq_data import get_service_faqs
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 
+from customers.forms import MarketingSignupForm
+from customers.models import MarketingSubscriber
 
 logger = logging.getLogger(__name__)
 
@@ -324,6 +328,7 @@ def home(request):
         "home.html",
         {
             "form": form,
+            "marketing_form": MarketingSignupForm(),
             "gallery_items": gallery_items,
             "services": featured_services,
             "reviews": featured_reviews,
@@ -2166,3 +2171,111 @@ def cleaning_services_video(request):
         request,
         "videos/cleaning_services_adelaide.html"
     )
+
+
+@require_POST
+def marketing_signup(request):
+    form = MarketingSignupForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(
+            request,
+            "Please enter a valid email address and confirm that you agree to receive promotional emails.",
+        )
+        return redirect("/#newsletter-signup")
+
+    email = form.cleaned_data["email"]
+
+    subscriber, created = MarketingSubscriber.objects.get_or_create(
+        email=email,
+        defaults={
+            "consent_given": True,
+            "consented_at": timezone.now(),
+            "source": "homepage_clean20",
+            "is_active": True,
+        },
+    )
+
+    if not created:
+        subscriber.consent_given = True
+        subscriber.consented_at = timezone.now()
+        subscriber.is_active = True
+        subscriber.save(
+            update_fields=[
+                "consent_given",
+                "consented_at",
+                "is_active",
+                "updated_at",
+            ]
+        )
+
+    customer_subject = "Welcome to YD Commercial Cleaning Services"
+
+    customer_message = f"""Hello,
+
+Thank you for subscribing to the YD Commercial Cleaning Services mailing list.
+
+You are now subscribed to receive our latest cleaning offers, helpful tips, updates and promotions.
+
+As a new subscriber, you are also eligible for our 20% off your first cleaning promotion.
+
+Thank you,
+YD Commercial Cleaning Services
+"""
+
+    company_subject = "New Newsletter Subscriber"
+
+    company_message = f"""A new newsletter subscriber has joined through the YD Commercial Cleaning website.
+
+Email: {email}
+Source: Homepage CLEAN20 Newsletter
+Status: Active
+"""
+
+    email_error = False
+
+    try:
+        send_mail(
+            customer_subject,
+            customer_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+    except Exception:
+        email_error = True
+        logging.exception(
+            "Homepage newsletter customer email failed for %s",
+            email,
+        )
+
+    admin_email = getattr(settings, "ADMIN_EMAIL", "").strip()
+
+    if admin_email:
+        try:
+            send_mail(
+                company_subject,
+                company_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [admin_email],
+                fail_silently=False,
+            )
+        except Exception:
+            email_error = True
+            logging.exception(
+                "Homepage newsletter company notification failed for %s",
+                email,
+            )
+
+    if email_error:
+        messages.warning(
+            request,
+            "You are subscribed successfully, but one or more email notifications could not be sent.",
+        )
+    else:
+        messages.success(
+            request,
+            "Thanks! You’re now subscribed to YD Commercial Cleaning Services. Your confirmation email has been sent.",
+        )
+
+    return redirect("/#newsletter-signup")

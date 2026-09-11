@@ -1,0 +1,100 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Campaign History
+{% endblock %}
+
+{% block page_title %}
+Campaign History
+{% endblock %}
+
+{% block page_subtitle %}
+View campaign history details.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <div>
+            <h2>Campaign Details</h2>
+            <p style="margin:6px 0 0;">
+                Historical campaign information.
+            </p>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+            <a
+                href="{% url 'edit_campaign_history' campaign.id %}"
+                class="small-link-btn"
+            >
+                Edit
+            </a>
+
+            <a
+                href="{% url 'delete_campaign_history' campaign.id %}"
+                class="small-link-btn"
+            >
+                Delete
+            </a>
+
+            <a
+                href="{% url 'campaign_center' %}"
+                class="small-link-btn"
+            >
+                Back to Campaign Center
+            </a>
+
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <tbody>
+
+                <tr>
+                    <th>Campaign</th>
+                    <td>{{ campaign.title }}</td>
+                </tr>
+
+                <tr>
+                    <th>Campaign Type</th>
+                    <td>{{ campaign.get_campaign_type_display }}</td>
+                </tr>
+
+                <tr>
+                    <th>Recipients</th>
+                    <td>{{ campaign.recipients_count }}</td>
+                </tr>
+
+                <tr>
+                    <th>Sent By</th>
+                    <td>
+                        {% if campaign.sent_by %}
+                            {{ campaign.sent_by.username }}
+                        {% else %}
+                            System
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Sent At</th>
+                    <td>
+                        {{ campaign.sent_at|date:"d M Y H:i" }}
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

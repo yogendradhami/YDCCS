@@ -34,3 +34,29 @@ class CustomerForm(forms.ModelForm):
                 attrs={"class": "form-control", "step": "0.01"}
             ),
         }
+
+
+class MarketingSignupForm(forms.Form):
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter your email address",
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+    consent = forms.BooleanField(
+        required=True,
+        label="I agree to receive promotional emails from YD Commercial Cleaning Services.",
+        widget=forms.CheckboxInput(
+            attrs={
+                "class": "newsletter-consent-checkbox",
+            }
+        ),
+    )
+
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()

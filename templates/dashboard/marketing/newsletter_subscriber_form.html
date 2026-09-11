@@ -1,0 +1,94 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+{{ page_title }}
+{% endblock %}
+
+{% block page_title %}
+{{ page_title }}
+{% endblock %}
+
+{% block page_subtitle %}
+Update newsletter subscriber information.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <div>
+            <h2>{{ page_title }}</h2>
+            <p style="margin:6px 0 0;">
+                Update the subscriber details below.
+            </p>
+        </div>
+    </div>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div style="margin-bottom:20px;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+
+            <div style="margin-bottom:18px;">
+
+                <label
+                    for="{{ field.id_for_label }}"
+                    style="
+                        display:block;
+                        margin-bottom:7px;
+                        font-weight:600;
+                    "
+                >
+                    {{ field.label }}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+                    <small style="display:block;margin-top:5px;opacity:.7;">
+                        {{ field.help_text }}
+                    </small>
+                {% endif %}
+
+                {% if field.errors %}
+                    <div style="margin-top:5px;">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+            <button
+                type="submit"
+                class="small-link-btn"
+                style="border:0;cursor:pointer;"
+            >
+                {{ button_text }}
+            </button>
+
+            <a
+                href="{% url 'newsletter_subscriber_detail' subscriber.id %}"
+                class="small-link-btn"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

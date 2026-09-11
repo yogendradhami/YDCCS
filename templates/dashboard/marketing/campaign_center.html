@@ -14,6 +14,10 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
 {% block content %}
 
+<!-- ===================================================== -->
+<!-- Marketing Summary -->
+<!-- ===================================================== -->
+
 <div class="crm-summary-grid">
 
     <div class="crm-card">
@@ -41,10 +45,6 @@ Marketing campaigns for YD Commercial Cleaning Services.
     </div>
 
 </div>
-
-<!-- ===================================================== -->
-<!-- Campaign Actions -->
-<!-- ===================================================== -->
 
 <!-- ===================================================== -->
 <!-- Campaign Actions -->
@@ -84,6 +84,374 @@ Marketing campaigns for YD Commercial Cleaning Services.
 </section>
 
 <!-- ===================================================== -->
+<!-- Newsletter Management -->
+<!-- ===================================================== -->
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+
+        <div>
+            <h2>Newsletter Management</h2>
+
+            <p style="margin:6px 0 0;">
+                Manage newsletter subscribers and add customers directly
+                from the dashboard.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Newsletter Statistics -->
+
+    <div
+        style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+            gap:15px;
+            margin:20px 0;
+        "
+    >
+
+        <div
+            style="
+                padding:18px;
+                border:1px solid #e5e7eb;
+                border-radius:10px;
+                background:#f8fafc;
+            "
+        >
+
+            <span style="display:block;font-size:13px;opacity:.7;">
+                Total Subscribers
+            </span>
+
+            <strong
+                style="
+                    display:block;
+                    font-size:28px;
+                    margin-top:5px;
+                "
+            >
+                {{ newsletter_subscriber_count }}
+            </strong>
+
+        </div>
+
+        <div
+            style="
+                padding:18px;
+                border:1px solid #e5e7eb;
+                border-radius:10px;
+                background:#f8fafc;
+            "
+        >
+
+            <span style="display:block;font-size:13px;opacity:.7;">
+                Active Subscribers
+            </span>
+
+            <strong
+                style="
+                    display:block;
+                    font-size:28px;
+                    margin-top:5px;
+                "
+            >
+                {{ active_newsletter_subscriber_count }}
+            </strong>
+
+        </div>
+
+    </div>
+
+    <!-- Add Newsletter Subscriber -->
+
+    <div
+        style="
+            margin-top:20px;
+            padding:22px;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            background:#ffffff;
+        "
+    >
+
+        <h3 style="margin-top:0;">
+            Add Newsletter Subscriber
+        </h3>
+
+        <p style="margin-bottom:20px;">
+            Add a customer to the YD Commercial Cleaning Services newsletter.
+            The customer will receive a confirmation email and the company
+            will receive a notification.
+        </p>
+
+        <form
+            method="post"
+            action="{% url 'dashboard_newsletter_subscribe' %}"
+        >
+
+            {% csrf_token %}
+
+            <div
+                style="
+                    display:grid;
+                    grid-template-columns:minmax(250px,1fr) auto;
+                    gap:15px;
+                    align-items:end;
+                "
+            >
+
+                <div>
+
+                    <label
+                        for="newsletter-email"
+                        style="
+                            display:block;
+                            margin-bottom:7px;
+                            font-weight:600;
+                        "
+                    >
+                        Email address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="newsletter-email"
+                        name="email"
+                        placeholder="customer@example.com"
+                        autocomplete="email"
+                        required
+                        style="
+                            width:100%;
+                            box-sizing:border-box;
+                            padding:12px 14px;
+                            border:1px solid #d1d5db;
+                            border-radius:8px;
+                            font-size:15px;
+                        "
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="small-link-btn"
+                    style="
+                        border:0;
+                        cursor:pointer;
+                        padding:12px 20px;
+                    "
+                >
+                    Subscribe Customer
+                </button>
+
+            </div>
+
+            <label
+                style="
+                    display:flex;
+                    gap:9px;
+                    align-items:flex-start;
+                    margin-top:15px;
+                    font-size:14px;
+                    line-height:1.5;
+                "
+            >
+
+                <input
+                    type="checkbox"
+                    name="consent"
+                    required
+                    style="margin-top:4px;"
+                >
+
+                <span>
+                    I agree to receive promotional emails from
+                    YD Commercial Cleaning Services.
+                </span>
+
+            </label>
+
+            <p
+                style="
+                    margin:12px 0 0;
+                    font-size:13px;
+                    opacity:.7;
+                "
+            >
+                Subscribers can join from the public website or directly
+                through this dashboard.
+            </p>
+
+        </form>
+
+    </div>
+
+</section>
+
+<!-- ===================================================== -->
+<!-- Newsletter Subscribers -->
+<!-- ===================================================== -->
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+
+        <div>
+            <h2>Newsletter Subscribers</h2>
+
+            <p style="margin:6px 0 0;">
+                All customers currently recorded in the marketing newsletter.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <thead>
+
+                <tr>
+                    <th>Email</th>
+                    <th>Source</th>
+                    <th>Consent</th>
+                    <th>Status</th>
+                    <th>Subscribed</th>
+                    <th>Actions</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for subscriber in newsletter_subscribers %}
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                {{ subscriber.email }}
+                            </strong>
+                        </td>
+
+                        <td>
+
+                            {% if subscriber.source == "homepage_clean20" %}
+
+                                <span>
+                                    Homepage
+                                </span>
+
+                            {% elif subscriber.source == "dashboard_newsletter" %}
+
+                                <span>
+                                    Dashboard
+                                </span>
+
+                            {% else %}
+
+                                <span>
+                                    {{ subscriber.source|default:"Unknown" }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if subscriber.consent_given %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if subscriber.is_active and subscriber.consent_given %}
+
+                                <span>
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span>
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ subscriber.created_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+
+                            <div
+                                style="
+                                    display:flex;
+                                    gap:8px;
+                                    flex-wrap:wrap;
+                                "
+                            >
+
+                                <a
+                                    href="{% url 'newsletter_subscriber_detail' subscriber.id %}"
+                                    class="small-link-btn"
+                                >
+                                    View
+                                </a>
+
+                                <a
+                                    href="{% url 'edit_newsletter_subscriber' subscriber.id %}"
+                                    class="small-link-btn"
+                                >
+                                    Edit
+                                </a>
+
+                                <a
+                                    href="{% url 'delete_newsletter_subscriber' subscriber.id %}"
+                                    class="small-link-btn"
+                                >
+                                    Delete
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="6">
+                            No newsletter subscribers yet.
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<!-- ===================================================== -->
 <!-- Campaign History -->
 <!-- ===================================================== -->
 
@@ -98,12 +466,15 @@ Marketing campaigns for YD Commercial Cleaning Services.
         <table class="dashboard-table advanced-table">
 
             <thead>
+
                 <tr>
                     <th>Date</th>
                     <th>Campaign</th>
                     <th>Recipients</th>
                     <th>Sent By</th>
+                    <th>Actions</th>
                 </tr>
+
             </thead>
 
             <tbody>
@@ -134,14 +505,51 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
                         </td>
 
+                        <td>
+
+                            <div
+                                style="
+                                    display:flex;
+                                    gap:8px;
+                                    flex-wrap:wrap;
+                                "
+                            >
+
+                                <a
+                                    href="{% url 'campaign_history_detail' campaign.id %}"
+                                    class="small-link-btn"
+                                >
+                                    View
+                                </a>
+
+                                <a
+                                    href="{% url 'edit_campaign_history' campaign.id %}"
+                                    class="small-link-btn"
+                                >
+                                    Edit
+                                </a>
+
+                                <a
+                                    href="{% url 'delete_campaign_history' campaign.id %}"
+                                    class="small-link-btn"
+                                >
+                                    Delete
+                                </a>
+
+                            </div>
+
+                        </td>
+
                     </tr>
 
                 {% empty %}
 
                     <tr>
-                        <td colspan="4">
+
+                        <td colspan="5">
                             No campaigns sent yet.
                         </td>
+
                     </tr>
 
                 {% endfor %}

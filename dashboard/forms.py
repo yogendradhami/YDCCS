@@ -6,8 +6,9 @@
 # ==========================================================
 
 from django import forms
-
+from customers.models import MarketingSubscriber
 from .models import (
+    CampaignLog,
     CleaningSupply,
     CompanySettings,
     Equipment,
@@ -16,6 +17,8 @@ from .models import (
     Supplier,
     Vehicle,
 )
+
+
 
 
 class CompanySettingsForm(forms.ModelForm):
@@ -200,3 +203,69 @@ class MaintenanceHistoryForm(forms.ModelForm):
     class Meta:
         model = MaintenanceHistory
         fields = "__all__"
+
+
+class MarketingSubscriberForm(forms.ModelForm):
+    class Meta:
+        model = MarketingSubscriber
+
+        fields = [
+            "email",
+            "consent_given",
+            "source",
+            "is_active",
+        ]
+
+        widgets = {
+            "email": forms.EmailInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "customer@example.com",
+                }
+            ),
+            "consent_given": forms.CheckboxInput(
+                attrs={
+                    "class": "form-check-input",
+                }
+            ),
+            "source": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "is_active": forms.CheckboxInput(
+                attrs={
+                    "class": "form-check-input",
+                }
+            ),
+        }
+
+
+class CampaignLogForm(forms.ModelForm):
+    class Meta:
+        model = CampaignLog
+
+        fields = [
+            "campaign_type",
+            "title",
+            "recipients_count",
+        ]
+
+        widgets = {
+            "campaign_type": forms.Select(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "recipients_count": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0",
+                }
+            ),
+        }

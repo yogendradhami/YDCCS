@@ -1,0 +1,122 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Newsletter Subscriber
+{% endblock %}
+
+{% block page_title %}
+Newsletter Subscriber
+{% endblock %}
+
+{% block page_subtitle %}
+View newsletter subscriber details.
+{% endblock %}
+
+{% block content %}
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+        <div>
+            <h2>Subscriber Details</h2>
+            <p style="margin:6px 0 0;">
+                Newsletter subscriber information.
+            </p>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a
+                href="{% url 'edit_newsletter_subscriber' subscriber.id %}"
+                class="small-link-btn"
+            >
+                Edit
+            </a>
+
+            <a
+                href="{% url 'delete_newsletter_subscriber' subscriber.id %}"
+                class="small-link-btn"
+            >
+                Delete
+            </a>
+
+            <a
+                href="{% url 'campaign_center' %}"
+                class="small-link-btn"
+            >
+                Back to Campaign Center
+            </a>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table class="dashboard-table advanced-table">
+
+            <tbody>
+
+                <tr>
+                    <th>Email</th>
+                    <td>{{ subscriber.email }}</td>
+                </tr>
+
+                <tr>
+                    <th>Source</th>
+                    <td>{{ subscriber.source|default:"Unknown" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Consent</th>
+                    <td>
+                        {% if subscriber.consent_given %}
+                            Yes
+                        {% else %}
+                            No
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Consent Date</th>
+                    <td>
+                        {% if subscriber.consented_at %}
+                            {{ subscriber.consented_at|date:"d M Y H:i" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        {% if subscriber.is_active and subscriber.consent_given %}
+                            Active
+                        {% else %}
+                            Inactive
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Subscribed</th>
+                    <td>
+                        {{ subscriber.created_at|date:"d M Y H:i" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Last Updated</th>
+                    <td>
+                        {{ subscriber.updated_at|date:"d M Y H:i" }}
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}
