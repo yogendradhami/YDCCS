@@ -771,3 +771,522 @@
     }
 
 }
+
+
+/* =========================================================
+   YD PREMIUM CONTACT REDESIGN
+   Visual-only layer — existing markup/backend preserved.
+   ========================================================= */
+
+.yd-contact-page {
+    --yd-blue: #174b3d;
+    --yd-blue-dark: #0d332a;
+    --yd-navy: #14211d;
+    --yd-navy-light: #1c3f35;
+    --yd-text: #25332e;
+    --yd-muted: #65726d;
+    --yd-border: #dfe5e1;
+    --yd-light: #f5f3ee;
+    --yd-white: #ffffff;
+    --yd-gold: #b79555;
+    --yd-cream: #f5f3ee;
+
+    color: var(--yd-text);
+    background: #fff;
+}
+
+/* HERO */
+.yd-contact-page .yd-contact-hero,
+.yd-contact-page .contact-hero {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    background:
+        radial-gradient(circle at 82% 20%, rgba(183,149,85,.18), transparent 28%),
+        radial-gradient(circle at 8% 90%, rgba(255,255,255,.045), transparent 28%),
+        linear-gradient(135deg, #0b2c24 0%, #123f33 55%, #174b3d 100%);
+    padding: 108px 0 100px;
+}
+
+.yd-contact-page .yd-contact-hero::after,
+.yd-contact-page .contact-hero::after {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    right: -230px;
+    top: -250px;
+    border: 1px solid rgba(183,149,85,.22);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 70px rgba(183,149,85,.035),
+        0 0 0 140px rgba(183,149,85,.02);
+    pointer-events: none;
+}
+
+.yd-contact-page .yd-contact-hero .container,
+.yd-contact-page .contact-hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+.yd-contact-page .yd-contact-hero-content,
+.yd-contact-page .contact-hero-content {
+    max-width: 820px;
+}
+
+.yd-contact-page .yd-contact-eyebrow,
+.yd-contact-page .contact-eyebrow,
+.yd-contact-page .section-kicker {
+    color: var(--yd-gold);
+    letter-spacing: .16em;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.yd-contact-page .yd-contact-hero h1,
+.yd-contact-page .contact-hero h1 {
+    max-width: 820px;
+    margin: 0 0 22px;
+    color: #fff;
+    font-size: clamp(44px, 6.5vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -.045em;
+    font-weight: 800;
+}
+
+.yd-contact-page .yd-contact-hero h1 span,
+.yd-contact-page .contact-hero h1 span {
+    color: #d8c08c;
+}
+
+.yd-contact-page .yd-contact-hero-content > p,
+.yd-contact-page .contact-hero-content > p {
+    max-width: 700px;
+    color: rgba(255,255,255,.76);
+    font-size: 18px;
+    line-height: 1.75;
+}
+
+.yd-contact-page .yd-contact-hero-actions,
+.yd-contact-page .hero-actions {
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.yd-contact-page .yd-contact-primary-btn,
+.yd-contact-page .contact-primary-btn,
+.yd-contact-page .yd-contact-quote-btn,
+.yd-contact-page .yd-contact-final-primary,
+.yd-contact-page .final-primary-btn {
+    min-height: 52px;
+    padding: 0 24px;
+    border: 1px solid var(--yd-gold);
+    border-radius: 4px;
+    color: #14211d !important;
+    background: #d5bd87;
+    box-shadow: none;
+    font-weight: 800;
+}
+
+.yd-contact-page .yd-contact-primary-btn:hover,
+.yd-contact-page .contact-primary-btn:hover,
+.yd-contact-page .yd-contact-quote-btn:hover,
+.yd-contact-page .yd-contact-final-primary:hover,
+.yd-contact-page .final-primary-btn:hover {
+    color: #fff !important;
+    background: var(--yd-green-dark, #0d332a);
+    border-color: #d5bd87;
+    transform: translateY(-2px);
+}
+
+.yd-contact-page .yd-contact-secondary-btn,
+.yd-contact-page .contact-phone-btn,
+.yd-contact-page .yd-contact-final-secondary,
+.yd-contact-page .final-phone-btn {
+    min-height: 52px;
+    padding: 0 22px;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 4px;
+    color: #fff !important;
+    background: rgba(255,255,255,.045);
+}
+
+.yd-contact-page .yd-contact-secondary-btn:hover,
+.yd-contact-page .contact-phone-btn:hover,
+.yd-contact-page .yd-contact-final-secondary:hover,
+.yd-contact-page .final-phone-btn:hover {
+    border-color: var(--yd-gold);
+    color: #fff !important;
+    background: rgba(183,149,85,.08);
+    transform: translateY(-2px);
+}
+
+.yd-contact-page .hero-trust,
+.yd-contact-page .yd-contact-trust {
+    margin-top: 28px;
+    gap: 26px;
+    color: rgba(255,255,255,.74);
+}
+
+.yd-contact-page .hero-trust span,
+.yd-contact-page .yd-contact-trust span {
+    color: #fff;
+}
+
+/* Hero visual card */
+.yd-contact-page .hero-card-main,
+.yd-contact-page .hero-floating-card {
+    border-color: rgba(183,149,85,.28);
+    background: rgba(7,31,25,.72);
+    box-shadow: 0 28px 80px rgba(0,0,0,.18);
+    backdrop-filter: blur(10px);
+}
+
+.yd-contact-page .hero-card-main {
+    border-radius: 4px;
+}
+
+.yd-contact-page .hero-card-icon {
+    color: var(--yd-gold);
+    background: rgba(183,149,85,.1);
+}
+
+/* MAIN */
+.yd-contact-page .yd-contact-main-section,
+.yd-contact-page .contact-form-section {
+    padding: 96px 0;
+    background: var(--yd-cream);
+}
+
+.yd-contact-page .yd-contact-main-grid,
+.yd-contact-page .contact-form-layout {
+    gap: 34px;
+}
+
+/* Quick cards */
+.yd-contact-page .yd-contact-quick-card {
+    border-radius: 4px;
+    border-color: var(--yd-border);
+    box-shadow: 0 14px 35px rgba(20,33,29,.055);
+}
+
+.yd-contact-page .yd-contact-quick-card:hover {
+    border-color: rgba(183,149,85,.45);
+}
+
+.yd-contact-page .yd-contact-quick-icon,
+.yd-contact-page .yd-contact-heading-icon,
+.yd-contact-page .yd-contact-detail-icon,
+.yd-contact-page .sidebar-contact-icon,
+.yd-contact-page .benefit-icon,
+.yd-contact-page .service-link-icon {
+    background: rgba(23,75,61,.07);
+    color: var(--yd-blue);
+}
+
+/* Cards */
+.yd-contact-page .yd-contact-business-card,
+.yd-contact-page .yd-contact-connect-card,
+.yd-contact-page .contact-sidebar,
+.yd-contact-page .quote-form-card,
+.yd-contact-page .benefit-card,
+.yd-contact-page .service-link-card,
+.yd-contact-page .area-card {
+    border-radius: 4px;
+    border-color: var(--yd-border);
+    box-shadow: 0 18px 55px rgba(20,33,29,.07);
+}
+
+.yd-contact-page .yd-contact-business-card,
+.yd-contact-page .yd-contact-connect-card {
+    background: #fff;
+}
+
+.yd-contact-page .yd-contact-card-heading span,
+.yd-contact-page .form-step,
+.yd-contact-page .sidebar-intro .sidebar-icon {
+    color: var(--yd-gold);
+}
+
+.yd-contact-page .yd-contact-card-heading h2,
+.yd-contact-page .yd-contact-card-heading h3,
+.yd-contact-page .form-card-header h3,
+.yd-contact-page .sidebar-intro h3 {
+    color: var(--yd-navy);
+    letter-spacing: -.025em;
+}
+
+/* FORM */
+.yd-contact-page .quote-form-card {
+    overflow: hidden;
+    background: #fff;
+}
+
+.yd-contact-page .form-card-header {
+    padding: 36px 38px 30px;
+    border-bottom: 1px solid var(--yd-border);
+}
+
+.yd-contact-page .form-section {
+    padding-inline: 38px;
+}
+
+.yd-contact-page .form-section-title > span,
+.yd-contact-page .form-section-title span {
+    color: var(--yd-gold);
+}
+
+.yd-contact-page .form-field label {
+    color: var(--yd-navy);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+}
+
+.yd-contact-page .form-field input,
+.yd-contact-page .form-field select,
+.yd-contact-page .form-field textarea {
+    border: 1px solid #d7dfdb;
+    border-radius: 3px;
+    background: #fbfcfa;
+    color: var(--yd-text);
+    box-shadow: none;
+}
+
+.yd-contact-page .form-field input:focus,
+.yd-contact-page .form-field select:focus,
+.yd-contact-page .form-field textarea:focus {
+    outline: none;
+    border-color: var(--yd-gold);
+    box-shadow: 0 0 0 3px rgba(183,149,85,.12);
+    background: #fff;
+}
+
+.yd-contact-page .quote-submit-btn {
+    min-height: 54px;
+    border: 1px solid var(--yd-gold);
+    border-radius: 3px;
+    color: #14211d;
+    background: #d5bd87;
+    font-weight: 800;
+    box-shadow: none;
+}
+
+.yd-contact-page .quote-submit-btn:hover {
+    color: #fff;
+    background: var(--yd-blue-dark);
+    transform: translateY(-2px);
+}
+
+.yd-contact-page .form-security-note {
+    color: var(--yd-muted);
+}
+
+/* SIDEBAR */
+.yd-contact-page .sidebar-promo {
+    border: 1px solid rgba(183,149,85,.3);
+    background: #f8f4e9;
+    border-radius: 3px;
+}
+
+.yd-contact-page .sidebar-promo .promo-icon {
+    color: var(--yd-gold);
+}
+
+/* BENEFITS */
+.yd-contact-page .contact-benefits-section {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.yd-contact-page .section-heading-center h2,
+.yd-contact-page .services-intro h2,
+.yd-contact-page .area-content h2,
+.yd-contact-page .contact-faq-section h2 {
+    color: var(--yd-navy);
+    letter-spacing: -.035em;
+}
+
+.yd-contact-page .benefit-card {
+    position: relative;
+    background: #fff;
+}
+
+.yd-contact-page .benefit-number {
+    color: rgba(23,75,61,.16);
+    font-weight: 800;
+}
+
+.yd-contact-page .benefit-card:hover {
+    border-color: rgba(183,149,85,.42);
+    transform: translateY(-4px);
+}
+
+/* SERVICES */
+.yd-contact-page .contact-services-section {
+    padding: 100px 0;
+    background: var(--yd-cream);
+}
+
+.yd-contact-page .service-link-card {
+    background: #fff;
+}
+
+.yd-contact-page .service-link-card:hover {
+    border-color: rgba(183,149,85,.45);
+    transform: translateY(-3px);
+}
+
+.yd-contact-page .service-link-card b,
+.yd-contact-page .text-arrow-link {
+    color: var(--yd-blue);
+}
+
+/* SERVICE AREA */
+.yd-contact-page .contact-area-section {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.yd-contact-page .area-card {
+    overflow: hidden;
+    background: var(--yd-blue-dark);
+    color: #fff;
+    border-color: var(--yd-blue-dark);
+}
+
+.yd-contact-page .area-content h2 {
+    color: #fff;
+}
+
+.yd-contact-page .area-content p {
+    color: rgba(255,255,255,.72);
+}
+
+.yd-contact-page .area-btn {
+    border-color: var(--yd-gold);
+    background: #d5bd87;
+    color: #14211d !important;
+    border-radius: 3px;
+    font-weight: 800;
+}
+
+.yd-contact-page .area-location {
+    border-color: rgba(183,149,85,.3);
+    background: rgba(255,255,255,.045);
+}
+
+.yd-contact-page .area-location span {
+    color: var(--yd-gold);
+}
+
+/* FAQ */
+.yd-contact-page .contact-faq-section {
+    padding: 100px 0;
+    background: var(--yd-cream);
+}
+
+.yd-contact-page .faq-item {
+    border-color: var(--yd-border);
+    border-radius: 3px;
+    background: #fff;
+}
+
+.yd-contact-page .faq-item summary b {
+    color: var(--yd-gold);
+}
+
+/* FINAL CTA */
+.yd-contact-page .yd-contact-final-cta,
+.yd-contact-page .contact-final-section {
+    position: relative;
+    overflow: hidden;
+    padding: 100px 0;
+    color: #fff;
+    background:
+        radial-gradient(circle at 85% 35%, rgba(183,149,85,.17), transparent 30%),
+        linear-gradient(135deg, #0b2c24, #174b3d);
+}
+
+.yd-contact-page .yd-contact-final-content h2,
+.yd-contact-page .final-content h2 {
+    color: #fff;
+    letter-spacing: -.04em;
+}
+
+.yd-contact-page .yd-contact-final-content h2 strong,
+.yd-contact-page .final-content h2 span {
+    color: #d8c08c;
+}
+
+.yd-contact-page .yd-contact-final-content p,
+.yd-contact-page .final-content p {
+    color: rgba(255,255,255,.72);
+}
+
+/* Remove excessive blue remnants */
+.yd-contact-page .yd-contact-hero .yd-contact-eyebrow,
+.yd-contact-page .yd-contact-final-content > span,
+.yd-contact-page .final-kicker {
+    color: #d8c08c;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .yd-contact-page .yd-contact-hero,
+    .yd-contact-page .contact-hero {
+        padding: 82px 0 75px;
+    }
+
+    .yd-contact-page .contact-form-section,
+    .yd-contact-page .contact-benefits-section,
+    .yd-contact-page .contact-services-section,
+    .yd-contact-page .contact-area-section,
+    .yd-contact-page .contact-faq-section,
+    .yd-contact-page .contact-final-section {
+        padding: 72px 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .yd-contact-page .yd-contact-hero h1,
+    .yd-contact-page .contact-hero h1 {
+        font-size: 42px;
+    }
+
+    .yd-contact-page .hero-actions,
+    .yd-contact-page .yd-contact-hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .yd-contact-page .contact-primary-btn,
+    .yd-contact-page .contact-phone-btn,
+    .yd-contact-page .yd-contact-primary-btn,
+    .yd-contact-page .yd-contact-secondary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .yd-contact-page .form-card-header,
+    .yd-contact-page .form-section {
+        padding-inline: 22px;
+    }
+
+    .yd-contact-page .yd-contact-final-buttons,
+    .yd-contact-page .final-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .yd-contact-page .yd-contact-final-primary,
+    .yd-contact-page .yd-contact-final-secondary,
+    .yd-contact-page .final-primary-btn,
+    .yd-contact-page .final-phone-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
