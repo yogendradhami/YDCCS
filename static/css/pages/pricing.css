@@ -1,336 +1,1509 @@
-/* Pricing Page Styles */
+/* =========================================================
+   YD COMMERCIAL CLEANING — PREMIUM PRICING PAGE
+   Scoped entirely to .yd-pricing-page
+   ========================================================= */
 
-.pricing-hero {
-    position: relative;
-    min-height: 400px;
-    display: flex;
+.yd-pricing-page {
+    --pricing-ink: #14211d;
+    --pricing-green: #174b3d;
+    --pricing-green-dark: #0d332a;
+    --pricing-gold: #b79555;
+    --pricing-gold-light: #d8c397;
+    --pricing-cream: #f5f3ee;
+    --pricing-white: #ffffff;
+    --pricing-muted: #68746f;
+    --pricing-border: #dce4df;
+    --pricing-soft: #e9eee9;
+
+    color: var(--pricing-ink);
+    background: var(--pricing-white);
+
+    overflow: hidden;
+}
+
+.yd-pricing-page *,
+.yd-pricing-page *::before,
+.yd-pricing-page *::after {
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   GLOBAL PAGE ELEMENTS
+   ========================================================= */
+
+.yd-pricing-page .container {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+}
+
+.yd-pricing-page h1,
+.yd-pricing-page h2,
+.yd-pricing-page h3,
+.yd-pricing-page p {
+    margin-top: 0;
+}
+
+.yd-pricing-page h1,
+.yd-pricing-page h2,
+.yd-pricing-page h3 {
+    letter-spacing: -0.025em;
+}
+
+.yd-pricing-page .section-label {
+    margin: 0 0 16px;
+    color: var(--pricing-gold);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    line-height: 1.4;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.yd-pricing-page .btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--secondary-green), var(--secondary-green-light));
-    color: white;
-    text-align: center;
+
+    min-height: 50px;
+    padding: 13px 22px;
+
+    border-radius: 4px;
+
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.2;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.yd-pricing-page .btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.94;
+}
+
+.yd-pricing-page .btn-primary {
+    color: #ffffff;
+    background: var(--pricing-gold);
+    border: 1px solid var(--pricing-gold);
+}
+
+.yd-pricing-page .btn-primary:hover {
+    background: #a88648;
+    border-color: #a88648;
+}
+
+.yd-pricing-page .btn-light {
+    color: var(--pricing-green-dark);
+    background: #ffffff;
+    border: 1px solid #ffffff;
+}
+
+.yd-pricing-page .btn-outline-light {
+    color: #ffffff;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+.yd-pricing-page .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* =========================================================
+   TEXT LINKS
+   ========================================================= */
+
+.yd-pricing-page .text-link {
+    color: var(--pricing-green);
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.yd-pricing-page .text-link span {
+    margin-left: 7px;
+    transition: margin-left 0.2s ease;
+}
+
+.yd-pricing-page .text-link:hover span {
+    margin-left: 12px;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.yd-pricing-page .pricing-hero {
+    position: relative;
     overflow: hidden;
+
+    color: #ffffff;
+
+    background:
+        radial-gradient(
+            circle at 82% 25%,
+            rgba(183, 149, 85, 0.18),
+            transparent 28%
+        ),
+        linear-gradient(
+            120deg,
+            #0b3027 0%,
+            #174b3d 55%,
+            #123d32 100%
+        );
 }
 
-.pricing-hero .hero-overlay {
+.yd-pricing-page .pricing-hero::before {
+    content: "";
+
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.2);
+    top: -180px;
+    right: -180px;
+
+    width: 520px;
+    height: 520px;
+
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
 }
 
-.pricing-hero .hero-content {
+.yd-pricing-page .pricing-hero::after {
+    content: "";
+
+    position: absolute;
+    right: 12%;
+    bottom: -280px;
+
+    width: 500px;
+    height: 500px;
+
+    border: 1px solid rgba(183, 149, 85, 0.12);
+    border-radius: 50%;
+}
+
+.yd-pricing-page .pricing-hero__inner {
     position: relative;
     z-index: 2;
-    max-width: 700px;
-    padding: 40px 20px;
-    animation: slideInDown 0.8s ease-out;
-}
 
-.pricing-hero h1 {
-    font-size: var(--font-size-h1);
-    font-weight: 700;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
+    width: min(1180px, calc(100% - 40px));
 
-.pricing-hero p {
-    font-size: var(--font-size-p);
-    opacity: 0.95;
-    margin: 0;
-}
+    min-height: 620px;
 
-/* Intro Section */
-.pricing-intro {
-    padding: 60px 20px;
-    background: white;
-    text-align: center;
-}
-
-.pricing-intro .container {
-    max-width: var(--max-width);
     margin: 0 auto;
-}
+    padding: 90px 0 80px;
 
-.pricing-intro h2 {
-    font-size: var(--font-size-h2);
-    color: var(--primary-blue);
-    margin-bottom: 20px;
-}
-
-.intro-text {
-    font-size: var(--font-size-base);
-    color: var(--text-gray);
-    line-height: 1.8;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-/* Pricing Cards */
-.pricing-packages {
-    padding: 80px 20px;
-    background: #f8fafc;
-}
-
-.pricing-packages .container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.pricing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 30px;
+    grid-template-columns:
+        minmax(0, 1.35fr)
+        minmax(320px, 0.65fr);
+
+    gap: 90px;
+
+    align-items: center;
 }
 
-.pricing-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+.yd-pricing-page .pricing-hero__copy {
+    max-width: 720px;
 }
 
-.pricing-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 40px rgba(37, 99, 235, 0.15);
+.yd-pricing-page .eyebrow {
+    margin-bottom: 22px;
+
+    color: var(--pricing-gold-light);
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
 }
 
-.pricing-card.featured {
-    border: 2px solid var(--secondary-green);
-    transform: scale(1.02);
-}
+.yd-pricing-page .pricing-hero h1 {
+    margin-bottom: 25px;
 
-.pricing-card.featured:hover {
-    transform: scale(1.02) translateY(-10px);
-}
-
-.featured-badge {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--secondary-green);
-    color: white;
-    padding: 5px 20px;
-    border-radius: 20px;
-    font-size: var(--font-size-small);
-    font-weight: 600;
-}
-
-.card-header {
-    padding: 30px 25px 20px;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.card-header h3 {
-    font-size: var(--font-size-h3);
-    color: var(--primary-blue);
-    margin: 0 0 10px;
-}
-
-.package-type {
-    font-size: var(--font-size-small);
-    color: var(--text-light);
-    font-weight: 500;
-}
-
-.card-price {
-    padding: 30px 25px;
-    text-align: center;
-    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-}
-
-.currency {
-    font-size: var(--font-size-small);
-    color: var(--text-gray);
-    display: block;
-    margin-bottom: 5px;
-}
-
-.amount {
-    font-size: var(--font-size-h2);
+    font-size: clamp(48px, 6.5vw, 84px);
+    line-height: 0.98;
     font-weight: 700;
-    color: var(--primary-blue);
-    display: block;
 }
 
-.period {
-    font-size: var(--font-size-small);
-    color: var(--text-light);
-    display: block;
-    margin-top: 5px;
+.yd-pricing-page .pricing-hero h1 em {
+    color: var(--pricing-gold-light);
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
 }
 
-.card-features {
-    padding: 30px 25px;
-    flex-grow: 1;
+.yd-pricing-page .hero-lead {
+    max-width: 620px;
+
+    margin-bottom: 32px;
+
+    color: rgba(255, 255, 255, 0.78);
+
+    font-size: 18px;
+    line-height: 1.75;
 }
 
-.card-features ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.card-features li {
-    padding: 10px 0;
-    color: var(--text-gray);
-    font-size: var(--font-size-small);
-    line-height: 1.6;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.card-features li:before {
-    content: "✓ ";
-    color: var(--secondary-green);
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.card-features li:last-child {
-    border-bottom: none;
-}
-
-.pricing-card .btn {
-    margin: 20px 25px;
-    width: calc(100% - 50px);
-}
-
-/* Why Our Pricing */
-.pricing-why {
-    padding: 80px 20px;
-    background: white;
-}
-
-.pricing-why .container {
-    max-width: var(--max-width);
-    margin: 0 auto;
-}
-
-.pricing-why h2 {
-    font-size: 2.5rem;
-    color: var(--primary-blue);
-    margin-bottom: 60px;
-    text-align: center;
-}
-
-.why-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-    gap: 40px;
-}
-
-.why-card {
-    text-align: center;
-    padding: 30px 20px;
-}
-
-.why-icon {
-    font-size: var(--font-size-h1);
-    margin-bottom: 20px;
-    display: inline-block;
-}
-
-.why-card h3 {
-    font-size: var(--font-size-base);
-    color: var(--primary-blue);
-    margin-bottom: 12px;
-}
-
-.why-card p {
-    font-size: var(--font-size-small);
-    color: var(--text-gray);
-    line-height: 1.6;
-}
-
-/* CTA Section */
-.pricing-cta {
-    padding: 80px 20px;
-    background: linear-gradient(135deg, var(--accent-amber), var(--accent-amber-light));
-    color: white;
-    text-align: center;
-}
-
-.pricing-cta .container {
-    max-width: var(--max-width);
-    margin: 0 auto;
-}
-
-.pricing-cta h2 {
-    font-size: var(--font-size-h2);
-    margin-bottom: 20px;
-    color: white;
-}
-
-.pricing-cta p {
-    font-size: 1.1rem;
-    margin-bottom: 40px;
-    opacity: 0.95;
-}
-
-.cta-buttons {
+.yd-pricing-page .hero-actions {
     display: flex;
-    gap: 20px;
-    justify-content: center;
+    align-items: center;
+    gap: 28px;
     flex-wrap: wrap;
 }
 
-.cta-buttons .btn {
-    min-width: 160px;
-    padding: 14px 30px;
+.yd-pricing-page .pricing-hero .text-link {
+    color: #ffffff;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .pricing-hero h1 {
-        font-size: var(--font-size-h3);
-    }
+.yd-pricing-page .hero-trust {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
 
-    .pricing-intro h2,
-    .pricing-why h2,
-    .pricing-cta h2 {
-        font-size: var(--font-size-h3);
-    }
+    margin-top: 42px;
+    padding-top: 22px;
 
-    .pricing-grid {
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+
+    color: rgba(255, 255, 255, 0.72);
+
+    font-size: 12px;
+}
+
+.yd-pricing-page .hero-trust b {
+    margin-right: 6px;
+    color: var(--pricing-gold-light);
+}
+
+/* =========================================================
+   HERO SIDE PANEL
+   ========================================================= */
+
+.yd-pricing-page .pricing-hero__panel {
+    position: relative;
+
+    padding: 42px;
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+
+    background: rgba(255, 255, 255, 0.055);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.12);
+}
+
+.yd-pricing-page .panel-kicker {
+    color: var(--pricing-gold-light);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.yd-pricing-page .panel-number {
+    margin: 35px 0 20px;
+
+    color: rgba(255, 255, 255, 0.18);
+
+    font-size: 70px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.yd-pricing-page .pricing-hero__panel h2 {
+    margin-bottom: 15px;
+
+    color: #ffffff;
+
+    font-size: 30px;
+    line-height: 1.15;
+}
+
+.yd-pricing-page .pricing-hero__panel p:not(.panel-kicker) {
+    color: rgba(255, 255, 255, 0.68);
+
+    line-height: 1.75;
+}
+
+.yd-pricing-page .panel-link {
+    display: inline-block;
+
+    margin-top: 18px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+.yd-pricing-page .panel-link span {
+    margin-left: 6px;
+}
+
+/* =========================================================
+   INTRO
+   ========================================================= */
+
+.yd-pricing-page .pricing-intro {
+    padding: 105px 0;
+
+    background: var(--pricing-cream);
+}
+
+.yd-pricing-page .pricing-intro__grid {
+    display: grid;
+
+    grid-template-columns:
+        1.05fr
+        0.95fr;
+
+    gap: 100px;
+
+    align-items: start;
+}
+
+.yd-pricing-page .pricing-intro h2 {
+    max-width: 650px;
+
+    margin-bottom: 0;
+
+    font-size: clamp(34px, 4vw, 54px);
+    line-height: 1.08;
+}
+
+.yd-pricing-page .intro-copy {
+    padding-top: 28px;
+
+    color: var(--pricing-muted);
+
+    font-size: 16px;
+    line-height: 1.85;
+}
+
+.yd-pricing-page .intro-copy p + p {
+    margin-top: 18px;
+}
+
+/* =========================================================
+   CALCULATOR
+   ========================================================= */
+
+.yd-pricing-page .pricing-calculator {
+    padding: 105px 0;
+
+    background: #ffffff;
+}
+
+.yd-pricing-page .calculator-heading {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: end;
+
+    gap: 60px;
+
+    margin-bottom: 45px;
+}
+
+.yd-pricing-page .calculator-heading h2 {
+    margin-bottom: 0;
+
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.05;
+}
+
+.yd-pricing-page .calculator-heading > p {
+    max-width: 380px;
+
+    margin-bottom: 5px;
+
+    color: var(--pricing-muted);
+
+    line-height: 1.7;
+}
+
+.yd-pricing-page .calculator {
+    display: grid;
+
+    grid-template-columns:
+        1.1fr
+        0.9fr;
+
+    min-height: 560px;
+
+    border: 1px solid var(--pricing-border);
+
+    background: #ffffff;
+
+    box-shadow:
+        0 24px 70px rgba(20, 33, 29, 0.08);
+}
+
+/* =========================================================
+   CALCULATOR FORM
+   ========================================================= */
+
+.yd-pricing-page .calculator-form {
+    padding: 48px;
+
+    background: #ffffff;
+}
+
+.yd-pricing-page .calculator-step {
+    display: flex;
+
+    gap: 20px;
+
+    margin-bottom: 35px;
+}
+
+.yd-pricing-page .step-number {
+    flex: 0 0 auto;
+
+    color: var(--pricing-gold);
+
+    font-size: 12px;
+    font-weight: 900;
+
+    letter-spacing: 0.1em;
+}
+
+.yd-pricing-page .calculator-step h3 {
+    margin-bottom: 6px;
+
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.yd-pricing-page .calculator-step p {
+    margin: 0;
+
+    color: var(--pricing-muted);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   CALCULATOR FIELDS
+   ========================================================= */
+
+.yd-pricing-page .calc-field {
+    display: block;
+
+    margin-bottom: 20px;
+}
+
+.yd-pricing-page .calc-field > span {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--pricing-ink);
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.yd-pricing-page .calc-field select {
+    width: 100%;
+
+    min-height: 50px;
+
+    padding: 0 14px;
+
+    border: 1px solid var(--pricing-border);
+    border-radius: 3px;
+
+    color: var(--pricing-ink);
+    background: #ffffff;
+
+    font: inherit;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.yd-pricing-page .calc-field select:hover {
+    border-color: #b7c5be;
+}
+
+.yd-pricing-page .calc-field select:focus {
+    outline: none;
+
+    border-color: var(--pricing-green);
+
+    box-shadow:
+        0 0 0 3px rgba(23, 75, 61, 0.08);
+}
+
+.yd-pricing-page .calc-fields-row {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 18px;
+}
+
+/* =========================================================
+   CALCULATOR NOTE
+   ========================================================= */
+
+.yd-pricing-page .calculator-note {
+    display: grid;
+
+    gap: 5px;
+
+    margin-top: 28px;
+    padding: 17px;
+
+    border-left: 3px solid var(--pricing-gold);
+
+    background: var(--pricing-cream);
+
+    color: var(--pricing-muted);
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.yd-pricing-page .calculator-note strong {
+    color: var(--pricing-ink);
+
+    font-size: 11px;
+    font-weight: 900;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   CALCULATOR RESULT
+   ========================================================= */
+
+.yd-pricing-page .calculator-result {
+    display: flex;
+
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 55px;
+
+    color: #ffffff;
+
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(183, 149, 85, 0.15),
+            transparent 30%
+        ),
+        var(--pricing-green-dark);
+}
+
+.yd-pricing-page .result-label {
+    margin-bottom: 18px;
+
+    color: var(--pricing-gold-light);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.17em;
+}
+
+.yd-pricing-page .result-price {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 4px;
+}
+
+.yd-pricing-page .result-price span {
+    margin-top: 13px;
+
+    color: var(--pricing-gold-light);
+
+    font-size: 22px;
+}
+
+.yd-pricing-page .result-price strong {
+    font-size: clamp(60px, 7vw, 90px);
+
+    line-height: 0.95;
+
+    letter-spacing: -0.06em;
+}
+
+.yd-pricing-page .result-period {
+    margin: 12px 0 35px;
+
+    color: rgba(255, 255, 255, 0.6);
+
+    font-size: 14px;
+}
+
+.yd-pricing-page .result-breakdown {
+    margin-bottom: 35px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.yd-pricing-page .result-breakdown div {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 13px 0;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+
+    color: rgba(255, 255, 255, 0.62);
+
+    font-size: 12px;
+}
+
+.yd-pricing-page .result-breakdown strong {
+    color: #ffffff;
+
+    white-space: nowrap;
+}
+
+.yd-pricing-page .result-phone {
+    margin-top: 17px;
+
+    color: rgba(255, 255, 255, 0.65);
+
+    font-size: 12px;
+
+    text-decoration: none;
+}
+
+.yd-pricing-page .result-phone:hover {
+    color: #ffffff;
+}
+
+/* =========================================================
+   PRICE OVERVIEW
+   ========================================================= */
+
+.yd-pricing-page .pricing-overview {
+    padding: 105px 0;
+
+    background: var(--pricing-cream);
+}
+
+.yd-pricing-page .section-heading {
+    max-width: 720px;
+
+    margin-bottom: 50px;
+}
+
+.yd-pricing-page .section-heading h2 {
+    margin-bottom: 0;
+
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.05;
+}
+
+.yd-pricing-page .section-heading > p:last-child {
+    margin-top: 18px;
+
+    color: var(--pricing-muted);
+
+    line-height: 1.75;
+}
+
+.yd-pricing-page .section-heading--left {
+    max-width: 600px;
+}
+
+/* =========================================================
+   PRICE LIST
+   ========================================================= */
+
+.yd-pricing-page .price-list {
+    border-top: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .price-item {
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns:
+        60px
+        1fr
+        230px
+        40px;
+
+    gap: 25px;
+
+    align-items: center;
+
+    min-height: 145px;
+
+    padding: 24px 10px;
+
+    border-bottom: 1px solid var(--pricing-border);
+
+    transition:
+        padding 0.25s ease,
+        background 0.25s ease;
+}
+
+.yd-pricing-page .price-item:hover {
+    padding-left: 25px;
+    padding-right: 25px;
+
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.yd-pricing-page .price-item--featured {
+    border-top: 3px solid var(--pricing-green);
+}
+
+.yd-pricing-page .price-item--commercial {
+    color: #ffffff;
+
+    background: var(--pricing-green);
+
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.yd-pricing-page .price-item--commercial:hover {
+    background: var(--pricing-green-dark);
+}
+
+.yd-pricing-page .price-item__number {
+    align-self: start;
+
+    padding-top: 6px;
+
+    color: var(--pricing-gold);
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.yd-pricing-page .price-item__type {
+    margin-bottom: 7px;
+
+    color: var(--pricing-gold);
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.16em;
+}
+
+.yd-pricing-page .price-item__body h3 {
+    margin-bottom: 7px;
+
+    font-size: 24px;
+    line-height: 1.2;
+}
+
+.yd-pricing-page .price-item__body p:last-child {
+    max-width: 600px;
+
+    margin-bottom: 0;
+
+    color: var(--pricing-muted);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.yd-pricing-page .price-item--commercial .price-item__body p:last-child {
+    color: rgba(255, 255, 255, 0.66);
+}
+
+/* =========================================================
+   PRICE AMOUNT
+   ========================================================= */
+
+.yd-pricing-page .price-item__amount {
+    text-align: right;
+}
+
+.yd-pricing-page .price-item__amount small,
+.yd-pricing-page .price-item__amount span {
+    display: block;
+
+    color: var(--pricing-muted);
+
+    font-size: 11px;
+}
+
+.yd-pricing-page .price-item--commercial .price-item__amount small,
+.yd-pricing-page .price-item--commercial .price-item__amount span {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.yd-pricing-page .price-item__amount strong {
+    display: block;
+
+    margin: 3px 0;
+
+    color: var(--pricing-green);
+
+    font-size: 30px;
+    line-height: 1;
+}
+
+.yd-pricing-page .price-item--commercial .price-item__amount strong {
+    color: #ffffff;
+}
+
+.yd-pricing-page .price-item > a {
+    color: var(--pricing-green);
+
+    font-size: 22px;
+
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+.yd-pricing-page .price-item > a:hover {
+    transform: translateX(4px);
+}
+
+.yd-pricing-page .price-item--commercial > a {
+    color: #ffffff;
+}
+
+/* =========================================================
+   PRICING FACTORS
+   ========================================================= */
+
+.yd-pricing-page .pricing-factors {
+    padding: 110px 0;
+
+    background: #ffffff;
+}
+
+.yd-pricing-page .factors-grid {
+    display: grid;
+
+    grid-template-columns:
+        0.8fr
+        1.2fr;
+
+    gap: 110px;
+}
+
+.yd-pricing-page .factors-intro h2 {
+    margin-bottom: 20px;
+
+    font-size: clamp(36px, 4vw, 54px);
+    line-height: 1.05;
+}
+
+.yd-pricing-page .factors-intro > p:not(.section-label) {
+    max-width: 450px;
+
+    margin-bottom: 30px;
+
+    color: var(--pricing-muted);
+
+    line-height: 1.8;
+}
+
+.yd-pricing-page .factor-list {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    border-top: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .factor-list > div {
+    padding: 27px 20px;
+
+    border-bottom: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .factor-list > div:nth-child(odd) {
+    border-right: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .factor-list span {
+    display: block;
+
+    margin-bottom: 14px;
+
+    color: var(--pricing-gold);
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.yd-pricing-page .factor-list strong {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 17px;
+}
+
+.yd-pricing-page .factor-list p {
+    margin-bottom: 0;
+
+    color: var(--pricing-muted);
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   VALUE SECTION
+   ========================================================= */
+
+.yd-pricing-page .pricing-value {
+    padding: 100px 0;
+
+    color: #ffffff;
+
+    background: var(--pricing-green-dark);
+}
+
+.yd-pricing-page .value-header {
+    max-width: 700px;
+
+    margin-bottom: 55px;
+}
+
+.yd-pricing-page .value-header h2 {
+    margin-bottom: 0;
+
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.05;
+}
+
+.yd-pricing-page .value-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.yd-pricing-page .value-grid > div {
+    padding: 28px 22px;
+
+    border-right: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.yd-pricing-page .value-grid > div:last-child {
+    border-right: none;
+}
+
+.yd-pricing-page .value-grid span {
+    color: var(--pricing-gold-light);
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.yd-pricing-page .value-grid h3 {
+    margin: 28px 0 9px;
+
+    color: #ffffff;
+
+    font-size: 20px;
+}
+
+.yd-pricing-page .value-grid p {
+    margin-bottom: 0;
+
+    color: rgba(255, 255, 255, 0.62);
+
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+/* =========================================================
+   QUOTE PROCESS
+   ========================================================= */
+
+.yd-pricing-page .pricing-process {
+    padding: 105px 0;
+
+    background: var(--pricing-cream);
+}
+
+.yd-pricing-page .process-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    border-top: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .process-grid > div {
+    min-height: 210px;
+
+    padding: 27px 22px;
+
+    border-right: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .process-grid > div:last-child {
+    border-right: none;
+}
+
+.yd-pricing-page .process-grid span {
+    color: var(--pricing-gold);
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.yd-pricing-page .process-grid h3 {
+    margin: 35px 0 9px;
+
+    font-size: 21px;
+}
+
+.yd-pricing-page .process-grid p {
+    margin-bottom: 0;
+
+    color: var(--pricing-muted);
+
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+/* =========================================================
+   FAQ
+   ========================================================= */
+
+.yd-pricing-page .pricing-faq {
+    padding: 105px 0;
+
+    background: #ffffff;
+}
+
+.yd-pricing-page .faq-layout {
+    display: grid;
+
+    grid-template-columns:
+        0.7fr
+        1.3fr;
+
+    gap: 100px;
+}
+
+.yd-pricing-page .faq-layout h2 {
+    margin-bottom: 18px;
+
+    font-size: clamp(36px, 4vw, 52px);
+    line-height: 1.05;
+}
+
+.yd-pricing-page .faq-layout > div:first-child > p:last-child {
+    color: var(--pricing-muted);
+
+    line-height: 1.75;
+}
+
+.yd-pricing-page .faq-list {
+    border-top: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .faq-list details {
+    border-bottom: 1px solid var(--pricing-border);
+}
+
+.yd-pricing-page .faq-list summary {
+    position: relative;
+
+    padding: 22px 40px 22px 0;
+
+    cursor: pointer;
+
+    list-style: none;
+
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.yd-pricing-page .faq-list summary::-webkit-details-marker {
+    display: none;
+}
+
+.yd-pricing-page .faq-list summary::after {
+    content: "+";
+
+    position: absolute;
+
+    right: 2px;
+    top: 18px;
+
+    color: var(--pricing-gold);
+
+    font-size: 22px;
+    font-weight: 400;
+}
+
+.yd-pricing-page .faq-list details[open] summary::after {
+    content: "−";
+}
+
+.yd-pricing-page .faq-list details p {
+    max-width: 700px;
+
+    padding: 0 40px 22px 0;
+
+    margin-bottom: 0;
+
+    color: var(--pricing-muted);
+
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+/* =========================================================
+   FINAL CTA
+   ========================================================= */
+
+.yd-pricing-page .pricing-cta {
+    padding: 105px 20px;
+
+    color: #ffffff;
+
+    text-align: center;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(183, 149, 85, 0.16),
+            transparent 35%
+        ),
+        var(--pricing-green);
+}
+
+.yd-pricing-page .pricing-cta .container {
+    max-width: 850px;
+}
+
+.yd-pricing-page .pricing-cta h2 {
+    margin-bottom: 18px;
+
+    font-size: clamp(38px, 5vw, 62px);
+    line-height: 1.02;
+}
+
+.yd-pricing-page .pricing-cta > .container > p:not(.section-label) {
+    max-width: 650px;
+
+    margin: 0 auto 32px;
+
+    color: rgba(255, 255, 255, 0.7);
+
+    line-height: 1.75;
+}
+
+.yd-pricing-page .pricing-cta .section-label {
+    color: var(--pricing-gold-light);
+}
+
+.yd-pricing-page .cta-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 980px) {
+
+    .yd-pricing-page .pricing-hero__inner,
+    .yd-pricing-page .pricing-intro__grid,
+    .yd-pricing-page .calculator,
+    .yd-pricing-page .factors-grid,
+    .yd-pricing-page .faq-layout {
         grid-template-columns: 1fr;
     }
 
-    .pricing-card.featured {
-        transform: scale(1);
+    .yd-pricing-page .pricing-hero__inner {
+        gap: 55px;
     }
 
-    .pricing-card.featured:hover {
-        transform: translateY(-10px);
+    .yd-pricing-page .pricing-hero__panel {
+        max-width: 620px;
     }
 
-    .why-grid {
+    .yd-pricing-page .calculator-heading {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+    .yd-pricing-page .calculator-result {
+        min-height: 430px;
+    }
+
+    .yd-pricing-page .value-grid,
+    .yd-pricing-page .process-grid {
+        grid-template-columns:
+            1fr
+            1fr;
+    }
+
+    .yd-pricing-page .value-grid > div:nth-child(2),
+    .yd-pricing-page .process-grid > div:nth-child(2) {
+        border-right: none;
+    }
+
+    .yd-pricing-page .value-grid > div:nth-child(-n + 2),
+    .yd-pricing-page .process-grid > div:nth-child(-n + 2) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .yd-pricing-page .process-grid > div:nth-child(-n + 2) {
+        border-bottom-color: var(--pricing-border);
+    }
+
+    .yd-pricing-page .factors-grid {
+        gap: 55px;
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .yd-pricing-page .container,
+    .yd-pricing-page .pricing-hero__inner {
+        width: min(100% - 28px, 1180px);
+    }
+
+    .yd-pricing-page .pricing-hero__inner {
+        min-height: auto;
+
+        padding: 70px 0;
+    }
+
+    .yd-pricing-page .pricing-hero h1 {
+        font-size: 47px;
+    }
+
+    .yd-pricing-page .hero-lead {
+        font-size: 16px;
+    }
+
+    .yd-pricing-page .pricing-intro,
+    .yd-pricing-page .pricing-calculator,
+    .yd-pricing-page .pricing-overview,
+    .yd-pricing-page .pricing-factors,
+    .yd-pricing-page .pricing-value,
+    .yd-pricing-page .pricing-process,
+    .yd-pricing-page .pricing-faq,
+    .yd-pricing-page .pricing-cta {
+        padding-top: 75px;
+        padding-bottom: 75px;
+    }
+
+    .yd-pricing-page .calculator-form,
+    .yd-pricing-page .calculator-result {
+        padding: 30px 24px;
+    }
+
+    .yd-pricing-page .calc-fields-row,
+    .yd-pricing-page .factor-list,
+    .yd-pricing-page .value-grid,
+    .yd-pricing-page .process-grid {
         grid-template-columns: 1fr;
     }
 
-    .cta-buttons {
+    .yd-pricing-page .factor-list > div:nth-child(odd) {
+        border-right: none;
+    }
+
+    .yd-pricing-page .value-grid > div,
+    .yd-pricing-page .process-grid > div {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .yd-pricing-page .process-grid > div {
+        border-bottom-color: var(--pricing-border);
+    }
+
+    .yd-pricing-page .value-grid > div:last-child,
+    .yd-pricing-page .process-grid > div:last-child {
+        border-bottom: none;
+    }
+
+    /* Price list mobile */
+    .yd-pricing-page .price-item {
+        grid-template-columns:
+            35px
+            1fr;
+
+        gap: 12px;
+
+        padding: 25px 0;
+    }
+
+    .yd-pricing-page .price-item:hover {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .yd-pricing-page .price-item__amount {
+        grid-column: 2;
+
+        margin-top: 7px;
+
+        text-align: left;
+    }
+
+    .yd-pricing-page .price-item > a {
+        display: none;
+    }
+
+    /* Hero actions */
+    .yd-pricing-page .hero-actions {
+        align-items: stretch;
+
+        flex-direction: column;
+
+        gap: 16px;
+    }
+
+    .yd-pricing-page .hero-actions .btn {
+        width: 100%;
+    }
+
+    .yd-pricing-page .hero-trust {
+        gap: 12px 20px;
+    }
+
+    /* Hero panel */
+    .yd-pricing-page .pricing-hero__panel {
+        padding: 30px;
+    }
+
+    /* Calculator */
+    .yd-pricing-page .result-price strong {
+        font-size: 68px;
+    }
+
+    .yd-pricing-page .calculator-heading h2,
+    .yd-pricing-page .section-heading h2 {
+        font-size: 38px;
+    }
+
+    /* CTA */
+    .yd-pricing-page .cta-buttons {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .cta-buttons .btn {
+    .yd-pricing-page .cta-buttons .btn {
         width: 100%;
     }
 }
 
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .yd-pricing-page .pricing-hero h1 {
+        font-size: 40px;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .yd-pricing-page .hero-lead {
+        font-size: 15px;
+    }
+
+    .yd-pricing-page .pricing-hero__panel {
+        padding: 25px;
+    }
+
+    .yd-pricing-page .panel-number {
+        font-size: 58px;
+    }
+
+    .yd-pricing-page .calculator-form,
+    .yd-pricing-page .calculator-result {
+        padding: 25px 20px;
+    }
+
+    .yd-pricing-page .result-price strong {
+        font-size: 60px;
+    }
+
+    .yd-pricing-page .price-item__body h3 {
+        font-size: 21px;
+    }
+
+    .yd-pricing-page .price-item__amount strong {
+        font-size: 27px;
+    }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .yd-pricing-page *,
+    .yd-pricing-page *::before,
+    .yd-pricing-page *::after {
+        scroll-behavior: auto !important;
+
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
     }
 }
