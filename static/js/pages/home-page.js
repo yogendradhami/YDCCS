@@ -84,16 +84,59 @@ document.addEventListener("DOMContentLoaded", function () {
     updateEstimate();
 });
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const heroVideo = document.getElementById("heroVideo");
     const soundToggle = document.getElementById("heroSoundToggle");
 
-    if (!heroVideo || !soundToggle) {
+    if (!heroVideo) {
+        return;
+    }
+
+    const heroSource = heroVideo.querySelector("source[data-src]");
+    let videoLoaded = false;
+
+    function loadHeroVideo() {
+        if (videoLoaded || !heroSource) {
+            return;
+        }
+
+        const videoSrc = heroSource.getAttribute("data-src");
+
+        if (!videoSrc) {
+            return;
+        }
+
+        heroSource.setAttribute("src", videoSrc);
+        heroSource.removeAttribute("data-src");
+
+        videoLoaded = true;
+        heroVideo.load();
+
+        heroVideo.play().catch(function () {
+            console.log("Video autoplay requires permission or user interaction.");
+        });
+    }
+
+    /*
+     * Let the initial page render first.
+     * requestIdleCallback is used when available, with a timeout
+     * fallback for browsers that do not support it.
+     */
+    if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(loadHeroVideo, { timeout: 2000 });
+    } else {
+        window.setTimeout(loadHeroVideo, 1500);
+    }
+
+    if (!soundToggle) {
         return;
     }
 
     soundToggle.addEventListener("click", function () {
+        if (!videoLoaded) {
+            loadHeroVideo();
+        }
+
         heroVideo.muted = !heroVideo.muted;
 
         if (heroVideo.muted) {
