@@ -1,5 +1,6 @@
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
+
 from corporate.dashboard_views import (
     corporate_lead_list,
     corporate_lead_detail,
@@ -95,7 +96,6 @@ from .views import (
     quote_conversion_analytics,
     quote_followup_centre,
     receive_purchase_order,
-    reminder_center,
     reminder_centre,
     review_analytics,
     review_list,
@@ -117,8 +117,6 @@ from .views import (
     update_quote_status,
     vehicle_list,
     vip_campaigns,
-    faq_question_list,
-    faq_question_reply,
     dashboard_newsletter_subscribe,
     newsletter_subscriber_detail,
     edit_newsletter_subscriber,
@@ -128,7 +126,12 @@ from .views import (
     delete_campaign_history,
 )
 
+
 urlpatterns = [
+    # =========================================================
+    # AUTHENTICATION
+    # =========================================================
+
     path(
         "dashboard/login/",
         auth_views.LoginView.as_view(
@@ -137,33 +140,71 @@ urlpatterns = [
         ),
         name="dashboard_login",
     ),
+
     path(
         "dashboard/logout/",
-        auth_views.LogoutView.as_view(next_page=reverse_lazy("dashboard_login")),
+        auth_views.LogoutView.as_view(
+            next_page=reverse_lazy("dashboard_login")
+        ),
         name="dashboard_logout",
     ),
-    path("dashboard/", dashboard_home, name="dashboard_home"),
-    path("dashboard/careers/", careers_list, name="careers_list"),
-    path("dashboard/careers/<int:application_id>/", career_detail, name="career_detail"),
-    path("dashboard/careers/<int:application_id>/resume/", download_resume, name="career_resume_download"),
-    path("dashboard/careers/<int:application_id>/resume/preview/", preview_resume, name="career_resume_preview"),
-    path("dashboard/settings/", company_settings, name="company_settings"),
-    path("dashboard/leads/", lead_list, name="lead_list"),
-    # Corporate B2B Leads
+
+    # =========================================================
+    # DASHBOARD HOME
+    # =========================================================
+
     path(
-        "dashboard/corporate-leads/",
-        corporate_lead_list,
-        name="corporate_lead_list",
+        "dashboard/",
+        dashboard_home,
+        name="dashboard_home",
     ),
+
+    # =========================================================
+    # CAREERS
+    # =========================================================
+
     path(
-        "dashboard/corporate-leads/<int:lead_id>/",
-        corporate_lead_detail,
-        name="corporate_lead_detail",
+        "dashboard/careers/",
+        careers_list,
+        name="careers_list",
     ),
+
     path(
-        "dashboard/corporate-leads/<int:lead_id>/update/",
-        corporate_lead_update,
-        name="corporate_lead_update",
+        "dashboard/careers/<int:application_id>/",
+        career_detail,
+        name="career_detail",
+    ),
+
+    path(
+        "dashboard/careers/<int:application_id>/resume/",
+        download_resume,
+        name="career_resume_download",
+    ),
+
+    path(
+        "dashboard/careers/<int:application_id>/resume/preview/",
+        preview_resume,
+        name="career_resume_preview",
+    ),
+
+    # =========================================================
+    # SETTINGS
+    # =========================================================
+
+    path(
+        "dashboard/settings/",
+        company_settings,
+        name="company_settings",
+    ),
+
+    # =========================================================
+    # LEADS
+    # =========================================================
+
+    path(
+        "dashboard/leads/",
+        lead_list,
+        name="lead_list",
     ),
 
     path(
@@ -171,144 +212,491 @@ urlpatterns = [
         update_quote_status,
         name="update_quote_status",
     ),
-    path("dashboard/customers/", customer_list, name="customer_list"),
-    path("dashboard/customers/add/", add_customer, name="add_customer"),
+
+    # =========================================================
+    # CORPORATE B2B LEADS
+    # =========================================================
+
+    path(
+        "dashboard/corporate-leads/",
+        corporate_lead_list,
+        name="corporate_lead_list",
+    ),
+
+    path(
+        "dashboard/corporate-leads/<int:lead_id>/",
+        corporate_lead_detail,
+        name="corporate_lead_detail",
+    ),
+
+    path(
+        "dashboard/corporate-leads/<int:lead_id>/update/",
+        corporate_lead_update,
+        name="corporate_lead_update",
+    ),
+
+    # =========================================================
+    # CUSTOMERS
+    # =========================================================
+
+    path(
+        "dashboard/customers/",
+        customer_list,
+        name="customer_list",
+    ),
+
+    path(
+        "dashboard/customers/add/",
+        add_customer,
+        name="add_customer",
+    ),
+
     path(
         "dashboard/customers/<int:customer_id>/edit/",
         edit_customer,
         name="edit_customer",
     ),
+
     path(
         "dashboard/customers/<int:customer_id>/delete/",
         delete_customer,
         name="delete_customer",
     ),
-    path("dashboard/bookings/", booking_list, name="booking_list"),
-    path("dashboard/bookings/add/", add_booking, name="add_booking"),
-    path(
-        "dashboard/bookings/<int:booking_id>/edit/", edit_booking, name="edit_booking"
-    ),
-    path(
-        "dashboard/bookings/<int:booking_id>/delete/",
-        delete_booking,
-        name="delete_booking",
-    ),
-    path("dashboard/calendar/", booking_calendar, name="booking_calendar"),
-    path("dashboard/employees/", employee_list, name="employee_list"),
-    path("dashboard/employees/add/", add_employee, name="add_employee"),
-    path(
-        "dashboard/employees/<int:employee_id>/edit/",
-        edit_employee,
-        name="edit_employee",
-    ),
-    path(
-        "dashboard/employees/<int:employee_id>/delete/",
-        delete_employee,
-        name="delete_employee",
-    ),
-    path("dashboard/gallery/", gallery_list, name="gallery_list"),
-    path("dashboard/gallery/add/", add_gallery_item, name="add_gallery_item"),
-    path(
-        "dashboard/gallery/<int:item_id>/edit/",
-        edit_gallery_item,
-        name="edit_gallery_item",
-    ),
-    path(
-        "dashboard/gallery/<int:item_id>/delete/",
-        delete_gallery_item,
-        name="delete_gallery_item",
-    ),
-    path("dashboard/reviews/", review_list, name="review_list"),
-    path("dashboard/reviews/add/", add_review, name="add_review"),
-    path("dashboard/reviews/<int:review_id>/edit/", edit_review, name="edit_review"),
-    path(
-        "dashboard/reviews/<int:review_id>/delete/", delete_review, name="delete_review"
-    ),
-    path("dashboard/performance/", employee_performance, name="employee_performance"),
-    path("dashboard/export-quotes/", export_quotes_csv, name="export_quotes_csv"),
-    path("dashboard/attendance/", attendance_report, name="attendance_report"),
-    path("dashboard/activity/", activity_log_list, name="activity_log_list"),
-    path("dashboard/business-health/", business_health, name="business_health"),
-    path("dashboard/financials/", financial_dashboard, name="financial_dashboard"),
-    path("dashboard/executive/", executive_dashboard, name="executive_dashboard"),
-    path("dashboard/reminders/", reminder_center, name="reminder_center"),
-    path("dashboard/email-center/", email_center, name="email_center"),
-    path(
-        "dashboard/email-center/invoice/<int:invoice_id>/send/",
-        send_invoice_reminder,
-        name="send_invoice_reminder",
-    ),
-    path(
-        "dashboard/email-center/booking/<int:booking_id>/send/",
-        send_booking_reminder,
-        name="send_booking_reminder",
-    ),
-    path(
-        "dashboard/email-center/quote/<int:quote_id>/send/",
-        send_quote_followup,
-        name="send_quote_followup",
-    ),
-    path("dashboard/email-logs/", email_log_list, name="email_log_list"),
-    path(
-        "dashboard/customer-analytics/", customer_analytics, name="customer_analytics"
-    ),
-    path(
-        "dashboard/customer-behaviour/",
-        customer_behaviour,
-        name="customer_behaviour",
-    ),
-    path("dashboard/review-requests/", review_requests, name="review_requests"),
-    path(
-        "dashboard/review-requests/send/<int:booking_id>/",
-        send_review_request,
-        name="send_review_request",
-    ),
-    path("dashboard/review-analytics/", review_analytics, name="review_analytics"),
-    path("dashboard/customer-loyalty/", customer_loyalty, name="customer_loyalty"),
+
     path(
         "dashboard/customer/<int:customer_id>/",
         customer_profile_360,
         name="customer_profile_360",
     ),
-    path("dashboard/employee-bonuses/", employee_bonuses, name="employee_bonuses"),
-    path("dashboard/campaigns/", campaign_center, name="campaign_center"),
-    path("dashboard/campaigns/send-vip/", send_vip_campaign, name="send_vip_campaign"),
+
     path(
-        "dashboard/newsletter/subscribe/",
-        dashboard_newsletter_subscribe,
-        name="dashboard_newsletter_subscribe",
+        "dashboard/customer-360/<int:customer_id>/",
+        customer_360,
+        name="customer_360",
     ),
 
     path(
-        "dashboard/newsletter/<int:subscriber_id>/",
-        newsletter_subscriber_detail,
-        name="newsletter_subscriber_detail",
+        "dashboard/customer/<int:customer_id>/followup/",
+        send_customer_followup,
+        name="send_customer_followup",
     ),
+
+    # =========================================================
+    # BOOKINGS
+    # =========================================================
+
     path(
-        "dashboard/newsletter/<int:subscriber_id>/edit/",
-        edit_newsletter_subscriber,
-        name="edit_newsletter_subscriber",
+        "dashboard/bookings/",
+        booking_list,
+        name="booking_list",
     ),
+
     path(
-        "dashboard/newsletter/<int:subscriber_id>/delete/",
-        delete_newsletter_subscriber,
-        name="delete_newsletter_subscriber",
+        "dashboard/bookings/add/",
+        add_booking,
+        name="add_booking",
     ),
+
+    path(
+        "dashboard/bookings/<int:booking_id>/edit/",
+        edit_booking,
+        name="edit_booking",
+    ),
+
+    path(
+        "dashboard/bookings/<int:booking_id>/delete/",
+        delete_booking,
+        name="delete_booking",
+    ),
+
+    path(
+        "dashboard/bookings/<int:booking_id>/quick-status/<str:new_status>/",
+        update_booking_quick_status,
+        name="update_booking_quick_status",
+    ),
+
+    path(
+        "dashboard/bookings/<int:booking_id>/create-invoice/",
+        create_invoice_from_booking,
+        name="create_invoice_from_booking",
+    ),
+
+    path(
+        "dashboard/calendar/",
+        booking_calendar,
+        name="booking_calendar",
+    ),
+
+    # =========================================================
+    # EMPLOYEES
+    # =========================================================
+
+    path(
+        "dashboard/employees/",
+        employee_list,
+        name="employee_list",
+    ),
+
+    path(
+        "dashboard/employees/add/",
+        add_employee,
+        name="add_employee",
+    ),
+
+    path(
+        "dashboard/employees/<int:employee_id>/edit/",
+        edit_employee,
+        name="edit_employee",
+    ),
+
+    path(
+        "dashboard/employees/<int:employee_id>/delete/",
+        delete_employee,
+        name="delete_employee",
+    ),
+
+    # =========================================================
+    # GALLERY
+    # =========================================================
+
+    path(
+        "dashboard/gallery/",
+        gallery_list,
+        name="gallery_list",
+    ),
+
+    path(
+        "dashboard/gallery/add/",
+        add_gallery_item,
+        name="add_gallery_item",
+    ),
+
+    path(
+        "dashboard/gallery/<int:item_id>/edit/",
+        edit_gallery_item,
+        name="edit_gallery_item",
+    ),
+
+    path(
+        "dashboard/gallery/<int:item_id>/delete/",
+        delete_gallery_item,
+        name="delete_gallery_item",
+    ),
+
+    # =========================================================
+    # REVIEWS
+    # =========================================================
+
+    path(
+        "dashboard/reviews/",
+        review_list,
+        name="review_list",
+    ),
+
+    path(
+        "dashboard/reviews/add/",
+        add_review,
+        name="add_review",
+    ),
+
+    path(
+        "dashboard/reviews/<int:review_id>/edit/",
+        edit_review,
+        name="edit_review",
+    ),
+
+    path(
+        "dashboard/reviews/<int:review_id>/delete/",
+        delete_review,
+        name="delete_review",
+    ),
+
+    # =========================================================
+    # PERFORMANCE / REPORTING
+    # =========================================================
+
+    path(
+        "dashboard/performance/",
+        employee_performance,
+        name="employee_performance",
+    ),
+
+    path(
+        "dashboard/export-quotes/",
+        export_quotes_csv,
+        name="export_quotes_csv",
+    ),
+
+    path(
+        "dashboard/attendance/",
+        attendance_report,
+        name="attendance_report",
+    ),
+
+    path(
+        "dashboard/activity/",
+        activity_log_list,
+        name="activity_log_list",
+    ),
+
+    # =========================================================
+    # BUSINESS INSIGHTS
+    # =========================================================
+
+    path(
+        "dashboard/business-health/",
+        business_health,
+        name="business_health",
+    ),
+
+    path(
+        "dashboard/financials/",
+        financial_dashboard,
+        name="financial_dashboard",
+    ),
+
+    path(
+        "dashboard/executive/",
+        executive_dashboard,
+        name="executive_dashboard",
+    ),
+
+    path(
+        "dashboard/business-intelligence/",
+        business_intelligence,
+        name="business_intelligence",
+    ),
+
+    path(
+        "dashboard/business-kpis/",
+        business_kpis,
+        name="business_kpis",
+    ),
+
+    path(
+        "dashboard/profit-loss/",
+        profit_loss_dashboard,
+        name="profit_loss_dashboard",
+    ),
+
+    path(
+        "dashboard/finance-trends/",
+        finance_trends,
+        name="finance_trends",
+    ),
+
+    path(
+        "dashboard/gst-report/",
+        gst_report,
+        name="gst_report",
+    ),
+
+    path(
+        "dashboard/job-profitability/",
+        job_profitability_dashboard,
+        name="job_profitability_dashboard",
+    ),
+
+    path(
+        "dashboard/service-performance/",
+        service_performance_dashboard,
+        name="service_performance_dashboard",
+    ),
+
+    path(
+        "dashboard/executive-bi/",
+        executive_bi_dashboard,
+        name="executive_bi_dashboard",
+    ),
+
+    # =========================================================
+    # EMAIL / COMMUNICATIONS
+    # =========================================================
+
+    path(
+        "dashboard/email-center/",
+        email_center,
+        name="email_center",
+    ),
+
+    path(
+        "dashboard/email-center/invoice/<int:invoice_id>/send/",
+        send_invoice_reminder,
+        name="send_invoice_reminder",
+    ),
+
+    path(
+        "dashboard/email-center/booking/<int:booking_id>/send/",
+        send_booking_reminder,
+        name="send_booking_reminder",
+    ),
+
+    path(
+        "dashboard/email-center/quote/<int:quote_id>/send/",
+        send_quote_followup,
+        name="send_quote_followup",
+    ),
+
+    path(
+        "dashboard/email-logs/",
+        email_log_list,
+        name="email_log_list",
+    ),
+
+    path(
+        "dashboard/export-report/",
+        export_business_report,
+        name="export_business_report",
+    ),
+
+    path(
+        "dashboard/email-report/",
+        email_business_report,
+        name="email_business_report",
+    ),
+
+    # =========================================================
+    # CUSTOMER ANALYTICS
+    # =========================================================
+
+    path(
+        "dashboard/customer-analytics/",
+        customer_analytics,
+        name="customer_analytics",
+    ),
+
+    path(
+        "dashboard/customer-behaviour/",
+        customer_behaviour,
+        name="customer_behaviour",
+    ),
+
+    path(
+        "dashboard/customer-loyalty/",
+        customer_loyalty,
+        name="customer_loyalty",
+    ),
+
+    path(
+        "dashboard/customer-value/",
+        customer_value_dashboard,
+        name="customer_value_dashboard",
+    ),
+
+    # =========================================================
+    # REVIEW REQUESTS
+    # =========================================================
+
+    path(
+        "dashboard/review-requests/",
+        review_requests,
+        name="review_requests",
+    ),
+
+    path(
+        "dashboard/review-requests/send/<int:booking_id>/",
+        send_review_request,
+        name="send_review_request",
+    ),
+
+    path(
+        "dashboard/review-analytics/",
+        review_analytics,
+        name="review_analytics",
+    ),
+
+    # =========================================================
+    # EMPLOYEE MANAGEMENT
+    # =========================================================
+
+    path(
+        "dashboard/employee-bonuses/",
+        employee_bonuses,
+        name="employee_bonuses",
+    ),
+
+    path(
+        "dashboard/employee-schedule/",
+        employee_schedule,
+        name="employee_schedule",
+    ),
+
+    path(
+        "dashboard/employee-performance-centre/",
+        employee_performance_centre,
+        name="employee_performance_centre",
+    ),
+
+    path(
+        "dashboard/employee-performance/<int:employee_id>/",
+        employee_performance_detail,
+        name="employee_performance_detail",
+    ),
+
+    path(
+        "dashboard/employee-performance/export-pdf/",
+        export_employee_performance_pdf,
+        name="export_employee_performance_pdf",
+    ),
+
+    path(
+        "dashboard/employee-performance/email-report/",
+        email_employee_performance_report,
+        name="email_employee_performance_report",
+    ),
+
+    path(
+        "dashboard/employee-attendance-analytics/",
+        employee_attendance_analytics,
+        name="employee_attendance_analytics",
+    ),
+
+    path(
+        "dashboard/employee-kpi/",
+        employee_kpi_dashboard,
+        name="employee_kpi_dashboard",
+    ),
+
+    path(
+        "dashboard/staff-schedule/",
+        staff_schedule_dashboard,
+        name="staff_schedule_dashboard",
+    ),
+
+    # =========================================================
+    # MARKETING / CAMPAIGNS
+    # =========================================================
+
+    path(
+        "dashboard/campaigns/",
+        campaign_center,
+        name="campaign_center",
+    ),
+
+    path(
+        "dashboard/campaigns/send-vip/",
+        send_vip_campaign,
+        name="send_vip_campaign",
+    ),
+
     path(
         "dashboard/campaigns/send-inactive/",
         send_inactive_campaign,
         name="send_inactive_campaign",
     ),
+
     path(
         "dashboard/campaigns/send-review/",
         send_review_campaign,
         name="send_review_campaign",
     ),
+
     path(
         "dashboard/campaigns/preview/<str:campaign_type>/",
         campaign_preview,
         name="campaign_preview",
     ),
+
     path(
         "dashboard/campaign-performance/",
         campaign_performance,
@@ -320,185 +708,267 @@ urlpatterns = [
         campaign_history_detail,
         name="campaign_history_detail",
     ),
+
     path(
         "dashboard/campaigns/history/<int:campaign_id>/edit/",
         edit_campaign_history,
         name="edit_campaign_history",
     ),
+
     path(
         "dashboard/campaigns/history/<int:campaign_id>/delete/",
         delete_campaign_history,
         name="delete_campaign_history",
     ),
-    path("dashboard/profit-loss/", profit_loss_dashboard, name="profit_loss_dashboard"),
-    path("dashboard/business-kpis/", business_kpis, name="business_kpis"),
-    path("dashboard/employee-schedule/", employee_schedule, name="employee_schedule"),
-    path("dashboard/gst-report/", gst_report, name="gst_report"),
-    path("dashboard/finance-trends/", finance_trends, name="finance_trends"),
+
+    # =========================================================
+    # NEWSLETTER
+    # =========================================================
+
     path(
-        "dashboard/bookings/<int:booking_id>/quick-status/<str:new_status>/",
-        update_booking_quick_status,
-        name="update_booking_quick_status",
+        "dashboard/newsletter/subscribe/",
+        dashboard_newsletter_subscribe,
+        name="dashboard_newsletter_subscribe",
     ),
-    path("dashboard/equipment/", equipment_list, name="equipment_list"),
-    path("dashboard/equipment/add/", add_equipment, name="add_equipment"),
+
+    path(
+        "dashboard/newsletter/<int:subscriber_id>/",
+        newsletter_subscriber_detail,
+        name="newsletter_subscriber_detail",
+    ),
+
+    path(
+        "dashboard/newsletter/<int:subscriber_id>/edit/",
+        edit_newsletter_subscriber,
+        name="edit_newsletter_subscriber",
+    ),
+
+    path(
+        "dashboard/newsletter/<int:subscriber_id>/delete/",
+        delete_newsletter_subscriber,
+        name="delete_newsletter_subscriber",
+    ),
+
+    # =========================================================
+    # OPERATIONS / INVENTORY
+    # =========================================================
+
+    path(
+        "dashboard/equipment/",
+        equipment_list,
+        name="equipment_list",
+    ),
+
+    path(
+        "dashboard/equipment/add/",
+        add_equipment,
+        name="add_equipment",
+    ),
+
     path(
         "dashboard/equipment/<int:equipment_id>/edit/",
         edit_equipment,
         name="edit_equipment",
     ),
+
     path(
         "dashboard/equipment/<int:equipment_id>/delete/",
         delete_equipment,
         name="delete_equipment",
     ),
-    path("dashboard/supplies/", supplies_list, name="supplies_list"),
-    path("dashboard/supplies/add/", add_supply, name="add_supply"),
-    path("dashboard/supplies/<int:supply_id>/edit/", edit_supply, name="edit_supply"),
-    path("dashboard/purchase-orders/", purchase_orders, name="purchase_orders"),
+
     path(
-        "dashboard/purchase-orders/add/", add_purchase_order, name="add_purchase_order"
+        "dashboard/supplies/",
+        supplies_list,
+        name="supplies_list",
     ),
+
+    path(
+        "dashboard/supplies/add/",
+        add_supply,
+        name="add_supply",
+    ),
+
+    path(
+        "dashboard/supplies/<int:supply_id>/edit/",
+        edit_supply,
+        name="edit_supply",
+    ),
+
+    path(
+        "dashboard/purchase-orders/",
+        purchase_orders,
+        name="purchase_orders",
+    ),
+
+    path(
+        "dashboard/purchase-orders/add/",
+        add_purchase_order,
+        name="add_purchase_order",
+    ),
+
     path(
         "dashboard/purchase-orders/<int:order_id>/receive/",
         receive_purchase_order,
         name="receive_purchase_order",
     ),
-    path("dashboard/suppliers/", supplier_list, name="supplier_list"),
-    path("dashboard/suppliers/add/", add_supplier, name="add_supplier"),
+
+    path(
+        "dashboard/suppliers/",
+        supplier_list,
+        name="supplier_list",
+    ),
+
+    path(
+        "dashboard/suppliers/add/",
+        add_supplier,
+        name="add_supplier",
+    ),
+
     path(
         "dashboard/suppliers/<int:supplier_id>/edit/",
         edit_supplier,
         name="edit_supplier",
     ),
-    path("dashboard/vehicles/", vehicle_list, name="vehicle_list"),
-    path("dashboard/vehicles/add/", add_vehicle, name="add_vehicle"),
+
     path(
-        "dashboard/vehicles/<int:vehicle_id>/edit/", edit_vehicle, name="edit_vehicle"
+        "dashboard/vehicles/",
+        vehicle_list,
+        name="vehicle_list",
     ),
-    path("dashboard/maintenance/", maintenance_list, name="maintenance_list"),
-    path("dashboard/maintenance/add/", add_maintenance, name="add_maintenance"),
-    path("dashboard/reminders/", reminder_centre, name="reminder_centre"),
+
     path(
-        "dashboard/business-intelligence/",
-        business_intelligence,
-        name="business_intelligence",
+        "dashboard/vehicles/add/",
+        add_vehicle,
+        name="add_vehicle",
     ),
+
     path(
-        "dashboard/export-report/",
-        export_business_report,
-        name="export_business_report",
+        "dashboard/vehicles/<int:vehicle_id>/edit/",
+        edit_vehicle,
+        name="edit_vehicle",
     ),
+
     path(
-        "dashboard/email-report/", email_business_report, name="email_business_report"
+        "dashboard/maintenance/",
+        maintenance_list,
+        name="maintenance_list",
     ),
+
+    path(
+        "dashboard/maintenance/add/",
+        add_maintenance,
+        name="add_maintenance",
+    ),
+
+    # =========================================================
+    # REMINDERS
+    # =========================================================
+
+    path(
+        "dashboard/reminders/",
+        reminder_centre,
+        name="reminder_centre",
+    ),
+
+    # =========================================================
+    # OPERATIONS COMMAND CENTRE
+    # =========================================================
+
     path(
         "dashboard/operations-centre/",
         operations_command_centre,
         name="operations_command_centre",
     ),
-    path(
-        "dashboard/customer-360/<int:customer_id>/", customer_360, name="customer_360"
-    ),
-    path(
-        "dashboard/customer/<int:customer_id>/followup/",
-        send_customer_followup,
-        name="send_customer_followup",
-    ),
-    path(
-        "dashboard/employee-performance-centre/",
-        employee_performance_centre,
-        name="employee_performance_centre",
-    ),
-    path(
-        "dashboard/employee-performance/<int:employee_id>/",
-        employee_performance_detail,
-        name="employee_performance_detail",
-    ),
-    path(
-        "dashboard/employee-performance/export-pdf/",
-        export_employee_performance_pdf,
-        name="export_employee_performance_pdf",
-    ),
-    path(
-        "dashboard/employee-performance/email-report/",
-        email_employee_performance_report,
-        name="email_employee_performance_report",
-    ),
-    path(
-        "dashboard/employee-attendance-analytics/",
-        employee_attendance_analytics,
-        name="employee_attendance_analytics",
-    ),
+
+    # =========================================================
+    # OWNER / EXECUTIVE
+    # =========================================================
+
     path(
         "dashboard/owner-command-centre/",
         owner_command_centre,
         name="owner_command_centre",
     ),
+
     path(
         "dashboard/business-forecasting/",
         business_forecasting_centre,
         name="business_forecasting_centre",
     ),
+
     path(
-        "dashboard/ai-quote-estimator/", ai_quote_estimator, name="ai_quote_estimator"
+        "dashboard/owner-alerts/",
+        owner_alert_centre,
+        name="owner_alert_centre",
     ),
+
+    path(
+        "dashboard/ai-quote-estimator/",
+        ai_quote_estimator,
+        name="ai_quote_estimator",
+    ),
+
+    # =========================================================
+    # QUOTE ANALYTICS / FOLLOW-UPS
+    # =========================================================
+
     path(
         "dashboard/quote-conversion-analytics/",
         quote_conversion_analytics,
         name="quote_conversion_analytics",
     ),
+
     path(
         "dashboard/quote-followups/",
         quote_followup_centre,
         name="quote_followup_centre",
     ),
+
     path(
         "dashboard/quote-followups/send/<int:quote_id>/",
         send_quote_followup_email,
         name="send_quote_followup_email",
     ),
+
     path(
         "dashboard/quotes/convert/<int:quote_id>/",
         convert_quote_to_booking,
         name="convert_quote_to_booking",
     ),
-    path(
-        "dashboard/bookings/<int:booking_id>/create-invoice/",
-        create_invoice_from_booking,
-        name="create_invoice_from_booking",
-    ),
-    path("dashboard/owner-alerts/", owner_alert_centre, name="owner_alert_centre"),
-    path(
-        "dashboard/customer-value/",
-        customer_value_dashboard,
-        name="customer_value_dashboard",
-    ),
-    path("dashboard/vip-campaigns/", vip_campaigns, name="vip_campaigns"),
-    path("dashboard/vip-campaigns/send/", send_vip_campaign, name="send_vip_campaign"),
 
-    # FAQ submissions
-    path("dashboard/faq-questions/", faq_question_list, name="faq_question_list"),
-    path("dashboard/faq-questions/<int:question_id>/reply/", faq_question_reply, name="faq_question_reply"),
+    # =========================================================
+    # VIP CAMPAIGNS
+    # =========================================================
+
     path(
-        "dashboard/job-profitability/",
-        job_profitability_dashboard,
-        name="job_profitability_dashboard",
+        "dashboard/vip-campaigns/",
+        vip_campaigns,
+        name="vip_campaigns",
     ),
+
+    # Keep this as a separate legacy route without
+    # duplicating the send_vip_campaign URL name.
     path(
-        "dashboard/service-performance/",
-        service_performance_dashboard,
-        name="service_performance_dashboard",
+        "dashboard/vip-campaigns/send/",
+        send_vip_campaign,
+        name="send_vip_campaign_legacy",
     ),
+
+    # =========================================================
+    # FAQ
+    # =========================================================
+
     path(
-        "dashboard/executive-bi/", executive_bi_dashboard, name="executive_bi_dashboard"
+        "dashboard/faq-questions/",
+        faq_question_list,
+        name="faq_question_list",
     ),
+
     path(
-        "dashboard/employee-kpi/", employee_kpi_dashboard, name="employee_kpi_dashboard"
+        "dashboard/faq-questions/<int:question_id>/reply/",
+        faq_question_reply,
+        name="faq_question_reply",
     ),
-    path(
-        "dashboard/staff-schedule/",
-        staff_schedule_dashboard,
-        name="staff_schedule_dashboard",
-    ),
+
 ]

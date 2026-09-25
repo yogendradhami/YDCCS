@@ -34,31 +34,36 @@ min-height: 560px;
 display: flex;
 align-items: center;
 overflow: hidden;
-background:
-linear-gradient(
-135deg,
-#071a35 0%,
-#0b3565 52%,
-#0072ce 100%
-);
-color: #fff;
+background: transparent url("../../images/team.png") center / cover no-repeat;
+color: #102a43;
 }
 
 .team-hero-bg {
 position: absolute;
 inset: 0;
-background:
-radial-gradient(
-circle at 80% 20%,
-rgba(255,255,255,.14),
-transparent 35%
-),
-radial-gradient(
-circle at 20% 80%,
-rgba(255,255,255,.08),
-transparent 30%
-);
+background: transparent;
 pointer-events: none;
+}
+
+.team-hero,
+.team-hero h1,
+.team-hero p,
+.team-hero .team-hero-content {
+color: #14211d;
+}
+
+.team-hero .team-eyebrow,
+.team-hero h1 span {
+color: #087cff;
+}
+
+.team-hero p {
+color: #29445d;
+}
+
+.team-hero .team-btn-light {
+color: #14211d;
+background: rgba(255, 255, 255, 0.72);
 }
 
 .team-hero-content {
@@ -79,7 +84,7 @@ text-transform: uppercase;
 
 .team-eyebrow {
 margin-bottom: 22px;
-color: #b9e4ff;
+color: #0072ce;
 }
 
 .team-hero h1 {
@@ -93,7 +98,7 @@ font-weight: 900;
 
 .team-hero h1 span {
 display: block;
-color: #8ed4ff;
+color: #0072ce;
 }
 
 .team-hero p {
@@ -101,7 +106,7 @@ max-width: 720px;
 margin: 0;
 font-size: 18px;
 line-height: 1.8;
-color: rgba(255,255,255,.88);
+color: #29445d;
 }
 
 .team-hero-actions {

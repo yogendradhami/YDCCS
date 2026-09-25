@@ -75,6 +75,31 @@
         );
 }
 
+.faq-hero {
+    color: #14211d;
+    background: transparent url("/static/images/faq.png") center / cover no-repeat;
+}
+
+.faq-hero::before,
+.faq-hero::after {
+    display: none;
+}
+
+.faq-hero h1,
+.faq-hero p {
+    color: #14211d;
+    text-shadow: none;
+}
+
+.faq-hero p {
+    color: #29445d;
+}
+
+.faq-hero .faq-search input,
+.faq-hero .faq-search input::placeholder {
+    color: #29445d;
+}
+
 
 /* Decorative circles */
 
@@ -1444,6 +1469,20 @@
     }
 }
 
+/* Final hero contrast override for the image-backed FAQ landing page. */
+.faq-hero,
+.faq-hero h1,
+.faq-hero p,
+.faq-hero .faq-search input,
+.faq-hero .faq-search input::placeholder {
+    color: #14211d !important;
+}
+
+.faq-hero p,
+.faq-hero .faq-search input,
+.faq-hero .faq-search input::placeholder {
+    color: #29445d !important;
+}
 
 /* ============================================================
    MOBILE

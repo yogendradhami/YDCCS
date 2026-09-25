@@ -28,6 +28,27 @@
     color: #ffffff;
 }
 
+.guides-hero h1,
+.guides-hero h1 strong,
+.guides-hero .guides-eyebrow,
+.guides-hero .guides-hero-text {
+    color: #14211d !important;
+    text-shadow: none;
+}
+
+.guides-hero .guides-eyebrow {
+    color: #087cff !important;
+}
+
+.guides-hero .guides-hero-text {
+    color: #29445d !important;
+}
+
+.guides-hero .guides-btn,
+.guides-hero .guides-hero-actions a {
+    color: #14211d !important;
+}
+
 .guides-hero::before {
     content: "";
     position: absolute;
@@ -37,6 +58,33 @@
     top: -160px;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.guides-hero {
+    min-height: 560px;
+    color: #14211d;
+    background: transparent url("../../images/cleaning_guide.png") center / cover no-repeat;
+}
+
+.guides-hero::before,
+.guides-hero::after {
+    display: none;
+}
+
+.guides-hero h1,
+.guides-hero-text {
+    color: #14211d;
+    text-shadow: none;
+}
+
+.guides-hero-text {
+    color: #29445d;
+}
+
+@media (max-width: 768px) {
+    .guides-hero {
+        min-height: 620px;
+    }
 }
 
 .guides-hero::after {

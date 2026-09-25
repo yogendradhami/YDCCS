@@ -16,6 +16,8 @@ from datetime import datetime, time, timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from .decorators import admin_required
 import logging
 from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
@@ -302,7 +304,7 @@ def dashboard_home(request):
     return render(request, "dashboard.html", context)
 
 
-@login_required
+@admin_required
 def careers_list(request):
     """Dashboard view listing career applications."""
     applications = CareerApplication.objects.all().order_by("-created_at")
@@ -328,8 +330,7 @@ def careers_list(request):
     context = {"applications": applications, "filter_status": status, "filter_position": position, "q": q}
     return render(request, "dashboard/careers_list.html", context)
 
-
-@login_required
+@admin_required
 def career_detail(request, application_id):
     application = get_object_or_404(CareerApplication, id=application_id)
 
@@ -388,7 +389,7 @@ def career_detail(request, application_id):
     return render(request, "dashboard/career_detail.html", {"application": application})
 
 
-@login_required
+@admin_required
 def download_resume(request, application_id):
     """Proxy download for resume to ensure proper headers and filename.
 
@@ -429,7 +430,7 @@ def download_resume(request, application_id):
     return response
 
 
-@login_required
+@admin_required
 def preview_resume(request, application_id):
     """Stream the resume for inline preview (PDFs/images) when possible.
 
@@ -578,7 +579,7 @@ def faq_question_reply(request, question_id):
     return render(request, "dashboard/faq_reply.html", {"question": q})
 
 
-@login_required
+@admin_required
 def add_customer(request):
     if request.method == "POST":
         form = CustomerForm(request.POST)
@@ -612,7 +613,7 @@ def add_customer(request):
     )
 
 
-@login_required
+@admin_required
 def edit_customer(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
 
@@ -648,7 +649,8 @@ def edit_customer(request, customer_id):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def delete_customer(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
 
@@ -698,7 +700,7 @@ def booking_list(request):
         },
     )
 
-@login_required
+@admin_required
 def add_booking(request):
     if request.method == "POST":
         form = BookingForm(request.POST)
@@ -775,7 +777,7 @@ def add_booking(request):
     )
 
 
-@login_required
+@admin_required
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
@@ -877,7 +879,8 @@ def edit_booking(request, booking_id):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def delete_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
@@ -1006,7 +1009,7 @@ def employee_list(request):
     return render(request, "employees/employee_list.html", {"employees": employees})
 
 
-@login_required
+@admin_required
 def add_employee(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST, request.FILES)
@@ -1044,7 +1047,7 @@ def add_employee(request):
     )
 
 
-@login_required
+@admin_required
 def edit_employee(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
 
@@ -1084,7 +1087,8 @@ def edit_employee(request, employee_id):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def delete_employee(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
 
@@ -1253,8 +1257,9 @@ def edit_gallery_item(
     )
 
 
-@login_required
-def delete_gallery_item(request,item_id):
+@require_POST
+@admin_required
+def delete_gallery_item(request, item_id):
 
     item = get_object_or_404(
         GalleryItem,
@@ -1371,7 +1376,8 @@ def edit_review(request, review_id):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
 
@@ -2022,7 +2028,8 @@ def email_center(request):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def send_invoice_reminder(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
     customer = invoice.booking.customer
@@ -2085,7 +2092,8 @@ YD Commercial Cleaning Services
     return redirect("email_center")
 
 
-@login_required
+@require_POST
+@admin_required
 def send_booking_reminder(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     customer = booking.customer
@@ -2139,7 +2147,8 @@ YD Commercial Cleaning Services
     return redirect("email_center")
 
 
-@login_required
+@require_POST
+@admin_required
 def send_quote_followup(request, quote_id):
     quote = get_object_or_404(QuoteRequest, id=quote_id)
 
@@ -2474,8 +2483,8 @@ def review_requests(request):
         request, "dashboard/reviews/review_requests.html", {"completed_bookings": completed_bookings}
     )
 
-
-@login_required
+@require_POST
+@admin_required
 def send_review_request(request, booking_id):
 
     booking = get_object_or_404(Booking, id=booking_id)
@@ -3053,7 +3062,8 @@ def edit_newsletter_subscriber(request, subscriber_id):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def delete_newsletter_subscriber(request, subscriber_id):
     subscriber = get_object_or_404(
         MarketingSubscriber,
@@ -3155,7 +3165,8 @@ def edit_campaign_history(request, campaign_id):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def delete_campaign_history(request, campaign_id):
     campaign = get_object_or_404(
         CampaignLog,
@@ -3230,7 +3241,8 @@ def campaign_center(request):
         },
     )
 
-@login_required
+@require_POST
+@admin_required
 def send_vip_campaign(request):
     vip_customers = Customer.objects.filter(total_revenue__gte=1000).exclude(email="")
 
@@ -3291,7 +3303,8 @@ YD Commercial Cleaning Services
     return redirect("campaign_center")
 
 
-@login_required
+@require_POST
+@admin_required
 def send_inactive_campaign(request):
     inactive_customers = Customer.objects.filter(jobs_completed__lte=1).exclude(
         email=""
@@ -3356,7 +3369,8 @@ YD Commercial Cleaning Services
     return redirect("campaign_center")
 
 
-@login_required
+@require_POST
+@admin_required
 def send_review_campaign(request):
     completed_bookings = Booking.objects.filter(status="completed").select_related(
         "customer"
@@ -3906,7 +3920,8 @@ def finance_trends(request):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def update_booking_quick_status(request, booking_id, new_status):
     booking = get_object_or_404(Booking, id=booking_id)
 
@@ -4147,7 +4162,8 @@ def edit_equipment(request, equipment_id):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def delete_equipment(request, equipment_id):
     from .models import Equipment
 
@@ -5654,7 +5670,8 @@ def quote_conversion_analytics(request):
     )
 
 
-@login_required
+@require_POST
+@admin_required
 def quote_followup_centre(request):
 
     followup_date = timezone.now() - timedelta(days=2)
@@ -5692,7 +5709,8 @@ YD Commercial Cleaning Services
     return redirect("quote_followup_centre")
 
 
-@login_required
+@require_POST
+@admin_required
 def convert_quote_to_booking(request, quote_id):
 
     quote = get_object_or_404(QuoteRequest, id=quote_id)
@@ -5718,7 +5736,8 @@ def convert_quote_to_booking(request, quote_id):
     messages.success(request, "Quote converted to booking successfully.")
     return redirect("booking_list")
 
-@login_required
+@require_POST
+@admin_required
 def create_invoice_from_booking(request, booking_id):
 
     booking = get_object_or_404(Booking, id=booking_id)

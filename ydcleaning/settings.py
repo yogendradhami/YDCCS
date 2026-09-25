@@ -27,7 +27,7 @@ env = environ.Env(
     DJANGO_DEBUG=(bool, False),
 )
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SITE_URL = "https://ydcleaning.com.au"
@@ -120,7 +120,7 @@ else:
 
 
 # ==========================================================
-# reCAPTCHA
+# RECAPTCHA
 # ==========================================================
 
 RECAPTCHA_SITE_KEY = env.str(
@@ -185,7 +185,6 @@ INSTALLED_APPS = [
     "support",
     "analytics",
     "corporate",
-
 ]
 
 
@@ -201,7 +200,9 @@ CLOUDINARY_STORAGE = {
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": (
+            "cloudinary_storage.storage.MediaCloudinaryStorage"
+        ),
     },
     "staticfiles": {
         "BACKEND": (
@@ -352,8 +353,8 @@ DATABASES["default"]["CONN_MAX_AGE"] = 60
 # CACHE
 # ==========================================================
 
-# Kept unchanged intentionally.
-# Cache behaviour will be reviewed separately after inspecting
+# Kept as LocMemCache intentionally.
+# Cache behaviour is controlled separately by
 # core.middleware.CacheHeaderMiddleware.
 CACHES = {
     "default": {
@@ -597,16 +598,18 @@ GOOGLE_CLIENT_SECRET = env.str(
 GOOGLE_REDIRECT_URI = env.str(
     "GOOGLE_REDIRECT_URI",
     default=(
-        "https://ydcleaning.com.au/"
-        "google/oauth/callback/"
+        f"{SITE_URL}/google/oauth/callback/"
     ),
 )
 
+# IMPORTANT:
+# The previous default pointed to localhost. The production
+# default now uses the live website. You can still override
+# this through GOOGLE_EMPLOYEE_REDIRECT_URI in .env/.env.local.
 GOOGLE_EMPLOYEE_REDIRECT_URI = env.str(
     "GOOGLE_EMPLOYEE_REDIRECT_URI",
     default=(
-        "http://127.0.0.1:8000/"
-        "employee/google/oauth/callback/"
+        f"{SITE_URL}/employee/google/oauth/callback/"
     ),
 )
 
@@ -743,4 +746,3 @@ LOGGING = {
         ),
     },
 }
-

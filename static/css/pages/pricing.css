@@ -147,24 +147,13 @@
     position: relative;
     overflow: hidden;
 
-    color: #ffffff;
+    color: #102A43;
 
-    background:
-        radial-gradient(
-            circle at 82% 25%,
-            rgba(183, 149, 85, 0.18),
-            transparent 28%
-        ),
-        linear-gradient(
-            120deg,
-            #0b3027 0%,
-            #174b3d 55%,
-            #123d32 100%
-        );
+    background: transparent url("../../images/pricing.png") center / cover no-repeat;
 }
 
 .yd-pricing-page .pricing-hero::before {
-    content: "";
+    display: none;
 
     position: absolute;
     top: -180px;
@@ -177,8 +166,30 @@
     border-radius: 50%;
 }
 
+.yd-pricing-page .pricing-hero,
+.yd-pricing-page .pricing-hero .pricing-hero__copy,
+.yd-pricing-page .pricing-hero .hero-lead,
+.yd-pricing-page .pricing-hero .hero-trust,
+.yd-pricing-page .pricing-hero .text-link {
+    color: #14211d;
+}
+
+.yd-pricing-page .pricing-hero .eyebrow,
+.yd-pricing-page .pricing-hero h1 em {
+    color: #087cff;
+}
+
+.yd-pricing-page .pricing-hero .hero-lead,
+.yd-pricing-page .pricing-hero .hero-trust {
+    color: #29445d;
+}
+
+.yd-pricing-page .pricing-hero .text-link {
+    color: #0d4fae;
+}
+
 .yd-pricing-page .pricing-hero::after {
-    content: "";
+    display: none;
 
     position: absolute;
     right: 12%;
@@ -219,7 +230,7 @@
 .yd-pricing-page .eyebrow {
     margin-bottom: 22px;
 
-    color: var(--pricing-gold-light);
+    color: var(--pricing-gold);
 
     font-size: 11px;
     font-weight: 800;
@@ -235,7 +246,7 @@
 }
 
 .yd-pricing-page .pricing-hero h1 em {
-    color: var(--pricing-gold-light);
+    color: #0B6FD3;
 
     font-family: Georgia, "Times New Roman", serif;
     font-weight: 400;
@@ -246,7 +257,7 @@
 
     margin-bottom: 32px;
 
-    color: rgba(255, 255, 255, 0.78);
+    color: #334E68;
 
     font-size: 18px;
     line-height: 1.75;
@@ -260,7 +271,7 @@
 }
 
 .yd-pricing-page .pricing-hero .text-link {
-    color: #ffffff;
+    color: #102A43;
 }
 
 .yd-pricing-page .hero-trust {
@@ -271,9 +282,9 @@
     margin-top: 42px;
     padding-top: 22px;
 
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-top: 1px solid rgba(16, 42, 67, 0.15);
 
-    color: rgba(255, 255, 255, 0.72);
+    color: #486581;
 
     font-size: 12px;
 }

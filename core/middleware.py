@@ -1,42 +1,68 @@
 # core/middleware.py
 
-from django.shortcuts import redirect
 from django.contrib import messages
+from django.shortcuts import redirect
 
 
 class RoleAccessMiddleware:
     """
-    Role security:
-    - Customer can access /portal/ only
-    - Employee can access /employee/ only
-    - Admin/staff can access all
+    Role-based access control.
+
+    Rules:
+    - Customers can access /portal/ only.
+    - Employees can access /employee/ only.
+    - Staff and superusers can access all protected areas.
+    - OAuth callbacks that must be reached before authentication
+      are explicitly allowed through.
     """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        
         path = request.path
 
+        # ======================================================
+        # PUBLIC / AUTHENTICATION PATHS
+        # ======================================================
+        #
+        # These paths must be reachable without an authenticated
+        # user. This includes OAuth callbacks because the external
+        # provider redirects the browser back before Django has
+        # established the application session.
+        #
+
         public_paths = (
+            # Static / media
             "/static/",
             "/media/",
+
+            # Customer authentication
             "/portal/login/",
             "/portal/register/",
             "/portal/verify-email/",
             "/portal/resend-verification/",
             "/portal/logout/",
             "/portal/password-reset/",
+
+            # Employee authentication
             "/employee/login/",
             "/employee/logout/",
+
+            # Employee Google OAuth callback
+            "/employee/google/oauth/callback/",
+
+            # Dashboard authentication
             "/dashboard/login/",
             "/dashboard/logout/",
         )
 
-        for public_path in public_paths:
-            if path.startswith(public_path):
-                return self.get_response(request)
+        if path.startswith(public_paths):
+            return self.get_response(request)
+
+        # ======================================================
+        # UNAUTHENTICATED USERS
+        # ======================================================
 
         if not request.user.is_authenticated:
 
@@ -51,14 +77,40 @@ class RoleAccessMiddleware:
 
             return self.get_response(request)
 
+        # ======================================================
+        # STAFF / SUPERUSER
+        # ======================================================
+        #
+        # Staff and superusers are allowed to access all
+        # application areas.
+        #
+
         if request.user.is_staff or request.user.is_superuser:
             return self.get_response(request)
 
-        is_customer = hasattr(request.user, "customer_profile")
-        is_employee = hasattr(request.user, "employee_profile")
+        # ======================================================
+        # DETERMINE USER ROLE
+        # ======================================================
+
+        is_customer = hasattr(
+            request.user,
+            "customer_profile",
+        )
+
+        is_employee = hasattr(
+            request.user,
+            "employee_profile",
+        )
+
+        # ======================================================
+        # DASHBOARD ACCESS
+        # ======================================================
 
         if path.startswith("/dashboard/"):
-            messages.error(request, "You do not have permission to access admin dashboard.")
+            messages.error(
+                request,
+                "You do not have permission to access admin dashboard.",
+            )
 
             if is_customer:
                 return redirect("portal_dashboard")
@@ -68,16 +120,30 @@ class RoleAccessMiddleware:
 
             return redirect("/")
 
+        # ======================================================
+        # EMPLOYEE PORTAL ACCESS
+        # ======================================================
+
         if path.startswith("/employee/") and not is_employee:
-            messages.error(request, "Only employees can access employee portal.")
+            messages.error(
+                request,
+                "Only employees can access employee portal.",
+            )
 
             if is_customer:
                 return redirect("portal_dashboard")
 
             return redirect("/")
 
+        # ======================================================
+        # CUSTOMER PORTAL ACCESS
+        # ======================================================
+
         if path.startswith("/portal/") and not is_customer:
-            messages.error(request, "Only customers can access customer portal.")
+            messages.error(
+                request,
+                "Only customers can access customer portal.",
+            )
 
             if is_employee:
                 return redirect("employee_dashboard")
@@ -86,29 +152,60 @@ class RoleAccessMiddleware:
 
         return self.get_response(request)
 
+
 class SEOMiddleware:
+    """
+    Controls SEO-related response headers.
+
+    Public HTML pages:
+        X-Robots-Tag: index, follow
+
+    Private application areas:
+        X-Robots-Tag: noindex, nofollow
+
+    Authenticated responses:
+        Cache-Control: private, no-store
+
+    Sitemap and robots.txt are handled separately.
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-
         response = self.get_response(request)
 
-        # Remove Django sitemap noindex header
+        # ======================================================
+        # SITEMAP
+        # ======================================================
+
         if request.path == "/sitemap.xml":
+            # Django may add an X-Robots-Tag header to the
+            # sitemap. Remove it so the sitemap itself remains
+            # crawlable.
             if "X-Robots-Tag" in response.headers:
                 del response.headers["X-Robots-Tag"]
 
             return response
 
+        # ======================================================
+        # ROBOTS.TXT
+        # ======================================================
+
         if request.path == "/robots.txt":
             return response
 
+        # ======================================================
+        # AUTHENTICATED RESPONSES
+        # ======================================================
 
         if request.user.is_authenticated:
             response["Cache-Control"] = "private, no-store"
             return response
+
+        # ======================================================
+        # PRIVATE APPLICATION AREAS
+        # ======================================================
 
         private_paths = (
             "/admin/",
@@ -120,6 +217,10 @@ class SEOMiddleware:
         if request.path.startswith(private_paths):
             response["X-Robots-Tag"] = "noindex, nofollow"
             response["Cache-Control"] = "private, no-store"
+
+        # ======================================================
+        # PUBLIC HTML
+        # ======================================================
 
         elif (
             response.status_code == 200
@@ -135,25 +236,34 @@ class CacheHeaderMiddleware:
     Safe cache-control policy.
 
     Goals:
-    - Keep existing caching for public website pages.
+    - Keep caching for public website pages.
     - Keep long-lived caching for static files.
     - Keep media caching.
-    - Keep robots.txt and sitemap.xml caching.
-    - Never publicly cache authenticated/private responses.
+    - Cache robots.txt and sitemap.xml.
+    - Never publicly cache authenticated responses.
     - Never cache state-changing requests.
     - Avoid caching requests carrying session/CSRF cookies.
     - Protect sensitive application areas from accidental caching.
 
-    This middleware intentionally does NOT change application logic,
-    authentication, SEO behaviour, URLs, templates, database access,
-    Cloudinary, Stripe, email, OAuth, Channels or WebSockets.
+    This middleware does not modify:
+    - application logic
+    - authentication
+    - SEO behaviour
+    - URLs
+    - templates
+    - database access
+    - Cloudinary
+    - Stripe
+    - email
+    - OAuth configuration
+    - Channels
+    - WebSockets
     """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-
         response = self.get_response(request)
 
         path = request.path
@@ -161,13 +271,6 @@ class CacheHeaderMiddleware:
         # ======================================================
         # 1. NEVER CACHE STATE-CHANGING REQUESTS
         # ======================================================
-        #
-        # POST/PUT/PATCH/DELETE requests can contain customer,
-        # employee, booking, payment, login or form information.
-        #
-        # Even if an application accidentally returns HTTP 200,
-        # these responses must not become publicly cacheable.
-        #
 
         if request.method not in ("GET", "HEAD"):
             response["Cache-Control"] = "no-store"
@@ -184,17 +287,6 @@ class CacheHeaderMiddleware:
         # ======================================================
         # 3. NEVER CACHE REQUESTS WITH SESSION / CSRF COOKIES
         # ======================================================
-        #
-        # Anonymous users can still have session state.
-        #
-        # A session cookie may contain information that makes a
-        # response user-specific.
-        #
-        # A CSRF cookie can also indicate that the visitor is
-        # interacting with a stateful form.
-        #
-        # Therefore these requests are treated conservatively.
-        #
 
         if (
             "sessionid" in request.COOKIES
@@ -214,17 +306,9 @@ class CacheHeaderMiddleware:
         # ======================================================
         # 5. PRIVATE / SENSITIVE APPLICATION AREAS
         # ======================================================
-        #
-        # These areas should never be publicly cached, even when
-        # the current request happens to be anonymous.
-        #
-        # Some paths may redirect unauthenticated visitors.
-        # Keeping them non-cacheable prevents sensitive redirects
-        # or future personalised responses from becoming cached.
-        #
 
         private_paths = (
-            # Django/admin
+            # Django admin
             "/admin/",
 
             # Internal dashboards
@@ -248,7 +332,7 @@ class CacheHeaderMiddleware:
             "/checkout/",
             "/account/",
 
-            # Business/customer information
+            # Customer information
             "/customers/",
             "/customer/",
 
@@ -303,10 +387,6 @@ class CacheHeaderMiddleware:
         # ======================================================
         # 7. STATIC FILES
         # ======================================================
-        #
-        # Static assets are safe to cache aggressively because
-        # they are versioned/managed by the deployment process.
-        #
 
         if path.startswith("/static/"):
             response["Cache-Control"] = (
@@ -317,9 +397,6 @@ class CacheHeaderMiddleware:
         # ======================================================
         # 8. MEDIA FILES
         # ======================================================
-        #
-        # Cloudinary-backed media is kept cacheable as before.
-        #
 
         if path.startswith("/media/"):
             response["Cache-Control"] = (
@@ -331,15 +408,7 @@ class CacheHeaderMiddleware:
         # 9. SAFE PUBLIC WEBSITE PAGES
         # ======================================================
         #
-        # Preserve the existing one-hour public-page caching
-        # behaviour for normal anonymous GET/HEAD requests.
-        #
-        # We only reach this point when:
-        # - the request is GET/HEAD;
-        # - the user is not authenticated;
-        # - there is no session/CSRF cookie;
-        # - the response does not set a cookie;
-        # - the path is not private.
+        # Only normal anonymous GET/HEAD requests reach here.
         #
 
         if (
@@ -354,4 +423,3 @@ class CacheHeaderMiddleware:
             )
 
         return response
-
