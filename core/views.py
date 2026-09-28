@@ -1115,6 +1115,12 @@ def _get_canonical_service_redirect_path(service_slug):
     if slug.endswith("-adelaide"):
         return None
 
+    # Preserve the historical duplicated Adelaide CBD form while
+    # redirecting it to the cleaner canonical URL.
+    if slug.endswith("-adelaide-adelaide-cbd"):
+        base_slug = slug[:-len("-adelaide-cbd")]
+        return f"/services/{base_slug}-adelaide-cbd/"
+
     # Already-canonical location URLs use:
     # <service>-adelaide-<location>
     for location_slug in sorted(LOCATION_ALIASES, key=len, reverse=True):
