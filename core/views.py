@@ -323,11 +323,14 @@ def home(request):
     else:
         form = QuoteRequestForm(request=request)
 
+    quick_quote_form = QuickQuoteForm(request=request)
+
     return render(
         request,
         "home.html",
         {
             "form": form,
+            "quick_quote_form": quick_quote_form,
             "marketing_form": MarketingSignupForm(),
             "gallery_items": gallery_items,
             "services": featured_services,
