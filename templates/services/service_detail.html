@@ -15,7 +15,13 @@ django
 
 
 {% block title %}
-{{ service.title|cut:" Adelaide" }}{% if location %} in {{ location }}{% else %} Adelaide{% endif %} | YD Commercial Cleaning
+{% if service.meta_title %}
+{{ service.meta_title }}
+{% elif location %}
+{{ service.title|cut:" Adelaide" }} in {{ location }} | YD Commercial Cleaning
+{% else %}
+{{ service.title|cut:" Adelaide" }} Adelaide | YD Commercial Cleaning
+{% endif %}
 {% endblock %}
 
 
@@ -111,14 +117,12 @@ django
 
 {% block meta_description %}
 
-{% if location %}
-
+{% if service.meta_description %}
+{{ service.meta_description|safe }}
+{% elif location %}
 Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses across Adelaide by YD Commercial Cleaning Services.
-
 {% else %}
-
-Professional {{ service.title }} Adelaide service by YD Commercial Cleaning Services.
-
+Professional {{ service.title|cut:" Adelaide" }} services in Adelaide by YD Commercial Cleaning Services.
 {% endif %}
 
 {% endblock %}
