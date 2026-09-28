@@ -1609,7 +1609,7 @@ SERVICE_SLUG_ALIASES = {
         "commercial-cleaning",
 
     "bathroom-deep-cleaning-adelaide":
-        "standard-bathroom-cleaning",
+        "bathroom-cleaning",
 
     "kitchen-deep-cleaning-adelaide":
         "kitchen-deep-cleaning",
