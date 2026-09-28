@@ -135,6 +135,19 @@ class SmokeTest(TestCase):
         self.assertNotIn("in Adelaide, Adelaide.", body)
         self.assertNotIn("Adelaide, Adelaide SA", body)
 
+    def test_service_pages_use_dedicated_seo_metadata_when_available(self):
+        cases = [
+            ("/services/commercial-cleaning-adelaide/", "Commercial Cleaning Adelaide | Professional Business Cleaners"),
+            ("/services/office-cleaning-adelaide/", "Office Cleaning Adelaide | Professional Office Cleaners"),
+        ]
+        for url, expected_title in cases:
+            with self.subTest(url=url):
+                resp = self.client.get(url)
+                self.assertEqual(resp.status_code, 200)
+                body = resp.content.decode("utf-8")
+                self.assertIn(f"<title>{expected_title}</title>", body)
+                self.assertNotIn("Adelaide Adelaide", body)
+
     def test_service_page_accepts_adelaide_url_variants(self):
         resp = self.client.get("/services/commercial-cleaning-adelaide/")
         self.assertEqual(resp.status_code, 200)
