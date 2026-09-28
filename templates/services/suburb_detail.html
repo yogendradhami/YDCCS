@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 {{ page_title }}
@@ -17,6 +18,8 @@
 {% endblock %}
 
 {% block content %}
+
+<link rel="stylesheet" href="{% static 'css/components/quick-quote.css' %}">
 
 <div class="adelaide-location-index">
 
