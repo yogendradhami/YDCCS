@@ -13,7 +13,8 @@ def canonical_url(context):
     request = context.get("request")
     if not request:
         return ""
-    return request.build_absolute_uri(request.path)
+    site_url = getattr(settings, "SITE_URL", "").rstrip("/")
+    return f"{site_url}{request.path}" if site_url else request.build_absolute_uri(request.path)
 
 @register.simple_tag(takes_context=True)
 def current_page_url(context):
