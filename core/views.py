@@ -376,7 +376,7 @@ def contact(request):
                     request,
                     "Thanks — your enquiry has been received. Our team will contact you shortly.",
                 )
-                return redirect("/contact/#quote-form")
+                return redirect("/contact/#quickQuoteForm")
             except Exception:
                 logger.exception("Quick quote submission failed.")
                 messages.error(
