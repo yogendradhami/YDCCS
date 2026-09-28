@@ -160,6 +160,13 @@ class SmokeTest(TestCase):
         sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
         self.assertIn("/local/adelaide/aberfoyle-park-5159/", sitemap)
 
+    def test_related_services_prefer_existing_adelaide_urls(self):
+        from core.views import _normalize_related_services
+
+        links = _normalize_related_services(["commercial-cleaning"], "Adelaide")
+        self.assertTrue(links)
+        self.assertEqual(links[0]["slug"], "commercial-cleaning-adelaide")
+
     def test_service_page_accepts_adelaide_url_variants(self):
         resp = self.client.get("/services/commercial-cleaning-adelaide/")
         self.assertEqual(resp.status_code, 200)
