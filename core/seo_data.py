@@ -1604,6 +1604,13 @@ SERVICE_SLUG_ALIASES = {
     "inspection-cleaning-adelaide":
         "inspection-cleaning",
 
+    # Legacy service families retained for URL compatibility.
+    "commercial-office-cleaning-adelaide":
+        "commercial-cleaning",
+
+    "bathroom-deep-cleaning-adelaide":
+        "standard-bathroom-cleaning",
+
     "kitchen-deep-cleaning-adelaide":
         "kitchen-deep-cleaning",
 
