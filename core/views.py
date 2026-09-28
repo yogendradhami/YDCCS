@@ -355,14 +355,22 @@ def contact(request):
 
         if form.is_valid():
             try:
-                quote = form.save()
-                customer_email_sent = send_customer_quote_email(quote)
-                admin_email_sent = send_admin_quote_email(quote)
+                quote, created = create_quote_request(form=form)
 
-                if not customer_email_sent:
-                    logger.warning("Quick quote customer email was not sent.")
-                if not admin_email_sent:
-                    logger.warning("Quick quote admin email was not sent.")
+                if created:
+                    customer_email_sent = send_customer_quote_email(quote)
+                    admin_email_sent = send_admin_quote_email(quote)
+
+                    if not customer_email_sent:
+                        logger.error(
+                            "Quick quote customer email was not sent for QuoteRequest %s.",
+                            quote.id,
+                        )
+                    if not admin_email_sent:
+                        logger.error(
+                            "Quick quote company email was not sent for QuoteRequest %s.",
+                            quote.id,
+                        )
 
                 messages.success(
                     request,
@@ -649,9 +657,23 @@ def pricing(request):
         form = QuickQuoteForm(request.POST, request=request)
         if form.is_valid():
             try:
-                quote = form.save()
-                send_customer_quote_email(quote)
-                send_admin_quote_email(quote)
+                quote, created = create_quote_request(form=form)
+
+                if created:
+                    customer_email_sent = send_customer_quote_email(quote)
+                    admin_email_sent = send_admin_quote_email(quote)
+
+                    if not customer_email_sent:
+                        logger.error(
+                            "Pricing quick quote customer email was not sent for QuoteRequest %s.",
+                            quote.id,
+                        )
+                    if not admin_email_sent:
+                        logger.error(
+                            "Pricing quick quote company email was not sent for QuoteRequest %s.",
+                            quote.id,
+                        )
+
                 messages.success(
                     request,
                     "Thanks — your quote request has been received. We'll be in touch shortly.",
