@@ -1886,6 +1886,11 @@ def service_page(request, service_slug):
 
     if service_obj:
         service = _service_context_from_model(service_obj)
+        # Prefer the curated SEO fields from seo_data.py when available.
+        definition = _service_context_from_definition(normalized_slug)
+        if definition:
+            service["meta_title"] = definition.get("meta_title") or service.get("meta_title", "")
+            service["meta_description"] = definition.get("meta_description") or service.get("meta_description", "")
     else:
         service = _service_context_from_definition(normalized_slug)
 
