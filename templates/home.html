@@ -22,6 +22,7 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
 {% block extra_css %}
 
 <link rel="stylesheet" href="{% static 'css/pages/home-page.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/quick-quote.css' %}">
 
 <style>
     .grecaptcha-badge {
@@ -235,6 +236,18 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
 
 </section>
 
+
+<!-- =====================================================
+     QUICK QUOTE
+     ===================================================== -->
+
+{% include "components/quick_quote_form.html" with
+    quick_quote_form=quick_quote_form
+    form_id="quick-quote-home"
+    variant="home"
+    heading="Tell us what needs cleaning."
+    description="Share a few essentials and our Adelaide team will get back to you with a personalised, no-obligation quote."
+%}
 
 <!-- =====================================================
      INTRO / SEO SECTION
