@@ -98,7 +98,7 @@ class SmokeTest(TestCase):
         resp = self.client.get("/testimonials/")
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
-        self.assertIn("Live Google Reviews", body)
+        self.assertIn("Recent Google Reviews", body)
 
     def test_footer_special_services_section_uses_simple_links(self):
         resp = self.client.get("/")
@@ -114,7 +114,7 @@ class SmokeTest(TestCase):
         resp = self.client.get("/eco-friendly-cleaning/")
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
-        self.assertIn("Why businesses choose our eco approach", body)
+        self.assertIn("A better cleaning experience for your space", body)
         self.assertIn("Cleaner spaces, lower impact", body)
         self.assertIn("What we use", body)
 
