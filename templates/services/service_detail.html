@@ -15,7 +15,7 @@ django
 
 
 {% block title %}
-{{ service.title|cut:" Adelaide" }} in {{ location|default:"Adelaide" }} Adelaide | YD Commercial Cleaning
+{{ service.title|cut:" Adelaide" }}{% if location %} in {{ location }}{% else %} Adelaide{% endif %} | YD Commercial Cleaning
 {% endblock %}
 
 
@@ -113,7 +113,7 @@ django
 
 {% if location %}
 
-Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses across Adelaide by YD Commercial Cleaning Services.
 
 {% else %}
 
@@ -129,7 +129,7 @@ Professional {{ service.title }} Adelaide service by YD Commercial Cleaning Serv
 
 {% if location %}
 
-{{ service.title|cut:" Adelaide" }} in {{ location }} Adelaide | YD Commercial Cleaning Services
+{{ service.title|cut:" Adelaide" }}{% if location %} in {{ location }}{% else %} Adelaide{% endif %} | YD Commercial Cleaning Services
 
 {% else %}
 
@@ -145,7 +145,7 @@ Professional {{ service.title }} Adelaide service by YD Commercial Cleaning Serv
 
 {% if location %}
 
-Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses across Adelaide by YD Commercial Cleaning Services.
 
 {% else %}
 
@@ -161,7 +161,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
 {% if location %}
 
-{{ service.title|cut:" Adelaide" }} in {{ location }} Adelaide | YD Commercial Cleaning Services
+{{ service.title|cut:" Adelaide" }}{% if location %} in {{ location }}{% else %} Adelaide{% endif %} | YD Commercial Cleaning Services
 
 {% else %}
 
@@ -177,7 +177,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
 {% if location %}
 
-Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Adelaide. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses by YD Commercial Cleaning Services.
+Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Reliable residential and commercial cleaning for homes, offices, rental properties and businesses across Adelaide by YD Commercial Cleaning Services.
 
 {% else %}
 
@@ -244,7 +244,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
                 <img
                     src="{{ service.hero_image }}"
-                    alt="{{ service.title|cut:' Adelaide' }} service in {{ location|default:'Adelaide' }} Adelaide"
+                    alt="Professional {{ service.title|cut:' Adelaide'|lower }} service in {{ location|default:'Adelaide' }}"
                     loading="lazy"
                     decoding="async"
                     width="1200"
@@ -255,7 +255,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
                 <img
                     src="{% static 'images/services/' %}{{ service.slug }}.svg"
-                    alt="{{ service.title|cut:' Adelaide' }} service in {{ location|default:'Adelaide' }} Adelaide"
+                    alt="Professional {{ service.title|cut:' Adelaide'|lower }} service in {{ location|default:'Adelaide' }}"
                     loading="lazy"
                     decoding="async"
                     width="1200"
@@ -1216,11 +1216,11 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}, Ade
 
                         {% if location %}
 
-                        {{ location }}, Adelaide SA and surrounding suburbs
+                        {{ location }}, SA and surrounding suburbs
 
                         {% else %}
 
-                        Adelaide SA and surrounding suburbs
+                        Adelaide, SA and surrounding suburbs
 
                         {% endif %}
 
