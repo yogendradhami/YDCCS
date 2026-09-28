@@ -580,6 +580,16 @@ ADMIN_EMAIL = env.str(
     default="",
 )
 
+if IS_PRODUCTION and not ADMIN_EMAIL:
+    raise RuntimeError(
+        "ADMIN_EMAIL must be configured when IS_PRODUCTION=True."
+    )
+
+if IS_PRODUCTION and not RESEND_API_KEY and EMAIL_BACKEND == "core.email_backends.resend.ResendEmailBackend":
+    raise RuntimeError(
+        "RESEND_API_KEY must be configured when using the Resend email backend in production."
+    )
+
 
 # ==========================================================
 # GOOGLE OAUTH
