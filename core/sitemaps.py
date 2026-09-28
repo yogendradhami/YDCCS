@@ -133,10 +133,55 @@ class AdelaideLocalAreaSitemap(BaseSitemap):
         return timezone.now()
 
 
+class AdelaideLocalIndexSitemap(BaseSitemap):
+    """Main Adelaide local SEO hub."""
+
+    def items(self):
+        return ["local_area_index_default"]
+
+    def location(self, item):
+        return reverse(item)
+
+    def priority(self, item):
+        return 0.9
+
+    def lastmod(self, item):
+        return timezone.now()
+
+
+class AdelaideLocalLetterSitemap(BaseSitemap):
+    """A-Z Adelaide local-area index pages with actual suburb data."""
+
+    def items(self):
+        # Only expose letters that currently have local-area entries.
+        # Existing local pages and the underlying suburb dataset are untouched.
+        from .views import _get_letter_areas
+
+        return [
+            letter
+            for letter in "abcdefghijklmnopqrstuvwxyz"
+            if _get_letter_areas(letter)
+        ]
+
+    def location(self, item):
+        return reverse(
+            "local_area_index",
+            kwargs={"letter": item},
+        )
+
+    def priority(self, item):
+        return 0.75
+
+    def lastmod(self, item):
+        return timezone.now()
+
+
 sitemaps = {
     "static": StaticViewSitemap,
     "services_index": ServicesIndexSitemap,
     "service_details": ServiceDetailSitemap,
     "local_services": LocalServiceSitemap,
     "adelaide_local_areas": AdelaideLocalAreaSitemap,
+    "adelaide_local_index": AdelaideLocalIndexSitemap,
+    "adelaide_local_letters": AdelaideLocalLetterSitemap,
 }
