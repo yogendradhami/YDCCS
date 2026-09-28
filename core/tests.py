@@ -148,6 +148,18 @@ class SmokeTest(TestCase):
                 self.assertIn(f"<title>{expected_title}</title>", body)
                 self.assertNotIn("Adelaide Adelaide", body)
 
+    def test_controlled_adelaide_local_page_has_unique_seo_metadata(self):
+        resp = self.client.get("/local/adelaide/aberfoyle-park-5159/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode("utf-8")
+        self.assertIn("<title>Aberfoyle Park Cleaning Services | YD Commercial Cleaning</title>", body)
+        self.assertIn("Professional cleaning services in Aberfoyle Park, Adelaide", body)
+        self.assertIn("Aberfoyle Park", body)
+
+    def test_adelaide_local_area_sitemap_contains_controlled_pages(self):
+        sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
+        self.assertIn("/local/adelaide/aberfoyle-park-5159/", sitemap)
+
     def test_service_page_accepts_adelaide_url_variants(self):
         resp = self.client.get("/services/commercial-cleaning-adelaide/")
         self.assertEqual(resp.status_code, 200)
