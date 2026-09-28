@@ -1257,6 +1257,8 @@ def _service_context_from_model(service_obj):
     return {
         "slug": slug,
         "title": service_obj.name,
+        "meta_title": getattr(service_obj, "meta_title", "") or "",
+        "meta_description": getattr(service_obj, "meta_description", "") or service_obj.description,
         "heading": service_obj.name,
         "description": service_obj.description,
         "overview": service_obj.overview,
@@ -1291,6 +1293,7 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
     return {
         "slug": service_slug,
         "title": definition.get("title", definition.get("service_name", "Cleaning Service")),
+        "meta_title": definition.get("meta_title", ""),
         "location_content": definition.get("location_content", {}).get(
             location_name.lower().replace(" ", "-"),
             ""
