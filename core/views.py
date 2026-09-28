@@ -1989,11 +1989,16 @@ def service_page(request, service_slug):
     service_review_count = len(google_reviews)
     service_average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
 
+    quick_quote_form = QuickQuoteForm(request=request)
+
     return render(
         request,
         "services/service_detail.html",
         {
             "service": service,
+            "quick_quote_form": quick_quote_form,
+            "quick_quote_preset_service": normalized_slug,
+            "quick_quote_preset_location": location or "Adelaide",
             "service_url": service_url,
             "location": location,
             "location_definition": location_definition,
