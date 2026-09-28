@@ -1212,8 +1212,10 @@ def _get_location_from_slug(slug):
     return "Adelaide"
 
 
-def _normalize_related_services(related_services):
+def _normalize_related_services(related_services, location_name="Adelaide"):
     normalized = []
+    location_slug = slugify(location_name) if location_name else ""
+
     for item in related_services or []:
         if isinstance(item, dict):
             slug = item.get("slug") or item.get("service_slug") or item.get("name") or ""
@@ -1221,8 +1223,20 @@ def _normalize_related_services(related_services):
         else:
             slug = str(item).strip()
             label = slug.replace("-", " ").title()
-        if slug:
-            normalized.append({"slug": slug, "label": label})
+
+        if not slug:
+            continue
+
+        # Prefer the existing Adelaide/location-specific service URL when one exists.
+        candidate = f"{slug}-adelaide-{location_slug}" if location_slug and location_slug != "adelaide" else f"{slug}-adelaide"
+        if Service.objects.filter(slug=candidate, is_active=True).exists():
+            slug = candidate
+        elif not Service.objects.filter(slug=slug, is_active=True).exists():
+            # Keep the relationship only if a known service URL exists.
+            continue
+
+        normalized.append({"slug": slug, "label": label})
+
     return normalized
 
 
@@ -1318,7 +1332,7 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
             or get_service_faqs(service_slug)
             or []
         ),
-        "related_services": _normalize_related_services(definition.get("related_services", [])),
+        "related_services": _normalize_related_services(definition.get("related_services", []), location_name),
         "locations": definition.get("locations", [location_name]),
     }
 
