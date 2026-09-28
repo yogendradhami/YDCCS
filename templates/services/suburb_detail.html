@@ -865,6 +865,17 @@
     {% endif %}
 
 
+    <!-- QUICK QUOTE -->
+    {% include "components/quick_quote_form.html" with
+        quick_quote_form=quick_quote_form
+        preset_location=quick_quote_preset_location
+        form_id="quick-quote-suburb"
+        variant="suburb"
+        context_label=suburb_name
+        heading="Looking for a cleaner in {{ suburb_name }}?"
+        description="Tell us the essentials and we'll follow up about cleaning for your property in {{ suburb_name }}."
+    %}
+
     <!-- =========================================================
      FAQ
      Canonical suburb-specific FAQ section
