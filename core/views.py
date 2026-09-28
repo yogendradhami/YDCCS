@@ -46,7 +46,7 @@ from quotes.email_service import (
     send_admin_quote_email,
     send_customer_quote_email,
 )
-from quotes.forms import QuoteRequestForm
+from quotes.forms import QuoteRequestForm, QuickQuoteForm
 from quotes.services import create_quote_request
 from quotes.models import QuoteImage
 from reviews.models import Review
@@ -347,7 +347,35 @@ def home(request):
 
 
 def contact(request):
-    return render(request, "contact.html")
+    if request.method == "POST":
+        form = QuickQuoteForm(request.POST, request=request)
+
+        if form.is_valid():
+            try:
+                quote = form.save()
+                customer_email_sent = send_customer_quote_email(quote)
+                admin_email_sent = send_admin_quote_email(quote)
+
+                if not customer_email_sent:
+                    logger.warning("Quick quote customer email was not sent.")
+                if not admin_email_sent:
+                    logger.warning("Quick quote admin email was not sent.")
+
+                messages.success(
+                    request,
+                    "Thanks — your enquiry has been received. Our team will contact you shortly.",
+                )
+                return redirect("/contact/#quote-form")
+            except Exception:
+                logger.exception("Quick quote submission failed.")
+                messages.error(
+                    request,
+                    "We couldn't submit your enquiry right now. Please try again or call 0430 049 865.",
+                )
+    else:
+        form = QuickQuoteForm(request=request)
+
+    return render(request, "contact.html", {"form": form})
 
 
 # ====================================================
