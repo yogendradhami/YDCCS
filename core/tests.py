@@ -209,7 +209,7 @@ class SmokeTest(TestCase):
                 resp = self.client.get(canonical_url, follow=False)
                 self.assertEqual(resp.status_code, 200)
                 self.assertIn(
-                    f'<link rel="canonical" href="http://testserver{canonical_url}">',
+                    f'<link rel="canonical" href="{settings.SITE_URL}{canonical_url}">',
                     resp.content.decode("utf-8"),
                 )
 
