@@ -642,7 +642,28 @@ def about(request):
     )
 
 def pricing(request):
-    return render(request, "pages/pricing.html")
+    if request.method == "POST":
+        form = QuickQuoteForm(request.POST, request=request)
+        if form.is_valid():
+            try:
+                quote = form.save()
+                send_customer_quote_email(quote)
+                send_admin_quote_email(quote)
+                messages.success(
+                    request,
+                    "Thanks — your quote request has been received. We'll be in touch shortly.",
+                )
+                return redirect("/pricing/#quick-quote-pricing")
+            except Exception:
+                logger.exception("Pricing quick quote submission failed.")
+                messages.error(
+                    request,
+                    "We couldn't submit your enquiry right now. Please try again or call 0430 049 865.",
+                )
+    else:
+        form = QuickQuoteForm(request=request)
+
+    return render(request, "pages/pricing.html", {"quick_quote_form": form})
 
 def team(request):
     """
