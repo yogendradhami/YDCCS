@@ -163,9 +163,9 @@ class SmokeTest(TestCase):
     def test_related_services_prefer_existing_adelaide_urls(self):
         from core.views import _normalize_related_services
 
-        links = _normalize_related_services(["commercial-cleaning"], "Adelaide")
+        links = _normalize_related_services(["carpet-steam-cleaning"], "Adelaide")
         self.assertTrue(links)
-        self.assertEqual(links[0]["slug"], "commercial-cleaning-adelaide")
+        self.assertEqual(links[0]["slug"], "carpet-steam-cleaning-adelaide")
 
     def test_canonical_url_uses_configured_preferred_domain(self):
         from core.templatetags.seo_tags import canonical_url
