@@ -4,6 +4,7 @@ from django.conf import settings
 from django.urls import reverse
 
 from .seo_data import LOCATION_ALIASES
+from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
 from services.models import Service
 from django.utils import timezone
 
@@ -114,9 +115,28 @@ class ServiceDetailSitemap(BaseSitemap):
         )
 
 
+class AdelaideLocalAreaSitemap(BaseSitemap):
+
+    def items(self):
+        return sorted(ADELAIDE_LOCAL_AREAS.keys())
+
+    def priority(self, item):
+        return 0.75
+
+    def location(self, item):
+        return reverse(
+            "local_suburb_detail",
+            kwargs={"area_slug": item},
+        )
+
+    def lastmod(self, item):
+        return timezone.now()
+
+
 sitemaps = {
     "static": StaticViewSitemap,
     "services_index": ServicesIndexSitemap,
     "service_details": ServiceDetailSitemap,
     "local_services": LocalServiceSitemap,
+    "adelaide_local_areas": AdelaideLocalAreaSitemap,
 }
