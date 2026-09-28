@@ -1266,4 +1266,58 @@ Need professional cleaning in Adelaide? Request a free quote from YD Commercial 
 
 \</div>
 
+
+{% block extra_js %}
+{% if form.recaptcha_site_key %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const quoteForm = document.getElementById("quickQuoteForm");
+    const siteKey = "{{ form.recaptcha_site_key|escapejs }}";
+
+    if (!quoteForm || !siteKey) return;
+
+    let loading = false;
+
+    function loadRecaptcha() {
+        if (typeof grecaptcha !== "undefined" || loading) return;
+        loading = true;
+
+        const script = document.createElement("script");
+        script.src = "https://www.google.com/recaptcha/api.js?render=" + encodeURIComponent(siteKey);
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    }
+
+    quoteForm.addEventListener("focusin", loadRecaptcha, { once: true });
+    quoteForm.addEventListener("mouseenter", loadRecaptcha, { once: true });
+
+    quoteForm.addEventListener("submit", function (event) {
+        const tokenField = document.getElementById("id_g_recaptcha_response");
+
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            if (tokenField) tokenField.value = "localhost-test-token";
+            return;
+        }
+
+        if (typeof grecaptcha === "undefined") return;
+
+        event.preventDefault();
+
+        grecaptcha.ready(function () {
+            grecaptcha.execute(siteKey, { action: "quick_quote_submit" })
+                .then(function (token) {
+                    if (tokenField) tokenField.value = token;
+                    quoteForm.submit();
+                })
+                .catch(function () {
+                    quoteForm.submit();
+                });
+        });
+    });
+});
+</script>
+{% endif %}
+{% endblock extra_js %}
+
 {% endblock %}
