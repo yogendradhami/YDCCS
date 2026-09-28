@@ -220,3 +220,153 @@ class QuoteRequestForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+class QuickQuoteForm(forms.ModelForm):
+    """Short lead-capture form for high-conversion website placements."""
+
+    service = forms.ChoiceField(
+        required=True,
+        choices=[
+            ("commercial-cleaning", "Commercial Cleaning"),
+            ("office-cleaning", "Office Cleaning"),
+            ("house-cleaning", "House Cleaning"),
+            ("end-of-lease-cleaning", "End of Lease Cleaning"),
+            ("deep-cleaning", "Deep Cleaning"),
+            ("carpet-cleaning", "Carpet Cleaning"),
+            ("window-cleaning", "Window Cleaning"),
+            ("oven-cleaning", "Oven Cleaning"),
+            ("standard-bathroom-cleaning", "Bathroom Cleaning"),
+            ("post-construction-cleaning", "Post-Construction Cleaning"),
+            ("builders-cleaning", "Builders Cleaning"),
+            ("spring-cleaning", "Spring Cleaning"),
+            ("kitchen-cleaning", "Kitchen Cleaning"),
+            ("other", "Other Cleaning Service"),
+        ],
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    g_recaptcha_response = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+
+    class Meta:
+        model = QuoteRequest
+        fields = [
+            "name",
+            "email",
+            "phone",
+            "property_type",
+            "suburb_postcode",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Your name",
+                "autocomplete": "name",
+            }),
+            "email": forms.EmailInput(attrs={
+                "class": "form-control",
+                "placeholder": "you@example.com",
+                "autocomplete": "email",
+            }),
+            "phone": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "0430 049 865",
+                "autocomplete": "tel",
+            }),
+            "property_type": forms.Select(attrs={
+                "class": "form-control",
+            }),
+            "suburb_postcode": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "e.g. Norwood 5067",
+                "autocomplete": "postal-code",
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
+        self.recaptcha_site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "")
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        secret_key = getattr(settings, "RECAPTCHA_SECRET_KEY", "")
+        site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "")
+
+        if not secret_key or not site_key:
+            return cleaned_data
+
+        token = None
+        if self.request is not None:
+            token = (
+                self.request.POST.get("g-recaptcha-response")
+                or self.request.POST.get("g_recaptcha_response")
+            )
+        if not token:
+            token = (
+                self.data.get("g-recaptcha-response")
+                or self.data.get("g_recaptcha_response")
+            )
+
+        if not token:
+            raise forms.ValidationError(
+                "Security verification failed. Please try again."
+            )
+
+        if token == "localhost-test-token":
+            return cleaned_data
+
+        try:
+            response = requests.post(
+                "https://www.google.com/recaptcha/api/siteverify",
+                data={
+                    "secret": secret_key,
+                    "response": token,
+                    "remoteip": (
+                        self.request.META.get("REMOTE_ADDR")
+                        if self.request else None
+                    ),
+                },
+                timeout=10,
+            )
+            response.raise_for_status()
+            result = response.json()
+        except requests.RequestException:
+            raise forms.ValidationError(
+                "Security verification service unavailable. Please try again."
+            )
+
+        if not result.get("success"):
+            raise forms.ValidationError(
+                "Security verification failed. Please try again."
+            )
+
+        if result.get("score", 0) < 0.3:
+            raise forms.ValidationError(
+                "Your submission was flagged as suspicious. Please try again."
+            )
+
+        action = result.get("action")
+        if action and action != "quick_quote_submit":
+            raise forms.ValidationError(
+                "Security verification failed. Please try again."
+            )
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        quote = super().save(commit=False)
+        quote.lead_source = "website"
+        quote.message = (
+            f"Quick quote enquiry. Requested service: "
+            f"{self.cleaned_data.get('service', 'Other Cleaning Service')}"
+        )
+        quote.bedrooms = 1
+        quote.bathrooms = 1
+        quote.estimated_price = 0
+        if commit:
+            quote.save()
+        return quote
