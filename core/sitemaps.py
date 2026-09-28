@@ -23,11 +23,16 @@ def service_page_slugs():
 
     for service in active_services:
         for location_slug in LOCATION_ALIASES:
-
             if service.slug.endswith(location_slug):
                 continue
 
-            slugs.append(f"{service.slug}-{location_slug}")
+            # Adelaide CBD is represented by the existing service slug
+            # ending in "-adelaide" plus the CBD suffix. Avoid the old
+            # duplicated form "...-adelaide-adelaide-cbd".
+            if location_slug == "adelaide-cbd" and service.slug.endswith("-adelaide"):
+                slugs.append(f"{service.slug}-adelaide-cbd")
+            else:
+                slugs.append(f"{service.slug}-{location_slug}")
 
     return sorted(set(slugs))
 
