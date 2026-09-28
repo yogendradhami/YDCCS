@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
 {% block content %}
 <div class="reading-progress"><span id="readingProgressBar"></span></div>
 
-<section class="blog-detail-hero" style="background-image: url('{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{% static 'images/placeholder-hero.jpg' %}{% endif %}');">
+<section class="blog-detail-hero" style="background-image: url('{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{% static 'images/logo.jpeg' %}{% endif %}');">
     <div class="overlay">
         <div class="container">
             <div class="hero-meta">

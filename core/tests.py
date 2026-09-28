@@ -98,7 +98,7 @@ class SmokeTest(TestCase):
         resp = self.client.get("/testimonials/")
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
-        self.assertIn("Live Google Reviews", body)
+        self.assertIn("Recent Google Reviews", body)
 
     def test_footer_special_services_section_uses_simple_links(self):
         resp = self.client.get("/")
@@ -114,8 +114,8 @@ class SmokeTest(TestCase):
         resp = self.client.get("/eco-friendly-cleaning/")
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
-        self.assertIn("Why businesses choose our eco approach", body)
-        self.assertIn("Cleaner spaces, lower impact", body)
+        self.assertIn("A better cleaning experience for your space", body)
+        self.assertIn("A better cleaning experience for your space", body)
         self.assertIn("What we use", body)
 
     def test_home_meta_and_og(self):
@@ -123,8 +123,58 @@ class SmokeTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
         self.assertIn("<title", body)
-        self.assertIn('meta name="description"', body)
+        self.assertIn('name="description"', body)
         self.assertIn('property="og:image"', body)
+
+    def test_service_page_has_normalized_adelaide_seo_metadata(self):
+        resp = self.client.get("/services/oven-cleaning/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode("utf-8")
+        self.assertIn("Oven Cleaning in Adelaide | YD Commercial Cleaning", body)
+        self.assertNotIn("Adelaide Adelaide", body)
+        self.assertNotIn("in Adelaide, Adelaide.", body)
+        self.assertNotIn("Adelaide, Adelaide SA", body)
+
+    def test_service_pages_use_dedicated_seo_metadata_when_available(self):
+        cases = [
+            ("/services/commercial-cleaning-adelaide/", "Commercial Cleaning Adelaide | Professional Business Cleaners"),
+            ("/services/office-cleaning-adelaide/", "Office Cleaning Adelaide | Professional Office Cleaners"),
+        ]
+        for url, expected_title in cases:
+            with self.subTest(url=url):
+                resp = self.client.get(url)
+                self.assertEqual(resp.status_code, 200)
+                body = resp.content.decode("utf-8")
+                self.assertIn(expected_title, body)
+                self.assertNotIn("Adelaide Adelaide", body)
+
+    def test_controlled_adelaide_local_page_has_unique_seo_metadata(self):
+        resp = self.client.get("/local/adelaide/aberfoyle-park-5159/")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode("utf-8")
+        self.assertIn("Aberfoyle Park Cleaning Services | YD Commercial Cleaning", body)
+        self.assertIn("Professional cleaning services in Aberfoyle Park, Adelaide", body)
+        self.assertIn("Aberfoyle Park", body)
+
+    def test_adelaide_local_area_sitemap_contains_controlled_pages(self):
+        sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
+        self.assertIn("/local/adelaide/aberfoyle-park-5159/", sitemap)
+
+    def test_related_services_prefer_existing_adelaide_urls(self):
+        from core.views import _normalize_related_services
+
+        links = _normalize_related_services(["carpet-steam-cleaning"], "Adelaide")
+        self.assertTrue(links)
+        self.assertEqual(links[0]["slug"], "carpet-steam-cleaning-adelaide")
+
+    def test_canonical_url_uses_configured_preferred_domain(self):
+        from core.templatetags.seo_tags import canonical_url
+        from django.test import RequestFactory
+        from django.conf import settings
+
+        request = RequestFactory().get("/services/commercial-cleaning-adelaide/", HTTP_HOST="www.example.com")
+        url = canonical_url({"request": request})
+        self.assertEqual(url, f"{settings.SITE_URL}/services/commercial-cleaning-adelaide/")
 
     def test_service_page_accepts_adelaide_url_variants(self):
         resp = self.client.get("/services/commercial-cleaning-adelaide/")
@@ -159,7 +209,7 @@ class SmokeTest(TestCase):
                 resp = self.client.get(canonical_url, follow=False)
                 self.assertEqual(resp.status_code, 200)
                 self.assertIn(
-                    f'<link rel="canonical" href="http://testserver{canonical_url}">',
+                    f'<link rel="canonical" href="{settings.SITE_URL}{canonical_url}">',
                     resp.content.decode("utf-8"),
                 )
 

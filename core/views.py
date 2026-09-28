@@ -1212,8 +1212,10 @@ def _get_location_from_slug(slug):
     return "Adelaide"
 
 
-def _normalize_related_services(related_services):
+def _normalize_related_services(related_services, location_name="Adelaide"):
     normalized = []
+    location_slug = slugify(location_name) if location_name else ""
+
     for item in related_services or []:
         if isinstance(item, dict):
             slug = item.get("slug") or item.get("service_slug") or item.get("name") or ""
@@ -1221,8 +1223,20 @@ def _normalize_related_services(related_services):
         else:
             slug = str(item).strip()
             label = slug.replace("-", " ").title()
-        if slug:
-            normalized.append({"slug": slug, "label": label})
+
+        if not slug:
+            continue
+
+        # Prefer the existing Adelaide/location-specific service URL when one exists.
+        candidate = f"{slug}-adelaide-{location_slug}" if location_slug and location_slug != "adelaide" else f"{slug}-adelaide"
+        if Service.objects.filter(slug=candidate, is_active=True).exists():
+            slug = candidate
+        elif not Service.objects.filter(slug=slug, is_active=True).exists():
+            # Keep the relationship only if a known service URL exists.
+            continue
+
+        normalized.append({"slug": slug, "label": label})
+
     return normalized
 
 
@@ -1257,6 +1271,8 @@ def _service_context_from_model(service_obj):
     return {
         "slug": slug,
         "title": service_obj.name,
+        "meta_title": getattr(service_obj, "meta_title", "") or "",
+        "meta_description": getattr(service_obj, "meta_description", "") or service_obj.description,
         "heading": service_obj.name,
         "description": service_obj.description,
         "overview": service_obj.overview,
@@ -1291,6 +1307,7 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
     return {
         "slug": service_slug,
         "title": definition.get("title", definition.get("service_name", "Cleaning Service")),
+        "meta_title": definition.get("meta_title", ""),
         "location_content": definition.get("location_content", {}).get(
             location_name.lower().replace(" ", "-"),
             ""
@@ -1315,7 +1332,7 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
             or get_service_faqs(service_slug)
             or []
         ),
-        "related_services": _normalize_related_services(definition.get("related_services", [])),
+        "related_services": _normalize_related_services(definition.get("related_services", []), location_name),
         "locations": definition.get("locations", [location_name]),
     }
 
@@ -1869,6 +1886,11 @@ def service_page(request, service_slug):
 
     if service_obj:
         service = _service_context_from_model(service_obj)
+        # Prefer the curated SEO fields from seo_data.py when available.
+        definition = _service_context_from_definition(normalized_slug)
+        if definition:
+            service["meta_title"] = definition.get("meta_title") or service.get("meta_title", "")
+            service["meta_description"] = definition.get("meta_description") or service.get("meta_description", "")
     else:
         service = _service_context_from_definition(normalized_slug)
 
