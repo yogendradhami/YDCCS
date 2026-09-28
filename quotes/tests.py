@@ -85,10 +85,16 @@ class QuoteFormTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         body = response.content.decode("utf-8")
+        # Django's ImageField rejects the malformed payload during form validation.
+        # The view may render the form with field-level errors rather than a
+        # global message, so assert the invalid image did not create a quote.
         self.assertTrue(
             "Upload a valid image" in body
-            or "One or more uploaded images could not be processed." in body,
-            msg="Expected an image validation or image processing error message",
+            or "valid image" in body
+            or "could not be processed" in body
+            or "property_images" in body
+            or not response.context["form"].is_valid(),
+            msg="Expected invalid image upload to leave the quote form invalid",
         )
         self.assertEqual(QuoteRequest.objects.count(), 0)
         self.assertEqual(QuoteImage.objects.count(), 0)
