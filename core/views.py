@@ -1091,31 +1091,54 @@ def local_suburb_detail(request, area_slug):
 
 def _get_canonical_service_redirect_path(service_slug):
     """
-    Redirect legacy /services/<service>-<location>/ URLs to the canonical
+    Redirect legacy service URL variants to the canonical
     /services/<service>-adelaide-<location>/ form.
+
+    Existing URLs are preserved through permanent redirects; no route is
+    removed by this helper.
     """
     slug = (service_slug or "").lower().strip("-")
     if not slug:
         return None
 
+    # Legacy base-service aliases such as:
+    # commercial-office-cleaning-adelaide -> commercial-cleaning-adelaide
+    # bathroom-deep-cleaning-adelaide -> bathroom-cleaning-adelaide
+    alias_target = SERVICE_SLUG_ALIASES.get(slug)
+    if alias_target and alias_target != slug:
+        canonical_base = alias_target
+        if not canonical_base.endswith("-adelaide"):
+            canonical_base = f"{canonical_base}-adelaide"
+        return f"/services/{canonical_base}/"
+
+    # Already-canonical Adelaide service URLs should remain unchanged.
     if slug.endswith("-adelaide"):
         return None
 
+    # Already-canonical location URLs use:
+    # <service>-adelaide-<location>
     for location_slug in sorted(LOCATION_ALIASES, key=len, reverse=True):
         if slug.endswith(f"-adelaide-{location_slug}"):
             return None
 
+    # Legacy location URLs use:
+    # <service>-<location>
+    # Convert them to:
+    # <service>-adelaide-<location>
     for location_slug in sorted(LOCATION_ALIASES, key=len, reverse=True):
         suffix = f"-{location_slug}"
         if slug.endswith(suffix) and not slug.endswith(f"-adelaide-{location_slug}"):
             base_slug = slug[: -len(suffix)]
+
+            # Resolve a legacy service-family alias before building the
+            # canonical location URL.
+            base_slug = SERVICE_SLUG_ALIASES.get(base_slug, base_slug)
+
             canonical_slug = f"{base_slug}-adelaide-{location_slug}"
             if canonical_slug:
                 return f"/services/{canonical_slug}/"
 
     return None
-
-
 def _normalize_service_slug(service_slug):
     """
     Convert SEO location service URLs into base service slugs.
