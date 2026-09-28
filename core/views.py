@@ -1124,7 +1124,8 @@ def local_suburb_detail(request, area_slug):
         "nearby_areas": nearby_areas,
         "nearby_area_links": nearby_area_links,
 
-  
+        "quick_quote_form": QuickQuoteForm(request=request),
+        "quick_quote_preset_location": f"{suburb_name} {postcode}".strip(),
     }
 
     return render(
