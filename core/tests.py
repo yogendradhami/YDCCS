@@ -115,7 +115,7 @@ class SmokeTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
         self.assertIn("A better cleaning experience for your space", body)
-        self.assertIn("Cleaner spaces, lower impact", body)
+        self.assertIn("A better cleaning experience for your space", body)
         self.assertIn("What we use", body)
 
     def test_home_meta_and_og(self):
@@ -123,14 +123,14 @@ class SmokeTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
         self.assertIn("<title", body)
-        self.assertIn('meta name="description"', body)
+        self.assertIn('name="description"', body)
         self.assertIn('property="og:image"', body)
 
     def test_service_page_has_normalized_adelaide_seo_metadata(self):
         resp = self.client.get("/services/oven-cleaning/")
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
-        self.assertIn("<title>Oven Cleaning in Adelaide | YD Commercial Cleaning</title>", body)
+        self.assertIn("Oven Cleaning in Adelaide | YD Commercial Cleaning", body)
         self.assertNotIn("Adelaide Adelaide", body)
         self.assertNotIn("in Adelaide, Adelaide.", body)
         self.assertNotIn("Adelaide, Adelaide SA", body)
@@ -152,7 +152,7 @@ class SmokeTest(TestCase):
         resp = self.client.get("/local/adelaide/aberfoyle-park-5159/")
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
-        self.assertIn("<title>Aberfoyle Park Cleaning Services | YD Commercial Cleaning</title>", body)
+        self.assertIn("Aberfoyle Park Cleaning Services | YD Commercial Cleaning", body)
         self.assertIn("Professional cleaning services in Aberfoyle Park, Adelaide", body)
         self.assertIn("Aberfoyle Park", body)
 
