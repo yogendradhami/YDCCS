@@ -231,6 +231,18 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 {% with clean_title=service.title|cut:" Adelaide" %}
 
 
+<!-- QUICK QUOTE -->
+{% include "components/quick_quote_form.html" with
+    quick_quote_form=quick_quote_form
+    preset_service=quick_quote_preset_service
+    preset_location=quick_quote_preset_location
+    form_id="quick-quote-service"
+    variant="service"
+    context_label=service.title
+    heading="Need this service?"
+    description="Tell us the essentials and we'll get back to you with a personalised quote for your property."
+%}
+
 <!-- ===================================================
      HERO
 =================================================== -->
