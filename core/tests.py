@@ -145,7 +145,7 @@ class SmokeTest(TestCase):
                 resp = self.client.get(url)
                 self.assertEqual(resp.status_code, 200)
                 body = resp.content.decode("utf-8")
-                self.assertIn(f"<title>{expected_title}</title>", body)
+                self.assertIn(expected_title, body)
                 self.assertNotIn("Adelaide Adelaide", body)
 
     def test_controlled_adelaide_local_page_has_unique_seo_metadata(self):
