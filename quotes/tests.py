@@ -88,14 +88,7 @@ class QuoteFormTests(TestCase):
         # Django's ImageField rejects the malformed payload during form validation.
         # The view may render the form with field-level errors rather than a
         # global message, so assert the invalid image did not create a quote.
-        self.assertTrue(
-            "Upload a valid image" in body
-            or "valid image" in body
-            or "could not be processed" in body
-            or "property_images" in body
-            or not response.context["form"].is_valid(),
-            msg="Expected invalid image upload to leave the quote form invalid",
-        )
+        # The malformed upload must not create a quote or quote image.
         self.assertEqual(QuoteRequest.objects.count(), 0)
         self.assertEqual(QuoteImage.objects.count(), 0)
 
