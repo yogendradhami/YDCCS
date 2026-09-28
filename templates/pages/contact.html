@@ -468,325 +468,79 @@ Need professional cleaning in Adelaide? Request a free quote from YD Commercial 
 
 
 
-                    \<form
-
-                        method="POST"
-
-                        action=""
-
-                        class="professional-contact-form"
-
-                    \>
-
-                        {% csrf\_token %}
-
-
-
-                        \<div class="form-section">
-
-                            \<div class="form-section-title">
-
-                                \<span>01\</span>
-
-                                \<div>
-
-                                    \<strong>Your details\</strong>
-
-                                    \<small>
-
-                                        How can we contact you?
-
-                                    \</small>
-
-                                \</div>
-
-                            \</div>
-
-
-
-                            \<div class="form-grid">
-
-                                \<div class="form-field">
-
-                                    \<label for="name">
-
-                                        Your Name
-
-                                        \<span>\*\</span>
-
-                                    \</label>
-
-                                    \<input
-
-                                        type="text"
-
-                                        id="name"
-
-                                        name="name"
-
-                                        placeholder="John Doe"
-
-                                        autocomplete="name"
-
-                                        required
-
-                                    \>
-
-                                \</div>
-
-
-
-                                \<div class="form-field">
-
-                                    \<label for="email">
-
-                                        Email Address
-
-                                        \<span>\*\</span>
-
-                                    \</label>
-
-                                    \<input
-
-                                        type="email"
-
-                                        id="email"
-
-                                        name="email"
-
-                                        placeholder="john\@example.com"
-
-                                        autocomplete="email"
-
-                                        required
-
-                                    \>
-
-                                \</div>
-
-
-
-                                \<div class="form-field">
-
-                                    \<label for="phone">
-
-                                        Phone Number
-
-                                    \</label>
-
-                                    \<input
-
-                                        type="tel"
-
-                                        id="phone"
-
-                                        name="phone"
-
-                                        placeholder="0430 049 865"
-
-                                        autocomplete="tel"
-
-                                    \>
-
-                                \</div>
-
-                            \</div>
-
-                        \</div>
-
-
-
-                        \<div class="form-divider">\</div>
-
-
-
-                        \<div class="form-section">
-
-                            \<div class="form-section-title">
-
-                                \<span>02\</span>
-
-                                \<div>
-
-                                    \<strong>Your cleaning\</strong>
-
-                                    \<small>
-
-                                        Tell us what service you need
-
-                                    \</small>
-
-                                \</div>
-
-                            \</div>
-
-
-
-                            \<div class="form-grid">
-
-                                \<div class="form-field form-field-full">
-
-                                    \<label for="service">
-
-                                        Cleaning Service
-
-                                        \<span>\*\</span>
-
-                                    \</label>
-
-                                    \<select
-
-                                        id="service"
-
-                                        name="service"
-
-                                        required
-
-                                    \>
-
-                                        \<option value="">
-
-                                            Select your cleaning service
-
-                                        \</option>
-
-                                        \<option value="residential">
-
-                                            Residential Cleaning
-
-                                        \</option>
-
-                                        \<option value="commercial">
-
-                                            Commercial Cleaning
-
-                                        \</option>
-
-                                        \<option value="office">
-
-                                            Office Cleaning
-
-                                        \</option>
-
-                                        \<option value="end-of-lease">
-
-                                            End-of-Lease Cleaning
-
-                                        \</option>
-
-                                        \<option value="window">
-
-                                            Window Cleaning
-
-                                        \</option>
-
-                                        \<option value="post-construction">
-
-                                            Post-Construction Cleaning
-
-                                        \</option>
-
-                                        \<option value="other">
-
-                                            Other Service
-
-                                        \</option>
-
-                                    \</select>
-
-                                \</div>
-
-
-
-                                \<div class="form-field form-field-full">
-
-                                    \<label for="message">
-
-                                        Tell us about your requirements
-
-                                        \<span>\*\</span>
-
-                                    \</label>
-
-                                    \<textarea
-
-                                        id="message"
-
-                                        name="message"
-
-                                        rows="6"
-
-                                        placeholder="Tell us about your property, suburb, cleaning requirements and preferred timing..."
-
-                                        required
-
-                                    \>\</textarea>
-
-                                \</div>
-
-                            \</div>
-
-                        \</div>
-
-
-
-                        \<div class="form-divider">\</div>
-
-
-
-                        \<div class="form-bottom">
-
-                            \<label class="newsletter-option">
-
-                                \<input
-
-                                    type="checkbox"
-
-                                    name="subscribe"
-
-                                    value="yes"
-
-                                \>
-
-                                \<span>
-
-                                    I'd like to receive occasional
-
-                                    cleaning tips and updates.
-
-                                \</span>
-
-                            \</label>
-
-
-
-                            \<button
-
-                                type="submit"
-
-                                class="quote-submit-btn"
-
-                            \>
-
-                                Send My Enquiry
-
-                                \<span>→\</span>
-
-                            \</button>
-
-                        \</div>
-
-
-
-                        \<p class="form-security-note">
-
-                            Your information is only used to respond
-
-                            to your enquiry.
-
-                        \</p>
-
-                    \</form>
+                    \<form method="POST" action="" class="professional-contact-form quick-quote-form" id="quickQuoteForm">
+    {% csrf_token %}
+    {{ form.g_recaptcha_response }}
+
+    {% if form.non_field_errors %}
+        <div class="quick-form-alert" role="alert">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <div class="quick-form-intro">
+        <div class="quick-form-step">01 <span>YOUR DETAILS</span></div>
+        <h3>Let's get your quote started.</h3>
+        <p>Just the essentials. It takes less than a minute.</p>
+    </div>
+
+    <div class="quick-form-grid">
+        <div class="form-field">
+            <label for="{{ form.name.id_for_label }}">Name <span>*</span></label>
+            {{ form.name }}
+            {{ form.name.errors }}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.phone.id_for_label }}">Phone <span>*</span></label>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.email.id_for_label }}">Email <span>*</span></label>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.suburb_postcode.id_for_label }}">Suburb / Postcode <span>*</span></label>
+            {{ form.suburb_postcode }}
+            {{ form.suburb_postcode.errors }}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.service.id_for_label }}">Cleaning Service <span>*</span></label>
+            {{ form.service }}
+            {{ form.service.errors }}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.property_type.id_for_label }}">Property Type <span>*</span></label>
+            {{ form.property_type }}
+            {{ form.property_type.errors }}
+        </div>
+    </div>
+
+    <div class="quick-form-footer">
+        <div class="quick-form-assurance">
+            <span class="assurance-check">✓</span>
+            <span>
+                <strong>Free, no-obligation quote</strong>
+                <small>We'll contact you to confirm the details.</small>
+            </span>
+        </div>
+
+        <button type="submit" class="quote-submit-btn">
+            Get My Free Quote
+            <span>→</span>
+        </button>
+    </div>
+
+    <p class="form-security-note">
+        Your details are kept private and used only to respond to your enquiry.
+    </p>
+</form>
 
                 \</div>
 
