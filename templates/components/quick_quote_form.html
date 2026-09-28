@@ -1,4 +1,20 @@
 {% load static %}
+{% if messages %}
+    <div class="yd-quick-quote__messages" role="status" aria-live="polite">
+        {% for message in messages %}
+            <div class="yd-quick-quote__message yd-quick-quote__message--{{ message.tags|default:'success' }}">
+                <span aria-hidden="true">✓</span>
+                <div>
+                    <strong>{{ message }}</strong>
+                    {% if 'success' in message.tags %}
+                        <small>We’ll contact you shortly. If you need us sooner, call 0430 049 865.</small>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <section class="yd-quick-quote yd-quick-quote--{{ variant|default:'default' }}" id="{{ form_id|default:'quick-quote' }}">
     <div class="yd-quick-quote__inner">
         <div class="yd-quick-quote__copy">
