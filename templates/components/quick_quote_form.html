@@ -13,7 +13,7 @@
             {% endif %}
         </div>
 
-        <form method="POST" action="{% url 'contact' %}" class="yd-quick-quote__form" id="{{ form_id|default:'quick-quote' }}-form">
+        <form method="POST" action="{% url 'contact' %}" class="yd-quick-quote__form" id="{{ form_id|default:'quick-quote' }}-form" data-recaptcha-site-key="{{ quick_quote_form.recaptcha_site_key|default:'' }}">
             {% csrf_token %}
             {{ quick_quote_form.g_recaptcha_response }}
             {% if preset_service %}<input type="hidden" name="service" value="{{ preset_service }}">{% else %}<label><span>Cleaning service</span>{{ quick_quote_form.service }}</label>{% endif %}
@@ -48,3 +48,5 @@
         </form>
     </div>
 </section>
+
+<script src="{% static 'js/components/quick-quote.js' %}" defer></script>
