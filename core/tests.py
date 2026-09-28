@@ -167,6 +167,15 @@ class SmokeTest(TestCase):
         self.assertTrue(links)
         self.assertEqual(links[0]["slug"], "commercial-cleaning-adelaide")
 
+    def test_canonical_url_uses_configured_preferred_domain(self):
+        from core.templatetags.seo_tags import canonical_url
+        from django.test import RequestFactory
+        from django.conf import settings
+
+        request = RequestFactory().get("/services/commercial-cleaning-adelaide/", HTTP_HOST="www.example.com")
+        url = canonical_url({"request": request})
+        self.assertEqual(url, f"{settings.SITE_URL}/services/commercial-cleaning-adelaide/")
+
     def test_service_page_accepts_adelaide_url_variants(self):
         resp = self.client.get("/services/commercial-cleaning-adelaide/")
         self.assertEqual(resp.status_code, 200)
