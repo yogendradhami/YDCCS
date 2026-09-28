@@ -1306,3 +1306,170 @@
         justify-content: center;
     }
 }
+
+
+/* =========================================================
+   QUICK QUOTE — SHORT CONVERSION FORM
+   ========================================================= */
+
+.yd-contact-page .quick-quote-form {
+    position: relative;
+    padding: 0;
+}
+
+.yd-contact-page .quick-form-intro {
+    padding: 36px 38px 28px;
+    border-bottom: 1px solid var(--yd-border);
+    background:
+        radial-gradient(circle at 92% 0%, rgba(183,149,85,.12), transparent 32%),
+        linear-gradient(135deg, #ffffff 0%, #f8faf7 100%);
+}
+
+.yd-contact-page .quick-form-step {
+    margin-bottom: 10px;
+    color: var(--yd-gold);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .14em;
+}
+
+.yd-contact-page .quick-form-step span {
+    margin-left: 8px;
+    color: var(--yd-muted);
+}
+
+.yd-contact-page .quick-form-intro h3 {
+    margin: 0 0 8px;
+    color: var(--yd-navy);
+    font-size: clamp(26px, 3vw, 34px);
+    line-height: 1.08;
+    letter-spacing: -.035em;
+}
+
+.yd-contact-page .quick-form-intro p {
+    margin: 0;
+    color: var(--yd-muted);
+    font-size: 15px;
+}
+
+.yd-contact-page .quick-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    padding: 30px 38px;
+}
+
+.yd-contact-page .quick-form-grid .form-field {
+    min-width: 0;
+}
+
+.yd-contact-page .quick-form-grid input,
+.yd-contact-page .quick-form-grid select {
+    width: 100%;
+    min-height: 54px;
+    padding: 0 15px;
+    border: 1px solid #d7dfdb;
+    border-radius: 4px;
+    background: #fbfcfa;
+    color: var(--yd-text);
+    font-size: 15px;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.yd-contact-page .quick-form-grid input:focus,
+.yd-contact-page .quick-form-grid select:focus {
+    outline: none;
+    border-color: var(--yd-gold);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(183,149,85,.12);
+}
+
+.yd-contact-page .quick-form-grid .errorlist,
+.yd-contact-page .quick-form-alert {
+    margin: 7px 0 0;
+    color: #a33b32;
+    font-size: 12px;
+}
+
+.yd-contact-page .quick-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 38px;
+    padding: 22px 0 24px;
+    border-top: 1px solid var(--yd-border);
+}
+
+.yd-contact-page .quick-form-assurance {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.yd-contact-page .assurance-check {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(23,75,61,.08);
+    color: var(--yd-blue);
+    font-weight: 900;
+}
+
+.yd-contact-page .quick-form-assurance strong,
+.yd-contact-page .quick-form-assurance small {
+    display: block;
+}
+
+.yd-contact-page .quick-form-assurance strong {
+    color: var(--yd-navy);
+    font-size: 13px;
+}
+
+.yd-contact-page .quick-form-assurance small {
+    margin-top: 3px;
+    color: var(--yd-muted);
+    font-size: 12px;
+}
+
+.yd-contact-page .quick-form-footer .quote-submit-btn {
+    min-width: 210px;
+    padding: 0 24px;
+    cursor: pointer;
+}
+
+.yd-contact-page .quick-quote-form .form-security-note {
+    margin: 0;
+    padding: 0 38px 26px;
+    text-align: left;
+}
+
+@media (max-width: 700px) {
+    .yd-contact-page .quick-form-intro {
+        padding: 28px 22px 24px;
+    }
+
+    .yd-contact-page .quick-form-grid {
+        grid-template-columns: 1fr;
+        padding: 24px 22px;
+        gap: 17px;
+    }
+
+    .yd-contact-page .quick-form-footer {
+        align-items: stretch;
+        flex-direction: column;
+        margin: 0 22px;
+        padding: 20px 0 22px;
+    }
+
+    .yd-contact-page .quick-form-footer .quote-submit-btn {
+        width: 100%;
+    }
+
+    .yd-contact-page .quick-quote-form .form-security-note {
+        padding: 0 22px 22px;
+    }
+}
