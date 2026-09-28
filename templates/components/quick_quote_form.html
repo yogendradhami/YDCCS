@@ -13,11 +13,11 @@
             {% endif %}
         </div>
 
-        <form method="POST" action="" class="yd-quick-quote__form" id="{{ form_id|default:'quick-quote' }}-form">
+        <form method="POST" action="{% url 'contact' %}" class="yd-quick-quote__form" id="{{ form_id|default:'quick-quote' }}-form">
             {% csrf_token %}
             {{ quick_quote_form.g_recaptcha_response }}
-            <input type="hidden" name="service" value="{{ preset_service }}">
-            <input type="hidden" name="suburb_postcode" value="{{ preset_location }}">
+            {% if preset_service %}<input type="hidden" name="service" value="{{ preset_service }}">{% else %}<label><span>Cleaning service</span>{{ quick_quote_form.service }}</label>{% endif %}
+            {% if preset_location %}<input type="hidden" name="suburb_postcode" value="{{ preset_location }}">{% else %}<label><span>Suburb / postcode</span><input type="text" name="suburb_postcode" placeholder="e.g. Norwood 5067" autocomplete="postal-code" required></label>{% endif %}
 
             <div class="yd-quick-quote__fields">
                 <label>
