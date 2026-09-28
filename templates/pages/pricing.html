@@ -365,6 +365,15 @@
         </div>
     </section>
 
+    <!-- QUICK QUOTE -->
+    {% include "components/quick_quote_form.html" with
+        quick_quote_form=quick_quote_form
+        form_id="quick-quote-pricing"
+        variant="pricing"
+        heading="Ready for a personalised price?"
+        description="Skip the long form. Tell us the service and property basics and we'll follow up with a tailored quote."
+    %}
+
     <!-- FINAL CTA -->
     <section class="pricing-cta">
         <div class="container">
