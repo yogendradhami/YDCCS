@@ -1,0 +1,50 @@
+{% load static %}
+<section class="yd-quick-quote yd-quick-quote--{{ variant|default:'default' }}" id="{{ form_id|default:'quick-quote' }}">
+    <div class="yd-quick-quote__inner">
+        <div class="yd-quick-quote__copy">
+            <span class="yd-quick-quote__eyebrow">QUICK QUOTE</span>
+            <h2>{{ heading|default:"Tell us what you need cleaned." }}</h2>
+            <p>{{ description|default:"Share the essentials and our Adelaide team will get back to you with a personalised quote." }}</p>
+            {% if context_label %}
+            <div class="yd-quick-quote__context">
+                <span>Request for</span>
+                <strong>{{ context_label }}</strong>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="" class="yd-quick-quote__form" id="{{ form_id|default:'quick-quote' }}-form">
+            {% csrf_token %}
+            {{ quick_quote_form.g_recaptcha_response }}
+            <input type="hidden" name="service" value="{{ preset_service }}">
+            <input type="hidden" name="suburb_postcode" value="{{ preset_location }}">
+
+            <div class="yd-quick-quote__fields">
+                <label>
+                    <span>Name</span>
+                    <input type="text" name="name" placeholder="Your name" autocomplete="name" required>
+                </label>
+                <label>
+                    <span>Phone</span>
+                    <input type="tel" name="phone" placeholder="0430 049 865" autocomplete="tel" required>
+                </label>
+                <label>
+                    <span>Email</span>
+                    <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </label>
+                <label>
+                    <span>Property type</span>
+                    {{ quick_quote_form.property_type }}
+                </label>
+            </div>
+
+            <div class="yd-quick-quote__bottom">
+                <div>
+                    <strong>Free, no-obligation quote</strong>
+                    <small>Usually takes less than a minute.</small>
+                </div>
+                <button type="submit">Get My Free Quote <span>→</span></button>
+            </div>
+        </form>
+    </div>
+</section>
