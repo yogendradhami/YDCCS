@@ -37,3 +37,40 @@
     margin-top: 3px;
     color: #53655e;
 }
+
+.yd-quick-quote__feedback:not([hidden]) {
+    margin-bottom: 16px;
+    padding: 13px 15px;
+    border: 1px solid #b8d8c6;
+    border-radius: 5px;
+    background: #eef6f1;
+    color: #174b3d;
+    line-height: 1.5;
+}
+
+.yd-quick-quote__feedback[data-status="error"] {
+    border-color: #e3b5ae;
+    background: #fff4f2;
+    color: #8d2e24;
+}
+
+.yd-quick-quote__field-error,
+.yd-quick-quote__errors {
+    color: #a33b32;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.yd-quick-quote__field-error:empty {
+    display: none;
+}
+
+.yd-quick-quote__form [aria-invalid="true"] {
+    border-color: #a33b32;
+}
+
+.yd-quick-quote__bottom button:disabled {
+    cursor: wait;
+    opacity: .72;
+    transform: none;
+}

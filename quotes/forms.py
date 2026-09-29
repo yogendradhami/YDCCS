@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 import requests
+import re
 
 from .models import QuoteRequest
 
@@ -44,6 +45,7 @@ class QuoteRequestForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
+        self.auto_id = "id_quick_quote_%s"
         self.recaptcha_site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "")
 
     class Meta:
@@ -173,7 +175,14 @@ class QuoteRequestForm(forms.ModelForm):
             )
 
         # For localhost testing, allow localhost-test-token to bypass reCAPTCHA verification
-        if token == "localhost-test-token":
+        if (
+            token == "localhost-test-token"
+            and self.request is not None
+            and (
+                self.request.META.get("REMOTE_ADDR") in {"127.0.0.1", "::1"}
+                or self.request.get_host().split(":", 1)[0] == "localhost"
+            )
+        ):
             return cleaned_data
 
         try:
@@ -240,6 +249,8 @@ class QuickQuoteForm(forms.ModelForm):
             ("builders-cleaning", "Builders Cleaning"),
             ("spring-cleaning", "Spring Cleaning"),
             ("kitchen-cleaning", "Kitchen Cleaning"),
+            ("eco-friendly-cleaning", "Eco-Friendly Cleaning"),
+            ("emergency-cleaning", "Emergency Cleaning"),
             ("other", "Other Cleaning Service"),
         ],
         widget=forms.Select(attrs={"class": "form-control"}),
@@ -290,6 +301,13 @@ class QuickQuoteForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.recaptcha_site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "")
 
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"].strip()
+        digits = re.sub(r"\D", "", phone)
+        if not 8 <= len(digits) <= 15:
+            raise forms.ValidationError("Enter a valid phone number.")
+        return phone
+
     def clean(self):
         cleaned_data = super().clean()
 
@@ -316,7 +334,14 @@ class QuickQuoteForm(forms.ModelForm):
                 "Security verification failed. Please try again."
             )
 
-        if token == "localhost-test-token":
+        if (
+            token == "localhost-test-token"
+            and self.request is not None
+            and (
+                self.request.META.get("REMOTE_ADDR") in {"127.0.0.1", "::1"}
+                or self.request.get_host().split(":", 1)[0] == "localhost"
+            )
+        ):
             return cleaned_data
 
         try:

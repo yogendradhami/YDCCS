@@ -9,6 +9,7 @@ Need urgent emergency cleaning in Adelaide? YD Commercial Cleaning provides prof
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/emergency.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/quick-quote.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -36,7 +37,7 @@ Need urgent emergency cleaning in Adelaide? YD Commercial Cleaning provides prof
                 </p>
 
                 <div class="emergency-hero-actions">
-                    <a href="{% url 'contact' %}" class="emergency-btn emergency-btn-primary">
+                    <a href="#quick-quote-emergency" class="emergency-btn emergency-btn-primary">
                         Request Emergency Cleaning
                     </a>
 
@@ -245,7 +246,7 @@ Need urgent emergency cleaning in Adelaide? YD Commercial Cleaning provides prof
                         providing a practical cleaning solution.
                     </p>
 
-                    <a href="{% url 'contact' %}" class="emergency-text-link">
+                    <a href="#quick-quote-emergency" class="emergency-text-link">
                         Contact our cleaning team →
                     </a>
 
@@ -671,6 +672,8 @@ Need urgent emergency cleaning in Adelaide? YD Commercial Cleaning provides prof
     </section>
 
 
+    {% include "components/quick_quote_form.html" with quick_quote_form=quick_quote_form preset_service=quick_quote_preset_service form_id="quick-quote-emergency" variant="service" context_label="Emergency Cleaning" heading="Request urgent cleaning support." description="Tell us what happened and where you need cleaning. Our team will follow up about availability." %}
+
     <!-- FINAL CTA -->
     <section class="emergency-cta">
 
@@ -694,7 +697,7 @@ Need urgent emergency cleaning in Adelaide? YD Commercial Cleaning provides prof
 
                 <div class="emergency-cta-actions">
 
-                    <a href="{% url 'contact' %}" class="emergency-btn emergency-btn-light">
+                    <a href="#quick-quote-emergency" class="emergency-btn emergency-btn-light">
                         Request Emergency Cleaning
                     </a>
 

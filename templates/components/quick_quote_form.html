@@ -29,28 +29,36 @@
             {% endif %}
         </div>
 
-        <form method="POST" action="{% url 'contact' %}" class="yd-quick-quote__form" id="{{ form_id|default:'quick-quote' }}-form" data-recaptcha-site-key="{{ quick_quote_form.recaptcha_site_key|default:'' }}">
+        <form method="POST" action="" class="yd-quick-quote__form" id="{{ form_id|default:'quick-quote' }}-form" data-recaptcha-site-key="{{ quick_quote_form.recaptcha_site_key|default:'' }}" aria-describedby="{{ form_id|default:'quick-quote' }}-feedback">
             {% csrf_token %}
+            <input type="hidden" name="quick_quote_submit" value="1">
+            <input type="hidden" name="source_page" value="{{ quick_quote_source_page }}">
             {{ quick_quote_form.g_recaptcha_response }}
-            {% if preset_service %}<input type="hidden" name="service" value="{{ preset_service }}">{% else %}<label><span>Cleaning service</span>{{ quick_quote_form.service }}</label>{% endif %}
-            {% if preset_location %}<input type="hidden" name="suburb_postcode" value="{{ preset_location }}">{% else %}<label><span>Suburb / postcode</span><input type="text" name="suburb_postcode" placeholder="e.g. Norwood 5067" autocomplete="postal-code" required></label>{% endif %}
+            <div class="yd-quick-quote__feedback" id="{{ form_id|default:'quick-quote' }}-feedback" aria-live="polite" role="status"{% if not quick_quote_message %} hidden{% endif %} data-status="{{ quick_quote_message_status }}">{{ quick_quote_message }}</div>
+            <div class="yd-quick-quote__errors" data-error-for="__all__" role="alert">{{ quick_quote_form.non_field_errors }}</div>
+            {% if preset_service %}<input type="hidden" name="service" value="{{ preset_service }}"><span class="yd-quick-quote__field-error" data-error-for="service">{{ quick_quote_form.service.errors }}</span>{% else %}<label for="{{ quick_quote_form.service.id_for_label }}"><span>Cleaning service</span>{{ quick_quote_form.service }}<span class="yd-quick-quote__field-error" data-error-for="service">{{ quick_quote_form.service.errors }}</span></label>{% endif %}
+            {% if preset_location %}<input type="hidden" name="suburb_postcode" value="{{ preset_location }}"><span class="yd-quick-quote__field-error" data-error-for="suburb_postcode">{{ quick_quote_form.suburb_postcode.errors }}</span>{% else %}<label for="{{ quick_quote_form.suburb_postcode.id_for_label }}"><span>Suburb / postcode</span>{{ quick_quote_form.suburb_postcode }}<span class="yd-quick-quote__field-error" data-error-for="suburb_postcode">{{ quick_quote_form.suburb_postcode.errors }}</span></label>{% endif %}
 
             <div class="yd-quick-quote__fields">
-                <label>
+                <label for="{{ quick_quote_form.name.id_for_label }}">
                     <span>Name</span>
-                    <input type="text" name="name" placeholder="Your name" autocomplete="name" required>
+                    {{ quick_quote_form.name }}
+                    <span class="yd-quick-quote__field-error" data-error-for="name">{{ quick_quote_form.name.errors }}</span>
                 </label>
-                <label>
+                <label for="{{ quick_quote_form.phone.id_for_label }}">
                     <span>Phone</span>
-                    <input type="tel" name="phone" placeholder="0430 049 865" autocomplete="tel" required>
+                    {{ quick_quote_form.phone }}
+                    <span class="yd-quick-quote__field-error" data-error-for="phone">{{ quick_quote_form.phone.errors }}</span>
                 </label>
-                <label>
+                <label for="{{ quick_quote_form.email.id_for_label }}">
                     <span>Email</span>
-                    <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                    {{ quick_quote_form.email }}
+                    <span class="yd-quick-quote__field-error" data-error-for="email">{{ quick_quote_form.email.errors }}</span>
                 </label>
-                <label>
+                <label for="{{ quick_quote_form.property_type.id_for_label }}">
                     <span>Property type</span>
                     {{ quick_quote_form.property_type }}
+                    <span class="yd-quick-quote__field-error" data-error-for="property_type">{{ quick_quote_form.property_type.errors }}</span>
                 </label>
             </div>
 
@@ -59,7 +67,7 @@
                     <strong>Free, no-obligation quote</strong>
                     <small>Usually takes less than a minute.</small>
                 </div>
-                <button type="submit">Get My Free Quote <span>→</span></button>
+                <button type="submit"><span data-submit-label>Get My Free Quote</span><span aria-hidden="true">→</span></button>
             </div>
         </form>
     </div>

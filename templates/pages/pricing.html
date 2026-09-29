@@ -24,7 +24,7 @@
                 </p>
                 <div class="hero-actions">
                     <a href="#price-calculator" class="btn btn-primary">Estimate my price</a>
-                    <a href="{% url 'contact' %}" class="text-link">Request a personalised quote <span>→</span></a>
+                    <a href="#quick-quote-pricing" class="text-link">Request a personalised quote <span>→</span></a>
                 </div>
                 <div class="hero-trust">
                     <span><b>✓</b> Fully insured</span>
@@ -158,7 +158,7 @@
                         <div><span>Frequency</span><strong>Fortnightly</strong></div>
                     </div>
 
-                    <a href="{% url 'contact' %}" class="btn btn-light">Get my confirmed quote</a>
+                    <a href="#quick-quote-pricing" class="btn btn-light">Get my confirmed quote</a>
                     <a href="tel:+61430049865" class="result-phone">Prefer to talk? 0430 049 865</a>
                 </div>
             </div>
@@ -183,7 +183,7 @@
                         <p>Regular home cleaning for living areas, kitchens, bathrooms and bedrooms.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$180</strong><span>/ visit</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for residential cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for residential cleaning">→</a>
                 </article>
 
                 <article class="price-item">
@@ -194,7 +194,7 @@
                         <p>Detailed cleaning for properties needing extra attention.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$280</strong><span>/ property</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for deep cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for deep cleaning">→</a>
                 </article>
 
                 <article class="price-item">
@@ -205,7 +205,7 @@
                         <p>End-of-lease cleaning covering the main areas of the property.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$330</strong><span>/ property</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for bond cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for bond cleaning">→</a>
                 </article>
 
                 <article class="price-item">
@@ -216,7 +216,7 @@
                         <p>A more detailed room-by-room clean for a one-off reset.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$320</strong><span>/ property</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for spring cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for spring cleaning">→</a>
                 </article>
 
                 <article class="price-item">
@@ -227,7 +227,7 @@
                         <p>Detailed oven, rack, tray and stovetop cleaning.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$120</strong><span>/ oven</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for oven cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for oven cleaning">→</a>
                 </article>
 
                 <article class="price-item">
@@ -238,7 +238,7 @@
                         <p>Steam cleaning with stain treatment and carpet grooming.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$160</strong><span>/ room</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for carpet cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for carpet cleaning">→</a>
                 </article>
 
                 <article class="price-item">
@@ -249,7 +249,7 @@
                         <p>Detailed cleaning of showers, baths, toilets, tiles and mirrors.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$110</strong><span>/ bathroom</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for bathroom cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for bathroom cleaning">→</a>
                 </article>
 
                 <article class="price-item">
@@ -260,7 +260,7 @@
                         <p>Interior and exterior glass, frames and sills.</p>
                     </div>
                     <div class="price-item__amount"><small>from</small><strong>$140</strong><span>/ service</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Get a quote for window cleaning">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Get a quote for window cleaning">→</a>
                 </article>
 
                 <article class="price-item price-item--commercial">
@@ -271,7 +271,7 @@
                         <p>Cleaning programs shaped around your premises, frequency, scope and operating requirements.</p>
                     </div>
                     <div class="price-item__amount"><small>pricing</small><strong>Custom</strong><span>quote</span></div>
-                    <a href="{% url 'contact' %}" aria-label="Request a commercial cleaning quote">→</a>
+                    <a href="#quick-quote-pricing" aria-label="Request a commercial cleaning quote">→</a>
                 </article>
             </div>
         </div>
@@ -287,7 +287,7 @@
                     Starting prices help you plan. Your confirmed quote reflects the actual work
                     required at the property.
                 </p>
-                <a href="{% url 'contact' %}" class="text-link">Talk to YD about your requirements <span>→</span></a>
+                <a href="#quick-quote-pricing" class="text-link">Talk to YD about your requirements <span>→</span></a>
             </div>
 
             <div class="factor-list">
@@ -367,13 +367,7 @@
     </section>
 
     <!-- QUICK QUOTE -->
-    {% include "components/quick_quote_form.html" with
-        quick_quote_form=quick_quote_form
-        form_id="quick-quote-pricing"
-        variant="pricing"
-        heading="Ready for a personalised price?"
-        description="Skip the long form. Tell us the service and property basics and we'll follow up with a tailored quote."
-    %}
+    {% include "components/quick_quote_form.html" with quick_quote_form=quick_quote_form form_id="quick-quote-pricing" variant="pricing" heading="Ready for a personalised price?" description="Skip the long form. Tell us the service and property basics and we'll follow up with a tailored quote." %}
 
     <!-- FINAL CTA -->
     <section class="pricing-cta">
@@ -382,7 +376,7 @@
             <h2>Let's work out the right cleaning service for you.</h2>
             <p>Use the estimate above or speak with YD for a personalised, no-obligation quote.</p>
             <div class="cta-buttons">
-                <a href="{% url 'contact' %}" class="btn btn-light">Get a personalised quote</a>
+                <a href="#quick-quote-pricing" class="btn btn-light">Get a personalised quote</a>
                 <a href="tel:+61430049865" class="btn btn-outline-light">0430 049 865</a>
             </div>
         </div>

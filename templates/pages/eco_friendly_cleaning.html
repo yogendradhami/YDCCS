@@ -11,6 +11,7 @@ Eco-friendly cleaning services in Adelaide for homes, offices and commercial pro
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/eco-friendly-cleaning.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/quick-quote.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -36,7 +37,7 @@ Eco-friendly cleaning services in Adelaide for homes, offices and commercial pro
             </p>
 
             <div class="eco-hero-actions">
-                <a href="/booking/" class="eco-btn eco-btn-primary">
+                <a href="#quick-quote-eco" class="eco-btn eco-btn-primary">
                     Get a Free Quote
                 </a>
 
@@ -443,7 +444,7 @@ Eco-friendly cleaning services in Adelaide for homes, offices and commercial pro
                     schedule around your needs.
                 </p>
 
-                <a href="/booking/" class="eco-text-link">
+                <a href="#quick-quote-eco" class="eco-text-link">
                     Request a commercial cleaning quote →
                 </a>
 
@@ -779,6 +780,8 @@ Eco-friendly cleaning services in Adelaide for homes, offices and commercial pro
 </section>
 
 
+{% include "components/quick_quote_form.html" with quick_quote_form=quick_quote_form preset_service=quick_quote_preset_service form_id="quick-quote-eco" variant="service" context_label="Eco-Friendly Cleaning" heading="Request an eco-friendly cleaning quote." description="Tell us about your property and our Adelaide team will follow up with suitable cleaning options." %}
+
 <!-- CTA -->
 <section class="eco-cta">
 
@@ -801,7 +804,7 @@ Eco-friendly cleaning services in Adelaide for homes, offices and commercial pro
 
             <div class="eco-cta-actions">
 
-                <a href="/booking/" class="eco-btn eco-btn-light">
+                <a href="#quick-quote-eco" class="eco-btn eco-btn-light">
                     Request a Free Quote
                 </a>
 

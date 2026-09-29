@@ -233,16 +233,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
 
 <!-- QUICK QUOTE -->
-{% include "components/quick_quote_form.html" with
-    quick_quote_form=quick_quote_form
-    preset_service=quick_quote_preset_service
-    preset_location=quick_quote_preset_location
-    form_id="quick-quote-service"
-    variant="service"
-    context_label=service.title
-    heading="Need this service?"
-    description="Tell us the essentials and we'll get back to you with a personalised quote for your property."
-%}
+{% include "components/quick_quote_form.html" with quick_quote_form=quick_quote_form preset_service=quick_quote_preset_service preset_location=quick_quote_preset_location form_id="quick-quote-service" variant="service" context_label=service.title heading="Need this service?" description="Tell us the essentials and we'll get back to you with a personalised quote for your property." %}
 
 <!-- ===================================================
      HERO
@@ -338,7 +329,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
                 <div class="service-hero-buttons">
 
-                    <a href="{% url 'contact' %}" class="btn btn-primary">
+                    <a href="#quick-quote-service" class="btn btn-primary">
                         Book Your Cleaning
                     </a>
 
@@ -948,7 +939,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                         </p>
 
 
-                        <a href="{% url 'contact' %}" class="btn-fill">
+                        <a href="#quick-quote-service" class="btn-fill">
                             Get Quote
                         </a>
 
@@ -977,7 +968,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                         </p>
 
 
-                        <a href="{% url 'contact' %}" class="btn-fill">
+                        <a href="#quick-quote-service" class="btn-fill">
                             Request Quote
                         </a>
 
@@ -1157,7 +1148,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                 </p>
 
 
-                <a href="{% url 'contact' %}" class="btn-fill">
+                <a href="#quick-quote-service" class="btn-fill">
                     Get Full Quote
                 </a>
 
@@ -1281,7 +1272,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
 
                     <a
-                        href="{% url 'contact' %}"
+                        href="#quick-quote-service"
                         class="btn-outline full-width"
                     >
                         Request Quote
@@ -1475,7 +1466,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
             <div class="service-cta-actions">
 
-                <a href="{% url 'contact' %}" class="btn-fill">
+                    <a href="#quick-quote-service" class="btn-fill">
                     Get Free Quote
                 </a>
 

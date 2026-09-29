@@ -11,6 +11,7 @@ Contact YD Commercial Cleaning Services for professional residential and commerc
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/contact.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/quick-quote.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -298,7 +299,7 @@ Contact YD Commercial Cleaning Services for professional residential and commerc
                     <div class="yd-contact-business-footer">
 
                         <a
-                            href="/#quote"
+                            href="#quick-quote-contact"
                             class="yd-contact-quote-btn"
                         >
                             Request a Free Quote
@@ -477,6 +478,8 @@ Contact YD Commercial Cleaning Services for professional residential and commerc
     </section>
 
 
+    {% include "components/quick_quote_form.html" with quick_quote_form=quick_quote_form form_id="quick-quote-contact" variant="contact" heading="Tell us what you need cleaned." description="Share a few details and our Adelaide team will follow up with a tailored quote." %}
+
     <!-- FINAL CTA -->
     <section class="yd-contact-final-cta">
 
@@ -499,7 +502,7 @@ Contact YD Commercial Cleaning Services for professional residential and commerc
                 <div class="yd-contact-final-buttons">
 
                     <a
-                        href="/#quote"
+                        href="#quick-quote-contact"
                         class="yd-contact-final-primary"
                     >
                         Request Free Quote

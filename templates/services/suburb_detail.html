@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/locations.css' %}">
 <link rel="stylesheet" href="{% static 'css/components/quick-quote.css' %}">
 {% endblock %}
 
@@ -52,7 +53,7 @@
                 <div class="adelaide-hero-actions">
 
                     <a
-                        href="{% url 'contact' %}"
+                        href="#quick-quote-suburb"
                         class="adelaide-btn adelaide-btn-primary"
                     >
                         Request a Free Quote
@@ -238,7 +239,7 @@
                             <span aria-hidden="true">→</span>
                         </a>
 
-                        <a href="{% url 'contact' %}">
+                        <a href="#quick-quote-suburb">
                             Get a Free Cleaning Quote
                             <span aria-hidden="true">→</span>
                         </a>
@@ -383,7 +384,7 @@
                         cleaning requirements in {{ suburb_name }}.
                     </p>
 
-                    <a href="{% url 'contact' %}">
+                    <a href="#quick-quote-suburb">
                         Request a Free Quote →
                     </a>
 
@@ -676,7 +677,7 @@
 
                     <div class="adelaide-intro-links">
 
-                        <a href="{% url 'contact' %}">
+                        <a href="#quick-quote-suburb">
                             Request a Free Quote
                             <span aria-hidden="true">→</span>
                         </a>
@@ -710,7 +711,7 @@
                         you're looking for.
                     </p>
 
-                    <a href="{% url 'contact' %}">
+                    <a href="#quick-quote-suburb">
                         Contact Us →
                     </a>
 
@@ -871,15 +872,7 @@
 
 
     <!-- QUICK QUOTE -->
-    {% include "components/quick_quote_form.html" with
-        quick_quote_form=quick_quote_form
-        preset_location=quick_quote_preset_location
-        form_id="quick-quote-suburb"
-        variant="suburb"
-        context_label=suburb_name
-        heading="Looking for a cleaner nearby?"
-        description="Tell us the essentials and we'll follow up about cleaning for your property."
-    %}
+    {% include "components/quick_quote_form.html" with quick_quote_form=quick_quote_form preset_location=quick_quote_preset_location form_id="quick-quote-suburb" variant="suburb" context_label=suburb_name heading="Looking for a cleaner nearby?" description="Tell us the essentials and we'll follow up about cleaning for your property." %}
 
     <!-- =========================================================
      FAQ
@@ -1019,7 +1012,7 @@
                 <div class="adelaide-final-actions">
 
                     <a
-                        href="{% url 'contact' %}"
+                        href="#quick-quote-suburb"
                         class="adelaide-btn adelaide-btn-primary"
                     >
                         Request a Free Quote

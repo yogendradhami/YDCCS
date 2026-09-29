@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse
+from django.http import JsonResponse
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.core.mail import send_mail
@@ -168,6 +169,97 @@ def _get_suburb_by_slug(area_slug):
     return None
 
 
+def _quick_quote_context(request, *, allow_unmarked_post=False):
+    """Validate and save short quote submissions on their current page."""
+    is_quick_quote_post = (
+        request.method == "POST"
+        and (
+            request.POST.get("quick_quote_submit") == "1"
+            or allow_unmarked_post
+        )
+    )
+    form = QuickQuoteForm(
+        request.POST if is_quick_quote_post else None,
+        request=request,
+    )
+    page_id = request.path.strip("/").replace("/", "_").replace("-", "_") or "home"
+    form.auto_id = f"id_quick_quote_{page_id}_%s"
+    feedback = ""
+    feedback_status = ""
+
+    if is_quick_quote_post:
+        if form.is_valid():
+            try:
+                quote, created = create_quote_request(form=form)
+                if created:
+                    service_name = dict(form.fields["service"].choices).get(
+                        form.cleaned_data["service"], "Cleaning service"
+                    )
+                    source_page = request.build_absolute_uri(request.path)
+                    submitted_at = timezone.localtime(timezone.now())
+                    customer_email_sent = send_customer_quote_email(
+                        quote,
+                        service_name=service_name,
+                        source_page=source_page,
+                        submitted_at=submitted_at,
+                    )
+                    admin_email_sent = send_admin_quote_email(
+                        quote,
+                        service_name=service_name,
+                        source_page=source_page,
+                        submitted_at=submitted_at,
+                    )
+                    if not customer_email_sent:
+                        logger.error(
+                            "Quick quote customer email was not sent for QuoteRequest %s.",
+                            quote.id,
+                        )
+                    if not admin_email_sent:
+                        logger.error(
+                            "Quick quote company email was not sent for QuoteRequest %s.",
+                            quote.id,
+                        )
+
+                    feedback_parts = [
+                        "Thanks, your quote request has been received.",
+                        (
+                            "Confirmation email sent to your email address."
+                            if customer_email_sent
+                            else "We couldn't send a confirmation email; our team will follow up."
+                        ),
+                        (
+                            "Your request has been received by our team."
+                            if admin_email_sent
+                            else "Our team notification could not be sent automatically; please call 0430 049 865."
+                        ),
+                    ]
+                    feedback = " ".join(feedback_parts)
+                    feedback_status = "success"
+                    form = QuickQuoteForm(request=request)
+            except Exception:
+                logger.exception("Quick quote submission failed on %s.", request.path)
+                feedback = (
+                    "We couldn't complete your request right now. "
+                    "Please try again or contact us directly."
+                )
+                feedback_status = "error"
+        else:
+            feedback = "Please check the highlighted fields and try again."
+            feedback_status = "error"
+
+    return {
+        "quick_quote_form": form,
+        "quick_quote_message": feedback,
+        "quick_quote_message_status": feedback_status,
+        "quick_quote_source_page": request.build_absolute_uri(request.path),
+        "quick_quote_submitted": is_quick_quote_post,
+        "quick_quote_response_status": (
+            200 if feedback_status in ("", "success") else
+            400 if form.errors else 500
+        ),
+    }
+
+
 def _format_faq_value(value, **format_kwargs):
     if isinstance(value, str):
         return value.format(**format_kwargs)
@@ -283,7 +375,7 @@ def home(request):
     average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
     google_review_count = len(google_reviews)
 
-    if request.method == "POST":
+    if request.method == "POST" and request.POST.get("quick_quote_submit") != "1":
         form = QuoteRequestForm(request.POST, request.FILES, request=request)
 
         if form.is_valid():
@@ -323,14 +415,26 @@ def home(request):
     else:
         form = QuoteRequestForm(request=request)
 
-    quick_quote_form = QuickQuoteForm(request=request)
+    quick_quote_context = _quick_quote_context(request)
+
+    if quick_quote_context["quick_quote_submitted"] and request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": quick_quote_context["quick_quote_message_status"] == "success",
+                "message": quick_quote_context["quick_quote_message"],
+                "errors": quick_quote_context["quick_quote_form"].errors.get_json_data(),
+            },
+            status=quick_quote_context["quick_quote_response_status"],
+        )
 
     return render(
         request,
         "home.html",
         {
             "form": form,
-            "quick_quote_form": quick_quote_form,
+            **quick_quote_context,
             "marketing_form": MarketingSignupForm(),
             "gallery_items": gallery_items,
             "services": featured_services,
@@ -350,43 +454,19 @@ def home(request):
 
 
 def contact(request):
-    if request.method == "POST":
-        form = QuickQuoteForm(request.POST, request=request)
-
-        if form.is_valid():
-            try:
-                quote, created = create_quote_request(form=form)
-
-                if created:
-                    customer_email_sent = send_customer_quote_email(quote)
-                    admin_email_sent = send_admin_quote_email(quote)
-
-                    if not customer_email_sent:
-                        logger.error(
-                            "Quick quote customer email was not sent for QuoteRequest %s.",
-                            quote.id,
-                        )
-                    if not admin_email_sent:
-                        logger.error(
-                            "Quick quote company email was not sent for QuoteRequest %s.",
-                            quote.id,
-                        )
-
-                messages.success(
-                    request,
-                    "Thanks — your enquiry has been received. Our team will contact you shortly.",
-                )
-                return redirect("/contact/#quickQuoteForm")
-            except Exception:
-                logger.exception("Quick quote submission failed.")
-                messages.error(
-                    request,
-                    "We couldn't submit your enquiry right now. Please try again or call 0430 049 865.",
-                )
-    else:
-        form = QuickQuoteForm(request=request)
-
-    return render(request, "contact.html", {"form": form})
+    context = _quick_quote_context(request, allow_unmarked_post=True)
+    if context["quick_quote_submitted"] and request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": context["quick_quote_message_status"] == "success",
+                "message": context["quick_quote_message"],
+                "errors": context["quick_quote_form"].errors.get_json_data(),
+            },
+            status=context["quick_quote_response_status"],
+        )
+    return render(request, "contact.html", context)
 
 
 # ====================================================
@@ -653,42 +733,19 @@ def about(request):
     )
 
 def pricing(request):
-    if request.method == "POST":
-        form = QuickQuoteForm(request.POST, request=request)
-        if form.is_valid():
-            try:
-                quote, created = create_quote_request(form=form)
-
-                if created:
-                    customer_email_sent = send_customer_quote_email(quote)
-                    admin_email_sent = send_admin_quote_email(quote)
-
-                    if not customer_email_sent:
-                        logger.error(
-                            "Pricing quick quote customer email was not sent for QuoteRequest %s.",
-                            quote.id,
-                        )
-                    if not admin_email_sent:
-                        logger.error(
-                            "Pricing quick quote company email was not sent for QuoteRequest %s.",
-                            quote.id,
-                        )
-
-                messages.success(
-                    request,
-                    "Thanks — your quote request has been received. We'll be in touch shortly.",
-                )
-                return redirect("/pricing/#quick-quote-pricing")
-            except Exception:
-                logger.exception("Pricing quick quote submission failed.")
-                messages.error(
-                    request,
-                    "We couldn't submit your enquiry right now. Please try again or call 0430 049 865.",
-                )
-    else:
-        form = QuickQuoteForm(request=request)
-
-    return render(request, "pages/pricing.html", {"quick_quote_form": form})
+    context = _quick_quote_context(request, allow_unmarked_post=True)
+    if context["quick_quote_submitted"] and request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": context["quick_quote_message_status"] == "success",
+                "message": context["quick_quote_message"],
+                "errors": context["quick_quote_form"].errors.get_json_data(),
+            },
+            status=context["quick_quote_response_status"],
+        )
+    return render(request, "pages/pricing.html", context)
 
 def team(request):
     """
@@ -768,24 +825,46 @@ def referral_program(request):
     )
 
 def eco_friendly_cleaning(request):
-    return render(
-        request,
-        "pages/eco_friendly_cleaning.html",
-        {
-            "faq_section": _get_faq_section("eco_friendly_cleaning"),
-            "why_choose_section": _get_page_why_choose("eco-friendly"),
-        },
-    )
+    context = {
+        "faq_section": _get_faq_section("eco_friendly_cleaning"),
+        "why_choose_section": _get_page_why_choose("eco-friendly"),
+        "quick_quote_preset_service": "eco-friendly-cleaning",
+    }
+    quote_context = _quick_quote_context(request)
+    context.update(quote_context)
+    if quote_context["quick_quote_submitted"] and request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": quote_context["quick_quote_message_status"] == "success",
+                "message": quote_context["quick_quote_message"],
+                "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+            },
+            status=quote_context["quick_quote_response_status"],
+        )
+    return render(request, "pages/eco_friendly_cleaning.html", context)
 
 def emergency_cleaning(request):
-    return render(
-        request,
-        "pages/emergency_cleaning.html",
-        {
-            "faq_section": _get_faq_section("emergency_cleaning"),
-            "why_choose_section": _get_page_why_choose("emergency"),
-        },
-    )
+    context = {
+        "faq_section": _get_faq_section("emergency_cleaning"),
+        "why_choose_section": _get_page_why_choose("emergency"),
+        "quick_quote_preset_service": "emergency-cleaning",
+    }
+    quote_context = _quick_quote_context(request)
+    context.update(quote_context)
+    if quote_context["quick_quote_submitted"] and request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": quote_context["quick_quote_message_status"] == "success",
+                "message": quote_context["quick_quote_message"],
+                "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+            },
+            status=quote_context["quick_quote_response_status"],
+        )
+    return render(request, "pages/emergency_cleaning.html", context)
 
 def rss_xml(request):
     posts = BlogPost.objects.filter(published=True).order_by("-published_at")[:20]
@@ -1149,9 +1228,22 @@ def local_suburb_detail(request, area_slug):
         "nearby_areas": nearby_areas,
         "nearby_area_links": nearby_area_links,
 
-        "quick_quote_form": QuickQuoteForm(request=request),
         "quick_quote_preset_location": f"{suburb_name} {postcode}".strip(),
     }
+
+    quote_context = _quick_quote_context(request)
+    context.update(quote_context)
+    if quote_context["quick_quote_submitted"] and request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": quote_context["quick_quote_message_status"] == "success",
+                "message": quote_context["quick_quote_message"],
+                "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+            },
+            status=quote_context["quick_quote_response_status"],
+        )
 
     return render(
         request,
@@ -2015,15 +2107,31 @@ def service_page(request, service_slug):
     service_review_count = len(google_reviews)
     service_average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
 
-    quick_quote_form = QuickQuoteForm(request=request)
+    quick_quote_preset_service = normalized_slug.removesuffix("-adelaide")
+    service_choices = dict(QuickQuoteForm.base_fields["service"].choices)
+    if quick_quote_preset_service not in service_choices:
+        quick_quote_preset_service = "other"
+
+    quote_context = _quick_quote_context(request)
+    if quote_context["quick_quote_submitted"] and request.headers.get(
+        "x-requested-with"
+    ) == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": quote_context["quick_quote_message_status"] == "success",
+                "message": quote_context["quick_quote_message"],
+                "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+            },
+            status=quote_context["quick_quote_response_status"],
+        )
 
     return render(
         request,
         "services/service_detail.html",
         {
             "service": service,
-            "quick_quote_form": quick_quote_form,
-            "quick_quote_preset_service": normalized_slug,
+            **quote_context,
+            "quick_quote_preset_service": quick_quote_preset_service,
             "quick_quote_preset_location": location or "Adelaide",
             "service_url": service_url,
             "location": location,
