@@ -781,6 +781,7 @@ def _customer_quote_email_html(
 
 <!-- ======================================================
      BRAND HEADER
+     Logo + visible company name
 ======================================================= -->
 
 <tr>
@@ -793,23 +794,37 @@ def _customer_quote_email_html(
     "
 >
 
+<table
+    role="presentation"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="margin:0 auto;"
+>
+
+<tr>
+
+<!-- LOGO -->
+
+<td
+    valign="middle"
+    style="padding-right:14px;"
+>
+
 <a
     href="{BUSINESS_WEBSITE}"
     target="_blank"
-    style="
-        display:inline-block;
-        text-decoration:none;
-    "
+    style="display:inline-block;text-decoration:none;"
 >
 
 <img
     src="{BUSINESS_LOGO_URL}"
-    alt="YD Commercial Cleaning Services"
-    width="190"
+    alt=""
+    width="72"
     style="
         display:block;
-        width:190px;
-        max-width:100%;
+        width:72px;
+        max-width:72px;
         height:auto;
         border:0;
         outline:none;
@@ -819,18 +834,47 @@ def _customer_quote_email_html(
 
 </a>
 
+</td>
 
-<p style="
-    margin:13px 0 0;
-    color:#dcebe5;
-    font-size:11px;
-    letter-spacing:1.4px;
-    font-weight:600;
-">
+<!-- COMPANY NAME -->
 
+<td
+    valign="middle"
+    style="text-align:left;"
+>
+
+<div
+    style="
+        color:#ffffff;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:20px;
+        line-height:1.2;
+        font-weight:700;
+        white-space:nowrap;
+    "
+>
+YD Commercial Cleaning
+</div>
+
+<div
+    style="
+        margin-top:5px;
+        color:#dcebe5;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:10px;
+        line-height:1.3;
+        letter-spacing:1.2px;
+        font-weight:600;
+    "
+>
 PROFESSIONAL CLEANING SERVICES
+</div>
 
-</p>
+</td>
+
+</tr>
+
+</table>
 
 </td>
 
@@ -1454,7 +1498,7 @@ Visit Website
     "
 >
 
-ydcleaning.com.au
+www.ydcleaning.com.au
 
 </a>
 
@@ -1829,7 +1873,7 @@ def _admin_quote_email_html(
 
 
 <!-- ======================================================
-     HEADER WITH LOGO
+     HEADER WITH LOGO + COMPANY NAME
 ======================================================= -->
 
 <tr>
@@ -1841,33 +1885,48 @@ def _admin_quote_email_html(
     "
 >
 
-
 <table
     width="100%"
     cellpadding="0"
     cellspacing="0"
+    border="0"
 >
 
 <tr>
 
-<td>
+<!-- BRAND -->
+
+<td
+    valign="middle"
+>
+
+<table
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+>
+
+<tr>
+
+<td
+    valign="middle"
+    style="padding-right:12px;"
+>
 
 <a
     href="{BUSINESS_WEBSITE}"
     target="_blank"
-    style="
-        display:inline-block;
-    "
+    style="display:inline-block;text-decoration:none;"
 >
 
 <img
     src="{BUSINESS_LOGO_URL}"
-    alt="YD Commercial Cleaning Services"
-    width="160"
+    alt=""
+    width="58"
     style="
         display:block;
-        width:160px;
-        max-width:100%;
+        width:58px;
+        max-width:58px;
         height:auto;
         border:0;
     "
@@ -1877,17 +1936,63 @@ def _admin_quote_email_html(
 
 </td>
 
+<td
+    valign="middle"
+>
+
+<div
+    style="
+        color:#ffffff;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:17px;
+        line-height:1.2;
+        font-weight:700;
+    "
+>
+YD Commercial Cleaning
+</div>
+
+<div
+    style="
+        margin-top:4px;
+        color:#dcebe5;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:9px;
+        line-height:1.3;
+        letter-spacing:1px;
+        font-weight:600;
+    "
+>
+PROFESSIONAL CLEANING SERVICES
+</div>
+
+</td>
+
+</tr>
+
+</table>
+
+</td>
+
+<!-- NEW LEAD -->
 
 <td
     align="right"
     valign="middle"
     style="
         color:#dcebe5;
-        font-size:12px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:11px;
+        font-weight:600;
+        white-space:nowrap;
     "
 >
-
 NEW LEAD
+</td>
+
+</tr>
+
+</table>
 
 </td>
 
@@ -2563,7 +2668,7 @@ Call Business
     "
 >
 
-ydcleaning.com.au
+www.ydcleaning.com.au
 
 </a>
 
