@@ -28,7 +28,7 @@ BUSINESS_WEBSITE = "https://www.ydcleaning.com.au"
 
 BUSINESS_LOGO_URL = (
     "https://www.ydcleaning.com.au/static/"
-    "images/branding/yd-email-logo.png"
+    "images/branding/yd-email-logo.jpeg"
 )
 
 BUSINESS_EMAIL = getattr(
