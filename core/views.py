@@ -996,6 +996,11 @@ def local_suburb_detail(request, area_slug):
     # Apply unique content when a suburb has a dedicated content record.
     unique_content = ADELAIDE_LOCAL_CONTENT.get(area_slug)
 
+    # Only pages with genuinely controlled, suburb-specific content should
+    # participate in organic search. Fallback pages remain accessible to
+    # users, but are excluded from the index to avoid near-duplicate pages.
+    is_controlled_local_page = bool(unique_content)
+
     if unique_content:
         suburb_data = {
             **suburb_data,
@@ -1229,6 +1234,7 @@ def local_suburb_detail(request, area_slug):
         "nearby_area_links": nearby_area_links,
 
         "quick_quote_preset_location": f"{suburb_name} {postcode}".strip(),
+        "is_controlled_local_page": is_controlled_local_page,
     }
 
     quote_context = _quick_quote_context(request)
