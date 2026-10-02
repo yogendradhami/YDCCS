@@ -52,10 +52,8 @@ urlpatterns = [
     # Password reset request page
     path(
         "portal/password-reset/",
-        auth_views.PasswordResetView.as_view(
+        views.PortalPasswordResetView.as_view(
             template_name="portal/portal_password_reset.html",
-            email_template_name="portal/portal_password_reset_email.html",
-            subject_template_name="portal/portal_password_reset_subject.txt",
             success_url="/portal/password-reset/done/",
         ),
         name="password_reset",

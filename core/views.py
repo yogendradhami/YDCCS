@@ -16,7 +16,7 @@ from django.http import Http404, HttpResponse
 from django.http import JsonResponse
 from django.db import transaction
 from django.shortcuts import redirect, render
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.conf import settings
 from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
@@ -2350,6 +2350,64 @@ def booking_terms(request):
     )
 
 
+def send_booking_request_email(request, booking):
+    """
+    Send the customer a professional confirmation that their
+    booking request has been received.
+    """
+    customer = booking.customer
+
+    if not customer.email:
+        logger.warning(
+            "Booking %s has no customer email address.",
+            booking.id,
+        )
+        return False
+
+    portal_url = request.build_absolute_uri("/portal/")
+
+    context = {
+        "customer": customer,
+        "booking": booking,
+        "portal_url": portal_url,
+    }
+
+    subject = (
+        f"Booking request received — "
+        f"YD-B-{booking.id:05d}"
+    )
+
+    text_body = render_to_string(
+        "emails/bookings/confirmation.txt",
+        context,
+    )
+
+    html_body = render_to_string(
+        "emails/bookings/confirmation.html",
+        context,
+    )
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[customer.email],
+    )
+
+    email.attach_alternative(
+        html_body,
+        "text/html",
+    )
+
+    email.send(fail_silently=False)
+
+    logger.info(
+        "Booking request email sent for booking %s to %s.",
+        booking.id,
+        customer.email,
+    )
+
+    return True
 
 
 
@@ -2375,6 +2433,14 @@ def booking(request):
                 suburb_postcode=form.cleaned_data["suburb_postcode"],
                 notes=form.cleaned_data.get("notes", ""),
             )
+
+            try:
+                send_booking_request_email(request, booking)
+            except Exception:
+                logger.exception(
+                    "Failed to send booking request email for booking %s.",
+                    booking.id,
+                )
 
             try:
                 from google_reviews.calendar_utils import create_or_update_booking_event

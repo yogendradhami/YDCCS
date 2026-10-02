@@ -1,0 +1,39 @@
+BOOKING CONFIRMED
+
+Hi {{ customer.full_name }},
+
+Great news — your cleaning booking with YD Commercial Cleaning Services has been confirmed.
+
+BOOKING DETAILS
+
+Booking reference:
+YD-B-{{ booking.id|stringformat:"05d" }}
+
+Service:
+{{ booking.service_type }}
+
+Date:
+{{ booking.booking_date|date:"l, d F Y" }}
+
+Time:
+{{ booking.booking_time|time:"g:i A" }}
+
+Property:
+{{ booking.address }}, {{ booking.suburb_postcode }}
+
+Our team will now prepare for your scheduled service.
+
+You can view your booking through the customer portal:
+
+{{ portal_url }}
+
+If anything changes or you need assistance, please contact us.
+
+Phone: 0430 049 865
+Email: info@ydcleaning.com.au
+Website: https://www.ydcleaning.com.au
+
+Kind regards,
+
+YD Commercial Cleaning Services
+Customer Support Team

@@ -1,33 +1,384 @@
-<html>
-  <body style="font-family:Segoe UI, Arial, sans-serif; color:#333; line-height:1.5;">
-    <div style="max-width:600px; margin:0 auto; padding:20px;">
-      <h2 style="color:#0b64a0;">Application Update</h2>
+{% extends "emails/base.html" %}
 
-      <p>Dear {{ application.full_name }},</p>
+{% block email_title %}
+    Application Update — YD Commercial Cleaning Services
+{% endblock %}
 
-      <p>Thank you for applying for the role of <strong>{{ application.get_position_display }}</strong> with YD Commercial Cleaning.</p>
+{% block preheader %}
+    There has been an update to your application with YD Commercial Cleaning Services.
+{% endblock %}
 
-      <p style="font-size:16px;">The status of your application has been updated to:</p>
+{% block eyebrow %}
 
-      <p style="display:inline-block; background:#f1f7fb; color:#0b64a0; padding:8px 12px; border-radius:4px; font-weight:600;">{{ application.get_status_display }}</p>
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+>
+    <tr>
+        <td
+            style="
+                color:#174b3d;
+                font-size:11px;
+                line-height:16px;
+                font-weight:700;
+                letter-spacing:1.5px;
+                text-transform:uppercase;
+            "
+        >
+            APPLICATION UPDATE
+        </td>
+    </tr>
+</table>
 
-      {% if admin_notes %}
-      <h4 style="margin-top:18px;">Message from our recruitment team</h4>
-      <div style="border-left:3px solid #e0e0e0; padding-left:10px; margin-bottom:14px;">{{ admin_notes|linebreaksbr }}</div>
-      {% endif %}
+{% endblock %}
 
-      <h4 style="margin-top:12px;">What happens next</h4>
-      <ul>
-        <li>If your application progresses to the next stage, we will contact you to arrange an interview.</li>
-        <li>If no further action is required, we will retain your details for future opportunities.</li>
-      </ul>
 
-      <p>If you have any questions, please reply to this email or visit <a href="https://ydcleaning.com.au/contact/">our contact page</a>.</p>
+{% block content %}
 
-      <p style="margin-top:20px;">Warm regards,<br/><strong>YD Commercial Cleaning — Recruitment Team</strong></p>
+<!-- =========================================================
+     HEADING
+========================================================= -->
 
-      <hr style="border:none;border-top:1px solid #eee;margin:18px 0;"/>
-      <p style="font-size:12px;color:#777;">YD Commercial Cleaning • Adelaide • <a href="https://ydcleaning.com.au">ydcleaning.com.au</a></p>
-    </div>
-  </body>
-</html>
+<h1
+    style="
+        margin:0 0 18px 0;
+        color:#14211d;
+        font-size:28px;
+        line-height:36px;
+        font-weight:700;
+        letter-spacing:-0.5px;
+    "
+>
+    Hello, {{ application.full_name }}.
+</h1>
+
+
+<p
+    style="
+        margin:0 0 16px 0;
+        color:#5f6f68;
+        font-size:15px;
+        line-height:25px;
+    "
+>
+    Thank you for applying for the role of
+    <strong style="color:#14211d;">
+        {{ application.get_position_display }}
+    </strong>
+    with YD Commercial Cleaning Services.
+</p>
+
+
+<p
+    style="
+        margin:0 0 24px 0;
+        color:#5f6f68;
+        font-size:15px;
+        line-height:25px;
+    "
+>
+    We wanted to let you know that there has been an update
+    to the status of your application.
+</p>
+
+
+<!-- =========================================================
+     STATUS CARD
+========================================================= -->
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin:0 0 28px 0;
+        background-color:#f7faf8;
+        border:1px solid #e3ebe6;
+        border-radius:12px;
+    "
+>
+
+    <tr>
+
+        <td
+            style="
+                padding:20px 22px;
+            "
+        >
+
+            <div
+                style="
+                    margin-bottom:10px;
+                    color:#7a8983;
+                    font-size:11px;
+                    line-height:16px;
+                    font-weight:700;
+                    letter-spacing:1.2px;
+                    text-transform:uppercase;
+                "
+            >
+                Current Application Status
+            </div>
+
+
+            <div
+                style="
+                    display:inline-block;
+                    padding:9px 14px;
+                    background-color:#e8f2ed;
+                    border:1px solid #cfe1d8;
+                    border-radius:8px;
+                    color:#174b3d;
+                    font-size:14px;
+                    line-height:20px;
+                    font-weight:700;
+                "
+            >
+                {{ application.get_status_display }}
+            </div>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- =========================================================
+     RECRUITMENT MESSAGE
+========================================================= -->
+
+{% if admin_notes %}
+
+<h2
+    style="
+        margin:0 0 12px 0;
+        color:#14211d;
+        font-size:18px;
+        line-height:26px;
+        font-weight:700;
+    "
+>
+    Message from our recruitment team
+</h2>
+
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin:0 0 28px 0;
+    "
+>
+
+    <tr>
+
+        <td
+            style="
+                padding:16px 18px;
+                background-color:#f7faf8;
+                border-left:4px solid #174b3d;
+                border-radius:0 8px 8px 0;
+                color:#5f6f68;
+                font-size:14px;
+                line-height:23px;
+            "
+        >
+
+            {{ admin_notes|linebreaksbr }}
+
+        </td>
+
+    </tr>
+
+</table>
+
+{% endif %}
+
+
+<!-- =========================================================
+     NEXT STEPS
+========================================================= -->
+
+<h2
+    style="
+        margin:0 0 14px 0;
+        color:#14211d;
+        font-size:18px;
+        line-height:26px;
+        font-weight:700;
+    "
+>
+    What happens next?
+</h2>
+
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin:0 0 24px 0;
+    "
+>
+
+    <tr>
+
+        <td
+            width="28"
+            valign="top"
+            style="
+                padding:0 10px 12px 0;
+                color:#174b3d;
+                font-size:14px;
+                line-height:23px;
+                font-weight:700;
+            "
+        >
+            ✓
+        </td>
+
+        <td
+            valign="top"
+            style="
+                padding:0 0 12px 0;
+                color:#5f6f68;
+                font-size:14px;
+                line-height:23px;
+            "
+        >
+            If your application progresses to the next stage,
+            our team will contact you to arrange an interview.
+        </td>
+
+    </tr>
+
+
+    <tr>
+
+        <td
+            width="28"
+            valign="top"
+            style="
+                padding:0 10px 0 0;
+                color:#174b3d;
+                font-size:14px;
+                line-height:23px;
+                font-weight:700;
+            "
+        >
+            ✓
+        </td>
+
+        <td
+            valign="top"
+            style="
+                padding:0;
+                color:#5f6f68;
+                font-size:14px;
+                line-height:23px;
+            "
+        >
+            If no further action is required at this stage,
+            we will retain your details for future opportunities.
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- =========================================================
+     CONTACT
+========================================================= -->
+
+<p
+    style="
+        margin:0 0 26px 0;
+        color:#5f6f68;
+        font-size:14px;
+        line-height:23px;
+    "
+>
+    If you have any questions, please reply to this email or
+    visit our
+    <a
+        href="https://ydcleaning.com.au/contact/"
+        style="
+            color:#174b3d;
+            font-weight:700;
+        "
+    >
+        contact page
+    </a>.
+</p>
+
+
+<!-- =========================================================
+     SIGNATURE
+========================================================= -->
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+>
+    <tr>
+
+        <td
+            style="
+                padding-top:4px;
+            "
+        >
+
+            <div
+                style="
+                    color:#5f6f68;
+                    font-size:14px;
+                    line-height:22px;
+                "
+            >
+                Warm regards,
+            </div>
+
+            <div
+                style="
+                    margin-top:3px;
+                    color:#14211d;
+                    font-size:14px;
+                    line-height:22px;
+                    font-weight:700;
+                "
+            >
+                YD Commercial Cleaning Services
+            </div>
+
+            <div
+                style="
+                    margin-top:2px;
+                    color:#7a8983;
+                    font-size:12px;
+                    line-height:19px;
+                "
+            >
+                Recruitment Team
+            </div>
+
+        </td>
+
+    </tr>
+</table>
+
+{% endblock %}

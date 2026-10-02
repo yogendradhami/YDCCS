@@ -1,0 +1,494 @@
+{% extends "emails/base.html" %}
+
+
+{% block email_title %}
+
+Following Up on Your Cleaning Quote — {{ quote_reference }}
+
+{% endblock %}
+
+
+{% block eyebrow %}
+
+Quote Follow-Up
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- =========================================================
+     INTRODUCTION
+========================================================= -->
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+>
+
+    <tr>
+
+        <td>
+
+            <h1
+                style="
+                    margin:0;
+                    padding:0;
+                    font-size:28px;
+                    line-height:36px;
+                    font-weight:700;
+                    letter-spacing:-0.4px;
+                    color:#0b2c24;
+                "
+            >
+
+                Just checking in, {{ customer_name }}
+
+            </h1>
+
+
+            <p
+                style="
+                    margin:17px 0 0;
+                    font-size:16px;
+                    line-height:27px;
+                    color:#5f6f68;
+                "
+            >
+
+                Thank you for choosing
+                YD Commercial Cleaning Services
+                and requesting a cleaning quote.
+
+            </p>
+
+
+            <p
+                style="
+                    margin:14px 0 0;
+                    font-size:16px;
+                    line-height:27px;
+                    color:#5f6f68;
+                "
+            >
+
+                We wanted to follow up and see whether
+                you would like to proceed, or whether
+                there is anything we can clarify for you.
+
+            </p>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- =========================================================
+     QUOTE REFERENCE
+========================================================= -->
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin-top:30px;
+        background-color:#f7faf8;
+        border:1px solid #e3ebe6;
+        border-radius:12px;
+    "
+>
+
+    <tr>
+
+        <td
+            style="
+                padding:21px 22px;
+            "
+        >
+
+            <div
+                style="
+                    font-size:11px;
+                    line-height:16px;
+                    letter-spacing:1.4px;
+                    text-transform:uppercase;
+                    color:#5f6f68;
+                    font-weight:700;
+                "
+            >
+
+                Quote Reference
+
+            </div>
+
+
+            <div
+                style="
+                    margin-top:6px;
+                    font-size:20px;
+                    line-height:28px;
+                    color:#174b3d;
+                    font-weight:700;
+                "
+            >
+
+                {{ quote_reference }}
+
+            </div>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- =========================================================
+     QUOTE DETAILS
+========================================================= -->
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin-top:18px;
+        border:1px solid #e3ebe6;
+        border-radius:12px;
+        background-color:#ffffff;
+    "
+>
+
+    <tr>
+
+        <td
+            style="
+                padding:22px;
+            "
+        >
+
+            <div
+                style="
+                    font-size:13px;
+                    line-height:20px;
+                    color:#0b2c24;
+                    font-weight:700;
+                    padding-bottom:14px;
+                "
+            >
+
+                Your Quote Details
+
+            </div>
+
+
+            <table
+                role="presentation"
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+            >
+
+
+                <!-- PROPERTY TYPE -->
+
+                <tr>
+
+                    <td
+                        width="42%"
+                        valign="top"
+                        style="
+                            padding:9px 0;
+                            font-size:13px;
+                            line-height:20px;
+                            color:#7a8982;
+                        "
+                    >
+
+                        Property Type
+
+                    </td>
+
+
+                    <td
+                        valign="top"
+                        style="
+                            padding:9px 0;
+                            font-size:14px;
+                            line-height:20px;
+                            color:#14211d;
+                            font-weight:600;
+                        "
+                    >
+
+                        {{ property_type }}
+
+                    </td>
+
+                </tr>
+
+
+                <!-- SUBURB -->
+
+                <tr>
+
+                    <td
+                        width="42%"
+                        valign="top"
+                        style="
+                            padding:9px 0;
+                            border-top:1px solid #edf2ef;
+                            font-size:13px;
+                            line-height:20px;
+                            color:#7a8982;
+                        "
+                    >
+
+                        Suburb / Postcode
+
+                    </td>
+
+
+                    <td
+                        valign="top"
+                        style="
+                            padding:9px 0;
+                            border-top:1px solid #edf2ef;
+                            font-size:14px;
+                            line-height:20px;
+                            color:#14211d;
+                            font-weight:600;
+                        "
+                    >
+
+                        {{ suburb_postcode }}
+
+                    </td>
+
+                </tr>
+
+
+                <!-- DATE -->
+
+                <tr>
+
+                    <td
+                        width="42%"
+                        valign="top"
+                        style="
+                            padding:9px 0;
+                            border-top:1px solid #edf2ef;
+                            font-size:13px;
+                            line-height:20px;
+                            color:#7a8982;
+                        "
+                    >
+
+                        Preferred Date
+
+                    </td>
+
+
+                    <td
+                        valign="top"
+                        style="
+                            padding:9px 0;
+                            border-top:1px solid #edf2ef;
+                            font-size:14px;
+                            line-height:20px;
+                            color:#14211d;
+                            font-weight:600;
+                        "
+                    >
+
+                        {{ preferred_date }}
+
+                    </td>
+
+                </tr>
+
+
+            </table>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- =========================================================
+     NEXT STEP
+========================================================= -->
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin-top:28px;
+    "
+>
+
+    <tr>
+
+        <td>
+
+            <p
+                style="
+                    margin:0;
+                    font-size:15px;
+                    line-height:25px;
+                    color:#5f6f68;
+                "
+            >
+
+                If you're ready to move ahead,
+                simply reply to this email and our team
+                will help with the next steps.
+
+            </p>
+
+
+            <p
+                style="
+                    margin:14px 0 0;
+                    font-size:15px;
+                    line-height:25px;
+                    color:#5f6f68;
+                "
+            >
+
+                If your requirements have changed,
+                that's completely fine too. Let us know
+                what you need and we'll be happy to help.
+
+            </p>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- =========================================================
+     CTA BUTTON
+========================================================= -->
+
+<table
+    role="presentation"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin-top:28px;
+    "
+>
+
+    <tr>
+
+        <td
+            align="center"
+            style="
+                border-radius:8px;
+                background-color:#174b3d;
+            "
+        >
+
+            <a
+                href="mailto:{{ business_email|default:'hello@ydcleaning.com.au' }}?subject=Re:%20{{ quote_reference }}"
+                style="
+                    display:inline-block;
+                    padding:13px 23px;
+                    border:1px solid #174b3d;
+                    border-radius:8px;
+                    background-color:#174b3d;
+                    color:#ffffff;
+                    font-size:14px;
+                    line-height:20px;
+                    font-weight:700;
+                    text-decoration:none;
+                "
+            >
+
+                Reply About My Quote
+
+            </a>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- =========================================================
+     SIGNATURE
+========================================================= -->
+
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin-top:34px;
+    "
+>
+
+    <tr>
+
+        <td>
+
+            <p
+                style="
+                    margin:0;
+                    font-size:15px;
+                    line-height:24px;
+                    color:#14211d;
+                "
+            >
+
+                Kind regards,
+
+            </p>
+
+
+            <p
+                style="
+                    margin:5px 0 0;
+                    font-size:15px;
+                    line-height:24px;
+                    color:#0b2c24;
+                    font-weight:700;
+                "
+            >
+
+                YD Commercial Cleaning Services
+
+            </p>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+{% endblock %}

@@ -1,0 +1,54 @@
+YD COMMERCIAL CLEANING SERVICES
+BOOKING REQUEST RECEIVED
+
+Hi {{ customer.full_name }},
+
+Thank you for choosing YD Commercial Cleaning Services.
+
+We've received your cleaning booking request. Our team will review the details and contact you if anything needs to be confirmed before the appointment is finalised.
+
+BOOKING REFERENCE
+YD-B-{{ booking.id|stringformat:"05d" }}
+
+REQUEST DETAILS
+
+Service:
+{{ booking.service_type }}
+
+Date:
+{{ booking.booking_date|date:"l, d F Y" }}
+
+Requested time:
+{{ booking.booking_time|time:"g:i A" }}
+
+Property:
+{{ booking.address }}
+{{ booking.suburb_postcode }}
+
+Status:
+Request received
+
+{% if booking.notes %}
+YOUR NOTES
+
+{{ booking.notes }}
+
+{% endif %}
+
+WHAT HAPPENS NEXT?
+
+Our team will review your request and confirm the booking details. If we need any additional information, we'll contact you using the details provided with your request.
+
+View your customer portal:
+{{ portal_url }}
+
+If you have any questions, please contact us.
+
+Phone: 0430 049 865
+Email: info@ydcleaning.com.au
+Website: https://www.ydcleaning.com.au
+
+Kind regards,
+
+YD Commercial Cleaning Services
+Professional Cleaning Solutions

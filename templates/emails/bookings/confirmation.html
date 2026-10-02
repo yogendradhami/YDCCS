@@ -1,0 +1,317 @@
+{% extends "emails/base.html" %}
+
+{% block content %}
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td style="padding:0 0 8px 0;">
+            <div style="
+                font-size:12px;
+                line-height:18px;
+                font-weight:700;
+                letter-spacing:1.4px;
+                text-transform:uppercase;
+                color:#66736e;
+            ">
+                Booking request received
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding:0 0 18px 0;">
+            <h1 style="
+                margin:0;
+                font-family:Arial,Helvetica,sans-serif;
+                font-size:30px;
+                line-height:38px;
+                font-weight:700;
+                color:#14211d;
+            ">
+                Thanks, {{ customer.full_name }}.
+            </h1>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="
+            padding:0 0 24px 0;
+            font-size:16px;
+            line-height:27px;
+            color:#4d5b56;
+        ">
+            We've received your cleaning booking request. Our team will
+            review the details and contact you if anything needs to be
+            confirmed before the appointment is finalised.
+        </td>
+    </tr>
+
+    <!-- Booking reference -->
+    <tr>
+        <td style="padding:0 0 24px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="
+                       background:#f3f6f4;
+                       border:1px solid #dce5e1;
+                       border-radius:10px;
+                   ">
+                <tr>
+                    <td style="padding:18px 20px;">
+                        <div style="
+                            font-size:11px;
+                            line-height:16px;
+                            font-weight:700;
+                            letter-spacing:1px;
+                            text-transform:uppercase;
+                            color:#66736e;
+                        ">
+                            Booking reference
+                        </div>
+
+                        <div style="
+                            padding-top:5px;
+                            font-size:20px;
+                            line-height:28px;
+                            font-weight:700;
+                            color:#14211d;
+                        ">
+                            YD-B-{{ booking.id|stringformat:"05d" }}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- Booking details -->
+    <tr>
+        <td style="padding:0 0 24px 0;">
+            <h2 style="
+                margin:0 0 14px 0;
+                font-size:20px;
+                line-height:28px;
+                color:#14211d;
+            ">
+                Request details
+            </h2>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="border-collapse:collapse;">
+
+                <tr>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        width:38%;
+                        font-size:13px;
+                        font-weight:700;
+                        color:#66736e;
+                    ">
+                        Service
+                    </td>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        font-size:15px;
+                        color:#14211d;
+                    ">
+                        {{ booking.service_type }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        font-size:13px;
+                        font-weight:700;
+                        color:#66736e;
+                    ">
+                        Date
+                    </td>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        font-size:15px;
+                        color:#14211d;
+                    ">
+                        {{ booking.booking_date|date:"l, d F Y" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        font-size:13px;
+                        font-weight:700;
+                        color:#66736e;
+                    ">
+                        Requested time
+                    </td>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        font-size:15px;
+                        color:#14211d;
+                    ">
+                        {{ booking.booking_time|time:"g:i A" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        font-size:13px;
+                        font-weight:700;
+                        color:#66736e;
+                    ">
+                        Property
+                    </td>
+                    <td style="
+                        padding:12px 0;
+                        border-bottom:1px solid #e5ebe8;
+                        font-size:15px;
+                        line-height:23px;
+                        color:#14211d;
+                    ">
+                        {{ booking.address }}<br>
+                        {{ booking.suburb_postcode }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding:12px 0;
+                        font-size:13px;
+                        font-weight:700;
+                        color:#66736e;
+                    ">
+                        Status
+                    </td>
+                    <td style="
+                        padding:12px 0;
+                        font-size:15px;
+                        font-weight:700;
+                        color:#8a5a00;
+                    ">
+                        Request received
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+
+    {% if booking.notes %}
+    <tr>
+        <td style="padding:0 0 24px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="
+                       background:#fffaf0;
+                       border-left:4px solid #c58a24;
+                   ">
+                <tr>
+                    <td style="padding:16px 18px;">
+                        <div style="
+                            font-size:12px;
+                            font-weight:700;
+                            text-transform:uppercase;
+                            letter-spacing:.8px;
+                            color:#76551a;
+                        ">
+                            Your notes
+                        </div>
+
+                        <div style="
+                            padding-top:7px;
+                            font-size:14px;
+                            line-height:23px;
+                            color:#4d4535;
+                        ">
+                            {{ booking.notes|linebreaksbr }}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+
+    <!-- Important information -->
+    <tr>
+        <td style="padding:0 0 24px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="
+                       background:#eef5f1;
+                       border:1px solid #d8e6df;
+                       border-radius:10px;
+                   ">
+                <tr>
+                    <td style="padding:18px 20px;">
+                        <div style="
+                            font-size:15px;
+                            line-height:22px;
+                            font-weight:700;
+                            color:#14211d;
+                        ">
+                            What happens next?
+                        </div>
+
+                        <div style="
+                            padding-top:7px;
+                            font-size:14px;
+                            line-height:23px;
+                            color:#4d5b56;
+                        ">
+                            Our team will review your request and confirm
+                            the booking details. If we need any additional
+                            information, we'll contact you using the details
+                            provided with your request.
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- CTA -->
+    <tr>
+        <td style="padding:4px 0 28px 0;">
+            <a href="{{ portal_url }}"
+               style="
+                   display:inline-block;
+                   padding:13px 22px;
+                   background:#17352d;
+                   border-radius:7px;
+                   color:#ffffff;
+                   font-size:14px;
+                   font-weight:700;
+                   text-decoration:none;
+               ">
+                View your customer portal
+            </a>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="
+            padding-top:22px;
+            border-top:1px solid #e5ebe8;
+            font-size:14px;
+            line-height:23px;
+            color:#5c6964;
+        ">
+            If you have any questions about your request, please contact
+            our team on <strong>0430 049 865</strong> or
+            <a href="mailto:info@ydcleaning.com.au"
+               style="color:#17352d;text-decoration:none;">
+                info@ydcleaning.com.au
+            </a>.
+        </td>
+    </tr>
+
+</table>
+
+{% endblock %}

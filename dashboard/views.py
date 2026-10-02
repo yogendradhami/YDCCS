@@ -19,7 +19,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from .decorators import admin_required
 import logging
-from django.core.mail import EmailMessage, send_mail
+
+from django.core.mail import EmailMessage,EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 import requests
 from django.http import StreamingHttpResponse
@@ -72,6 +73,8 @@ from google_reviews.calendar_utils import create_or_update_booking_event
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 # Company settings form
 from .forms import (
@@ -477,44 +480,96 @@ def lead_list(request):
 def update_quote_status(request, quote_id):
     quote = get_object_or_404(QuoteRequest, id=quote_id)
 
-    if request.method == "POST":
-        new_status = request.POST.get("status")
-        admin_notes = request.POST.get("admin_notes", "")
+    if request.method != "POST":
+        return redirect("lead_list")
 
-        if new_status in dict(QuoteRequest.STATUS_CHOICES):
+    new_status = request.POST.get("status")
+    admin_notes = request.POST.get("admin_notes", "")
 
-            old_status = quote.status
+    if new_status not in dict(QuoteRequest.STATUS_CHOICES):
+        messages.error(request, "Invalid quote status.")
+        return redirect("lead_list")
 
-            quote.status = new_status
-            quote.admin_notes = admin_notes
-            quote.save()
+    # ------------------------------------------------------
+    # QUOTE → BOOKING
+    # ------------------------------------------------------
+    # Do NOT save the quote as "booked" before conversion.
+    # The conversion service creates/reuses the Booking first
+    # and then marks the quote as booked.
+    # ------------------------------------------------------
+    if new_status == "booked":
+
+        try:
+            booking, created = convert_quote_service(
+                quote_id=quote.id,
+                booking_date=quote.preferred_date or timezone.localdate(),
+                booking_time=time(9, 0),
+            )
+
+            # Save admin notes after successful conversion.
+            if quote.admin_notes != admin_notes:
+                quote.admin_notes = admin_notes
+                quote.save(update_fields=["admin_notes"])
 
             # --------------------------------------------------
-            # Automatically convert quote to booking
-            # when status changes to Booked.
+            # GOOGLE CALENDAR
             # --------------------------------------------------
-            if new_status == "booked" and old_status != "booked":
+            try:
+                create_or_update_booking_event(booking)
 
-                try:
-                    booking, _ = convert_quote_service(
-                        quote_id=quote.id,
-                        booking_date=quote.preferred_date or timezone.localdate(),
-                        booking_time=time(9, 0),
-                    )
-                    messages.success(
-                        request,
-                        f"Quote booked successfully. Booking #{booking.id} created.",
-                    )
-                    return redirect("lead_list")
+            except Exception as calendar_error:
+                messages.warning(
+                    request,
+                    (
+                        f"Booking #{booking.id} created successfully, "
+                        f"but Google Calendar sync failed: "
+                        f"{calendar_error}"
+                    ),
+                )
 
-                except Exception as error:
-                    messages.error(
-                        request,
-                        f"Quote status updated, but booking creation failed: {error}",
-                    )
+            # --------------------------------------------------
+            # SUCCESS MESSAGE
+            # --------------------------------------------------
+            if created:
+                messages.success(
+                    request,
+                    (
+                        f"Quote booked successfully. "
+                        f"Booking #{booking.id} created."
+                    ),
+                )
+            else:
+                messages.success(
+                    request,
+                    (
+                        f"Quote is already linked to "
+                        f"Booking #{booking.id}."
+                    ),
+                )
+
+            return redirect("booking_list")
+
+        except Exception as error:
+            messages.error(
+                request,
+                f"Booking creation failed: {error}",
+            )
+
+            return redirect("lead_list")
+
+    # ------------------------------------------------------
+    # OTHER QUOTE STATUS CHANGES
+    # ------------------------------------------------------
+    quote.status = new_status
+    quote.admin_notes = admin_notes
+    quote.save()
+
+    messages.success(
+        request,
+        f"Quote status updated to {quote.get_status_display()}."
+    )
 
     return redirect("lead_list")
-
 
 @login_required
 def customer_list(request):
@@ -777,6 +832,131 @@ def add_booking(request):
     )
 
 
+def send_booking_confirmation_email(request, booking):
+    """
+    Send the customer booking confirmation email.
+
+    This function should only be called when a booking
+    transitions INTO the confirmed status.
+    """
+
+    customer = booking.customer
+
+    # --------------------------------------------------
+    # Validate customer email
+    # --------------------------------------------------
+    if not customer:
+        logger.warning(
+            "Booking %s has no customer. Confirmation email not sent.",
+            booking.id,
+        )
+        return False
+
+    if not customer.email:
+        logger.warning(
+            "Customer %s has no email address. Booking %s confirmation not sent.",
+            customer.full_name,
+            booking.id,
+        )
+        return False
+
+    subject = f"Booking confirmed — YD-B-{booking.id:05d}"
+
+    try:
+        # --------------------------------------------------
+        # Email context
+        # --------------------------------------------------
+        portal_url = f"{settings.SITE_URL.rstrip('/')}/portal/"
+
+        email_context = {
+            "customer": customer,
+            "booking": booking,
+            "portal_url": portal_url,
+        }
+
+        # --------------------------------------------------
+        # Render email
+        # --------------------------------------------------
+        text_body = render_to_string(
+            "emails/bookings/confirmed.txt",
+            email_context,
+        )
+
+        html_body = render_to_string(
+            "emails/bookings/confirmed.html",
+            email_context,
+        )
+
+        # --------------------------------------------------
+        # Send email
+        # --------------------------------------------------
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[customer.email],
+        )
+
+        email.attach_alternative(
+            html_body,
+            "text/html",
+        )
+
+        email.send(fail_silently=False)
+
+    except Exception:
+        logger.exception(
+            "BOOKING CONFIRMATION EMAIL FAILED - booking=%s customer=%s email=%s",
+            booking.id,
+            customer.full_name,
+            customer.email,
+        )
+
+        return False
+
+    # --------------------------------------------------
+    # Email was successfully handed to the email backend.
+    #
+    # Logging failures must NOT make us report the email
+    # as failed because the email has already been sent.
+    # --------------------------------------------------
+
+    try:
+        EmailLog.objects.create(
+            sent_by=request.user,
+            email_type="system",
+            recipient_name=customer.full_name,
+            recipient_email=customer.email,
+            subject=subject,
+            related_object=f"Booking #{booking.id}",
+        )
+    except Exception:
+        logger.exception(
+            "Booking confirmation email was sent, but EmailLog creation failed "
+            "for booking %s.",
+            booking.id,
+        )
+
+    try:
+        create_activity_log(
+            request.user,
+            "booking",
+            "Booking Confirmation Email Sent",
+            (
+                f"Booking YD-B-{booking.id:05d} confirmation "
+                f"emailed to {customer.full_name}."
+            ),
+        )
+    except Exception:
+        logger.exception(
+            "Booking confirmation email was sent, but activity logging failed "
+            "for booking %s.",
+            booking.id,
+        )
+
+    return True
+
+
 @admin_required
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
@@ -785,8 +965,30 @@ def edit_booking(request, booking_id):
         form = BookingForm(request.POST, instance=booking)
 
         if form.is_valid():
-            
+            old_status = booking.status
+
             updated_booking = form.save()
+
+            # --------------------------------------------------
+            # CUSTOMER BOOKING CONFIRMATION
+            # --------------------------------------------------
+            if (
+                updated_booking.status == "confirmed"
+                and old_status != "confirmed"
+            ):
+                if send_booking_confirmation_email(
+                    request,
+                    updated_booking,
+                ):
+                    messages.success(
+                        request,
+                        "✅ Customer booking confirmation email sent.",
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        "⚠️ Booking confirmed, but confirmation email could not be sent.",
+                    )
 
             try:
                 from rosters.services import sync_booking_roster
@@ -2146,58 +2348,153 @@ YD Commercial Cleaning Services
 
     return redirect("email_center")
 
-
 @require_POST
 @admin_required
 def send_quote_followup(request, quote_id):
     quote = get_object_or_404(QuoteRequest, id=quote_id)
 
-    if request.method == "POST":
-        if quote.email:
-            subject = "Following Up On Your Cleaning Quote"
+    if not quote.email:
+        messages.error(
+            request,
+            "❌ Quote request does not have an email address."
+        )
+        return redirect("email_center")
 
-            message = f"""
-Dear {quote.name},
+    # ---------------------------------------------------------
+    # Customer details
+    # ---------------------------------------------------------
 
-Thank you for requesting a cleaning quote from YD Commercial Cleaning Services.
+    customer_name = (quote.name or "Customer").strip()
 
-We are just following up to see if you would like to proceed or if you have any questions.
+    property_type = (
+        str(quote.property_type).strip()
+        if quote.property_type
+        else "To be confirmed"
+    )
 
-Service/Property Type: {quote.property_type}
-Suburb/Postcode: {quote.suburb_postcode}
-Preferred Date: {quote.preferred_date}
+    suburb_postcode = (
+        str(quote.suburb_postcode).strip()
+        if quote.suburb_postcode
+        else "To be confirmed"
+    )
 
-Thank you,
-YD Commercial Cleaning Services
-"""
+    # ---------------------------------------------------------
+    # Preferred date
+    # ---------------------------------------------------------
 
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [quote.email],
-                fail_silently=False,
+    if quote.preferred_date:
+        try:
+            preferred_date = quote.preferred_date.strftime(
+                "%d %B %Y"
             )
+        except (AttributeError, TypeError):
+            preferred_date = str(quote.preferred_date)
+    else:
+        preferred_date = "To be confirmed"
 
-            EmailLog.objects.create(
-                sent_by=request.user,
-                email_type="quote_followup",
-                recipient_name=quote.name,
-                recipient_email=quote.email,
-                subject=subject,
-                related_object=f"Quote #{quote.id}",
-            )
+    # ---------------------------------------------------------
+    # Quote reference
+    # ---------------------------------------------------------
 
-            create_activity_log(
-                request.user,
-                "quote",
-                "Quote Follow-up Sent",
-                f"Follow-up email sent to {quote.name}.",
-            )
+    quote_reference = f"YD-Q-{quote.id:05d}"
 
-            messages.success(request, "✅ Quote follow-up email sent successfully.")
-        else:
-            messages.error(request, "❌ Quote request does not have an email address.")
+    subject = (
+        f"Following Up on Your Cleaning Quote — "
+        f"{quote_reference}"
+    )
+
+    # ---------------------------------------------------------
+    # Email context
+    # ---------------------------------------------------------
+
+    context = {
+        "email_subject": subject,
+        "preheader": (
+            f"We're following up regarding your cleaning quote "
+            f"{quote_reference}."
+        ),
+        "customer_name": customer_name,
+        "quote_reference": quote_reference,
+        "property_type": property_type,
+        "suburb_postcode": suburb_postcode,
+        "preferred_date": preferred_date,
+        "business_email": settings.DEFAULT_FROM_EMAIL,
+    }
+
+    # ---------------------------------------------------------
+    # Render HTML + plain text
+    # ---------------------------------------------------------
+
+    html_message = render_to_string(
+        "emails/quotes/followup.html",
+        context,
+    )
+
+    text_message = render_to_string(
+        "emails/quotes/followup.txt",
+        context,
+    )
+
+    # ---------------------------------------------------------
+    # Send email
+    # ---------------------------------------------------------
+
+    try:
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[quote.email],
+            reply_to=[settings.DEFAULT_FROM_EMAIL],
+        )
+
+        email.attach_alternative(
+            html_message,
+            "text/html",
+        )
+
+        email.send(fail_silently=False)
+
+        # -----------------------------------------------------
+        # Email log
+        # -----------------------------------------------------
+
+        EmailLog.objects.create(
+            sent_by=request.user,
+            email_type="quote_followup",
+            recipient_name=customer_name,
+            recipient_email=quote.email,
+            subject=subject,
+            related_object=f"Quote #{quote.id}",
+        )
+
+        # -----------------------------------------------------
+        # Activity log
+        # -----------------------------------------------------
+
+        create_activity_log(
+            request.user,
+            "quote",
+            "Quote Follow-up Sent",
+            f"Follow-up email sent to {customer_name}.",
+        )
+
+        messages.success(
+            request,
+            "✅ Quote follow-up email sent successfully."
+        )
+
+    except Exception:
+        logger.exception(
+            "Failed to send quote follow-up email for Quote #%s",
+            quote.id,
+        )
+
+        messages.error(
+            request,
+            "❌ We couldn't send the quote follow-up email. "
+            "Please try again."
+        )
 
     return redirect("email_center")
 
@@ -3937,29 +4234,77 @@ def update_booking_quick_status(request, booking_id, new_status):
     if request.method == "POST":
 
         if new_status in allowed_statuses:
+
+            # ----------------------------------------------------------
+            # STORE OLD STATUS BEFORE CHANGING IT
+            # ----------------------------------------------------------
             old_status = booking.status
+
+            # ----------------------------------------------------------
+            # UPDATE BOOKING STATUS
+            # ----------------------------------------------------------
             booking.status = new_status
             booking.save()
 
+            # ----------------------------------------------------------
+            # CUSTOMER BOOKING CONFIRMATION
+            #
+            # Only send when the booking actually transitions
+            # into confirmed status.
+            # ----------------------------------------------------------
+            if (
+                new_status == "confirmed"
+                and old_status != "confirmed"
+            ):
+                if send_booking_confirmation_email(
+                    request,
+                    booking,
+                ):
+                    messages.success(
+                        request,
+                        "✅ Booking confirmed and customer notified by email.",
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        "⚠️ Booking confirmed, but the customer confirmation email could not be sent.",
+                    )
+
+            # ----------------------------------------------------------
+            # GOOGLE CALENDAR SYNC
+            # ----------------------------------------------------------
             try:
                 create_or_update_booking_event(booking)
+
             except Exception as error:
                 messages.warning(
                     request,
                     f"Booking updated, but Google Calendar sync failed: {error}",
                 )
 
+            # ----------------------------------------------------------
+            # COMPLETED BOOKING → CREATE INVOICE
+            # ----------------------------------------------------------
             if new_status == "completed":
 
-                existing_invoice = Invoice.objects.filter(booking=booking).first()
+                existing_invoice = Invoice.objects.filter(
+                    booking=booking
+                ).first()
 
+                # ------------------------------------------------------
+                # INVOICE ALREADY EXISTS
+                # ------------------------------------------------------
                 if existing_invoice:
 
                     messages.info(
                         request,
-                        f"Invoice already exists: {existing_invoice.invoice_number}",
+                        f"Invoice already exists: "
+                        f"{existing_invoice.invoice_number}",
                     )
 
+                # ------------------------------------------------------
+                # CREATE NEW INVOICE
+                # ------------------------------------------------------
                 else:
 
                     invoice = Invoice.objects.create(
@@ -3974,6 +4319,9 @@ def update_booking_quick_status(request, booking_id, new_status):
 
                     customer = booking.customer
 
+                    # --------------------------------------------------
+                    # EMAIL INVOICE TO CUSTOMER
+                    # --------------------------------------------------
                     if customer.email:
 
                         subject = (
@@ -4004,6 +4352,7 @@ YD Commercial Cleaning Services
                             [customer.email],
                         )
 
+                        # Generate invoice PDF
                         pdf_buffer = generate_invoice_pdf(invoice)
 
                         email.attach(
@@ -4012,8 +4361,10 @@ YD Commercial Cleaning Services
                             "application/pdf",
                         )
 
+                        # Send invoice email
                         email.send(fail_silently=False)
 
+                        # Log email
                         EmailLog.objects.create(
                             sent_by=request.user,
                             email_type="system",
@@ -4023,46 +4374,81 @@ YD Commercial Cleaning Services
                             related_object=invoice.invoice_number,
                         )
 
+                        # Activity log
                         create_activity_log(
                             request.user,
                             "invoice",
                             "Invoice Email Sent",
-                            f"Invoice {invoice.invoice_number} emailed to {customer.full_name}.",
+                            (
+                                f"Invoice {invoice.invoice_number} "
+                                f"emailed to {customer.full_name}."
+                            ),
                         )
 
                         messages.success(
-                            request, "✅ Invoice automatically created and emailed."
+                            request,
+                            "✅ Invoice automatically created and emailed.",
                         )
 
                     else:
+
                         messages.warning(
                             request,
                             "Invoice created, but customer has no email address.",
                         )
 
+            # ----------------------------------------------------------
+            # GOOGLE CALENDAR
+            #
+            # Cancelled bookings are removed from Calendar.
+            # All other statuses are synced/updated.
+            # ----------------------------------------------------------
             try:
+
                 if new_status == "cancelled":
+
                     delete_booking_event(booking)
+
                 else:
+
                     create_or_update_booking_event(booking)
 
             except Exception as error:
-                messages.warning(request, f"Google Calendar sync failed: {error}")
 
+                messages.warning(
+                    request,
+                    f"Google Calendar sync failed: {error}",
+                )
+
+            # ----------------------------------------------------------
+            # BOOKING ACTIVITY LOG
+            # ----------------------------------------------------------
             create_activity_log(
                 request.user,
                 "booking",
                 "Booking Status Updated",
-                f"{booking.customer.full_name} booking changed from {old_status} to {new_status}.",
+                (
+                    f"{booking.customer.full_name} booking "
+                    f"changed from {old_status} to {new_status}."
+                ),
             )
 
-            messages.success(request, "✅ Booking status updated successfully.")
+            # ----------------------------------------------------------
+            # FINAL SUCCESS MESSAGE
+            # ----------------------------------------------------------
+            messages.success(
+                request,
+                "✅ Booking status updated successfully.",
+            )
 
         else:
-            messages.error(request, "❌ Invalid booking status.")
+
+            messages.error(
+                request,
+                "❌ Invalid booking status.",
+            )
 
     return redirect("booking_calendar")
-
 
 # ==========================================================
 # Equipment Inventory
@@ -4477,7 +4863,6 @@ def add_maintenance(request):
 @login_required
 def reminder_centre(request):
 
-    from contracts.models import Contract
     from dashboard.models import (
         CleaningSupply,
         Equipment,
@@ -4498,7 +4883,7 @@ def reminder_centre(request):
         "maintenance_due": MaintenanceHistory.objects.filter(
             next_service_date__lt=today
         ),
-        "contracts_expiring": Contract.objects.filter(
+        "contracts_expiring": CleaningContract.objects.filter(
             end_date__lte=today + timedelta(days=30)
         ),
     }

@@ -18,12 +18,17 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth import views as auth_views
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+
 from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+
 
 from attendance.models import AttendanceLog
 from bookings.models import Booking
@@ -447,3 +452,89 @@ def portal_documents(request):
             "contracts": contracts,
         },
     )
+
+class PortalPasswordResetView(auth_views.PasswordResetView):
+    email_template_name = "portal/portal_password_reset_email.txt"
+    html_email_template_name = "portal/portal_password_reset_email.html"
+    subject_template_name = "portal/portal_password_reset_subject.txt"
+
+    def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        user = context.get("user")
+
+        # ----------------------------------------------------------
+        # CUSTOMER NAME
+        # ----------------------------------------------------------
+        customer = None
+
+        if user is not None:
+            customer = getattr(user, "customer_profile", None)
+
+        if customer and customer.full_name:
+            customer_name = customer.full_name
+        else:
+            customer_name = user.get_full_name() if user else ""
+
+        if not customer_name and user:
+            customer_name = user.get_username()
+
+        context["customer_name"] = customer_name
+
+        # ----------------------------------------------------------
+        # PRODUCTION PASSWORD RESET URL
+        # ----------------------------------------------------------
+        if settings.IS_PRODUCTION:
+            context["protocol"] = "https"
+            context["domain"] = "www.ydcleaning.com.au"
+
+        # ----------------------------------------------------------
+        # SUBJECT
+        # ----------------------------------------------------------
+        subject = render_to_string(
+            subject_template_name,
+            context,
+        ).strip()
+
+        # ----------------------------------------------------------
+        # PLAIN-TEXT EMAIL
+        # ----------------------------------------------------------
+        text_body = render_to_string(
+            email_template_name,
+            context,
+        )
+
+        # ----------------------------------------------------------
+        # HTML EMAIL
+        # ----------------------------------------------------------
+        html_body = None
+
+        if html_email_template_name:
+            html_body = render_to_string(
+                html_email_template_name,
+                context,
+            )
+
+        # ----------------------------------------------------------
+        # SEND EMAIL
+        # ----------------------------------------------------------
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=from_email,
+            to=[to_email],
+        )
+
+        if html_body:
+            email.attach_alternative(
+                html_body,
+                "text/html",
+            )
+
+        email.send(fail_silently=False)

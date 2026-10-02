@@ -1,0 +1,289 @@
+{% extends "emails/base/base.html" %}
+
+{% block content %}
+
+<p style="
+    margin:0 0 18px;
+    color:#14211d;
+    font-size:15px;
+    line-height:1.7;
+">
+    Hi <strong>{{ customer_name }}</strong>,
+</p>
+
+<p style="
+    margin:0 0 18px;
+    color:#14211d;
+    font-size:15px;
+    line-height:1.7;
+">
+    We’re following up on the cleaning quote you recently received
+    from <strong>YD Commercial Cleaning Services</strong>.
+</p>
+
+<p style="
+    margin:0 0 24px;
+    color:#5f6f68;
+    font-size:14px;
+    line-height:1.7;
+">
+    If you’re still considering your cleaning service, we’d be happy
+    to answer any questions, confirm availability, or help you take
+    the next step.
+</p>
+
+
+<!-- QUOTE SUMMARY -->
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin:24px 0;
+        background:#f7faf8;
+        border:1px solid #e3ebe6;
+        border-radius:12px;
+    "
+>
+    <tr>
+        <td style="padding:20px;">
+
+            <div style="
+                margin-bottom:16px;
+                color:#0b2c24;
+                font-size:17px;
+                font-weight:700;
+            ">
+                Your Quote Request
+            </div>
+
+            {% if reference %}
+            <div style="
+                margin-bottom:15px;
+                padding-bottom:15px;
+                border-bottom:1px solid #e3ebe6;
+            ">
+                <div style="
+                    margin-bottom:5px;
+                    color:#5f6f68;
+                    font-size:10px;
+                    font-weight:700;
+                    letter-spacing:.8px;
+                    text-transform:uppercase;
+                ">
+                    Quote Reference
+                </div>
+
+                <div style="
+                    color:#174b3d;
+                    font-size:16px;
+                    font-weight:700;
+                ">
+                    {{ reference }}
+                </div>
+            </div>
+            {% endif %}
+
+
+            <table
+                role="presentation"
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+            >
+
+                <tr>
+                    <td style="
+                        padding:9px 0;
+                        color:#5f6f68;
+                        font-size:13px;
+                    ">
+                        Service
+                    </td>
+
+                    <td align="right" style="
+                        padding:9px 0;
+                        color:#14211d;
+                        font-size:13px;
+                        font-weight:700;
+                    ">
+                        {{ service_name }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding:9px 0;
+                        border-top:1px solid #e3ebe6;
+                        color:#5f6f68;
+                        font-size:13px;
+                    ">
+                        Property Type
+                    </td>
+
+                    <td align="right" style="
+                        padding:9px 0;
+                        border-top:1px solid #e3ebe6;
+                        color:#14211d;
+                        font-size:13px;
+                        font-weight:700;
+                    ">
+                        {{ property_type }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding:9px 0;
+                        border-top:1px solid #e3ebe6;
+                        color:#5f6f68;
+                        font-size:13px;
+                    ">
+                        Location
+                    </td>
+
+                    <td align="right" style="
+                        padding:9px 0;
+                        border-top:1px solid #e3ebe6;
+                        color:#14211d;
+                        font-size:13px;
+                        font-weight:700;
+                    ">
+                        {{ suburb_postcode }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding:9px 0 0;
+                        border-top:1px solid #e3ebe6;
+                        color:#5f6f68;
+                        font-size:13px;
+                    ">
+                        Preferred Date
+                    </td>
+
+                    <td align="right" style="
+                        padding:9px 0 0;
+                        border-top:1px solid #e3ebe6;
+                        color:#14211d;
+                        font-size:13px;
+                        font-weight:700;
+                    ">
+                        {{ preferred_date }}
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+</table>
+
+
+<!-- STILL INTERESTED -->
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+        margin:26px 0;
+        background:#e8f2ed;
+        border:1px solid #d4e5dc;
+        border-radius:10px;
+    "
+>
+    <tr>
+        <td style="padding:18px 20px;">
+
+            <div style="
+                margin-bottom:6px;
+                color:#174b3d;
+                font-size:13px;
+                font-weight:700;
+            ">
+                Still interested?
+            </div>
+
+            <div style="
+                color:#5f6f68;
+                font-size:13px;
+                line-height:1.7;
+            ">
+                Simply reply to this email with your questions,
+                requirements, or preferred next steps.
+                Our team will be happy to assist.
+            </div>
+
+        </td>
+    </tr>
+</table>
+
+
+<!-- CALL TO ACTION -->
+<table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="margin:28px 0;"
+>
+    <tr>
+        <td align="center">
+
+            <div style="
+                margin-bottom:12px;
+                color:#5f6f68;
+                font-size:13px;
+            ">
+                Prefer to speak with our team?
+            </div>
+
+            <a
+                href="tel:+61430049865"
+                style="
+                    display:inline-block;
+                    padding:13px 24px;
+                    background:#174b3d;
+                    color:#ffffff;
+                    text-decoration:none;
+                    border-radius:7px;
+                    font-size:14px;
+                    font-weight:700;
+                "
+            >
+                Call 0430 049 865
+            </a>
+
+        </td>
+    </tr>
+</table>
+
+
+<p style="
+    margin:28px 0 0;
+    color:#14211d;
+    font-size:15px;
+    line-height:1.7;
+">
+    We look forward to hearing from you and helping with your
+    cleaning requirements.
+</p>
+
+<p style="
+    margin:18px 0 0;
+    color:#14211d;
+    font-size:15px;
+    line-height:1.7;
+">
+    Kind regards,<br>
+    <strong>YD Commercial Cleaning Services</strong>
+</p>
+
+{% endblock %}

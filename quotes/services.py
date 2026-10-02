@@ -89,12 +89,32 @@ def convert_quote_to_booking(*, quote_id, booking_date, booking_time, workflow_k
 
     with transaction.atomic():
         quote = QuoteRequest.objects.select_for_update().get(id=quote_id)
-        if quote.status == "booked":
-            existing = Booking.objects.filter(idempotency_key=workflow_key or f"quote:{quote.id}").first()
-            if existing:
-                return existing, False
-            raise ValueError("Quote is already marked as booked without a linked booking.")
 
+        # ------------------------------------------------------
+        # IDEMPOTENCY / RECOVERY
+        # ------------------------------------------------------
+        # A quote may already be marked "booked" because of a
+        # previous failed conversion. If a booking already exists,
+        # return it instead of creating a duplicate.
+        # If no booking exists, continue and repair the quote by
+        # creating the missing booking.
+        # ------------------------------------------------------
+        workflow_key = workflow_key or f"quote:{quote.id}"
+
+        existing = Booking.objects.filter(
+            idempotency_key=workflow_key
+        ).first()
+
+        if existing:
+            if quote.status != "booked":
+                quote.status = "booked"
+                quote.save(update_fields=["status"])
+
+            return existing, False
+
+        # ------------------------------------------------------
+        # SERVICE TYPE
+        # ------------------------------------------------------
         service_type = {
             "House": "House Cleaning",
             "Apartment": "House Cleaning",
@@ -102,9 +122,21 @@ def convert_quote_to_booking(*, quote_id, booking_date, booking_time, workflow_k
             "Commercial Property": "Commercial Cleaning",
             "End of Lease Property": "End of Lease Cleaning",
         }.get(quote.property_type)
-        if not service_type or not booking_date or not booking_time:
-            raise ValueError("A supported service, date, and time are required.")
 
+        if not service_type:
+            raise ValueError(
+                f"Unsupported quote property type: {quote.property_type}"
+            )
+
+        if not booking_date:
+            raise ValueError("A booking date is required.")
+
+        if not booking_time:
+            raise ValueError("A booking time is required.")
+
+        # ------------------------------------------------------
+        # CUSTOMER
+        # ------------------------------------------------------
         customer, _ = resolve_customer(
             email=quote.email,
             name=quote.name,
@@ -113,6 +145,10 @@ def convert_quote_to_booking(*, quote_id, booking_date, booking_time, workflow_k
             suburb_postcode=quote.suburb_postcode,
             create=True,
         )
+
+        # ------------------------------------------------------
+        # CREATE BOOKING
+        # ------------------------------------------------------
         booking, created = create_booking(
             customer=customer,
             service_type=service_type,
@@ -122,9 +158,14 @@ def convert_quote_to_booking(*, quote_id, booking_date, booking_time, workflow_k
             suburb_postcode=quote.suburb_postcode,
             quoted_price=quote.estimated_price,
             notes=quote.message,
-            workflow_key=workflow_key or f"quote:{quote.id}",
+            workflow_key=workflow_key,
         )
+
+        # ------------------------------------------------------
+        # MARK QUOTE AS BOOKED ONLY AFTER BOOKING EXISTS
+        # ------------------------------------------------------
         if quote.status != "booked":
             quote.status = "booked"
             quote.save(update_fields=["status"])
+
         return booking, created

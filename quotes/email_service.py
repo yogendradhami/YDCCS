@@ -34,7 +34,7 @@ BUSINESS_LOGO_URL = (
 BUSINESS_EMAIL = getattr(
     settings,
     "DEFAULT_FROM_EMAIL",
-    "hello@ydcleaning.com.au",
+    "info@ydcleaning.com.au",
 )
 
 

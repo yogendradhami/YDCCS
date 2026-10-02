@@ -1,0 +1,93 @@
+
+{% extends "emails/base.html" %}
+
+{% block preheader %}
+Your cleaning booking has been confirmed.
+{% endblock %}
+
+{% block content %}
+
+<p style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#718096;">
+    Booking Confirmed
+</p>
+
+<h1 style="margin:0 0 18px;font-size:30px;line-height:1.2;color:#173f35;">
+    Your cleaning service is confirmed.
+</h1>
+
+<p style="margin:0 0 22px;font-size:16px;line-height:1.7;color:#4a5568;">
+    Hi {{ customer.full_name }},
+</p>
+
+<p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#4a5568;">
+    Great news — your cleaning booking with
+    <strong>YD Commercial Cleaning Services</strong>
+    has been confirmed.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="margin:0 0 24px;border-collapse:collapse;background:#f7faf9;border:1px solid #e2e8e5;border-radius:10px;">
+    <tr>
+        <td style="padding:20px 22px;">
+
+            <p style="margin:0 0 16px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#718096;">
+                Booking Details
+            </p>
+
+            <p style="margin:0 0 9px;font-size:15px;color:#4a5568;">
+                <strong style="color:#173f35;">Booking reference:</strong>
+                YD-B-{{ booking.id|stringformat:"05d" }}
+            </p>
+
+            <p style="margin:0 0 9px;font-size:15px;color:#4a5568;">
+                <strong style="color:#173f35;">Service:</strong>
+                {{ booking.service_type }}
+            </p>
+
+            <p style="margin:0 0 9px;font-size:15px;color:#4a5568;">
+                <strong style="color:#173f35;">Date:</strong>
+                {{ booking.booking_date|date:"l, d F Y" }}
+            </p>
+
+            <p style="margin:0 0 9px;font-size:15px;color:#4a5568;">
+                <strong style="color:#173f35;">Time:</strong>
+                {{ booking.booking_time|time:"g:i A" }}
+            </p>
+
+            <p style="margin:0;font-size:15px;color:#4a5568;">
+                <strong style="color:#173f35;">Property:</strong>
+                {{ booking.address }}, {{ booking.suburb_postcode }}
+            </p>
+
+        </td>
+    </tr>
+</table>
+
+<p style="margin:0 0 16px;font-size:16px;line-height:1.7;color:#4a5568;">
+    Our team will now prepare for your scheduled service. If anything changes,
+    please contact us as soon as possible.
+</p>
+
+<p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#4a5568;">
+    We look forward to providing you with a professional cleaning service.
+</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td style="border-radius:8px;background:#173f35;">
+            <a href="{{ portal_url }}"
+               style="display:inline-block;padding:13px 22px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">
+                View Customer Portal
+            </a>
+        </td>
+    </tr>
+</table>
+
+<p style="margin:28px 0 0;font-size:14px;line-height:1.7;color:#718096;">
+    Need help? Call
+    <strong>0430 049 865</strong>
+    or email
+    <strong>info@ydcleaning.com.au</strong>.
+</p>
+
+{% endblock %}
