@@ -35,7 +35,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
     <div class="crm-card">
         <span>Review Opportunities</span>
         <h2>{{ review_count }}</h2>
-        <p>Completed jobs needing reviews</p>
+        <p>Completed jobs ready for a review request</p>
     </div>
 
     <div class="crm-card">
@@ -46,6 +46,279 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
 </div>
 
+
+<!-- ===================================================== -->
+<!-- Review Campaign Status -->
+<!-- ===================================================== -->
+
+<section class="crm-panel">
+
+    <div class="crm-panel-header">
+
+        <div>
+            <h2>Review Campaign Status</h2>
+
+            <p style="margin:6px 0 0;">
+                Review-request eligibility across completed bookings.
+            </p>
+        </div>
+
+        <a
+            href="{% url 'campaign_preview' 'review' %}"
+            class="small-link-btn"
+        >
+            Open Review Preview
+        </a>
+
+    </div>
+
+
+    <!-- Review Statistics -->
+
+    <div
+        style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+            gap:15px;
+            margin-top:20px;
+        "
+    >
+
+        <!-- Completed -->
+
+        <div
+            style="
+                padding:20px;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                background:#f8fafc;
+            "
+        >
+
+            <span
+                style="
+                    display:block;
+                    font-size:13px;
+                    opacity:.7;
+                "
+            >
+                Completed Bookings
+            </span>
+
+            <strong
+                style="
+                    display:block;
+                    font-size:30px;
+                    margin-top:6px;
+                "
+            >
+                {{ review_completed_count }}
+            </strong>
+
+            <span
+                style="
+                    display:block;
+                    margin-top:5px;
+                    font-size:13px;
+                    opacity:.65;
+                "
+            >
+                Total completed jobs
+            </span>
+
+        </div>
+
+
+        <!-- Already Requested -->
+
+        <div
+            style="
+                padding:20px;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                background:#f8fafc;
+            "
+        >
+
+            <span
+                style="
+                    display:block;
+                    font-size:13px;
+                    opacity:.7;
+                "
+            >
+                Already Requested
+            </span>
+
+            <strong
+                style="
+                    display:block;
+                    font-size:30px;
+                    margin-top:6px;
+                "
+            >
+                {{ review_already_requested }}
+            </strong>
+
+            <span
+                style="
+                    display:block;
+                    margin-top:5px;
+                    font-size:13px;
+                    opacity:.65;
+                "
+            >
+                Protected from duplicates
+            </span>
+
+        </div>
+
+
+        <!-- Ready -->
+
+        <div
+            style="
+                padding:20px;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                background:#f8fafc;
+            "
+        >
+
+            <span
+                style="
+                    display:block;
+                    font-size:13px;
+                    opacity:.7;
+                "
+            >
+                Ready to Contact
+            </span>
+
+            <strong
+                style="
+                    display:block;
+                    font-size:30px;
+                    margin-top:6px;
+                "
+            >
+                {{ review_count }}
+            </strong>
+
+            <span
+                style="
+                    display:block;
+                    margin-top:5px;
+                    font-size:13px;
+                    opacity:.65;
+                "
+            >
+                Eligible for review request
+            </span>
+
+        </div>
+
+
+        <!-- Missing Email -->
+
+        <div
+            style="
+                padding:20px;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                background:#f8fafc;
+            "
+        >
+
+            <span
+                style="
+                    display:block;
+                    font-size:13px;
+                    opacity:.7;
+                "
+            >
+                Missing Email
+            </span>
+
+            <strong
+                style="
+                    display:block;
+                    font-size:30px;
+                    margin-top:6px;
+                "
+            >
+                {{ review_missing_email }}
+            </strong>
+
+            <span
+                style="
+                    display:block;
+                    margin-top:5px;
+                    font-size:13px;
+                    opacity:.65;
+                "
+            >
+                Cannot receive email
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- Campaign Status Message -->
+
+    {% if review_count > 0 %}
+
+        <div
+            style="
+                margin-top:20px;
+                padding:18px 20px;
+                border-radius:12px;
+                background:#f0fdf4;
+                border:1px solid #bbf7d0;
+            "
+        >
+
+            <strong>
+                {{ review_count }} completed booking{{ review_count|pluralize }}
+                ready for a review request.
+            </strong>
+
+            <p style="margin:7px 0 0;">
+                Review the recipient list before sending the campaign.
+            </p>
+
+        </div>
+
+    {% else %}
+
+        <div
+            style="
+                margin-top:20px;
+                padding:18px 20px;
+                border-radius:12px;
+                background:#f8fafc;
+                border:1px solid #e5e7eb;
+            "
+        >
+
+            <strong>
+                No review requests are currently required.
+            </strong>
+
+            <p style="margin:7px 0 0;">
+                All eligible completed bookings have already received a review
+                request, or the customer does not have an email address.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+
 <!-- ===================================================== -->
 <!-- Campaign Actions -->
 <!-- ===================================================== -->
@@ -53,35 +326,159 @@ Marketing campaigns for YD Commercial Cleaning Services.
 <section class="crm-panel">
 
     <div class="crm-panel-header">
-        <h2>Campaign Actions</h2>
+
+        <div>
+            <h2>Campaign Actions</h2>
+
+            <p style="margin:6px 0 0;">
+                Preview campaign recipients before sending any marketing email.
+            </p>
+        </div>
+
     </div>
 
-    <div style="display:flex;gap:15px;flex-wrap:wrap;">
 
-        <a
-            href="{% url 'campaign_preview' 'vip' %}"
-            class="small-link-btn"
-        >
-            Preview VIP Campaign
-        </a>
+    <div
+        style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+            gap:15px;
+            margin-top:20px;
+        "
+    >
 
-        <a
-            href="{% url 'campaign_preview' 'inactive' %}"
-            class="small-link-btn"
-        >
-            Preview Inactive Campaign
-        </a>
+        <!-- VIP Campaign -->
 
-        <a
-            href="{% url 'campaign_preview' 'review' %}"
-            class="small-link-btn"
+        <div
+            style="
+                padding:22px;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                background:#ffffff;
+            "
         >
-            Preview Review Campaign
-        </a>
+
+            <span
+                style="
+                    display:block;
+                    font-size:12px;
+                    font-weight:700;
+                    letter-spacing:.08em;
+                    text-transform:uppercase;
+                    opacity:.65;
+                "
+            >
+                Customer Growth
+            </span>
+
+            <h3 style="margin:8px 0 6px;">
+                VIP Campaign
+            </h3>
+
+            <p style="margin:0 0 18px;">
+                Reach high-value customers with priority offers and
+                exclusive promotions.
+            </p>
+
+            <a
+                href="{% url 'campaign_preview' 'vip' %}"
+                class="small-link-btn"
+            >
+                Preview VIP Campaign
+            </a>
+
+        </div>
+
+
+        <!-- Inactive Campaign -->
+
+        <div
+            style="
+                padding:22px;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                background:#ffffff;
+            "
+        >
+
+            <span
+                style="
+                    display:block;
+                    font-size:12px;
+                    font-weight:700;
+                    letter-spacing:.08em;
+                    text-transform:uppercase;
+                    opacity:.65;
+                "
+            >
+                Re-engagement
+            </span>
+
+            <h3 style="margin:8px 0 6px;">
+                Inactive Customer Campaign
+            </h3>
+
+            <p style="margin:0 0 18px;">
+                Reconnect with customers who have not booked a service
+                recently.
+            </p>
+
+            <a
+                href="{% url 'campaign_preview' 'inactive' %}"
+                class="small-link-btn"
+            >
+                Preview Inactive Campaign
+            </a>
+
+        </div>
+
+
+        <!-- Review Campaign -->
+
+        <div
+            style="
+                padding:22px;
+                border:1px solid #e5e7eb;
+                border-radius:12px;
+                background:#ffffff;
+            "
+        >
+
+            <span
+                style="
+                    display:block;
+                    font-size:12px;
+                    font-weight:700;
+                    letter-spacing:.08em;
+                    text-transform:uppercase;
+                    opacity:.65;
+                "
+            >
+                Reputation
+            </span>
+
+            <h3 style="margin:8px 0 6px;">
+                Review Campaign
+            </h3>
+
+            <p style="margin:0 0 18px;">
+                Request Google reviews from customers after completed
+                cleaning services.
+            </p>
+
+            <a
+                href="{% url 'campaign_preview' 'review' %}"
+                class="small-link-btn"
+            >
+                Preview Review Campaign
+            </a>
+
+        </div>
 
     </div>
 
 </section>
+
 
 <!-- ===================================================== -->
 <!-- Newsletter Management -->
@@ -102,6 +499,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
     </div>
 
+
     <!-- Newsletter Statistics -->
 
     <div
@@ -113,6 +511,8 @@ Marketing campaigns for YD Commercial Cleaning Services.
         "
     >
 
+        <!-- Total Subscribers -->
+
         <div
             style="
                 padding:18px;
@@ -122,7 +522,13 @@ Marketing campaigns for YD Commercial Cleaning Services.
             "
         >
 
-            <span style="display:block;font-size:13px;opacity:.7;">
+            <span
+                style="
+                    display:block;
+                    font-size:13px;
+                    opacity:.7;
+                "
+            >
                 Total Subscribers
             </span>
 
@@ -138,6 +544,9 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
         </div>
 
+
+        <!-- Active Subscribers -->
+
         <div
             style="
                 padding:18px;
@@ -147,7 +556,13 @@ Marketing campaigns for YD Commercial Cleaning Services.
             "
         >
 
-            <span style="display:block;font-size:13px;opacity:.7;">
+            <span
+                style="
+                    display:block;
+                    font-size:13px;
+                    opacity:.7;
+                "
+            >
                 Active Subscribers
             </span>
 
@@ -164,6 +579,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
         </div>
 
     </div>
+
 
     <!-- Add Newsletter Subscriber -->
 
@@ -249,6 +665,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
             </div>
 
+
             <label
                 style="
                     display:flex;
@@ -274,6 +691,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
             </label>
 
+
             <p
                 style="
                     margin:12px 0 0;
@@ -290,6 +708,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
     </div>
 
 </section>
+
 
 <!-- ===================================================== -->
 <!-- Newsletter Subscribers -->
@@ -309,6 +728,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
     </div>
 
+
     <div class="table-wrapper">
 
         <table class="dashboard-table advanced-table">
@@ -326,6 +746,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
             </thead>
 
+
             <tbody>
 
                 {% for subscriber in newsletter_subscribers %}
@@ -337,6 +758,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
                                 {{ subscriber.email }}
                             </strong>
                         </td>
+
 
                         <td>
 
@@ -362,6 +784,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
                         </td>
 
+
                         <td>
 
                             {% if subscriber.consent_given %}
@@ -371,6 +794,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
                             {% endif %}
 
                         </td>
+
 
                         <td>
 
@@ -390,9 +814,11 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
                         </td>
 
+
                         <td>
                             {{ subscriber.created_at|date:"d M Y H:i" }}
                         </td>
+
 
                         <td>
 
@@ -451,6 +877,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
 </section>
 
+
 <!-- ===================================================== -->
 <!-- Campaign History -->
 <!-- ===================================================== -->
@@ -458,8 +885,17 @@ Marketing campaigns for YD Commercial Cleaning Services.
 <section class="crm-panel">
 
     <div class="crm-panel-header">
-        <h2>Campaign History</h2>
+
+        <div>
+            <h2>Campaign History</h2>
+
+            <p style="margin:6px 0 0;">
+                Recent marketing campaigns sent from the dashboard.
+            </p>
+        </div>
+
     </div>
+
 
     <div class="table-wrapper">
 
@@ -477,6 +913,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
 
             </thead>
 
+
             <tbody>
 
                 {% for campaign in campaign_history %}
@@ -487,13 +924,16 @@ Marketing campaigns for YD Commercial Cleaning Services.
                             {{ campaign.sent_at|date:"d M Y H:i" }}
                         </td>
 
+
                         <td>
                             {{ campaign.get_campaign_type_display }}
                         </td>
 
+
                         <td>
                             {{ campaign.recipients_count }}
                         </td>
+
 
                         <td>
 
@@ -504,6 +944,7 @@ Marketing campaigns for YD Commercial Cleaning Services.
                             {% endif %}
 
                         </td>
+
 
                         <td>
 

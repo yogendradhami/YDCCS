@@ -1,0 +1,33 @@
+Dear {{ customer.full_name }},
+
+Payment received — thank you.
+
+We have successfully received and recorded your payment for invoice {{ invoice.invoice_number }}.
+
+PAYMENT SUMMARY
+--------------------------------
+Invoice Number: {{ invoice.invoice_number }}
+Amount Paid: ${{ invoice.total_amount|floatformat:2 }}
+{% if invoice.paid_at %}Payment Date: {{ invoice.paid_at|date:"d F Y" }}
+{% endif %}Payment Status: PAID
+--------------------------------
+
+Your invoice has now been marked as Paid.
+
+We appreciate your business and look forward to providing you with reliable cleaning services.
+
+{% if invoice_url %}
+View your invoice:
+{{ invoice_url }}
+{% endif %}
+
+NEED ANYTHING ELSE?
+
+If you need any help with your invoice, cleaning services, or a future booking, our team is always happy to help.
+
+Thank you for choosing YD Commercial Cleaning Services.
+
+YD Commercial Cleaning Services
+Phone: 0430 049 865
+Email: info@ydcleaning.com.au
+Website: https://www.ydcleaning.com.au

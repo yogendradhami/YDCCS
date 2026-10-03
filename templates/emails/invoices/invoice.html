@@ -1,0 +1,323 @@
+{% extends "emails/base.html" %}
+
+{% block preheader %}
+Your invoice {{ invoice.invoice_number }} from YD Commercial Cleaning Services.
+{% endblock %}
+
+{% block content %}
+
+<table role="presentation"
+       width="100%"
+       cellpadding="0"
+       cellspacing="0"
+       border="0">
+
+    <tr>
+        <td style="
+            padding: 4px 0 8px 0;
+            font-family: Arial, Helvetica, sans-serif;
+        ">
+
+            <div style="
+                font-size: 11px;
+                line-height: 16px;
+                font-weight: 700;
+                letter-spacing: 1.8px;
+                text-transform: uppercase;
+                color: #5f776b;
+            ">
+                INVOICE
+            </div>
+
+            <h1 style="
+                margin: 10px 0 0 0;
+                font-size: 30px;
+                line-height: 38px;
+                font-weight: 700;
+                color: #173c32;
+            ">
+                Your invoice is ready
+            </h1>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td style="
+            padding: 22px 0 0 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 15px;
+            line-height: 25px;
+            color: #43534d;
+        ">
+
+            <p style="margin: 0 0 14px 0;">
+                Hi {{ customer.full_name }},
+            </p>
+
+            <p style="margin: 0;">
+                Thank you for choosing YD Commercial Cleaning Services.
+                Your invoice is now available and a PDF copy is attached
+                to this email for your records.
+            </p>
+
+        </td>
+    </tr>
+
+    <!-- Invoice reference -->
+
+    <tr>
+        <td style="padding: 26px 0 0 0;">
+
+            <table role="presentation"
+                   width="100%"
+                   cellpadding="0"
+                   cellspacing="0"
+                   border="0"
+                   style="
+                       background-color: #f4f7f5;
+                       border: 1px solid #e1e9e5;
+                   ">
+
+                <tr>
+                    <td style="
+                        padding: 20px 22px 8px 22px;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 11px;
+                        line-height: 16px;
+                        font-weight: 700;
+                        letter-spacing: 1.4px;
+                        text-transform: uppercase;
+                        color: #718079;
+                    ">
+                        Invoice number
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding: 0 22px 20px 22px;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 21px;
+                        line-height: 28px;
+                        font-weight: 700;
+                        color: #173c32;
+                    ">
+                        {{ invoice.invoice_number }}
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+
+    <!-- Invoice details -->
+
+    <tr>
+        <td style="padding: 18px 0 0 0;">
+
+            <table role="presentation"
+                   width="100%"
+                   cellpadding="0"
+                   cellspacing="0"
+                   border="0"
+                   style="
+                       border: 1px solid #e3e9e6;
+                       background-color: #ffffff;
+                   ">
+
+                <tr>
+                    <td width="42%" style="
+                        padding: 15px 18px;
+                        border-bottom: 1px solid #edf1ef;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 13px;
+                        color: #718079;
+                    ">
+                        Service
+                    </td>
+
+                    <td style="
+                        padding: 15px 18px;
+                        border-bottom: 1px solid #edf1ef;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: #243c34;
+                    ">
+                        {{ booking.service_type }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width="42%" style="
+                        padding: 15px 18px;
+                        border-bottom: 1px solid #edf1ef;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 13px;
+                        color: #718079;
+                    ">
+                        Issue date
+                    </td>
+
+                    <td style="
+                        padding: 15px 18px;
+                        border-bottom: 1px solid #edf1ef;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: #243c34;
+                    ">
+                        {{ invoice.issue_date|date:"d F Y" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width="42%" style="
+                        padding: 15px 18px;
+                        border-bottom: 1px solid #edf1ef;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 13px;
+                        color: #718079;
+                    ">
+                        Due date
+                    </td>
+
+                    <td style="
+                        padding: 15px 18px;
+                        border-bottom: 1px solid #edf1ef;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: #243c34;
+                    ">
+                        {% if invoice.due_date %}
+                            {{ invoice.due_date|date:"d F Y" }}
+                        {% else %}
+                            Not specified
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width="42%" style="
+                        padding: 15px 18px;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 13px;
+                        color: #718079;
+                    ">
+                        Total
+                    </td>
+
+                    <td style="
+                        padding: 15px 18px;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: #173c32;
+                    ">
+                        ${{ invoice.total_amount }}
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+
+    <!-- CTA -->
+
+    <tr>
+        <td align="center" style="padding: 30px 0 12px 0;">
+
+            <table role="presentation"
+                   cellpadding="0"
+                   cellspacing="0"
+                   border="0">
+
+                <tr>
+                    <td bgcolor="#173c32"
+                        style="border-radius: 6px;">
+
+                        <a href="{{ portal_url }}"
+                           style="
+                               display: inline-block;
+                               padding: 14px 28px;
+                               font-family: Arial, Helvetica, sans-serif;
+                               font-size: 14px;
+                               line-height: 20px;
+                               font-weight: 700;
+                               color: #ffffff;
+                               text-decoration: none;
+                           ">
+                            View Invoice &amp; Pay
+                        </a>
+
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td style="
+            padding: 20px 0 0 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 23px;
+            color: #65736d;
+        ">
+
+            <p style="margin: 0;">
+                A PDF copy of invoice
+                <strong>{{ invoice.invoice_number }}</strong>
+                is attached to this email.
+            </p>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td style="
+            padding: 28px 0 0 0;
+            border-top: 1px solid #e7ece9;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            line-height: 22px;
+            color: #65736d;
+        ">
+
+            <strong style="color: #243c34;">
+                YD Commercial Cleaning Services
+            </strong>
+            <br>
+
+            Phone:
+            <a href="tel:+61430049865"
+               style="color: #315c4d; text-decoration: none;">
+                0430 049 865
+            </a>
+            <br>
+
+            Email:
+            <a href="mailto:info@ydcleaning.com.au"
+               style="color: #315c4d; text-decoration: none;">
+                info@ydcleaning.com.au
+            </a>
+            <br>
+
+            Website:
+            <a href="https://www.ydcleaning.com.au"
+               style="color: #315c4d; text-decoration: none;">
+                www.ydcleaning.com.au
+            </a>
+
+        </td>
+    </tr>
+
+</table>
+
+{% endblock %}

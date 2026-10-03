@@ -1,0 +1,31 @@
+Dear {{ customer.full_name }},
+
+This is a friendly reminder that invoice {{ invoice.invoice_number }} is currently outstanding.
+
+INVOICE SUMMARY
+--------------------------------
+Invoice Number: {{ invoice.invoice_number }}
+Amount Due: ${{ invoice.total_amount|floatformat:2 }}
+Due Date: {{ invoice.due_date|date:"d F Y" }}
+Status: Payment Outstanding
+--------------------------------
+
+We would appreciate it if you could arrange payment at your earliest convenience.
+
+Your invoice is attached to this email for your records.
+
+{% if payment_url %}
+Payment link:
+{{ payment_url }}
+{% endif %}
+
+If you have already made this payment, please disregard this reminder.
+
+If you have any questions about the invoice or payment, please contact our team.
+
+Thank you for choosing YD Commercial Cleaning Services.
+
+YD Commercial Cleaning Services
+Phone: 0430 049 865
+Email: info@ydcleaning.com.au
+Website: https://www.ydcleaning.com.au

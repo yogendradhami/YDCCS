@@ -1,71 +1,1180 @@
 {% extends 'dashboard_base.html' %}
 
-{% block title %}Invoices | YD Dashboard{% endblock %}
-{% block page_title %}Invoices{% endblock %}
-{% block page_subtitle %}Manage invoices, payment status, PDFs and online payments.{% endblock %}
+{% block title %}Financial Operations | YD Commercial Cleaning{% endblock %}
+
+{% block page_title %}
+    Financial Operations
+{% endblock %}
+
+{% block page_subtitle %}
+    Track revenue, outstanding balances, overdue accounts and invoice activity.
+{% endblock %}
 
 {% block content %}
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/invoices/create/">+ Create Invoice</a>
-    <a href="/dashboard/">Back to Dashboard</a>
-</section>
+<style>
+    /* =========================================================
+       INVOICE OPERATIONS
+       ========================================================= */
 
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>All Invoices</h2>
+    .invoice-page {
+        width: 100%;
+    }
+
+    /* ---------------------------------------------------------
+       TOP ACTIONS
+       --------------------------------------------------------- */
+
+    .invoice-top-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .invoice-top-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 18px;
+        border-radius: 11px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 800;
+        transition: all .18s ease;
+    }
+
+    .invoice-top-btn.secondary {
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid #dbe3ee;
+    }
+
+    .invoice-top-btn.secondary:hover {
+        border-color: #94a3b8;
+        transform: translateY(-1px);
+    }
+
+    .invoice-top-btn.primary {
+        background: #0f766e;
+        color: #ffffff;
+        border: 1px solid #0f766e;
+        box-shadow: 0 8px 20px rgba(15, 118, 110, .16);
+    }
+
+    .invoice-top-btn.primary:hover {
+        background: #115e59;
+        border-color: #115e59;
+        transform: translateY(-1px);
+    }
+
+
+    /* ---------------------------------------------------------
+       KPI CARDS
+       --------------------------------------------------------- */
+
+    .invoice-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .invoice-kpi {
+        position: relative;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 22px;
+        min-height: 125px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, .045);
+        overflow: hidden;
+    }
+
+    .invoice-kpi::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 3px;
+        background: #0f172a;
+    }
+
+    .invoice-kpi.collected::before {
+        background: #059669;
+    }
+
+    .invoice-kpi.outstanding::before {
+        background: #2563eb;
+    }
+
+    .invoice-kpi.overdue::before {
+        background: #dc2626;
+    }
+
+    .invoice-kpi-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .invoice-kpi-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .invoice-kpi-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        color: #0f172a;
+        font-weight: 900;
+        font-size: 16px;
+    }
+
+    .invoice-kpi-value {
+        margin-top: 16px;
+        color: #0f172a;
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 900;
+        letter-spacing: -.03em;
+    }
+
+    .invoice-kpi-meta {
+        margin-top: 9px;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+
+    /* ---------------------------------------------------------
+       FILTER PANEL
+       --------------------------------------------------------- */
+
+    .invoice-filter-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, .045);
+    }
+
+    .invoice-filter-title {
+        margin: 0 0 18px;
+        color: #0f172a;
+        font-size: 19px;
+        font-weight: 900;
+    }
+
+    .invoice-filter-grid {
+        display: grid;
+        grid-template-columns:
+            minmax(240px, 1.8fr)
+            minmax(170px, 1fr)
+            minmax(150px, .8fr)
+            minmax(150px, .8fr)
+            auto;
+        gap: 10px;
+        align-items: end;
+    }
+
+    .invoice-filter-group label {
+        display: block;
+        margin-bottom: 7px;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .invoice-filter-input,
+    .invoice-filter-select {
+        width: 100%;
+        box-sizing: border-box;
+        height: 44px;
+        padding: 0 12px;
+        border: 1px solid #d7e0ea;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #0f172a;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .invoice-filter-input:focus,
+    .invoice-filter-select:focus {
+        border-color: #0f766e;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, .10);
+    }
+
+    .invoice-filter-btn {
+        height: 44px;
+        padding: 0 18px;
+        border: 1px solid #0f172a;
+        border-radius: 10px;
+        background: #0f172a;
+        color: #ffffff;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+
+    .invoice-filter-btn:hover {
+        background: #1e293b;
+        transform: translateY(-1px);
+    }
+
+
+    /* ---------------------------------------------------------
+       REGISTER
+       --------------------------------------------------------- */
+
+    .invoice-register {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, .045);
+    }
+
+    .invoice-register-header {
+        padding: 24px 22px 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .invoice-register-header h2 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 23px;
+        font-weight: 900;
+    }
+
+    .invoice-register-header p {
+        margin: 6px 0 0;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .invoice-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .invoice-table {
+        width: 100%;
+        min-width: 1050px;
+        border-collapse: collapse;
+    }
+
+    .invoice-table th {
+        padding: 13px 14px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 900;
+        text-align: left;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        white-space: nowrap;
+    }
+
+    .invoice-table td {
+        padding: 17px 14px;
+        border-bottom: 1px solid #edf2f7;
+        color: #334155;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .invoice-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .invoice-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .invoice-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+
+    /* ---------------------------------------------------------
+       INVOICE INFORMATION
+       --------------------------------------------------------- */
+
+    .invoice-number {
+        color: #0f172a;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .invoice-id {
+        margin-top: 3px;
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .invoice-customer-name {
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .invoice-customer-email {
+        margin-top: 3px;
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .invoice-service {
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .invoice-date {
+        color: #334155;
+        line-height: 1.5;
+    }
+
+    .invoice-total {
+        color: #0f172a;
+        font-size: 16px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+
+    /* ---------------------------------------------------------
+       STATUS
+       --------------------------------------------------------- */
+
+    .invoice-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .invoice-draft {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .invoice-sent {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .invoice-paid {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .invoice-overdue {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .invoice-cancelled {
+        background: #f8fafc;
+        color: #64748b;
+    }
+
+
+    /* ---------------------------------------------------------
+       ACTIONS
+       --------------------------------------------------------- */
+
+    .invoice-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        min-width: 250px;
+    }
+
+    .invoice-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 11px;
+        border-radius: 8px;
+        border: 1px solid #dbe3ee;
+        background: #ffffff;
+        color: #334155;
+        font-size: 11px;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all .16s ease;
+        white-space: nowrap;
+    }
+
+    .invoice-action:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+        transform: translateY(-1px);
+    }
+
+    .invoice-action.view {
+        background: #0f172a;
+        border-color: #0f172a;
+        color: #ffffff;
+    }
+
+    .invoice-action.view:hover {
+        background: #1e293b;
+    }
+
+    .invoice-action.edit {
+        background: #ffffff;
+        color: #334155;
+    }
+
+    .invoice-action.pdf {
+        background: #ffffff;
+        color: #334155;
+    }
+
+    .invoice-action.reminder {
+        background: #ffffff;
+        border-color: #a7f3d0;
+        color: #047857;
+    }
+
+    .invoice-action.reminder:hover {
+        background: #ecfdf5;
+    }
+
+    .invoice-action.paid {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #047857;
+    }
+
+    .invoice-action.danger {
+        background: #ffffff;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+    .invoice-action.danger:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+    }
+
+
+    /* ---------------------------------------------------------
+       EMPTY STATE
+       --------------------------------------------------------- */
+
+    .invoice-empty {
+        padding: 60px 24px;
+        text-align: center;
+    }
+
+    .invoice-empty-icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 14px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        color: #64748b;
+        font-size: 22px;
+        font-weight: 900;
+    }
+
+    .invoice-empty h3 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .invoice-empty p {
+        margin: 7px 0 18px;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .invoice-empty a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 10px;
+        background: #0f766e;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+
+    /* ---------------------------------------------------------
+       MOBILE
+       --------------------------------------------------------- */
+
+    @media (max-width: 1100px) {
+
+        .invoice-kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .invoice-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .invoice-filter-group.search {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 700px) {
+
+        .invoice-kpi-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .invoice-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .invoice-filter-group.search {
+            grid-column: auto;
+        }
+
+        .invoice-filter-btn {
+            width: 100%;
+        }
+
+        .invoice-top-actions {
+            justify-content: stretch;
+        }
+
+        .invoice-top-btn {
+            flex: 1;
+        }
+
+        .invoice-kpi-value {
+            font-size: 27px;
+        }
+
+        .invoice-register-header {
+            padding: 20px 16px;
+        }
+    }
+</style>
+
+
+<div class="invoice-page">
+
+    <!-- =====================================================
+         TOP ACTIONS
+         ===================================================== -->
+
+    <div class="invoice-top-actions">
+
+        <a
+            href="{% url 'dashboard_home' %}"
+            class="invoice-top-btn secondary"
+        >
+            Dashboard
+        </a>
+
+        <a
+            href="{% url 'create_invoice' %}"
+            class="invoice-top-btn primary"
+        >
+            + Create Invoice
+        </a>
+
     </div>
 
-    {% if invoices %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Invoice</th>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Issue Date</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>View</th>
-                        <th>PDF</th>
-                        <th>Pay</th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                    {% for invoice in invoices %}
-                        <tr>
-                            <td>{{ invoice.invoice_number }}</td>
-                            <td>{{ invoice.booking.customer.full_name }}</td>
-                            <td>{{ invoice.booking.service_type }}</td>
-                            <td>{{ invoice.issue_date }}</td>
-                            <td>${{ invoice.total_amount }}</td>
-                            <td>
-                                <span class="invoice-status invoice-{{ invoice.status }}">
-                                    {{ invoice.get_status_display }}
-                                </span>
-                            </td>
-                            <td><a href="/dashboard/invoices/{{ invoice.id }}/" class="small-link-btn">View</a></td>
-                            <td><a href="/dashboard/invoices/{{ invoice.id }}/download/" class="small-link-btn">PDF</a></td>
-                            <td>
-                                {% if invoice.status != "paid" %}
-                                    <form method="post" action="{% url 'create_stripe_checkout_session' invoice.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="small-pay-btn">Pay</button>
-                                    </form>
-                                {% else %}
-                                    <span class="paid-small-label">Paid</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- =====================================================
+         KPI CARDS
+         ===================================================== -->
+
+    <div class="invoice-kpi-grid">
+
+        <div class="invoice-kpi">
+
+            <div class="invoice-kpi-top">
+
+                <div class="invoice-kpi-label">
+                    Total Invoiced
+                </div>
+
+                <div class="invoice-kpi-icon">
+                    💼
+                </div>
+
+            </div>
+
+            <div class="invoice-kpi-value">
+                ${{ total_invoiced|default:"0.00"|floatformat:2 }}
+            </div>
+
+            <div class="invoice-kpi-meta">
+                {{ active_invoice_count|default:"0" }} active invoices
+            </div>
+
         </div>
-    {% else %}
-        <p>No invoices created yet.</p>
-    {% endif %}
-</section>
+
+
+        <div class="invoice-kpi collected">
+
+            <div class="invoice-kpi-top">
+
+                <div class="invoice-kpi-label">
+                    Collected
+                </div>
+
+                <div class="invoice-kpi-icon">
+                    ✓
+                </div>
+
+            </div>
+
+            <div class="invoice-kpi-value">
+                ${{ total_collected|default:"0.00"|floatformat:2 }}
+            </div>
+
+            <div class="invoice-kpi-meta">
+                {{ paid_invoice_count|default:"0" }} paid invoices
+            </div>
+
+        </div>
+
+
+        <div class="invoice-kpi outstanding">
+
+            <div class="invoice-kpi-top">
+
+                <div class="invoice-kpi-label">
+                    Outstanding
+                </div>
+
+                <div class="invoice-kpi-icon">
+                    $
+                </div>
+
+            </div>
+
+            <div class="invoice-kpi-value">
+                ${{ total_outstanding|default:"0.00"|floatformat:2 }}
+            </div>
+
+            <div class="invoice-kpi-meta">
+                {{ outstanding_invoice_count|default:"0" }} awaiting payment
+            </div>
+
+        </div>
+
+
+        <div class="invoice-kpi overdue">
+
+            <div class="invoice-kpi-top">
+
+                <div class="invoice-kpi-label">
+                    Overdue
+                </div>
+
+                <div class="invoice-kpi-icon">
+                    !
+                </div>
+
+            </div>
+
+            <div class="invoice-kpi-value">
+                ${{ total_overdue|default:"0.00"|floatformat:2 }}
+            </div>
+
+            <div class="invoice-kpi-meta">
+                {{ overdue_invoice_count|default:"0" }} overdue accounts
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+         ===================================================== -->
+
+    <section class="invoice-filter-panel">
+
+        <h2 class="invoice-filter-title">
+            Find an invoice
+        </h2>
+
+        <form method="GET">
+
+            <div class="invoice-filter-grid">
+
+                <div class="invoice-filter-group search">
+
+                    <label for="invoice-search">
+                        Search
+                    </label>
+
+                    <input
+                        id="invoice-search"
+                        type="text"
+                        name="search"
+                        class="invoice-filter-input"
+                        value="{{ request.GET.search|default:'' }}"
+                        placeholder="Invoice number, customer or service..."
+                    >
+
+                </div>
+
+
+                <div class="invoice-filter-group">
+
+                    <label for="invoice-status">
+                        Status
+                    </label>
+
+                    <select
+                        id="invoice-status"
+                        name="status"
+                        class="invoice-filter-select"
+                    >
+
+                        <option value="">
+                            All statuses
+                        </option>
+
+                        <option
+                            value="draft"
+                            {% if request.GET.status == "draft" %}selected{% endif %}
+                        >
+                            Draft
+                        </option>
+
+                        <option
+                            value="sent"
+                            {% if request.GET.status == "sent" %}selected{% endif %}
+                        >
+                            Sent
+                        </option>
+
+                        <option
+                            value="paid"
+                            {% if request.GET.status == "paid" %}selected{% endif %}
+                        >
+                            Paid
+                        </option>
+
+                        <option
+                            value="overdue"
+                            {% if request.GET.status == "overdue" %}selected{% endif %}
+                        >
+                            Overdue
+                        </option>
+
+                        <option
+                            value="cancelled"
+                            {% if request.GET.status == "cancelled" %}selected{% endif %}
+                        >
+                            Cancelled
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="invoice-filter-group">
+
+                    <label for="invoice-from">
+                        From
+                    </label>
+
+                    <input
+                        id="invoice-from"
+                        type="date"
+                        name="date_from"
+                        class="invoice-filter-input"
+                        value="{{ request.GET.date_from|default:'' }}"
+                    >
+
+                </div>
+
+
+                <div class="invoice-filter-group">
+
+                    <label for="invoice-to">
+                        To
+                    </label>
+
+                    <input
+                        id="invoice-to"
+                        type="date"
+                        name="date_to"
+                        class="invoice-filter-input"
+                        value="{{ request.GET.date_to|default:'' }}"
+                    >
+
+                </div>
+
+
+                <div class="invoice-filter-group">
+
+                    <button
+                        type="submit"
+                        class="invoice-filter-btn"
+                    >
+                        Filter
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         INVOICE REGISTER
+         ===================================================== -->
+
+    <section class="invoice-register">
+
+        <div class="invoice-register-header">
+
+            <h2>
+                Invoice Register
+            </h2>
+
+            <p>
+                {{ invoices|length }} invoice{{ invoices|length|pluralize }} in this view
+            </p>
+
+        </div>
+
+
+        {% if invoices %}
+
+            <div class="invoice-table-wrapper">
+
+                <table class="invoice-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Invoice</th>
+
+                            <th>Customer</th>
+
+                            <th>Service</th>
+
+                            <th>Issue</th>
+
+                            <th>Due</th>
+
+                            <th>Total</th>
+
+                            <th>Status</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for invoice in invoices %}
+
+                            <tr>
+
+                                <!-- INVOICE -->
+
+                                <td>
+
+                                    <div class="invoice-number">
+                                        {{ invoice.invoice_number }}
+                                    </div>
+
+                                    <div class="invoice-id">
+                                        #{{ invoice.id }}
+                                    </div>
+
+                                </td>
+
+
+                                <!-- CUSTOMER -->
+
+                                <td>
+
+                                    <div class="invoice-customer-name">
+                                        {{ invoice.booking.customer.full_name }}
+                                    </div>
+
+                                    {% if invoice.booking.customer.email %}
+
+                                        <div class="invoice-customer-email">
+                                            {{ invoice.booking.customer.email }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- SERVICE -->
+
+                                <td>
+
+                                    <div class="invoice-service">
+                                        {{ invoice.booking.service_type }}
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ISSUE DATE -->
+
+                                <td>
+
+                                    <div class="invoice-date">
+                                        {{ invoice.issue_date|date:"d M Y" }}
+                                    </div>
+
+                                </td>
+
+
+                                <!-- DUE DATE -->
+
+                                <td>
+
+                                    <div class="invoice-date">
+
+                                        {% if invoice.due_date %}
+                                            {{ invoice.due_date|date:"d M Y" }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- TOTAL -->
+
+                                <td>
+
+                                    <div class="invoice-total">
+                                        ${{ invoice.total_amount|floatformat:2 }}
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    <span class="invoice-status invoice-{{ invoice.status }}">
+                                        {{ invoice.get_status_display }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="invoice-actions">
+
+                                        <!-- View -->
+
+                                        <a
+                                            href="{% url 'invoice_detail' invoice.id %}"
+                                            class="invoice-action view"
+                                        >
+                                            View
+                                        </a>
+
+
+                                        <!-- Edit -->
+
+                                        <a
+                                            href="{% url 'edit_invoice' invoice.id %}"
+                                            class="invoice-action edit"
+                                        >
+                                            Edit
+                                        </a>
+
+
+                                        <!-- PDF -->
+
+                                        <a
+                                            href="{% url 'download_invoice_pdf' invoice.id %}"
+                                            class="invoice-action pdf"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            PDF
+                                        </a>
+
+
+                                        <!-- Reminder -->
+
+                                        {% if invoice.status == "sent" or invoice.status == "overdue" %}
+
+                                            <form
+                                                method="POST"
+                                                action="{% url 'send_invoice_reminder' invoice.id %}"
+                                                style="display:inline;"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="invoice-action reminder"
+                                                >
+                                                    Remind
+                                                </button>
+
+                                            </form>
+
+                                        {% endif %}
+
+
+                                        <!-- Mark Paid -->
+
+                                        {% if invoice.status != "paid" and invoice.status != "cancelled" %}
+
+                                            <form
+                                                method="POST"
+                                                action="{% url 'mark_invoice_paid' invoice.id %}"
+                                                style="display:inline;"
+                                                onsubmit="return confirm('Mark invoice {{ invoice.invoice_number }} as paid? A payment confirmation email will be sent to the customer.');"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="invoice-action paid"
+                                                >
+                                                    Mark Paid
+                                                </button>
+
+                                            </form>
+
+                                        {% endif %}
+
+
+                                        <!-- =========================================
+                                             DELETE
+                                             AVAILABLE FOR ALL INVOICE STATUSES
+                                             ========================================= -->
+
+                                        <form
+                                            method="POST"
+                                            action="{% url 'delete_invoice' invoice.id %}"
+                                            style="display:inline;"
+                                            onsubmit="return confirm(
+                                                'WARNING: Permanently delete invoice {{ invoice.invoice_number }}?\\n\\n' +
+                                                'This invoice is currently {{ invoice.get_status_display }}.\\n\\n' +
+                                                'This action cannot be undone. Are you sure you want to continue?'
+                                            );"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="invoice-action danger"
+                                                title="Permanently delete this invoice"
+                                            >
+                                                Delete
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <!-- EMPTY STATE -->
+
+            <div class="invoice-empty">
+
+                <div class="invoice-empty-icon">
+                    $
+                </div>
+
+                <h3>
+                    No invoices found
+                </h3>
+
+                <p>
+                    Create your first invoice to start tracking billing
+                    and payments.
+                </p>
+
+                <a href="{% url 'create_invoice' %}">
+                    + Create Invoice
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
 
 {% endblock %}

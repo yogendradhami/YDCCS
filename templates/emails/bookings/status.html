@@ -1,14 +1,14 @@
 {% extends "emails/base.html" %}
 
-{% block title %}Booking Confirmed – YD Commercial Cleaning Services{% endblock %}
+{% block title %}Booking Update – YD Commercial Cleaning Services{% endblock %}
 
 {% block preheader %}
-Your cleaning booking has been confirmed.
+Your booking status has been updated — YD Commercial Cleaning Services.
 {% endblock %}
 
 {% block content %}
 
-<div style="padding: 8px 0 28px;">
+<div style="padding:8px 0 28px;">
 
     <!-- Eyebrow -->
 
@@ -22,11 +22,11 @@ Your cleaning booking has been confirmed.
         text-transform:uppercase;
         color:#66736e;
     ">
-        Booking Confirmed
+        Booking Update
     </p>
 
 
-    <!-- Heading -->
+    <!-- Dynamic heading -->
 
     <h1 style="
         margin:0 0 18px;
@@ -36,14 +36,14 @@ Your cleaning booking has been confirmed.
         font-weight:700;
         color:#14211d;
     ">
-        Your cleaning service is confirmed.
+        {{ status_heading }}
     </h1>
 
 
     <!-- Greeting -->
 
     <p style="
-        margin:0 0 18px;
+        margin:0 0 16px;
         font-family:Arial,Helvetica,sans-serif;
         font-size:16px;
         line-height:27px;
@@ -53,7 +53,7 @@ Your cleaning booking has been confirmed.
     </p>
 
 
-    <!-- Intro -->
+    <!-- Dynamic status message -->
 
     <p style="
         margin:0 0 26px;
@@ -62,15 +62,11 @@ Your cleaning booking has been confirmed.
         line-height:26px;
         color:#4d5b56;
     ">
-        Great news — your cleaning booking with
-        <strong style="color:#14211d;">
-            YD Commercial Cleaning Services
-        </strong>
-        has been confirmed.
+        {{ status_message }}
     </p>
 
 
-    <!-- Confirmation status -->
+    <!-- Booking reference -->
 
     <table
         role="presentation"
@@ -81,11 +77,12 @@ Your cleaning booking has been confirmed.
         style="
             margin:0 0 24px;
             border-collapse:collapse;
-            background:#eef5f1;
-            border:1px solid #d8e6df;
+            background:#f3f6f4;
+            border:1px solid #dce5e1;
             border-radius:10px;
         "
     >
+
         <tr>
 
             <td style="
@@ -93,7 +90,7 @@ Your cleaning booking has been confirmed.
             ">
 
                 <div style="
-                    margin-bottom:6px;
+                    margin-bottom:5px;
                     font-family:Arial,Helvetica,sans-serif;
                     font-size:11px;
                     line-height:16px;
@@ -102,46 +99,23 @@ Your cleaning booking has been confirmed.
                     text-transform:uppercase;
                     color:#66736e;
                 ">
-                    Booking status
+                    Booking reference
                 </div>
 
                 <div style="
                     font-family:Arial,Helvetica,sans-serif;
-                    font-size:16px;
-                    line-height:24px;
+                    font-size:21px;
+                    line-height:28px;
                     font-weight:700;
-                    color:#087443;
+                    color:#173c32;
                 ">
-                    Confirmed
+                    YD-B-{{ booking.id|stringformat:"05d" }}
                 </div>
 
             </td>
 
-            <td style="
-                padding:18px 20px;
-                text-align:right;
-                vertical-align:middle;
-            ">
-
-                <span style="
-                    display:inline-block;
-                    padding:6px 11px;
-                    border-radius:999px;
-                    background:#ffffff;
-                    border:1px solid #cce3d7;
-                    font-family:Arial,Helvetica,sans-serif;
-                    font-size:11px;
-                    line-height:16px;
-                    font-weight:700;
-                    letter-spacing:.5px;
-                    color:#087443;
-                ">
-                    CONFIRMED
-                </span>
-
-            </td>
-
         </tr>
+
     </table>
 
 
@@ -166,44 +140,13 @@ Your cleaning booking has been confirmed.
         cellspacing="0"
         border="0"
         style="
-            margin:0 0 26px;
+            margin:0 0 24px;
             border-collapse:collapse;
-            border:1px solid #e1e9e5;
             background:#ffffff;
+            border:1px solid #e1e9e5;
             border-radius:10px;
         "
     >
-
-        <!-- Reference -->
-
-        <tr>
-
-            <td style="
-                width:40%;
-                padding:14px 18px;
-                border-bottom:1px solid #edf1ef;
-                font-family:Arial,Helvetica,sans-serif;
-                font-size:13px;
-                line-height:20px;
-                color:#718079;
-            ">
-                Booking reference
-            </td>
-
-            <td style="
-                padding:14px 18px;
-                border-bottom:1px solid #edf1ef;
-                font-family:Arial,Helvetica,sans-serif;
-                font-size:14px;
-                line-height:20px;
-                font-weight:700;
-                color:#173c32;
-            ">
-                YD-B-{{ booking.id|stringformat:"05d" }}
-            </td>
-
-        </tr>
-
 
         <!-- Service -->
 
@@ -217,6 +160,7 @@ Your cleaning booking has been confirmed.
                 font-size:13px;
                 line-height:20px;
                 color:#718079;
+                vertical-align:top;
             ">
                 Service
             </td>
@@ -229,6 +173,7 @@ Your cleaning booking has been confirmed.
                 line-height:20px;
                 font-weight:600;
                 color:#243c34;
+                vertical-align:top;
             ">
                 {{ booking.service_type }}
             </td>
@@ -247,6 +192,7 @@ Your cleaning booking has been confirmed.
                 font-size:13px;
                 line-height:20px;
                 color:#718079;
+                vertical-align:top;
             ">
                 Date
             </td>
@@ -259,6 +205,7 @@ Your cleaning booking has been confirmed.
                 line-height:20px;
                 font-weight:600;
                 color:#243c34;
+                vertical-align:top;
             ">
                 {{ booking.booking_date|date:"l, d F Y" }}
             </td>
@@ -277,6 +224,7 @@ Your cleaning booking has been confirmed.
                 font-size:13px;
                 line-height:20px;
                 color:#718079;
+                vertical-align:top;
             ">
                 Time
             </td>
@@ -289,6 +237,7 @@ Your cleaning booking has been confirmed.
                 line-height:20px;
                 font-weight:600;
                 color:#243c34;
+                vertical-align:top;
             ">
                 {{ booking.booking_time|time:"g:i A" }}
             </td>
@@ -329,7 +278,7 @@ Your cleaning booking has been confirmed.
     </table>
 
 
-    <!-- What's next -->
+    <!-- Status callout -->
 
     <table
         role="presentation"
@@ -338,10 +287,10 @@ Your cleaning booking has been confirmed.
         cellspacing="0"
         border="0"
         style="
-            margin:0 0 26px;
+            margin:0 0 24px;
             border-collapse:collapse;
-            background:#f7faf9;
-            border:1px solid #e2e8e5;
+            background:#eef5f1;
+            border:1px solid #d8e6df;
             border-radius:10px;
         "
     >
@@ -352,28 +301,42 @@ Your cleaning booking has been confirmed.
                 padding:18px 20px;
             ">
 
-                <p style="
-                    margin:0 0 7px;
+                <div style="
+                    margin-bottom:7px;
                     font-family:Arial,Helvetica,sans-serif;
-                    font-size:15px;
-                    line-height:22px;
+                    font-size:11px;
+                    line-height:16px;
                     font-weight:700;
-                    color:#14211d;
+                    letter-spacing:1px;
+                    text-transform:uppercase;
+                    color:#66736e;
                 ">
-                    What happens next?
-                </p>
+                    Current status
+                </div>
 
-                <p style="
-                    margin:0;
+                <div style="
+                    margin-bottom:8px;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:16px;
+                    line-height:24px;
+                    font-weight:700;
+                    color:#087443;
+                ">
+                    {{ booking.get_status_display }}
+                </div>
+
+                {% if change_description %}
+
+                <div style="
                     font-family:Arial,Helvetica,sans-serif;
                     font-size:14px;
                     line-height:23px;
                     color:#66736e;
                 ">
-                    Our team will now prepare for your scheduled service.
-                    If anything changes or you need assistance, please
-                    contact us as soon as possible.
-                </p>
+                    {{ change_description }}
+                </div>
+
+                {% endif %}
 
             </td>
 
@@ -394,12 +357,10 @@ Your cleaning booking has been confirmed.
 
         <tr>
 
-            <td
-                style="
-                    border-radius:8px;
-                    background:#173f35;
-                "
-            >
+            <td style="
+                border-radius:8px;
+                background:#173f35;
+            ">
 
                 <a
                     href="{{ portal_url }}"
@@ -414,7 +375,7 @@ Your cleaning booking has been confirmed.
                         text-decoration:none;
                     "
                 >
-                    View Customer Portal
+                    View Booking
                 </a>
 
             </td>
@@ -427,21 +388,25 @@ Your cleaning booking has been confirmed.
     <!-- Support -->
 
     <p style="
+        margin:0 0 16px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:14px;
+        line-height:23px;
+        color:#718079;
+    ">
+        If you have any questions about your booking or need assistance,
+        our team is here to help.
+    </p>
+
+
+    <p style="
         margin:0;
         font-family:Arial,Helvetica,sans-serif;
         font-size:14px;
         line-height:23px;
         color:#718079;
     ">
-        Need help?
-        Call
-        <strong style="color:#243c34;">
-            0430 049 865
-        </strong>
-        or email
-        <strong style="color:#243c34;">
-            info@ydcleaning.com.au
-        </strong>.
+        We look forward to providing you with a professional cleaning service.
     </p>
 
 </div>

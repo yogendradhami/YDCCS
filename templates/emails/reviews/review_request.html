@@ -1,0 +1,233 @@
+{% extends "emails/base.html" %}
+
+{% block title %}We'd Love Your Feedback — YD Commercial Cleaning Services{% endblock %}
+
+{% block preheader %}
+Thank you for choosing YD Commercial Cleaning Services. We'd love to hear about your experience.
+{% endblock %}
+
+{% block content %}
+
+<div style="padding:8px 0 28px;">
+
+    <!-- Eyebrow -->
+    <p style="
+        margin:0 0 10px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:12px;
+        line-height:18px;
+        font-weight:700;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:#66736e;
+    ">
+        Customer Feedback
+    </p>
+
+    <!-- Heading -->
+    <h1 style="
+        margin:0 0 18px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:30px;
+        line-height:38px;
+        font-weight:700;
+        color:#14211d;
+    ">
+        We'd love to hear from you.
+    </h1>
+
+    <!-- Greeting -->
+    <p style="
+        margin:0 0 18px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:16px;
+        line-height:27px;
+        color:#4d5b56;
+    ">
+        Hi {{ customer_name }},
+    </p>
+
+    <!-- Introduction -->
+    <p style="
+        margin:0 0 16px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#4d5b56;
+    ">
+        Thank you for choosing
+        <strong style="color:#14211d;">
+            YD Commercial Cleaning Services
+        </strong>.
+        We appreciate the opportunity to provide your cleaning service.
+    </p>
+
+    <p style="
+        margin:0 0 26px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#4d5b56;
+    ">
+        We hope you were happy with the service. If you have a moment,
+        we'd really appreciate hearing about your experience.
+    </p>
+
+    <!-- Review CTA Card -->
+    <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        style="
+            margin:0 0 26px;
+            border-collapse:collapse;
+            background:#eef5f1;
+            border:1px solid #d8e6df;
+        "
+    >
+        <tr>
+            <td
+                align="center"
+                style="padding:26px 20px;"
+            >
+
+                <p style="
+                    margin:0 0 8px;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:18px;
+                    line-height:26px;
+                    font-weight:700;
+                    color:#174b3d;
+                ">
+                    How did we do?
+                </p>
+
+                <p style="
+                    margin:0 0 14px;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:14px;
+                    line-height:23px;
+                    color:#66736e;
+                ">
+                    Your feedback helps our team continue improving
+                    and providing reliable cleaning services.
+                </p>
+
+                <!-- Stars -->
+                <p style="
+                    margin:0 0 18px;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:22px;
+                    line-height:28px;
+                    letter-spacing:3px;
+                    color:#d99b25;
+                ">
+                    ★ ★ ★ ★ ★
+                </p>
+
+                <!-- Google Review Button -->
+                <a
+                    href="{{ review_link }}"
+                    style="
+                        display:inline-block;
+                        padding:13px 24px;
+                        background:#174b3d;
+                        color:#ffffff;
+                        text-decoration:none;
+                        border-radius:8px;
+                        font-family:Arial,Helvetica,sans-serif;
+                        font-size:14px;
+                        line-height:20px;
+                        font-weight:700;
+                    "
+                >
+                    Leave a Google Review
+                </a>
+
+            </td>
+        </tr>
+    </table>
+
+    <!-- Review Message -->
+    <p style="
+        margin:0 0 24px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:14px;
+        line-height:24px;
+        color:#66736e;
+        text-align:center;
+    ">
+        It only takes a moment, and your feedback means a lot to our team.
+    </p>
+
+    <!-- Direct Contact -->
+    <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        style="
+            margin:0 0 26px;
+            border-collapse:collapse;
+            background:#f7faf8;
+            border:1px solid #e3ebe6;
+        "
+    >
+        <tr>
+            <td style="padding:20px;">
+
+                <p style="
+                    margin:0 0 8px;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:14px;
+                    line-height:21px;
+                    font-weight:700;
+                    color:#14211d;
+                ">
+                    Prefer to speak with us directly?
+                </p>
+
+                <p style="
+                    margin:0;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:14px;
+                    line-height:23px;
+                    color:#66736e;
+                ">
+                    Simply reply to this email with your feedback or
+                    any questions. Our team will be happy to help.
+                </p>
+
+            </td>
+        </tr>
+    </table>
+
+    <!-- Closing -->
+    <p style="
+        margin:0 0 18px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#4d5b56;
+    ">
+        Thank you again for choosing YD Commercial Cleaning Services.
+        We truly appreciate your support.
+    </p>
+
+    <p style="
+        margin:0;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#14211d;
+    ">
+        Kind regards,<br>
+        <strong>YD Commercial Cleaning Services</strong>
+    </p>
+
+</div>
+
+{% endblock %}

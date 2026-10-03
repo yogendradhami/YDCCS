@@ -1,13 +1,11 @@
-BOOKING CONFIRMED
+BOOKING UPDATE
 YD COMMERCIAL CLEANING SERVICES
+
+{{ status_heading }}
 
 Hi {{ customer.full_name }},
 
-Great news — your cleaning booking with YD Commercial Cleaning Services has been confirmed.
-
-BOOKING STATUS
---------------
-Confirmed
+{{ status_message }}
 
 BOOKING DETAILS
 ---------------
@@ -28,16 +26,20 @@ Property:
 {{ booking.address }}
 {{ booking.suburb_postcode }}
 
-WHAT HAPPENS NEXT?
+Current status:
+{{ booking.get_status_display }}
 
-Our team will now prepare for your scheduled service.
+{% if change_description %}
+Update:
+{{ change_description }}
+{% endif %}
 
-If anything changes or you need assistance, please contact us as soon as possible.
+You can view your booking through the customer portal:
 
-View your customer portal:
 {{ portal_url }}
 
-Need help?
+If you have any questions about your booking or need assistance,
+our team is here to help.
 
 Phone: 0430 049 865
 Email: info@ydcleaning.com.au

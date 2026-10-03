@@ -1,289 +1,442 @@
-{% extends "emails/base/base.html" %}
+{% extends "emails/base.html" %}
+
+{% block title %}Quote Follow-Up – YD Commercial Cleaning Services{% endblock %}
+
+{% block preheader %}
+We're following up on your cleaning quote from YD Commercial Cleaning Services.
+{% endblock %}
 
 {% block content %}
 
-<p style="
-    margin:0 0 18px;
-    color:#14211d;
-    font-size:15px;
-    line-height:1.7;
-">
-    Hi <strong>{{ customer_name }}</strong>,
-</p>
+<div style="padding:8px 0 28px;">
 
-<p style="
-    margin:0 0 18px;
-    color:#14211d;
-    font-size:15px;
-    line-height:1.7;
-">
-    We’re following up on the cleaning quote you recently received
-    from <strong>YD Commercial Cleaning Services</strong>.
-</p>
+    <!-- Eyebrow -->
 
-<p style="
-    margin:0 0 24px;
-    color:#5f6f68;
-    font-size:14px;
-    line-height:1.7;
-">
-    If you’re still considering your cleaning service, we’d be happy
-    to answer any questions, confirm availability, or help you take
-    the next step.
-</p>
+    <p style="
+        margin:0 0 10px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:12px;
+        line-height:18px;
+        font-weight:700;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:#66736e;
+    ">
+        Quote Follow-Up
+    </p>
 
 
-<!-- QUOTE SUMMARY -->
-<table
-    role="presentation"
-    width="100%"
-    cellpadding="0"
-    cellspacing="0"
-    border="0"
-    style="
-        margin:24px 0;
-        background:#f7faf8;
-        border:1px solid #e3ebe6;
-        border-radius:12px;
-    "
->
-    <tr>
-        <td style="padding:20px;">
+    <!-- Heading -->
 
-            <div style="
-                margin-bottom:16px;
-                color:#0b2c24;
-                font-size:17px;
-                font-weight:700;
-            ">
-                Your Quote Request
-            </div>
+    <h1 style="
+        margin:0 0 18px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:30px;
+        line-height:38px;
+        font-weight:700;
+        color:#14211d;
+    ">
+        We're here when you're ready.
+    </h1>
 
-            {% if reference %}
-            <div style="
-                margin-bottom:15px;
-                padding-bottom:15px;
-                border-bottom:1px solid #e3ebe6;
-            ">
-                <div style="
-                    margin-bottom:5px;
-                    color:#5f6f68;
-                    font-size:10px;
+
+    <!-- Greeting -->
+
+    <p style="
+        margin:0 0 18px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:16px;
+        line-height:27px;
+        color:#4d5b56;
+    ">
+        Hi {{ customer_name }},
+    </p>
+
+
+    <!-- Introduction -->
+
+    <p style="
+        margin:0 0 16px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#4d5b56;
+    ">
+        We're following up on the cleaning quote you recently received
+        from
+        <strong style="color:#14211d;">
+            YD Commercial Cleaning Services
+        </strong>.
+    </p>
+
+    <p style="
+        margin:0 0 26px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#4d5b56;
+    ">
+        If you're still considering your cleaning service, we'd be happy
+        to answer any questions, confirm availability, or help you take
+        the next step.
+    </p>
+
+
+    <!-- Quote summary -->
+
+    <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        style="
+            margin:0 0 24px;
+            border-collapse:collapse;
+            background:#f7faf8;
+            border:1px solid #e3ebe6;
+            border-radius:10px;
+        "
+    >
+
+        <tr>
+
+            <td style="padding:20px;">
+
+                <p style="
+                    margin:0 0 17px;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:17px;
+                    line-height:24px;
                     font-weight:700;
-                    letter-spacing:.8px;
-                    text-transform:uppercase;
+                    color:#14211d;
                 ">
-                    Quote Reference
-                </div>
-
-                <div style="
-                    color:#174b3d;
-                    font-size:16px;
-                    font-weight:700;
-                ">
-                    {{ reference }}
-                </div>
-            </div>
-            {% endif %}
+                    Your Quote
+                </p>
 
 
-            <table
-                role="presentation"
-                width="100%"
-                cellpadding="0"
-                cellspacing="0"
-                border="0"
-            >
+                {% if reference %}
 
-                <tr>
-                    <td style="
-                        padding:9px 0;
-                        color:#5f6f68;
-                        font-size:13px;
-                    ">
-                        Service
-                    </td>
+                <table
+                    role="presentation"
+                    width="100%"
+                    cellpadding="0"
+                    cellspacing="0"
+                    border="0"
+                    style="border-collapse:collapse;"
+                >
 
-                    <td align="right" style="
-                        padding:9px 0;
-                        color:#14211d;
-                        font-size:13px;
-                        font-weight:700;
-                    ">
-                        {{ service_name }}
-                    </td>
-                </tr>
+                    <tr>
 
-                <tr>
-                    <td style="
-                        padding:9px 0;
-                        border-top:1px solid #e3ebe6;
-                        color:#5f6f68;
-                        font-size:13px;
-                    ">
-                        Property Type
-                    </td>
+                        <td style="
+                            padding:0 0 15px;
+                            border-bottom:1px solid #e3ebe6;
+                        ">
 
-                    <td align="right" style="
-                        padding:9px 0;
-                        border-top:1px solid #e3ebe6;
-                        color:#14211d;
-                        font-size:13px;
-                        font-weight:700;
-                    ">
-                        {{ property_type }}
-                    </td>
-                </tr>
+                            <div style="
+                                margin-bottom:5px;
+                                font-family:Arial,Helvetica,sans-serif;
+                                font-size:10px;
+                                line-height:16px;
+                                font-weight:700;
+                                letter-spacing:.9px;
+                                text-transform:uppercase;
+                                color:#66736e;
+                            ">
+                                Quote Reference
+                            </div>
 
-                <tr>
-                    <td style="
-                        padding:9px 0;
-                        border-top:1px solid #e3ebe6;
-                        color:#5f6f68;
-                        font-size:13px;
-                    ">
-                        Location
-                    </td>
+                            <div style="
+                                font-family:Arial,Helvetica,sans-serif;
+                                font-size:16px;
+                                line-height:23px;
+                                font-weight:700;
+                                color:#174b3d;
+                            ">
+                                {{ reference }}
+                            </div>
 
-                    <td align="right" style="
-                        padding:9px 0;
-                        border-top:1px solid #e3ebe6;
-                        color:#14211d;
-                        font-size:13px;
-                        font-weight:700;
-                    ">
-                        {{ suburb_postcode }}
-                    </td>
-                </tr>
+                        </td>
 
-                <tr>
-                    <td style="
-                        padding:9px 0 0;
-                        border-top:1px solid #e3ebe6;
-                        color:#5f6f68;
-                        font-size:13px;
-                    ">
-                        Preferred Date
-                    </td>
+                    </tr>
 
-                    <td align="right" style="
-                        padding:9px 0 0;
-                        border-top:1px solid #e3ebe6;
-                        color:#14211d;
-                        font-size:13px;
-                        font-weight:700;
-                    ">
-                        {{ preferred_date }}
-                    </td>
-                </tr>
+                </table>
 
-            </table>
-
-        </td>
-    </tr>
-</table>
+                {% endif %}
 
 
-<!-- STILL INTERESTED -->
-<table
-    role="presentation"
-    width="100%"
-    cellpadding="0"
-    cellspacing="0"
-    border="0"
-    style="
-        margin:26px 0;
-        background:#e8f2ed;
-        border:1px solid #d4e5dc;
-        border-radius:10px;
-    "
->
-    <tr>
-        <td style="padding:18px 20px;">
+                <!-- Service -->
 
-            <div style="
-                margin-bottom:6px;
-                color:#174b3d;
-                font-size:13px;
-                font-weight:700;
-            ">
-                Still interested?
-            </div>
+                <table
+                    role="presentation"
+                    width="100%"
+                    cellpadding="0"
+                    cellspacing="0"
+                    border="0"
+                    style="border-collapse:collapse;"
+                >
 
-            <div style="
-                color:#5f6f68;
-                font-size:13px;
-                line-height:1.7;
-            ">
-                Simply reply to this email with your questions,
-                requirements, or preferred next steps.
-                Our team will be happy to assist.
-            </div>
+                    <tr>
 
-        </td>
-    </tr>
-</table>
+                        <td style="
+                            padding:11px 0;
+                            font-family:Arial,Helvetica,sans-serif;
+                            font-size:13px;
+                            line-height:20px;
+                            color:#66736e;
+                        ">
+                            Service
+                        </td>
+
+                        <td
+                            align="right"
+                            style="
+                                padding:11px 0;
+                                font-family:Arial,Helvetica,sans-serif;
+                                font-size:13px;
+                                line-height:20px;
+                                font-weight:700;
+                                color:#14211d;
+                            "
+                        >
+                            {{ service_name }}
+                        </td>
+
+                    </tr>
 
 
-<!-- CALL TO ACTION -->
-<table
-    role="presentation"
-    width="100%"
-    cellpadding="0"
-    cellspacing="0"
-    border="0"
-    style="margin:28px 0;"
->
-    <tr>
-        <td align="center">
+                    <!-- Property -->
 
-            <div style="
-                margin-bottom:12px;
-                color:#5f6f68;
-                font-size:13px;
-            ">
-                Prefer to speak with our team?
-            </div>
+                    <tr>
 
-            <a
-                href="tel:+61430049865"
-                style="
-                    display:inline-block;
-                    padding:13px 24px;
-                    background:#174b3d;
-                    color:#ffffff;
-                    text-decoration:none;
-                    border-radius:7px;
+                        <td style="
+                            padding:11px 0;
+                            border-top:1px solid #e3ebe6;
+                            font-family:Arial,Helvetica,sans-serif;
+                            font-size:13px;
+                            line-height:20px;
+                            color:#66736e;
+                        ">
+                            Property Type
+                        </td>
+
+                        <td
+                            align="right"
+                            style="
+                                padding:11px 0;
+                                border-top:1px solid #e3ebe6;
+                                font-family:Arial,Helvetica,sans-serif;
+                                font-size:13px;
+                                line-height:20px;
+                                font-weight:700;
+                                color:#14211d;
+                            "
+                        >
+                            {{ property_type }}
+                        </td>
+
+                    </tr>
+
+
+                    <!-- Location -->
+
+                    <tr>
+
+                        <td style="
+                            padding:11px 0;
+                            border-top:1px solid #e3ebe6;
+                            font-family:Arial,Helvetica,sans-serif;
+                            font-size:13px;
+                            line-height:20px;
+                            color:#66736e;
+                        ">
+                            Location
+                        </td>
+
+                        <td
+                            align="right"
+                            style="
+                                padding:11px 0;
+                                border-top:1px solid #e3ebe6;
+                                font-family:Arial,Helvetica,sans-serif;
+                                font-size:13px;
+                                line-height:20px;
+                                font-weight:700;
+                                color:#14211d;
+                            "
+                        >
+                            {{ suburb_postcode }}
+                        </td>
+
+                    </tr>
+
+
+                    <!-- Preferred date -->
+
+                    <tr>
+
+                        <td style="
+                            padding:11px 0 0;
+                            border-top:1px solid #e3ebe6;
+                            font-family:Arial,Helvetica,sans-serif;
+                            font-size:13px;
+                            line-height:20px;
+                            color:#66736e;
+                        ">
+                            Preferred Date
+                        </td>
+
+                        <td
+                            align="right"
+                            style="
+                                padding:11px 0 0;
+                                border-top:1px solid #e3ebe6;
+                                font-family:Arial,Helvetica,sans-serif;
+                                font-size:13px;
+                                line-height:20px;
+                                font-weight:700;
+                                color:#14211d;
+                            "
+                        >
+                            {{ preferred_date }}
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- Still interested -->
+
+    <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        style="
+            margin:0 0 26px;
+            border-collapse:collapse;
+            background:#eef5f1;
+            border:1px solid #d8e6df;
+            border-radius:10px;
+        "
+    >
+
+        <tr>
+
+            <td style="padding:18px 20px;">
+
+                <p style="
+                    margin:0 0 7px;
+                    font-family:Arial,Helvetica,sans-serif;
                     font-size:14px;
+                    line-height:21px;
                     font-weight:700;
-                "
-            >
-                Call 0430 049 865
-            </a>
+                    color:#174b3d;
+                ">
+                    Still interested?
+                </p>
 
-        </td>
-    </tr>
-</table>
+                <p style="
+                    margin:0;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:14px;
+                    line-height:23px;
+                    color:#66736e;
+                ">
+                    Simply reply to this email with your questions,
+                    requirements, or preferred next steps. Our team will
+                    be happy to assist.
+                </p>
+
+            </td>
+
+        </tr>
+
+    </table>
 
 
-<p style="
-    margin:28px 0 0;
-    color:#14211d;
-    font-size:15px;
-    line-height:1.7;
-">
-    We look forward to hearing from you and helping with your
-    cleaning requirements.
-</p>
+    <!-- Call to action -->
 
-<p style="
-    margin:18px 0 0;
-    color:#14211d;
-    font-size:15px;
-    line-height:1.7;
-">
-    Kind regards,<br>
-    <strong>YD Commercial Cleaning Services</strong>
-</p>
+    <table
+        role="presentation"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        style="margin:0 0 28px;"
+    >
+
+        <tr>
+
+            <td align="center">
+
+                <p style="
+                    margin:0 0 12px;
+                    font-family:Arial,Helvetica,sans-serif;
+                    font-size:13px;
+                    line-height:20px;
+                    color:#66736e;
+                ">
+                    Prefer to speak with our team?
+                </p>
+
+                <a
+                    href="tel:+61430049865"
+                    style="
+                        display:inline-block;
+                        padding:13px 24px;
+                        background:#174b3d;
+                        color:#ffffff;
+                        text-decoration:none;
+                        border-radius:8px;
+                        font-family:Arial,Helvetica,sans-serif;
+                        font-size:14px;
+                        line-height:20px;
+                        font-weight:700;
+                    "
+                >
+                    Call 0430 049 865
+                </a>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- Closing -->
+
+    <p style="
+        margin:0 0 18px;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#4d5b56;
+    ">
+        We look forward to hearing from you and helping with your
+        cleaning requirements.
+    </p>
+
+    <p style="
+        margin:0;
+        font-family:Arial,Helvetica,sans-serif;
+        font-size:15px;
+        line-height:26px;
+        color:#14211d;
+    ">
+        Kind regards,<br>
+        <strong>YD Commercial Cleaning Services</strong>
+    </p>
+
+</div>
 
 {% endblock %}

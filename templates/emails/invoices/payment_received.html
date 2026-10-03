@@ -1,0 +1,304 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Payment Received – {{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+
+<div style="padding: 8px 0 28px;">
+
+    <!-- Greeting -->
+
+    <p style="
+        margin: 0 0 18px;
+        font-size: 16px;
+        line-height: 1.7;
+        color: #1f2937;
+    ">
+        Hi {{ customer.full_name }},
+    </p>
+
+
+    <!-- Main confirmation -->
+
+    <p style="
+        margin: 0 0 8px;
+        font-size: 24px;
+        line-height: 1.35;
+        font-weight: 700;
+        color: #111827;
+    ">
+        Payment received — thank you.
+    </p>
+
+    <p style="
+        margin: 0 0 24px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b5563;
+    ">
+        We have successfully received and recorded your payment for
+        invoice
+        <strong style="color:#111827;">
+            {{ invoice.invoice_number }}
+        </strong>.
+    </p>
+
+
+    <!-- Payment Summary -->
+
+    <div style="
+        margin: 24px 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f9fafb;
+        overflow: hidden;
+    ">
+
+        <!-- Card Header -->
+
+        <div style="
+            padding: 16px 20px;
+            background: #111827;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: .2px;
+        ">
+            Payment Summary
+        </div>
+
+
+        <!-- Card Content -->
+
+        <div style="padding: 20px;">
+
+            <table
+                role="presentation"
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+                style="border-collapse:collapse;"
+            >
+
+                <!-- Invoice -->
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Invoice Number
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #111827;
+                        font-weight: 600;
+                        text-align: right;
+                    ">
+                        {{ invoice.invoice_number }}
+                    </td>
+                </tr>
+
+
+                <!-- Amount -->
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Amount Paid
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 20px;
+                        color: #111827;
+                        font-weight: 700;
+                        text-align: right;
+                    ">
+                        ${{ invoice.total_amount|floatformat:2 }}
+                    </td>
+                </tr>
+
+
+                <!-- Payment Date -->
+
+                {% if invoice.paid_at %}
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Payment Date
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #111827;
+                        font-weight: 600;
+                        text-align: right;
+                    ">
+                        {{ invoice.paid_at|date:"d F Y" }}
+                    </td>
+                </tr>
+
+                {% endif %}
+
+
+                <!-- Divider -->
+
+                <tr>
+                    <td
+                        colspan="2"
+                        style="
+                            padding-top: 16px;
+                            border-top: 1px solid #e5e7eb;
+                        "
+                    ></td>
+                </tr>
+
+
+                <!-- Status -->
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Payment Status
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        text-align: right;
+                    ">
+
+                        <span style="
+                            display:inline-block;
+                            padding:6px 11px;
+                            border-radius:999px;
+                            background:#ecfdf5;
+                            color:#047857;
+                            font-size:12px;
+                            font-weight:700;
+                        ">
+                            PAID
+                        </span>
+
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Confirmation message -->
+
+    <p style="
+        margin: 24px 0 18px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b5563;
+    ">
+        Your invoice has now been marked as
+        <strong style="color:#047857;">
+            Paid
+        </strong>.
+        We appreciate your business and look forward to providing you
+        with reliable cleaning services.
+    </p>
+
+
+    <!-- Invoice Button -->
+
+    {% if invoice_url %}
+
+    <div style="
+        margin: 28px 0;
+        text-align: center;
+    ">
+
+        <a
+            href="{{ invoice_url }}"
+            style="
+                display:inline-block;
+                padding:13px 26px;
+                background:#111827;
+                color:#ffffff !important;
+                text-decoration:none;
+                border-radius:8px;
+                font-size:14px;
+                font-weight:700;
+                letter-spacing:.1px;
+            "
+        >
+            View Invoice
+        </a>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- Assistance -->
+
+    <div style="
+        margin-top: 30px;
+        padding: 18px 20px;
+        border-left: 4px solid #111827;
+        background: #f9fafb;
+        border-radius: 0 8px 8px 0;
+    ">
+
+        <p style="
+            margin: 0 0 6px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+        ">
+            Need anything else?
+        </p>
+
+        <p style="
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #6b7280;
+        ">
+            If you need any help with your invoice, cleaning services,
+            or a future booking, our team is always happy to help.
+        </p>
+
+    </div>
+
+
+    <!-- Closing -->
+
+    <p style="
+        margin: 28px 0 0;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b5563;
+    ">
+        Thank you for choosing
+        <strong style="color:#111827;">
+            YD Commercial Cleaning Services
+        </strong>.
+    </p>
+
+</div>
+
+{% endblock %}

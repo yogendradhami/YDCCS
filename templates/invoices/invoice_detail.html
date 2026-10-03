@@ -1,357 +1,922 @@
-
-
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}
-Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
+Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning
 {% endblock %}
+
 
 {% block content %}
 
 <style>
-.invoice-page {
-    background: #f7f9fc;
-    padding: 40px 0;
+
+.invoice-detail-page {
+    background:#f5f7fb;
+    padding:45px 20px;
 }
 
-.invoice-card {
-    max-width: 1100px;
-    margin: auto;
-    background: #fff;
-    border-radius: 18px;
-    padding: 35px;
-    box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
-    color: #111827;
+.invoice-detail-shell {
+    max-width:1180px;
+    margin:auto;
 }
 
-.invoice-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 30px;
-    margin-bottom: 35px;
+.invoice-detail-toolbar {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
 }
 
-.invoice-brand {
-    display: flex;
-    gap: 22px;
-    align-items: flex-start;
+.invoice-back-link {
+    color:#475569;
+    text-decoration:none;
+    font-weight:800;
+}
+
+.invoice-toolbar-actions {
+    display:flex;
+    gap:9px;
+    flex-wrap:wrap;
+}
+
+.invoice-toolbar-btn {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:42px;
+    padding:0 14px;
+    border-radius:10px;
+    text-decoration:none;
+    border:1px solid #dbe3ec;
+    background:#fff;
+    color:#334155;
+    font-weight:800;
+}
+
+.invoice-toolbar-btn.primary {
+    background:#0f172a;
+    border-color:#0f172a;
+    color:#fff;
+}
+
+.invoice-toolbar-btn.green {
+    background:#059669;
+    border-color:#059669;
+    color:#fff;
+}
+
+.invoice-document {
+    background:#fff;
+    border-radius:24px;
+    box-shadow:0 18px 55px rgba(15,23,42,.09);
+    border:1px solid #e2e8f0;
+    overflow:hidden;
+}
+
+.invoice-document-header {
+    padding:36px 42px;
+    border-bottom:1px solid #e2e8f0;
+    display:flex;
+    justify-content:space-between;
+    gap:35px;
+}
+
+.invoice-company {
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
 }
 
 .invoice-logo {
-    width: 150px;
-    height: auto;
+    width:72px;
+    height:72px;
+    object-fit:contain;
 }
 
-.invoice-brand h1 {
-    font-size: 38px;
-    line-height: 1.1;
-    margin: 0;
-    color: #050b2e;
+.invoice-company h1 {
+    margin:0 0 8px;
+    font-size:25px;
+    color:#0f172a;
 }
 
-.invoice-brand p,
-.invoice-meta p,
-.invoice-box p {
-    margin: 7px 0;
-    color: #4b5563;
-    font-size: 16px;
+.invoice-company p {
+    margin:4px 0;
+    color:#64748b;
+    font-size:13px;
 }
 
-.invoice-meta {
-    text-align: right;
+.invoice-header-right {
+    text-align:right;
 }
 
-.invoice-number {
-    font-size: 44px;
-    font-weight: 800;
-    color: #050b2e;
-    margin-bottom: 15px;
+.invoice-title {
+    font-size:38px;
+    line-height:1;
+    font-weight:950;
+    color:#0f172a;
+    margin-bottom:12px;
 }
 
-.status-pill {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 12px 35px;
-    border-radius: 8px;
-    font-weight: 800;
-    border: 1px solid #ef4444;
-    background: #fff1f2;
-    color: #dc2626;
-    text-transform: uppercase;
+.invoice-reference {
+    color:#64748b;
+    font-size:13px;
 }
 
-.status-paid {
-    border-color: #22c55e;
-    background: #ecfdf5;
-    color: #16a34a;
+.invoice-status {
+    display:inline-flex;
+    margin-top:14px;
+    padding:7px 13px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:900;
+    text-transform:uppercase;
 }
 
-.invoice-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
-    margin: 35px 0;
+.invoice-status-paid {
+    background:#ecfdf5;
+    color:#047857;
 }
 
-.invoice-box {
-    border: 1px solid #dbe3f0;
-    border-radius: 14px;
-    padding: 25px;
-    background: #ffffff;
+.invoice-status-unpaid {
+    background:#eff6ff;
+    color:#1d4ed8;
 }
 
-.invoice-box h3 {
-    color: #0759c9;
-    margin-top: 0;
-    margin-bottom: 18px;
+.invoice-status-overdue {
+    background:#fef2f2;
+    color:#b91c1c;
 }
 
-.invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 25px;
-    overflow: hidden;
-    border: 1px solid #dbe3f0;
-    border-radius: 12px;
+.invoice-status-cancelled {
+    background:#f1f5f9;
+    color:#64748b;
 }
 
-.invoice-table th {
-    background: #f1f5f9;
-    text-align: left;
-    padding: 18px;
-    color: #050b2e;
+.invoice-document-body {
+    padding:38px 42px;
 }
 
-.invoice-table td {
-    padding: 18px;
-    border-top: 1px solid #e5e7eb;
+.invoice-parties {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-bottom:32px;
 }
 
-.text-right {
-    text-align: right;
+.invoice-party {
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    padding:20px;
 }
 
-.invoice-bottom {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 40px;
-    margin-top: 35px;
+.invoice-party-label {
+    color:#64748b;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    font-weight:900;
+    margin-bottom:10px;
 }
 
-.invoice-note-box {
-    border: 1px solid #dbe3f0;
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 18px;
-    color: #374151;
+.invoice-party h3 {
+    margin:0 0 8px;
+    color:#0f172a;
 }
 
-.invoice-total-box {
-    font-size: 18px;
+.invoice-party p {
+    margin:5px 0;
+    color:#475569;
+    font-size:14px;
+}
+
+.invoice-items {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+.invoice-items th {
+    padding:14px;
+    background:#0f172a;
+    color:#fff;
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+.invoice-items th:last-child,
+.invoice-items td:last-child {
+    text-align:right;
+}
+
+.invoice-items td {
+    padding:18px 14px;
+    border-bottom:1px solid #e2e8f0;
+    color:#334155;
+}
+
+.invoice-item-title {
+    color:#0f172a;
+    font-weight:900;
+}
+
+.invoice-item-description {
+    margin-top:4px;
+    color:#64748b;
+    font-size:13px;
+}
+
+.invoice-finance-grid {
+    display:grid;
+    grid-template-columns:1fr 380px;
+    gap:40px;
+    margin-top:32px;
+}
+
+.invoice-notes h3 {
+    margin-top:0;
+    color:#0f172a;
+}
+
+.invoice-note {
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:13px;
+    padding:16px;
+    color:#475569;
+    line-height:1.6;
+}
+
+.invoice-total-card {
+    background:#0f172a;
+    color:#fff;
+    border-radius:18px;
+    padding:24px;
 }
 
 .invoice-total-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 18px;
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    padding:10px 0;
+    color:#cbd5e1;
+}
+
+.invoice-total-row strong {
+    color:#fff;
 }
 
 .invoice-grand-total {
-    border-top: 2px solid #dbe3f0;
-    padding-top: 22px;
-    margin-top: 18px;
-    font-size: 28px;
-    font-weight: 900;
-    color: #0759c9;
+    border-top:1px solid rgba(255,255,255,.15);
+    margin-top:10px;
+    padding-top:18px;
+    font-size:24px;
+    color:#fff;
 }
 
-.invoice-actions {
-    display: flex;
-    gap: 18px;
-    margin-top: 35px;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 28px;
-    flex-wrap: wrap;
+.invoice-grand-total span {
+    color:#fff;
 }
 
-.invoice-btn {
-    padding: 14px 28px;
-    border-radius: 8px;
-    font-weight: 700;
-    text-decoration: none;
-    border: 1px solid #0759c9;
+.invoice-payment-panel {
+    margin-top:32px;
+    padding:24px;
+    border-radius:18px;
+    border:1px solid #d1fae5;
+    background:#ecfdf5;
 }
 
-.btn-blue {
-    color: #0759c9;
-    background: #fff;
+.invoice-payment-panel h3 {
+    margin:0 0 7px;
+    color:#065f46;
 }
 
-.btn-green {
-    background: #22c55e;
-    color: #fff;
-    border-color: #22c55e;
+.invoice-payment-panel p {
+    margin:0 0 15px;
+    color:#047857;
 }
 
-.thank-you {
-    text-align: center;
-    margin-top: 30px;
-    color: #64748b;
+.invoice-detail-actions {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:32px;
+    padding-top:25px;
+    border-top:1px solid #e2e8f0;
 }
 
-@media (max-width: 800px) {
-    .invoice-top,
-    .invoice-brand,
-    .invoice-info-grid,
-    .invoice-bottom {
-        display: block;
+.invoice-detail-action {
+    min-height:45px;
+    padding:0 16px;
+    border-radius:10px;
+    border:1px solid #cbd5e1;
+    background:#fff;
+    color:#334155;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+}
+
+.invoice-detail-action.primary {
+    background:#0f172a;
+    color:#fff;
+    border-color:#0f172a;
+}
+
+.invoice-detail-action.green {
+    background:#059669;
+    color:#fff;
+    border-color:#059669;
+}
+
+.invoice-detail-action.red {
+    background:#fff;
+    color:#b91c1c;
+    border-color:#fecaca;
+}
+
+.invoice-footer {
+    text-align:center;
+    padding:28px 0 0;
+    color:#94a3b8;
+    font-size:13px;
+}
+
+.invoice-inline-form {
+    display:inline;
+}
+
+@media(max-width:850px) {
+
+    .invoice-document-header {
+        display:block;
     }
 
-    .invoice-meta {
-        text-align: left;
-        margin-top: 25px;
+    .invoice-header-right {
+        text-align:left;
+        margin-top:25px;
     }
 
-    .invoice-brand h1 {
-        font-size: 28px;
+    .invoice-parties,
+    .invoice-finance-grid {
+        grid-template-columns:1fr;
     }
+
+    .invoice-document-body {
+        padding:25px 20px;
+    }
+
+    .invoice-document-header {
+        padding:25px 20px;
+    }
+
 }
+
+@media(max-width:550px) {
+
+    .invoice-title {
+        font-size:30px;
+    }
+
+    .invoice-logo {
+        width:58px;
+        height:58px;
+    }
+
+    .invoice-company h1 {
+        font-size:20px;
+    }
+
+}
+
 </style>
 
-<section class="invoice-page">
-    <div class="invoice-card">
+
+<section class="invoice-detail-page">
+
+    <div class="invoice-detail-shell">
 
 
-        <div class="invoice-top">
-            <div class="invoice-brand">
-                <img src="{% static 'images/logo.jpeg' %}" alt="YD Commercial Cleaning Services Logo" class="invoice-logo">
+        <!-- =================================================
+             TOOLBAR
+        ================================================== -->
 
-                <div>
-                    <h1>YD Commercial<br>Cleaning Services</h1>
-                    <p><strong>ABN:</strong> 95 916 203 175</p>
-                    <p>📍 2/10 Da Costa Avenue, Prospect SA 5082</p>
-                    <p>📞 0430 049 865</p>
-                    <p>✉ info@ydcleaning.com.au</p>
-                </div>
-            </div>
+        <div class="invoice-detail-toolbar">
 
-            <div class="invoice-meta">
-                <div class="invoice-number">Invoice#{{ invoice.id|stringformat:"02d" }}</div>
-                <p><strong>Issued Date:</strong> {{ invoice.issue_date }}</p>
+            <a
+                href="{% url 'invoice_list' %}"
+                class="invoice-back-link"
+            >
+                ← Back to invoices
+            </a>
 
-                {% if invoice.due_date %}
-                    <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
-                {% else %}
-                    <p><strong>Due Date:</strong> Not set</p>
-                {% endif %}
 
-                <span class="status-pill {% if invoice.status == 'paid' %}status-paid{% endif %}">
-                    {{ invoice.get_status_display }}
-                </span>
-            </div>
-        </div>
+            {% if request.user.is_staff or request.user.is_superuser %}
 
-        <div class="invoice-info-grid">
-            <div class="invoice-box">
-                <h3>👤 Bill To</h3>
-                <p><strong>{{ invoice.booking.customer.full_name }}</strong></p>
-                <p>📞 {{ invoice.booking.customer.phone }}</p>
-                <p>✉ {{ invoice.booking.customer.email }}</p>
-                <p>📍 {{ invoice.booking.customer.address }}</p>
-            </div>
+                <div class="invoice-toolbar-actions">
 
-            <div class="invoice-box">
-                <h3>📅 Job Details</h3>
-                <p><strong>Service:</strong> {{ invoice.booking.service_type }}</p>
-                <p><strong>Date:</strong> {{ invoice.booking.booking_date }}</p>
-                <p><strong>Time:</strong> {{ invoice.booking.booking_time }}</p>
-                <p><strong>Address:</strong> {{ invoice.booking.address }}</p>
-                <p><strong>Suburb:</strong> {{ invoice.booking.suburb_postcode }}</p>
-            </div>
-        </div>
+                    {% if invoice.status != "paid" %}
 
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th class="text-right">Quantity</th>
-                    <th class="text-right">Price</th>
-                    <th class="text-right">Total</th>
-                </tr>
-            </thead>
+                        <a
+                            href="{% url 'edit_invoice' invoice.id %}"
+                            class="invoice-toolbar-btn"
+                        >
+                            Edit Invoice
+                        </a>
 
-            <tbody>
-                <tr>
-                    <td>
-                        <strong>{{ invoice.booking.service_type }}</strong><br>
-                        <small>{{ invoice.description }}</small>
-                    </td>
-                    <td class="text-right">1</td>
-                    <td class="text-right">${{ invoice.amount }}</td>
-                    <td class="text-right">${{ invoice.amount }}</td>
-                </tr>
-            </tbody>
-        </table>
+                    {% endif %}
 
-        <div class="invoice-bottom">
-            <div>
-                <h3>Description</h3>
-                <div class="invoice-note-box">
-                    {{ invoice.description }}
+
+                    <a
+                        href="{% url 'download_invoice_pdf' invoice.id %}"
+                        class="invoice-toolbar-btn"
+                    >
+                        Download PDF
+                    </a>
+
                 </div>
 
-                {% if invoice.notes %}
-                    <h3>Notes</h3>
-                    <div class="invoice-note-box">
-                        {{ invoice.notes }}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="invoice-total-box">
-                <div class="invoice-total-row">
-                    <span>Subtotal:</span>
-                    <strong>${{ invoice.amount }}</strong>
-                </div>
-
-                <div class="invoice-total-row">
-                    <span>Discount:</span>
-                    <strong>${{ invoice.discount_amount }}</strong>
-                </div>  
-
-                <div class="invoice-total-row">
-                    <span>GST 10%:</span>
-                    <strong>${{ invoice.gst_amount }}</strong>
-                </div>
-
-                <div class="invoice-total-row invoice-grand-total">
-                    <span>Total:</span>
-                    <strong>${{ invoice.total_amount }}</strong>
-                </div>
-            </div>
-        </div>
-
-        <div class="invoice-actions">
-            <a href="/dashboard/invoices/" class="invoice-btn btn-blue">← Back to Invoices</a>
-            <a href="/dashboard/invoices/{{ invoice.id }}/download/" class="invoice-btn btn-blue">⬇ Download PDF</a>
-
-            {% if invoice.status != "paid" %}
-                <form method="post" action="{% url 'create_stripe_checkout_session' invoice.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="invoice-btn btn-green">💳 Pay Now with Stripe</button>
-                </form>
-            {% else %}
-                <span class="invoice-btn btn-green">Paid</span>
             {% endif %}
+
         </div>
 
-        <div class="thank-you">
-            <p><strong>Thank you for your business!</strong></p>
-            <p>We appreciate the opportunity to serve you.</p>
-        </div>
+
+        <!-- =================================================
+             DOCUMENT
+        ================================================== -->
+
+        <article class="invoice-document">
+
+
+            <!-- HEADER -->
+
+            <header class="invoice-document-header">
+
+
+                <div class="invoice-company">
+
+                    <img
+                        src="{% static 'images/logo.jpeg' %}"
+                        alt="YD Commercial Cleaning Services"
+                        class="invoice-logo"
+                    >
+
+
+                    <div>
+
+                        <h1>
+                            YD Commercial Cleaning Services
+                        </h1>
+
+                        <p>
+                            ABN 95 916 203 175
+                        </p>
+
+                        <p>
+                            2/10 Da Costa Avenue, Prospect SA 5082
+                        </p>
+
+                        <p>
+                            0430 049 865 · info@ydcleaning.com.au
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="invoice-header-right">
+
+                    <div class="invoice-title">
+                        INVOICE
+                    </div>
+
+                    <div class="invoice-reference">
+                        {{ invoice.invoice_number }}
+                    </div>
+
+                    <div class="invoice-reference">
+                        Issued {{ invoice.issue_date|date:"d M Y" }}
+                    </div>
+
+                    {% if invoice.due_date %}
+
+                        <div class="invoice-reference">
+                            Due {{ invoice.due_date|date:"d M Y" }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <span
+                        class="
+                            invoice-status
+                            {% if invoice.status == 'paid' %}
+                                invoice-status-paid
+                            {% elif invoice.status == 'overdue' %}
+                                invoice-status-overdue
+                            {% elif invoice.status == 'cancelled' %}
+                                invoice-status-cancelled
+                            {% else %}
+                                invoice-status-unpaid
+                            {% endif %}
+                        "
+                    >
+                        {{ invoice.get_status_display }}
+                    </span>
+
+                </div>
+
+            </header>
+
+
+            <div class="invoice-document-body">
+
+
+                <!-- PARTIES -->
+
+                <section class="invoice-parties">
+
+
+                    <div class="invoice-party">
+
+                        <div class="invoice-party-label">
+                            Bill To
+                        </div>
+
+                        <h3>
+                            {{ invoice.booking.customer.full_name }}
+                        </h3>
+
+                        {% if invoice.booking.customer.email %}
+                            <p>
+                                {{ invoice.booking.customer.email }}
+                            </p>
+                        {% endif %}
+
+                        {% if invoice.booking.customer.phone %}
+                            <p>
+                                {{ invoice.booking.customer.phone }}
+                            </p>
+                        {% endif %}
+
+                        {% if invoice.booking.customer.address %}
+                            <p>
+                                {{ invoice.booking.customer.address }}
+                            </p>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="invoice-party">
+
+                        <div class="invoice-party-label">
+                            Service Details
+                        </div>
+
+                        <h3>
+                            {{ invoice.booking.service_type }}
+                        </h3>
+
+                        <p>
+                            <strong>Date:</strong>
+                            {{ invoice.booking.booking_date|date:"d M Y" }}
+                        </p>
+
+                        <p>
+                            <strong>Time:</strong>
+                            {{ invoice.booking.booking_time|time:"g:i A" }}
+                        </p>
+
+                        <p>
+                            <strong>Property:</strong>
+                            {{ invoice.booking.address }},
+                            {{ invoice.booking.suburb_postcode }}
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- LINE ITEMS -->
+
+                <table class="invoice-items">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Description
+                            </th>
+
+                            <th>
+                                Qty
+                            </th>
+
+                            <th>
+                                Unit Price
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+
+                                <div class="invoice-item-title">
+                                    {{ invoice.booking.service_type }}
+                                </div>
+
+                                <div class="invoice-item-description">
+                                    {{ invoice.description }}
+                                </div>
+
+                            </td>
+
+                            <td>
+                                1
+                            </td>
+
+                            <td>
+                                ${{ invoice.amount|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                ${{ invoice.amount|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+
+                <!-- FINANCIAL SUMMARY -->
+
+                <section class="invoice-finance-grid">
+
+
+                    <div class="invoice-notes">
+
+                        <h3>
+                            Notes
+                        </h3>
+
+                        <div class="invoice-note">
+
+                            {% if invoice.notes %}
+                                {{ invoice.notes|linebreaksbr }}
+                            {% else %}
+                                Thank you for choosing YD Commercial Cleaning Services.
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="invoice-total-card">
+
+                        <div class="invoice-total-row">
+
+                            <span>
+                                Subtotal
+                            </span>
+
+                            <strong>
+                                ${{ invoice.amount|floatformat:2 }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="invoice-total-row">
+
+                            <span>
+                                Discount
+                            </span>
+
+                            <strong>
+                                ${{ invoice.discount_amount|floatformat:2 }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="invoice-total-row">
+
+                            <span>
+                                GST
+                            </span>
+
+                            <strong>
+                                ${{ invoice.gst_amount|floatformat:2 }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="invoice-total-row invoice-grand-total">
+
+                            <span>
+                                Total
+                            </span>
+
+                            <strong>
+                                ${{ invoice.total_amount|floatformat:2 }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- PAYMENT PANEL -->
+
+                {% if invoice.status != "paid" and invoice.status != "cancelled" %}
+
+                    <section class="invoice-payment-panel">
+
+                        <h3>
+                            Payment available online
+                        </h3>
+
+                        <p>
+                            Secure payment is available through Stripe.
+                        </p>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'create_stripe_checkout_session' invoice.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="invoice-detail-action green"
+                            >
+                                Pay Securely with Stripe
+                            </button>
+
+                        </form>
+
+                    </section>
+
+                {% endif %}
+
+
+                <!-- ACTIONS -->
+
+                <div class="invoice-detail-actions">
+
+
+                    <a
+                        href="{% url 'download_invoice_pdf' invoice.id %}"
+                        class="invoice-detail-action"
+                    >
+                        Download PDF
+                    </a>
+
+
+                    {% if request.user.is_staff or request.user.is_superuser %}
+
+
+                        {% if invoice.status != "paid" %}
+
+                            <a
+                                href="{% url 'edit_invoice' invoice.id %}"
+                                class="invoice-detail-action primary"
+                            >
+                                Edit Invoice
+                            </a>
+
+
+                            {% if invoice.status == "sent" or invoice.status == "overdue" %}
+
+                                <form
+                                    method="post"
+                                    action="{% url 'send_invoice_reminder' invoice.id %}"
+                                    class="invoice-inline-form"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="invoice-detail-action"
+                                    >
+                                        Send Reminder
+                                    </button>
+
+                                </form>
+
+
+                                <form
+                                    method="post"
+                                    action="{% url 'mark_invoice_paid' invoice.id %}"
+                                    class="invoice-inline-form"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="invoice-detail-action green"
+                                        onclick="return confirm('Mark this invoice as paid?');"
+                                    >
+                                        Mark Paid
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+
+                            <form
+                                method="post"
+                                action="{% url 'cancel_invoice' invoice.id %}"
+                                class="invoice-inline-form"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="invoice-detail-action red"
+                                    onclick="return confirm('Cancel this invoice?');"
+                                >
+                                    Cancel Invoice
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+
+                        {% if invoice.status == "draft" or invoice.status == "cancelled" %}
+
+                            <form
+                                method="post"
+                                action="{% url 'delete_invoice' invoice.id %}"
+                                class="invoice-inline-form"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="invoice-detail-action red"
+                                    onclick="return confirm('Permanently delete this invoice? This cannot be undone.');"
+                                >
+                                    Delete Permanently
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="invoice-footer">
+
+                    YD Commercial Cleaning Services · Professional Cleaning Solutions
+
+                </div>
+
+
+            </div>
+
+        </article>
 
     </div>
+
 </section>
 
 {% endblock %}

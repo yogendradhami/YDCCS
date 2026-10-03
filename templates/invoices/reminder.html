@@ -1,0 +1,258 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Payment Reminder – {{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+
+<div style="padding: 8px 0 28px;">
+
+    <p style="
+        margin: 0 0 18px;
+        font-size: 16px;
+        line-height: 1.7;
+        color: #1f2937;
+    ">
+        Dear {{ customer.full_name }},
+    </p>
+
+    <p style="
+        margin: 0 0 22px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b5563;
+    ">
+        This is a friendly reminder that invoice
+        <strong style="color:#111827;">
+            {{ invoice.invoice_number }}
+        </strong>
+        is currently outstanding.
+    </p>
+
+
+    <!-- Invoice Summary -->
+
+    <div style="
+        margin: 24px 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f9fafb;
+        overflow: hidden;
+    ">
+
+        <div style="
+            padding: 16px 20px;
+            background: #111827;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+        ">
+            Invoice Summary
+        </div>
+
+        <div style="padding: 20px;">
+
+            <table
+                role="presentation"
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+                style="border-collapse:collapse;"
+            >
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Invoice Number
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #111827;
+                        font-weight: 600;
+                        text-align: right;
+                    ">
+                        {{ invoice.invoice_number }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Amount Due
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 20px;
+                        color: #111827;
+                        font-weight: 700;
+                        text-align: right;
+                    ">
+                        ${{ invoice.total_amount|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Due Date
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #111827;
+                        font-weight: 600;
+                        text-align: right;
+                    ">
+                        {{ invoice.due_date|date:"d F Y" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td
+                        colspan="2"
+                        style="
+                            padding-top: 16px;
+                            border-top: 1px solid #e5e7eb;
+                        "
+                    ></td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        padding: 7px 0;
+                        font-size: 14px;
+                        color: #6b7280;
+                    ">
+                        Status
+                    </td>
+
+                    <td style="
+                        padding: 7px 0;
+                        text-align: right;
+                    ">
+                        <span style="
+                            display:inline-block;
+                            padding:5px 10px;
+                            border-radius:999px;
+                            background:#fff7ed;
+                            color:#c2410c;
+                            font-size:12px;
+                            font-weight:700;
+                        ">
+                            Payment Outstanding
+                        </span>
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+    </div>
+
+
+    <!-- Main message -->
+
+    <p style="
+        margin: 24px 0 18px;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b5563;
+    ">
+        We would appreciate it if you could arrange payment at your earliest
+        convenience. Your invoice is attached to this email for your records.
+    </p>
+
+
+    <!-- Payment CTA -->
+
+    {% if payment_url %}
+
+    <div style="
+        margin: 28px 0;
+        text-align: center;
+    ">
+
+        <a
+            href="{{ payment_url }}"
+            style="
+                display:inline-block;
+                padding:13px 26px;
+                background:#111827;
+                color:#ffffff !important;
+                text-decoration:none;
+                border-radius:8px;
+                font-size:14px;
+                font-weight:700;
+            "
+        >
+            Pay Invoice
+        </a>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- Assistance -->
+
+    <div style="
+        margin-top: 30px;
+        padding: 18px 20px;
+        border-left: 4px solid #111827;
+        background: #f9fafb;
+        border-radius: 0 8px 8px 0;
+    ">
+
+        <p style="
+            margin: 0 0 6px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+        ">
+            Need assistance?
+        </p>
+
+        <p style="
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #6b7280;
+        ">
+            If you have already made this payment, please disregard this
+            reminder. Otherwise, if you have any questions about the invoice
+            or payment, please contact our team.
+        </p>
+
+    </div>
+
+
+    <!-- Closing -->
+
+    <p style="
+        margin: 28px 0 0;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #4b5563;
+    ">
+        Thank you for choosing
+        <strong style="color:#111827;">
+            YD Commercial Cleaning Services
+        </strong>.
+    </p>
+
+</div>
+
+{% endblock %}

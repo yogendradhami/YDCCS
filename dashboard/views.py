@@ -16,12 +16,14 @@ from datetime import datetime, time, timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from .decorators import admin_required
 import logging
 
 from django.core.mail import EmailMessage,EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
+from django.utils.html import format_html
 import requests
 from django.http import StreamingHttpResponse
 import mimetypes
@@ -832,58 +834,153 @@ def add_booking(request):
     )
 
 
-def send_booking_confirmation_email(request, booking):
+def send_booking_confirmation_email(request, booking, old_status=None):
     """
-    Send the customer booking confirmation email.
-
-    This function should only be called when a booking
-    transitions INTO the confirmed status.
+    Send the customer an email describing the booking's new status.
+    Uses the shared branded booking-status email templates.
     """
 
     customer = booking.customer
+
+    logger.info(
+        "Booking status email function called: booking=%s status=%s",
+        booking.id,
+        booking.status,
+    )
 
     # --------------------------------------------------
     # Validate customer email
     # --------------------------------------------------
     if not customer:
         logger.warning(
-            "Booking %s has no customer. Confirmation email not sent.",
+            "Booking %s has no customer. Status email not sent.",
             booking.id,
         )
         return False
 
     if not customer.email:
         logger.warning(
-            "Customer %s has no email address. Booking %s confirmation not sent.",
+            "Customer %s has no email address. Booking %s status email not sent.",
             customer.full_name,
             booking.id,
         )
         return False
 
-    subject = f"Booking confirmed — YD-B-{booking.id:05d}"
+    status_display = booking.get_status_display()
+
+    subject = (
+        f"Booking confirmed — YD-B-{booking.id:05d}"
+        if booking.status == "confirmed"
+        else f"Booking status updated to {status_display} — YD-B-{booking.id:05d}"
+    )
 
     try:
         # --------------------------------------------------
-        # Email context
+        # Portal URL
         # --------------------------------------------------
         portal_url = f"{settings.SITE_URL.rstrip('/')}/portal/"
 
+        # --------------------------------------------------
+        # Status-specific customer messaging
+        # --------------------------------------------------
+        status_content = {
+            "pending": {
+                "heading": "Booking request received",
+                "message": (
+                    "We have received your cleaning booking request. "
+                    "Our team will review your booking details and "
+                    "provide an update shortly."
+                ),
+            },
+            "confirmed": {
+                "heading": "Your booking is confirmed",
+                "message": (
+                    "Great news — your cleaning booking with "
+                    "YD Commercial Cleaning Services has been confirmed."
+                ),
+            },
+            "assigned": {
+                "heading": "Your cleaning team has been assigned",
+                "message": (
+                    "Your booking has been assigned to our cleaning team "
+                    "and is now being prepared for service."
+                ),
+            },
+            "in_progress": {
+                "heading": "Your cleaning service is underway",
+                "message": (
+                    "Your scheduled cleaning service is currently "
+                    "in progress."
+                ),
+            },
+            "completed": {
+                "heading": "Your cleaning service is complete",
+                "message": (
+                    "Your scheduled cleaning service has been marked "
+                    "as completed. Thank you for choosing "
+                    "YD Commercial Cleaning Services."
+                ),
+            },
+            "cancelled": {
+                "heading": "Your booking has been cancelled",
+                "message": (
+                    "Your cleaning booking has been cancelled. "
+                    "If you believe this was unexpected or need "
+                    "assistance, please contact our team."
+                ),
+            },
+        }
+
+        status_info = status_content.get(
+            booking.status,
+            {
+                "heading": "Your booking has been updated",
+                "message": (
+                    "Your cleaning booking status has been updated."
+                ),
+            },
+        )
+
+        # --------------------------------------------------
+        # Previous status
+        # --------------------------------------------------
+        previous_status = dict(Booking.STATUS_CHOICES).get(
+            old_status,
+            old_status,
+        )
+
+        if previous_status:
+            change_description = (
+                f"Your booking status has changed from "
+                f"{previous_status} to {status_display}."
+            )
+        else:
+            change_description = (
+                f"Your booking status is now {status_display}."
+            )
+
+        # --------------------------------------------------
+        # Email context
+        # --------------------------------------------------
         email_context = {
             "customer": customer,
             "booking": booking,
             "portal_url": portal_url,
+            "status_heading": status_info["heading"],
+            "status_message": status_info["message"],
+            "change_description": change_description,
         }
 
         # --------------------------------------------------
-        # Render email
+        # Render branded templates
         # --------------------------------------------------
         text_body = render_to_string(
-            "emails/bookings/confirmed.txt",
+            "emails/bookings/status.txt",
             email_context,
         )
 
         html_body = render_to_string(
-            "emails/bookings/confirmed.html",
+            "emails/bookings/status.html",
             email_context,
         )
 
@@ -902,20 +999,47 @@ def send_booking_confirmation_email(request, booking):
             "text/html",
         )
 
-        email.send(fail_silently=False)
-
-    except Exception:
-        logger.exception(
-            "BOOKING CONFIRMATION EMAIL FAILED - booking=%s customer=%s email=%s",
+        logger.info(
+            "Sending booking status email: "
+            "booking=%s status=%s recipient=%s",
             booking.id,
-            customer.full_name,
+            booking.status,
             customer.email,
         )
 
+        sent_count = email.send(fail_silently=False)
+
+        if not sent_count:
+            logger.error(
+                "Booking status email send returned no successful sends: "
+                "booking=%s status=%s recipient=%s",
+                booking.id,
+                booking.status,
+                customer.email,
+            )
+            return False
+
+        logger.info(
+            "Booking status email send succeeded: "
+            "booking=%s status=%s recipient=%s",
+            booking.id,
+            booking.status,
+            customer.email,
+        )
+
+    except Exception:
+        logger.exception(
+            "BOOKING STATUS EMAIL FAILED - "
+            "booking=%s status=%s customer=%s email=%s",
+            booking.id,
+            booking.status,
+            customer.full_name,
+            customer.email,
+        )
         return False
 
     # --------------------------------------------------
-    # Email was successfully handed to the email backend.
+    # Email was successfully handed to the backend.
     #
     # Logging failures must NOT make us report the email
     # as failed because the email has already been sent.
@@ -932,62 +1056,71 @@ def send_booking_confirmation_email(request, booking):
         )
     except Exception:
         logger.exception(
-            "Booking confirmation email was sent, but EmailLog creation failed "
-            "for booking %s.",
+            "Booking status email was sent, but EmailLog creation "
+            "failed for booking %s.",
             booking.id,
         )
 
     try:
+        activity_title = (
+            "Booking Confirmation Email Sent"
+            if booking.status == "confirmed"
+            else "Booking Status Email Sent"
+        )
+
         create_activity_log(
             request.user,
             "booking",
-            "Booking Confirmation Email Sent",
+            activity_title,
             (
-                f"Booking YD-B-{booking.id:05d} confirmation "
-                f"emailed to {customer.full_name}."
+                f"Booking YD-B-{booking.id:05d} status update "
+                f"({status_display}) emailed to {customer.full_name}."
             ),
         )
     except Exception:
         logger.exception(
-            "Booking confirmation email was sent, but activity logging failed "
-            "for booking %s.",
+            "Booking status email was sent, but activity logging "
+            "failed for booking %s.",
             booking.id,
         )
 
     return True
-
 
 @admin_required
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
     if request.method == "POST":
+        old_status = booking.status
         form = BookingForm(request.POST, instance=booking)
 
         if form.is_valid():
-            old_status = booking.status
-
             updated_booking = form.save()
+            new_status = updated_booking.status
 
             # --------------------------------------------------
-            # CUSTOMER BOOKING CONFIRMATION
+            # CUSTOMER BOOKING STATUS EMAIL
             # --------------------------------------------------
-            if (
-                updated_booking.status == "confirmed"
-                and old_status != "confirmed"
-            ):
+            if old_status != new_status:
+                logger.info(
+                    "Booking status transition detected: booking=%s old=%s new=%s",
+                    updated_booking.id,
+                    old_status,
+                    new_status,
+                )
                 if send_booking_confirmation_email(
                     request,
                     updated_booking,
+                    old_status,
                 ):
                     messages.success(
                         request,
-                        "✅ Customer booking confirmation email sent.",
+                        f"✅ Customer notified by email: booking status is now {updated_booking.get_status_display()}.",
                     )
                 else:
                     messages.warning(
                         request,
-                        "⚠️ Booking confirmed, but confirmation email could not be sent.",
+                        "⚠️ Booking updated, but the customer status email could not be sent.",
                     )
 
             try:
@@ -1031,6 +1164,22 @@ def edit_booking(request, booking_id):
                         request,
                         f"Invoice automatically created: {invoice.invoice_number}",
                     )
+
+                    # --------------------------------------------------
+                    # AUTOMATIC INVOICE EMAIL
+                    # --------------------------------------------------
+                    if send_invoice_email(request, invoice):
+                        messages.success(
+                            request,
+                            f"Invoice {invoice.invoice_number} emailed to "
+                            f"{invoice.booking.customer.email}.",
+                        )
+                    else:
+                        messages.warning(
+                            request,
+                            f"Invoice {invoice.invoice_number} was created, "
+                            "but the customer invoice email could not be sent.",
+                        )
 
             try:
                 create_or_update_booking_event(updated_booking)
@@ -1203,6 +1352,176 @@ def booking_calendar(request):
             "unassigned_jobs": unassigned_jobs,
         },
     )
+
+
+
+def send_invoice_email(request, invoice):
+    """
+    Send a newly created invoice to the customer with the invoice PDF
+    attached.
+
+    This is intended for automatically generated invoices.
+    Manual invoice creation remains a separate workflow.
+    """
+
+    booking = invoice.booking
+    customer = booking.customer
+
+    if not customer:
+        logger.warning(
+            "Invoice %s has no customer. Invoice email not sent.",
+            invoice.invoice_number,
+        )
+        return False
+
+    if not customer.email:
+        logger.warning(
+            "Customer %s has no email address. Invoice %s email not sent.",
+            customer.full_name,
+            invoice.invoice_number,
+        )
+        return False
+
+    subject = (
+        f"Invoice {invoice.invoice_number} — "
+        f"YD Commercial Cleaning Services"
+    )
+
+    portal_url = f"{settings.SITE_URL.rstrip('/')}/portal/"
+
+    email_context = {
+        "customer": customer,
+        "booking": booking,
+        "invoice": invoice,
+        "portal_url": portal_url,
+        "payment_url": request.build_absolute_uri(
+            reverse(
+                "create_stripe_checkout_session",
+                kwargs={"invoice_id": invoice.id},
+            )
+        ),
+    }
+
+    try:
+        text_body = render_to_string(
+            "emails/invoices/invoice.txt",
+            email_context,
+        )
+
+        html_body = render_to_string(
+            "emails/invoices/invoice.html",
+            email_context,
+        )
+
+        # Generate the invoice PDF using the existing PDF generator.
+        pdf_buffer = generate_invoice_pdf(invoice)
+
+        pdf_content = pdf_buffer.getvalue()
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[customer.email],
+        )
+
+        email.attach_alternative(
+            html_body,
+            "text/html",
+        )
+
+        email.attach(
+            f"{invoice.invoice_number}.pdf",
+            pdf_content,
+            "application/pdf",
+        )
+
+        logger.info(
+            "Sending invoice email: invoice=%s customer=%s recipient=%s",
+            invoice.invoice_number,
+            customer.full_name,
+            customer.email,
+        )
+
+        sent_count = email.send(fail_silently=False)
+
+        if not sent_count:
+            logger.error(
+                "Invoice email returned no successful sends: invoice=%s recipient=%s",
+                invoice.invoice_number,
+                customer.email,
+            )
+            return False
+
+        logger.info(
+            "Invoice email sent successfully: invoice=%s recipient=%s",
+            invoice.invoice_number,
+            customer.email,
+        )
+
+    except Exception:
+        logger.exception(
+            "INVOICE EMAIL FAILED: invoice=%s customer=%s email=%s",
+            invoice.invoice_number,
+            customer.full_name,
+            customer.email,
+        )
+        return False
+
+    # --------------------------------------------------
+    # Mark invoice as sent only after successful email send
+    # --------------------------------------------------
+
+    try:
+        invoice.status = "sent"
+        invoice.save(update_fields=["status", "updated_at"])
+    except Exception:
+        logger.exception(
+            "Invoice email was sent but invoice status could not "
+            "be changed to sent: invoice=%s",
+            invoice.invoice_number,
+        )
+
+    # --------------------------------------------------
+    # Email log
+    # --------------------------------------------------
+
+    try:
+        EmailLog.objects.create(
+            sent_by=request.user,
+            email_type="invoice",
+            recipient_name=customer.full_name,
+            recipient_email=customer.email,
+            subject=subject,
+            related_object=f"Invoice {invoice.invoice_number}",
+        )
+    except Exception:
+        logger.exception(
+            "Invoice email was sent but EmailLog creation failed: invoice=%s",
+            invoice.invoice_number,
+        )
+
+    # --------------------------------------------------
+    # Activity log
+    # --------------------------------------------------
+
+    try:
+        create_activity_log(
+            request.user,
+            "invoice",
+            "Invoice Emailed",
+            (
+                f"Invoice {invoice.invoice_number} was emailed to "
+                f"{customer.full_name}."
+            ),
+        )
+    except Exception:
+        logger.exception(
+            "Invoice email was sent but activity logging failed: invoice=%s",
+            invoice.invoice_number,
+        )
+
+    return True
 
 
 @login_required
@@ -2236,63 +2555,87 @@ def send_invoice_reminder(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
     customer = invoice.booking.customer
 
-    if request.method == "POST":
-        if customer.email:
-            subject = f"Payment Reminder - Invoice {invoice.invoice_number}"
+    if not customer.email:
+        messages.error(
+            request,
+            "❌ Customer does not have an email address.",
+        )
+        return redirect("email_center")
 
-            message = f"""
-Dear {customer.full_name},
+    subject = f"Payment Reminder - Invoice {invoice.invoice_number}"
 
-This is a friendly reminder that your invoice {invoice.invoice_number} is currently outstanding.
+    # Build the customer payment URL.
+    payment_url = request.build_absolute_uri(
+        reverse(
+            "create_stripe_checkout_session",
+            kwargs={"invoice_id": invoice.id},
+        )
+    )
 
-Invoice Amount: ${invoice.total_amount}
-Due Date: {invoice.due_date}
+    context = {
+        "invoice": invoice,
+        "customer": customer,
+        "payment_url": payment_url,
+    }
 
-Please complete payment at your earliest convenience.
+    # Render both HTML and plain-text versions.
+    html_message = render_to_string(
+        "invoices/reminder.html",
+        context,
+    )
 
-Thank you,
-YD Commercial Cleaning Services
-"""
+    text_message = render_to_string(
+        "invoices/reminder.txt",
+        context,
+    )
 
-            email = EmailMessage(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [customer.email],
-            )
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[customer.email],
+    )
 
-            pdf_buffer = generate_invoice_pdf(invoice)
+    email.attach_alternative(
+        html_message,
+        "text/html",
+    )
 
-            email.attach(
-                f"{invoice.invoice_number}.pdf",
-                pdf_buffer.getvalue(),
-                "application/pdf",
-            )
+    # Attach invoice PDF.
+    pdf_buffer = generate_invoice_pdf(invoice)
 
-            email.send(fail_silently=False)
+    email.attach(
+        f"{invoice.invoice_number}.pdf",
+        pdf_buffer.getvalue(),
+        "application/pdf",
+    )
 
-            EmailLog.objects.create(
-                sent_by=request.user,
-                email_type="invoice_reminder",
-                recipient_name=customer.full_name,
-                recipient_email=customer.email,
-                subject=subject,
-                related_object=invoice.invoice_number,
-            )
+    # Send through the existing Resend email backend.
+    email.send(fail_silently=False)
 
-            create_activity_log(
-                request.user,
-                "invoice",
-                "Invoice Reminder Sent",
-                f"Reminder sent for {invoice.invoice_number} to {customer.full_name}.",
-            )
+    # Record email activity.
+    EmailLog.objects.create(
+        sent_by=request.user,
+        email_type="invoice_reminder",
+        recipient_name=customer.full_name,
+        recipient_email=customer.email,
+        subject=subject,
+        related_object=invoice.invoice_number,
+    )
 
-            messages.success(request, "✅ Invoice reminder email sent successfully.")
-        else:
-            messages.error(request, "❌ Customer does not have an email address.")
+    create_activity_log(
+        request.user,
+        "invoice",
+        "Invoice Reminder Sent",
+        f"Reminder sent for {invoice.invoice_number} to {customer.full_name}.",
+    )
+
+    messages.success(
+        request,
+        "✅ Invoice reminder email sent successfully.",
+    )
 
     return redirect("email_center")
-
 
 @require_POST
 @admin_required
@@ -2770,9 +3113,9 @@ def customer_behaviour(request):
 def review_requests(request):
 
     completed_bookings = (
-        Booking.objects.filter(status="completed")
+        Booking.objects
+        .filter(status="completed")
         .select_related("customer")
-        .prefetch_related("review_request_log")
         .order_by("-booking_date")
     )
 
@@ -2783,79 +3126,99 @@ def review_requests(request):
 @require_POST
 @admin_required
 def send_review_request(request, booking_id):
-
-    booking = get_object_or_404(Booking, id=booking_id)
+    booking = get_object_or_404(
+        Booking.objects.select_related("customer"),
+        id=booking_id,
+    )
 
     customer = booking.customer
 
-    if request.method == "POST":
+    if not customer.email:
+        messages.error(
+            request,
+            "❌ This customer does not have an email address.",
+        )
+        return redirect("review_requests")
 
-        if customer.email:
+    subject = "We'd Love Your Feedback — YD Commercial Cleaning Services"
 
-            subject = "Thank You For Choosing " "YD Commercial Cleaning"
+    review_link = "https://g.page/r/CXH9ygKf16Y4EBM/review"
 
-            review_link = "https://g.page/r/CXH9ygKf16Y4EBM/review"
+    email_context = {
+        "customer": customer,
+        "customer_name": customer.full_name,
+        "booking": booking,
+        "review_link": review_link,
+    }
 
-            message = f"""
-Dear {customer.full_name},
+    html_message = render_to_string(
+        "emails/reviews/review_request.html",
+        email_context,
+    )
 
-Thank you for choosing YD Commercial Cleaning Services.
+    text_message = render_to_string(
+        "emails/reviews/review_request.txt",
+        email_context,
+    )
 
-We hope you were happy with the service.
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[customer.email],
+    )
 
-Would you mind leaving us a quick Google review?
+    email.attach_alternative(
+        html_message,
+        "text/html",
+    )
 
-{review_link}
+    email.send(fail_silently=False)
 
-Your feedback helps our business grow.
+    EmailLog.objects.create(
+        sent_by=request.user,
+        email_type="system",
+        recipient_name=customer.full_name,
+        recipient_email=customer.email,
+        subject=subject,
+        related_object=f"Review Request Booking #{booking.id}",
+    )
 
-Thank you,
-YD Commercial Cleaning Services
-"""
+    review_log, created = ReviewRequestLog.objects.get_or_create(
+        booking=booking,
+        defaults={
+            "sent_by": request.user,
+            "sent_count": 1,
+            "last_sent_at": timezone.now(),
+        },
+    )
 
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [customer.email],
-                fail_silently=False,
-            )
+    if not created:
+        review_log.sent_count += 1
+        review_log.sent_by = request.user
+        review_log.last_sent_at = timezone.now()
+        review_log.save(
+            update_fields=[
+                "sent_count",
+                "sent_by",
+                "last_sent_at",
+                "updated_at",
+            ]
+        )
 
-            EmailLog.objects.create(
-                sent_by=request.user,
-                email_type="system",
-                recipient_name=customer.full_name,
-                recipient_email=customer.email,
-                subject=subject,
-                related_object=f"Review Request Booking #{booking.id}",
-            )
+    create_activity_log(
+        request.user,
+        "review",
+        "Review Request Sent",
+        f"Review request sent to {customer.full_name}",
+    )
 
-            review_log, created = ReviewRequestLog.objects.get_or_create(
-                booking=booking,
-                defaults={
-                    "sent_by": request.user,
-                    "sent_count": 1,
-                    "last_sent_at": timezone.now(),
-                },
-            )
-
-            if not created:
-                review_log.sent_count += 1
-                review_log.sent_by = request.user
-                review_log.last_sent_at = timezone.now()
-                review_log.save()
-
-            create_activity_log(
-                request.user,
-                "review",
-                "Review Request Sent",
-                f"Review request sent to {customer.full_name}",
-            )
-
-            messages.success(request, "✅ Review request email sent.")
+    messages.success(
+        request,
+        "✅ Review request email sent.",
+    )
 
     return redirect("review_requests")
-
 
 @login_required
 def review_analytics(request):
@@ -3499,7 +3862,6 @@ def delete_campaign_history(request, campaign_id):
     )
 
 
-
 @login_required
 def campaign_center(request):
     vip_customers = Customer.objects.filter(total_revenue__gte=1000)
@@ -3508,7 +3870,35 @@ def campaign_center(request):
         last_booking=Max("bookings__booking_date")
     )
 
-    review_opportunities = Booking.objects.filter(status="completed")
+    # -----------------------------------------------------
+    # Review campaign eligibility
+    # -----------------------------------------------------
+
+    completed_bookings = (
+        Booking.objects
+        .filter(status="completed")
+        .select_related("customer")
+    )
+
+    # Completed bookings that already received a review request.
+    review_already_requested = ReviewRequestLog.objects.filter(
+        booking__status="completed"
+    ).count()
+
+    # Completed bookings without a review request and with an email.
+    review_opportunities = completed_bookings.filter(
+        review_request_log__isnull=True,
+    ).exclude(
+        customer__email=""
+    ).exclude(
+        customer__email__isnull=True
+    )
+
+    # Completed bookings where the customer has no email.
+    review_missing_email = completed_bookings.filter(
+        Q(customer__email__isnull=True) |
+        Q(customer__email="")
+    ).count()
 
     campaigns_sent = CampaignLog.objects.count()
 
@@ -3518,10 +3908,12 @@ def campaign_center(request):
 
     newsletter_subscriber_count = newsletter_subscribers.count()
 
-    active_newsletter_subscriber_count = newsletter_subscribers.filter(
-        is_active=True,
-        consent_given=True,
-    ).count()
+    active_newsletter_subscriber_count = (
+        newsletter_subscribers.filter(
+            is_active=True,
+            consent_given=True,
+        ).count()
+    )
 
     return render(
         request,
@@ -3529,7 +3921,13 @@ def campaign_center(request):
         {
             "vip_count": vip_customers.count(),
             "inactive_count": inactive_customers.count(),
+
+            # Review campaign metrics
             "review_count": review_opportunities.count(),
+            "review_completed_count": completed_bookings.count(),
+            "review_already_requested": review_already_requested,
+            "review_missing_email": review_missing_email,
+
             "campaigns_sent": campaigns_sent,
             "campaign_history": campaign_history,
             "newsletter_subscribers": newsletter_subscribers,
@@ -3537,6 +3935,7 @@ def campaign_center(request):
             "active_newsletter_subscriber_count": active_newsletter_subscriber_count,
         },
     )
+
 
 @require_POST
 @admin_required
@@ -3669,46 +4068,69 @@ YD Commercial Cleaning Services
 @require_POST
 @admin_required
 def send_review_campaign(request):
-    completed_bookings = Booking.objects.filter(status="completed").select_related(
-        "customer"
+    completed_bookings = (
+        Booking.objects
+        .filter(status="completed")
+        .select_related("customer")
+        .prefetch_related("review_request_log")
+        .order_by("-booking_date")
     )
 
     sent_count = 0
+    skipped_count = 0
+
+    review_link = "https://g.page/r/CXH9ygKf16Y4EBM/review"
+
+    subject = "We'd Love Your Feedback — YD Commercial Cleaning Services"
 
     if request.method == "POST":
+
         for booking in completed_bookings:
+
             customer = booking.customer
 
+            # Skip customers without an email address.
             if not customer.email:
+                skipped_count += 1
                 continue
 
-            subject = "Would You Leave a Review for YD Commercial Cleaning Services?"
+            # Prevent duplicate review requests.
+            if ReviewRequestLog.objects.filter(booking=booking).exists():
+                skipped_count += 1
+                continue
 
-            review_link = "https://g.page/r/CXH9ygKf16Y4EBM/review"
+            email_context = {
+                "customer": customer,
+                "customer_name": customer.full_name,
+                "booking": booking,
+                "review_link": review_link,
+            }
 
-            message = f"""
-Dear {customer.full_name},
-
-Thank you for choosing YD Commercial Cleaning Services.
-
-Your feedback helps YD Commercial Cleaning Services continue providing excellent service.
-
-Would you mind leaving us a quick Google review?
-
-{review_link}
-
-Thank you,
-YD Commercial Cleaning Services
-"""
-
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [customer.email],
-                fail_silently=False,
+            html_message = render_to_string(
+                "emails/reviews/review_request.html",
+                email_context,
             )
 
+            text_message = render_to_string(
+                "emails/reviews/review_request.txt",
+                email_context,
+            )
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=text_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[customer.email],
+            )
+
+            email.attach_alternative(
+                html_message,
+                "text/html",
+            )
+
+            email.send(fail_silently=False)
+
+            # Record email history.
             EmailLog.objects.create(
                 sent_by=request.user,
                 email_type="system",
@@ -3718,15 +4140,35 @@ YD Commercial Cleaning Services
                 related_object=f"Review Campaign Booking #{booking.id}",
             )
 
+            # Create review request tracking record.
+            ReviewRequestLog.objects.create(
+                booking=booking,
+                sent_by=request.user,
+                sent_count=1,
+                last_sent_at=timezone.now(),
+            )
+
+            # Record dashboard activity.
+            create_activity_log(
+                request.user,
+                "review",
+                "Review Campaign Sent",
+                f"Review request sent to {customer.full_name}",
+            )
+
             sent_count += 1
 
-        CampaignLog.objects.create(
-            sent_by=request.user,
-            campaign_type="review",
-            title="Review Follow-up Campaign",
-            recipients_count=sent_count,
-        )
 
+        # Record campaign history only when at least one email was sent.
+        if sent_count > 0:
+            CampaignLog.objects.create(
+                sent_by=request.user,
+                campaign_type="review",
+                title="Review Follow-up Campaign",
+                recipients_count=sent_count,
+            )
+
+        # Record campaign activity.
         create_activity_log(
             request.user,
             "review",
@@ -3734,9 +4176,19 @@ YD Commercial Cleaning Services
             f"Review campaign sent to {sent_count} customers.",
         )
 
-        messages.success(request, f"✅ Review campaign sent to {sent_count} customers.")
+        messages.success(
+            request,
+            f"✅ Review campaign completed. "
+            f"{sent_count} request(s) sent"
+            + (
+                f", {skipped_count} skipped."
+                if skipped_count
+                else "."
+            ),
+        )
 
     return redirect("campaign_center")
+
 
 
 @login_required
@@ -3744,39 +4196,65 @@ def campaign_preview(request, campaign_type):
 
     recipients = []
     title = ""
+    recipient_count = 0
 
     if campaign_type == "vip":
         title = "VIP Campaign Recipients"
 
         recipients = (
-            Customer.objects.filter(total_revenue__gte=1000)
+            Customer.objects
+            .filter(total_revenue__gte=1000)
             .exclude(email="")
+            .exclude(email__isnull=True)
             .order_by("-total_revenue")
         )
+
+        recipient_count = recipients.count()
 
     elif campaign_type == "inactive":
         title = "Inactive Campaign Recipients"
 
         recipients = (
-            Customer.objects.filter(jobs_completed__lte=1)
+            Customer.objects
+            .filter(jobs_completed__lte=1)
             .exclude(email="")
+            .exclude(email__isnull=True)
             .order_by("full_name")
         )
+
+        recipient_count = recipients.count()
 
     elif campaign_type == "review":
         title = "Review Campaign Recipients"
 
-        completed_bookings = Booking.objects.filter(status="completed").select_related(
-            "customer"
+        completed_bookings = (
+            Booking.objects
+            .filter(status="completed")
+            .select_related("customer")
+            .order_by("-booking_date")
         )
 
-        customer_ids = []
+        # Only completed bookings that:
+        # 1. Have a customer email address
+        # 2. Have NOT already received a review request
+        eligible_bookings = []
 
         for booking in completed_bookings:
-            if booking.customer.email:
-                customer_ids.append(booking.customer.id)
 
-        recipients = Customer.objects.filter(id__in=customer_ids).order_by("full_name")
+            customer = booking.customer
+
+            if not customer.email:
+                continue
+
+            if ReviewRequestLog.objects.filter(
+                booking=booking
+            ).exists():
+                continue
+
+            eligible_bookings.append(booking)
+
+        recipients = eligible_bookings
+        recipient_count = len(eligible_bookings)
 
     else:
         messages.error(request, "Invalid campaign type.")
@@ -3789,7 +4267,7 @@ def campaign_preview(request, campaign_type):
             "campaign_type": campaign_type,
             "title": title,
             "recipients": recipients,
-            "recipient_count": recipients.count(),
+            "recipient_count": recipient_count,
         },
     )
 
@@ -3815,7 +4293,7 @@ def campaign_performance(request):
         "Review Campaign": review_campaigns,
     }
 
-    top_campaign = (
+    most_used_campaign_type  = (
         max(campaign_type_totals, key=campaign_type_totals.get)
         if total_campaigns
         else "N/A"
@@ -3831,7 +4309,7 @@ def campaign_performance(request):
             "vip_campaigns": vip_campaigns,
             "inactive_campaigns": inactive_campaigns,
             "review_campaigns": review_campaigns,
-            "top_campaign": top_campaign,
+            "most_used_campaign_type": most_used_campaign_type,
         },
     )
 
@@ -4247,27 +4725,31 @@ def update_booking_quick_status(request, booking_id, new_status):
             booking.save()
 
             # ----------------------------------------------------------
-            # CUSTOMER BOOKING CONFIRMATION
+            # CUSTOMER BOOKING STATUS EMAIL
             #
-            # Only send when the booking actually transitions
-            # into confirmed status.
+            # Only send when the booking status actually changes.
             # ----------------------------------------------------------
-            if (
-                new_status == "confirmed"
-                and old_status != "confirmed"
-            ):
+            if old_status != new_status:
+                logger.info(
+                    "Booking status transition detected: booking=%s old=%s new=%s",
+                    booking.id,
+                    old_status,
+                    new_status,
+                )
+
                 if send_booking_confirmation_email(
                     request,
                     booking,
+                    old_status,
                 ):
                     messages.success(
                         request,
-                        "✅ Booking confirmed and customer notified by email.",
+                        f"✅ Customer notified by email: booking status is now {booking.get_status_display()}.",
                     )
                 else:
                     messages.warning(
                         request,
-                        "⚠️ Booking confirmed, but the customer confirmation email could not be sent.",
+                        "⚠️ Booking updated, but the customer status email could not be sent.",
                     )
 
             # ----------------------------------------------------------
@@ -4317,84 +4799,28 @@ def update_booking_quick_status(request, booking_id, new_status):
                         ),
                     )
 
-                    customer = booking.customer
-
                     # --------------------------------------------------
                     # EMAIL INVOICE TO CUSTOMER
+                    #
+                    # Use the shared branded invoice email helper.
+                    # This generates the PDF, attaches it, sends through
+                    # the existing email backend, logs the email, and
+                    # marks the invoice as sent.
                     # --------------------------------------------------
-                    if customer.email:
-
-                        subject = (
-                            f"Invoice {invoice.invoice_number} - "
-                            f"YD Commercial Cleaning Services"
-                        )
-
-                        message = f"""
-Dear {customer.full_name},
-
-Thank you for choosing YD Commercial Cleaning Services.
-
-Your cleaning service has been completed and your invoice has been generated.
-
-Invoice Number: {invoice.invoice_number}
-Amount: ${invoice.total_amount}
-
-You can view your invoice by logging into the customer portal.
-
-Thank you,
-YD Commercial Cleaning Services
-"""
-
-                        email = EmailMessage(
-                            subject,
-                            message,
-                            settings.DEFAULT_FROM_EMAIL,
-                            [customer.email],
-                        )
-
-                        # Generate invoice PDF
-                        pdf_buffer = generate_invoice_pdf(invoice)
-
-                        email.attach(
-                            f"{invoice.invoice_number}.pdf",
-                            pdf_buffer.getvalue(),
-                            "application/pdf",
-                        )
-
-                        # Send invoice email
-                        email.send(fail_silently=False)
-
-                        # Log email
-                        EmailLog.objects.create(
-                            sent_by=request.user,
-                            email_type="system",
-                            recipient_name=customer.full_name,
-                            recipient_email=customer.email,
-                            subject=subject,
-                            related_object=invoice.invoice_number,
-                        )
-
-                        # Activity log
-                        create_activity_log(
-                            request.user,
-                            "invoice",
-                            "Invoice Email Sent",
-                            (
-                                f"Invoice {invoice.invoice_number} "
-                                f"emailed to {customer.full_name}."
-                            ),
-                        )
+                    if send_invoice_email(request, invoice):
 
                         messages.success(
                             request,
-                            "✅ Invoice automatically created and emailed.",
+                            f"Invoice {invoice.invoice_number} created and emailed "
+                            f"to {invoice.booking.customer.email}.",
                         )
 
                     else:
 
                         messages.warning(
                             request,
-                            "Invoice created, but customer has no email address.",
+                            f"Invoice {invoice.invoice_number} was created, "
+                            "but the customer invoice email could not be sent.",
                         )
 
             # ----------------------------------------------------------
@@ -4449,6 +4875,7 @@ YD Commercial Cleaning Services
             )
 
     return redirect("booking_calendar")
+
 
 # ==========================================================
 # Equipment Inventory

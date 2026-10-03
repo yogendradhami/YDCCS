@@ -1,71 +1,443 @@
 {% extends 'dashboard_base.html' %}
 
-{% block title %}Create Invoice | YD Dashboard{% endblock %}
+{% block title %}
+    {% if is_edit %}
+        Edit Invoice | YD Commercial Cleaning
+    {% else %}
+        Create Invoice | YD Commercial Cleaning
+    {% endif %}
+{% endblock %}
 
-{% block page_title %}Create Invoice{% endblock %}
-{% block page_subtitle %}Create a customer invoice from a booking.{% endblock %}
+
+{% block page_title %}
+
+    {% if is_edit %}
+        Edit Invoice
+    {% else %}
+        Create Invoice
+    {% endif %}
+
+{% endblock %}
+
+
+{% block page_subtitle %}
+
+    {% if is_edit %}
+        Update this invoice while preserving its financial record.
+    {% else %}
+        Create a professional invoice from an existing booking.
+    {% endif %}
+
+{% endblock %}
+
 
 {% block content %}
 
-<section class="crm-panel">
+<style>
+
+.invoice-form-shell {
+    max-width:1000px;
+    margin:0 auto;
+}
+
+.invoice-form-card {
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:22px;
+    box-shadow:0 12px 35px rgba(15,23,42,.06);
+    overflow:hidden;
+}
+
+.invoice-form-header {
+    padding:25px 28px;
+    background:linear-gradient(
+        135deg,
+        #0f172a,
+        #134e4a
+    );
+    color:#fff;
+}
+
+.invoice-form-header h2 {
+    margin:0 0 6px;
+}
+
+.invoice-form-header p {
+    margin:0;
+    color:#cbd5e1;
+}
+
+.invoice-form-body {
+    padding:30px;
+}
+
+.invoice-form-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.invoice-form-group {
+    margin-bottom:20px;
+}
+
+.invoice-form-group.full {
+    grid-column:1/-1;
+}
+
+.invoice-form-group label {
+    display:block;
+    margin-bottom:7px;
+    color:#334155;
+    font-size:13px;
+    font-weight:800;
+}
+
+.invoice-form-group input,
+.invoice-form-group select,
+.invoice-form-group textarea {
+    width:100%;
+    box-sizing:border-box;
+    padding:13px 14px;
+    border:1px solid #cbd5e1;
+    border-radius:11px;
+    background:#fff;
+    color:#0f172a;
+    font-size:15px;
+}
+
+.invoice-form-group textarea {
+    resize:vertical;
+}
+
+.invoice-form-group input:focus,
+.invoice-form-group select:focus,
+.invoice-form-group textarea:focus {
+    outline:none;
+    border-color:#0f766e;
+    box-shadow:0 0 0 3px rgba(15,118,110,.12);
+}
+
+.invoice-help {
+    margin-top:6px;
+    color:#64748b;
+    font-size:12px;
+}
+
+.invoice-errors {
+    color:#b91c1c;
+    margin-top:6px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.invoice-warning {
+    padding:14px 16px;
+    margin-bottom:24px;
+    border-radius:12px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+}
+
+.invoice-form-actions {
+    display:flex;
+    gap:12px;
+    padding-top:25px;
+    margin-top:10px;
+    border-top:1px solid #e2e8f0;
+    flex-wrap:wrap;
+}
+
+.invoice-save-btn,
+.invoice-cancel-btn {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:46px;
+    padding:0 20px;
+    border-radius:11px;
+    text-decoration:none;
+    font-weight:800;
+    border:1px solid transparent;
+}
+
+.invoice-save-btn {
+    background:#0f766e;
+    color:#fff;
+}
+
+.invoice-cancel-btn {
+    background:#fff;
+    border-color:#cbd5e1;
+    color:#334155;
+}
+
+@media(max-width:700px) {
+
+    .invoice-form-grid {
+        grid-template-columns:1fr;
+    }
+
+    .invoice-form-group.full {
+        grid-column:auto;
+    }
+
+    .invoice-form-body {
+        padding:20px;
+    }
+
+    .invoice-save-btn,
+    .invoice-cancel-btn {
+        width:100%;
+    }
+
+}
+
+</style>
 
 
-    <form method="POST">
-        {% csrf_token %}
+<div class="invoice-form-shell">
 
-        <div class="auth-grid">
-            <div class="form-group">
-                <label>Booking</label>
-                {{ form.booking }}
-                <div class="text-danger">{{ form.booking.errors }}</div>
-            </div>
+    <section class="invoice-form-card">
 
-            <div class="form-group">
-                <label>Issue Date</label>
-                {{ form.issue_date }}
-                <div class="text-danger">{{ form.issue_date.errors }}</div>
-            </div>
+        <header class="invoice-form-header">
 
-            <div class="form-group">
-                <label>Due Date</label>
-                {{ form.due_date }}
-                <div class="text-danger">{{ form.due_date.errors }}</div>
-            </div>
+            <h2>
 
-            <div class="form-group">
-                <label>Amount Before GST</label>
-                {{ form.amount }}
-                <div class="text-danger">{{ form.amount.errors }}</div>
-            </div>
+                {% if is_edit %}
+                    Update Invoice
+                {% else %}
+                    New Invoice
+                {% endif %}
 
-            <div class="form-group">
-                <label>Status</label>
-                {{ form.status }}
-                <div class="text-danger">{{ form.status.errors }}</div>
-            </div>
+            </h2>
+
+            <p>
+
+                {% if is_edit %}
+                    Update the billing record below.
+                {% else %}
+                    Enter the billing information for this customer.
+                {% endif %}
+
+            </p>
+
+        </header>
+
+
+        <div class="invoice-form-body">
+
+            {% if messages %}
+                <div class="invoice-messages">
+                    {% for message in messages %}
+                        <div class="invoice-message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if is_edit %}
+                {% if invoice.status == "sent" or invoice.status == "overdue" %}
+                    <div class="invoice-warning">
+                        This invoice has already been issued.
+                        Changes should be made carefully because the customer
+                        may already have received the original invoice.
+                    </div>
+                {% endif %}
+            {% endif %}
+
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <div class="invoice-form-grid">
+
+
+                    <div class="invoice-form-group">
+
+                        <label for="{{ form.booking.id_for_label }}">
+                            Booking
+                        </label>
+
+                        {{ form.booking }}
+
+                        {% if form.booking.errors %}
+                            <div class="invoice-errors">
+                                {{ form.booking.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="invoice-form-group">
+
+                        <label for="{{ form.status.id_for_label }}">
+                            Invoice Status
+                        </label>
+
+                        {{ form.status }}
+
+                        {% if form.status.errors %}
+                            <div class="invoice-errors">
+                                {{ form.status.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="invoice-form-group">
+
+                        <label for="{{ form.issue_date.id_for_label }}">
+                            Issue Date
+                        </label>
+
+                        {{ form.issue_date }}
+
+                        {% if form.issue_date.errors %}
+                            <div class="invoice-errors">
+                                {{ form.issue_date.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="invoice-form-group">
+
+                        <label for="{{ form.due_date.id_for_label }}">
+                            Due Date
+                        </label>
+
+                        {{ form.due_date }}
+
+                        {% if form.due_date.errors %}
+                            <div class="invoice-errors">
+                                {{ form.due_date.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="invoice-form-group">
+
+                        <label for="{{ form.amount.id_for_label }}">
+                            Amount Before GST
+                        </label>
+
+                        {{ form.amount }}
+
+                        <div class="invoice-help">
+                            GST and total are calculated by the invoice model.
+                        </div>
+
+                        {% if form.amount.errors %}
+                            <div class="invoice-errors">
+                                {{ form.amount.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="invoice-form-group">
+
+                        <label>
+                            GST
+                        </label>
+
+                        <input
+                            type="text"
+                            value="10% GST"
+                            readonly
+                        >
+
+                        <div class="invoice-help">
+                            GST is calculated automatically.
+                        </div>
+
+                    </div>
+
+
+                    <div class="invoice-form-group full">
+
+                        <label for="{{ form.description.id_for_label }}">
+                            Description
+                        </label>
+
+                        {{ form.description }}
+
+                        {% if form.description.errors %}
+                            <div class="invoice-errors">
+                                {{ form.description.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="invoice-form-group full">
+
+                        <label for="{{ form.notes.id_for_label }}">
+                            Internal Notes
+                        </label>
+
+                        {{ form.notes }}
+
+                        <div class="invoice-help">
+                            Internal notes are not intended to be customer-facing.
+                        </div>
+
+                        {% if form.notes.errors %}
+                            <div class="invoice-errors">
+                                {{ form.notes.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="invoice-form-actions">
+
+                    <button
+                        type="submit"
+                        class="invoice-save-btn"
+                    >
+
+                        {% if is_edit %}
+                            Save Invoice Changes
+                        {% else %}
+                            Create Invoice
+                        {% endif %}
+
+                    </button>
+
+
+                    <a
+                        href="{% if is_edit %}{% url 'invoice_detail' invoice.id %}{% else %}{% url 'invoice_list' %}{% endif %}"
+                        class="invoice-cancel-btn"
+                    >
+                        Cancel
+                    </a>
+
+                </div>
+
+
+            </form>
+
         </div>
 
-        <div class="form-group">
-            <label>Description</label>
-            {{ form.description }}
-            <div class="text-danger">{{ form.description.errors }}</div>
-        </div>
+    </section>
 
-        <div class="form-group">
-            <label>Notes</label>
-            {{ form.notes }}
-            <div class="text-danger">{{ form.notes.errors }}</div>
-        </div>
-
-        <button type="submit" class="btn-fill">
-            Create Invoice
-        </button>
-
-        <a href="/dashboard/invoices/" class="btn-outline">
-            Back to Invoices
-        </a>
-    </form>
-
-</section>
+</div>
 
 {% endblock %}
