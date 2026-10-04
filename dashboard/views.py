@@ -6482,7 +6482,6 @@ def quote_conversion_analytics(request):
     )
 
 
-@require_POST
 @admin_required
 def quote_followup_centre(request):
 

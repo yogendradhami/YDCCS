@@ -540,6 +540,259 @@
         38px 0 70px;
 }
 
+/* Dashboard HR onboarding screens */
+.onboarding-page {
+    width: min(1380px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 32px 0 64px;
+    color: #172033;
+}
+
+.onboarding-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    padding: 32px;
+    border: 1px solid #dce7f5;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f5f9ff, #ffffff 72%);
+    box-shadow: var(--ep-shadow);
+}
+
+.onboarding-hero h1 {
+    margin: 8px 0 10px;
+    color: var(--ep-navy);
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.onboarding-hero p,
+.onboarding-section p {
+    color: var(--ep-muted);
+    line-height: 1.65;
+}
+
+.onboarding-page .eyebrow {
+    display: inline-block;
+    color: var(--ep-blue);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.onboarding-status-card,
+.onboarding-summary .summary-card,
+.onboarding-page .requirement-card {
+    border: 1px solid var(--ep-border);
+    border-radius: 12px;
+    background: var(--ep-white);
+    box-shadow: var(--ep-shadow);
+}
+
+.onboarding-status-card {
+    width: min(100%, 300px);
+    flex: 0 0 260px;
+    padding: 20px;
+}
+
+.onboarding-status-card > span,
+.onboarding-status-card small,
+.onboarding-summary .summary-card span {
+    display: block;
+    color: var(--ep-muted);
+    font-size: 13px;
+}
+
+.onboarding-status-card strong {
+    display: block;
+    margin: 6px 0 14px;
+    color: var(--ep-navy);
+    font-size: 20px;
+}
+
+.progress-track {
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 9px;
+    border-radius: 99px;
+    background: #eaf0f8;
+}
+
+.progress-value {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ep-blue);
+}
+
+.onboarding-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin: 20px 0 28px;
+}
+
+.onboarding-summary .summary-card {
+    padding: 18px 20px;
+}
+
+.onboarding-summary .summary-card strong {
+    display: block;
+    margin-top: 8px;
+    color: var(--ep-navy);
+    font-size: 26px;
+}
+
+.onboarding-section {
+    margin-top: 26px;
+}
+
+.onboarding-section > .section-heading {
+    margin-bottom: 14px;
+}
+
+.onboarding-section .section-heading h2 {
+    margin: 5px 0 0;
+    color: var(--ep-navy);
+    font-size: 21px;
+}
+
+.requirement-list {
+    display: grid;
+    gap: 12px;
+}
+
+.onboarding-page .requirement-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
+}
+
+.requirement-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    min-width: 0;
+}
+
+.requirement-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--ep-blue-soft);
+    color: var(--ep-blue);
+    font-weight: 800;
+}
+
+.requirement-main h3 {
+    margin: 0 0 6px;
+    color: var(--ep-navy);
+    font-size: 16px;
+}
+
+.requirement-main p {
+    margin: 0 0 8px;
+    font-size: 14px;
+}
+
+.requirement-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.onboarding-page .upload-button,
+.onboarding-page .btn-secondary {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    border: 1px solid #d6e0ec;
+    border-radius: 8px;
+    background: #fff;
+    color: #344054;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.onboarding-page .upload-button {
+    border-color: var(--ep-blue);
+    background: var(--ep-blue);
+    color: #fff;
+}
+
+.onboarding-page .document-status {
+    display: inline-flex;
+    padding: 4px 9px;
+    border-radius: 99px;
+    background: #f2f4f7;
+    color: #475467;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.onboarding-page .status-approved {
+    background: var(--ep-green-soft);
+    color: var(--ep-green);
+}
+
+.onboarding-page .status-rejected {
+    background: var(--ep-red-soft);
+    color: var(--ep-red);
+}
+
+.onboarding-page .status-pending,
+.onboarding-page .status-submitted,
+.onboarding-page .status-under_review {
+    background: var(--ep-orange-soft);
+    color: var(--ep-orange);
+}
+
+.onboarding-page .status-missing,
+.onboarding-page .empty-state {
+    color: var(--ep-muted);
+}
+
+@media (max-width: 760px) {
+    .onboarding-page {
+        width: calc(100% - 28px);
+        padding-top: 20px;
+    }
+
+    .onboarding-hero,
+    .onboarding-page .requirement-card {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+    }
+
+    .onboarding-status-card {
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .onboarding-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .requirement-actions {
+        justify-content: flex-start;
+    }
+}
+
 
 /* ==========================================================
    INTRO

@@ -47,6 +47,7 @@ Monthly revenue, expenses, payroll and profit trends for YD Commercial Cleaning 
 {{ profit_values|json_script:"finance-profit" }}
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
 const months = JSON.parse(document.getElementById("finance-months").textContent);
 const revenueValues = JSON.parse(document.getElementById("finance-revenue").textContent);
 const expenseValues = JSON.parse(document.getElementById("finance-expenses").textContent);
@@ -73,6 +74,7 @@ createFinanceChart("revenueChart", "Revenue", revenueValues);
 createFinanceChart("expenseChart", "Expenses", expenseValues);
 createFinanceChart("payrollChart", "Payroll", payrollValues);
 createFinanceChart("profitChart", "Profit", profitValues);
+});
 </script>
 
 {% endblock %}

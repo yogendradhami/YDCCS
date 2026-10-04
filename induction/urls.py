@@ -28,6 +28,12 @@ urlpatterns = [
     ),
 
     path(
+        "dashboard/employee-training/",
+        dashboard_induction_list,
+        name="employee_training_dashboard",
+    ),
+
+    path(
         "dashboard/induction/<int:induction_id>/setup/",
         dashboard_induction_setup,
         name="induction_setup",
