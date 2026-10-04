@@ -325,33 +325,13 @@ def home(request):
     google_reviews = cache.get("homepage_google_reviews")
 
     if not google_reviews:
-        # Try to get public reviews with a timeout
         google_reviews = get_public_google_reviews(limit=6)
         if google_reviews:
             cache.set("homepage_google_reviews", google_reviews, 3600)
-    
-    if not google_reviews:
-        # Try API with timeout (max 3 seconds for homepage performance)
-        try:
-            signal_available = hasattr(signal, 'alarm')
-            if signal_available:
-                signal.signal(signal.SIGALRM, _timeout_handler)
-                signal.alarm(3)
-            google_reviews = get_google_reviews_api()
-            if signal_available:
-                signal.alarm(0)
-        except (TimeoutError, Exception):
-            try:
-                if signal_available:
-                    signal.alarm(0)
-            except:
-                pass
-            google_reviews = []
-        
-        if google_reviews:
-            cache.set("homepage_google_reviews", google_reviews, 3600)
-    
-    # Fallback to featured reviews
+
+    # Keep the homepage fast: avoid making live external API calls inside the
+    # request lifecycle when the database-backed public review cache is empty.
+    # We still fall back to the featured reviews already loaded for the page.
     if not google_reviews:
         google_reviews = [
             {

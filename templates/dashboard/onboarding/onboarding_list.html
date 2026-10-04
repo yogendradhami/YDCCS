@@ -1,0 +1,100 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+Employee Onboarding | YD Commercial Cleaning
+{% endblock %}  
+
+{% load static %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/pages/employee-onboarding.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="onboarding-page">
+
+    <section class="onboarding-hero">
+
+        <div>
+            <span class="eyebrow">
+                PEOPLE & HR
+            </span>
+
+            <h1>
+                Onboarding & Compliance
+            </h1>
+
+            <p>
+                Review employee documentation, compliance
+                status and readiness for work.
+            </p>
+        </div>
+
+    </section>
+
+
+    <section class="onboarding-section">
+
+        <div class="requirement-list">
+
+            {% for profile in profiles %}
+
+                <article class="requirement-card">
+
+                    <div class="requirement-main">
+
+                        <div class="requirement-icon">
+                            {{ profile.employee.full_name|first }}
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                {{ profile.employee.full_name }}
+                            </h3>
+
+                            <p>
+                                {{ profile.completion_percentage }}%
+                                compliance completion
+                            </p>
+
+                            <span class="document-status">
+                                {{ profile.get_status_display }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="requirement-actions">
+
+                        <a
+                            href="{% url 'onboarding_detail' profile.employee.id %}"
+                            class="upload-button"
+                        >
+                            Review onboarding
+                        </a>
+
+                    </div>
+
+                </article>
+
+            {% empty %}
+
+                <div class="empty-state">
+                    No employee onboarding profiles found.
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

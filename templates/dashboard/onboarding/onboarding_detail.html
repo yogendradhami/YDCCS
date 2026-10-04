@@ -1,0 +1,918 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}
+    Employee Onboarding | YD Commercial Cleaning
+{% endblock %}
+
+{% load static %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/pages/employee-onboarding.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="onboarding-page">
+
+    <!-- ==========================================================
+         HEADER
+    =========================================================== -->
+
+    <section class="onboarding-hero">
+
+        <div>
+
+            <a
+                href="{% url 'onboarding_dashboard' %}"
+                style="
+                    display:inline-block;
+                    margin-bottom:16px;
+                    color:#1677c8;
+                    font-weight:700;
+                    text-decoration:none;
+                "
+            >
+                ← Back to Onboarding
+            </a>
+
+            <span class="eyebrow">
+                EMPLOYEE COMPLIANCE
+            </span>
+
+            <h1>
+                {{ employee.full_name }}
+            </h1>
+
+            <p>
+                Review employment documentation,
+                compliance requirements and work readiness.
+            </p>
+
+        </div>
+
+
+        <div class="onboarding-status-card">
+
+            <span>
+                Current status
+            </span>
+
+            <strong>
+                {{ profile.get_status_display }}
+            </strong>
+
+            <div class="progress-track">
+
+                <div
+                    class="progress-value"
+                    style="
+                        width: {{ profile.completion_percentage }}%;
+                    "
+                ></div>
+
+            </div>
+
+            <small>
+                {{ profile.completion_percentage }}%
+                of required documents approved
+            </small>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         EMPLOYEE SUMMARY
+    =========================================================== -->
+
+    <section class="onboarding-summary">
+
+        <div class="summary-card">
+
+            <span>
+                Required
+            </span>
+
+            <strong>
+                {{ profile.required_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Approved
+            </span>
+
+            <strong>
+                {{ profile.approved_required_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Pending
+            </span>
+
+            <strong>
+                {{ profile.pending_documents.count }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Rejected
+            </span>
+
+            <strong>
+                {{ profile.rejected_documents.count }}
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         WORK READINESS
+    =========================================================== -->
+
+    <section class="onboarding-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    WORK READINESS
+                </span>
+
+                <h2>
+                    Compliance status
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="requirement-card">
+
+            <div class="requirement-main">
+
+                <div class="requirement-icon">
+
+                    {% if profile.can_be_ready_for_work %}
+                        ✓
+                    {% else %}
+                        !
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    {% if profile.can_be_ready_for_work %}
+
+                        <h3>
+                            Compliance requirements complete
+                        </h3>
+
+                        <p>
+                            All required onboarding documents and induction
+                            requirements have been completed. HR final approval
+                            is required before this employee can be assigned work.
+                        </p>
+
+                    {% else %}
+
+                        <h3>
+                            Employee is not Ready for Work
+                        </h3>
+
+                        <p>
+                            Complete induction and approve all
+                            required compliance documents before
+                            assigning this employee to work.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="requirement-actions">
+
+                {% if profile.status != "blocked" %}
+
+                    {% if profile.can_be_ready_for_work %}
+
+                        <form
+                            method="post"
+                            action="{% url 'onboarding_set_status' employee.id 'ready' %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="upload-button"
+                            >
+                                Mark Ready for Work
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+
+                    <form
+                        method="post"
+                        action="{% url 'onboarding_set_status' employee.id 'blocked' %}"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn-secondary"
+                        >
+                            Block Employee
+                        </button>
+
+                    </form>
+
+                {% else %}
+
+                    <form
+                        method="post"
+                        action="{% url 'onboarding_set_status' employee.id 'ready' %}"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="upload-button"
+                        >
+                            Mark Ready for Work
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         REQUIRED DOCUMENTS
+    =========================================================== -->
+
+    <section class="onboarding-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    REQUIRED DOCUMENTS
+                </span>
+
+                <h2>
+                    Compliance requirements
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="requirement-list">
+
+            {% for row in requirement_rows %}
+
+                <article class="requirement-card">
+
+                    <div class="requirement-main">
+
+                        <div class="requirement-icon">
+
+                            {% if row.document %}
+
+                                {% if row.document.status == "approved" %}
+
+                                    ✓
+
+                                {% elif row.document.status == "rejected" %}
+
+                                    !
+
+                                {% else %}
+
+                                    •
+
+                                {% endif %}
+
+                            {% else %}
+
+                                !
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div>
+
+                            <h3>
+                                {{ row.requirement.title }}
+                            </h3>
+
+                            <p>
+                                {{ row.requirement.description }}
+                            </p>
+
+
+                            {% if row.document %}
+
+                                <span
+                                    class="
+                                        document-status
+                                        status-{{ row.document.status }}
+                                    "
+                                >
+                                    {{ row.document.get_status_display }}
+                                </span>
+
+
+                                {% if row.document.original_filename %}
+
+                                    <p
+                                        style="
+                                            margin-top:8px;
+                                            font-size:13px;
+                                        "
+                                    >
+                                        {{ row.document.original_filename }}
+                                        · Version {{ row.document.version }}
+                                    </p>
+
+                                {% endif %}
+
+
+                                {% if row.document.expires_at %}
+
+                                    <p
+                                        style="
+                                            margin-top:4px;
+                                            font-size:13px;
+                                        "
+                                    >
+                                        Expires:
+                                        {{ row.document.expires_at }}
+                                    </p>
+
+                                {% endif %}
+
+
+                                {% if row.document.review_notes %}
+
+                                    <p
+                                        style="
+                                            margin-top:8px;
+                                            font-size:13px;
+                                            color:#64748b;
+                                        "
+                                    >
+                                        <strong>
+                                            HR note:
+                                        </strong>
+
+                                        {{ row.document.review_notes }}
+                                    </p>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <span
+                                    class="
+                                        document-status
+                                        status-missing
+                                    "
+                                >
+                                    Document required
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="requirement-actions">
+
+                        {% if row.document %}
+
+                            <a
+                                href="{% url 'onboarding_document_download' row.document.id %}"
+                                class="btn-secondary"
+                            >
+                                Download
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+            {% empty %}
+
+                <div class="empty-state">
+
+                    No onboarding requirements are assigned
+                    to this employee.
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         HR DOCUMENT REVIEW
+    =========================================================== -->
+
+    <section class="onboarding-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    HR REVIEW
+                </span>
+
+                <h2>
+                    Document review
+                </h2>
+
+                <p
+                    style="
+                        margin:8px 0 0;
+                        color:#64748b;
+                        line-height:1.6;
+                    "
+                >
+                    Review each employee document and approve
+                    or reject it before the employee can be
+                    marked Ready for Work.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="requirement-list">
+
+            {% for document in documents %}
+
+                <article class="requirement-card">
+
+                    <div style="width:100%;">
+
+                        <!-- DOCUMENT INFORMATION -->
+
+                        <div class="requirement-main">
+
+                            <div class="requirement-icon">
+
+                                {% if document.status == "approved" %}
+
+                                    ✓
+
+                                {% elif document.status == "rejected" %}
+
+                                    !
+
+                                {% else %}
+
+                                    •
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div style="flex:1;">
+
+                                <h3>
+                                    {{ document.requirement.title }}
+                                </h3>
+
+
+                                <p>
+                                    {{ document.original_filename }}
+                                    · Version {{ document.version }}
+                                </p>
+
+
+                                <span
+                                    class="
+                                        document-status
+                                        status-{{ document.status }}
+                                    "
+                                >
+                                    {{ document.get_status_display }}
+                                </span>
+
+
+                                {% if document.uploaded_at %}
+
+                                    <p
+                                        style="
+                                            margin-top:8px;
+                                            font-size:12px;
+                                            color:#64748b;
+                                        "
+                                    >
+                                        Uploaded:
+                                        {{ document.uploaded_at|date:"d M Y H:i" }}
+                                    </p>
+
+                                {% endif %}
+
+
+                                {% if document.reviewed_at %}
+
+                                    <p
+                                        style="
+                                            margin-top:4px;
+                                            font-size:12px;
+                                            color:#64748b;
+                                        "
+                                    >
+
+                                        Reviewed:
+                                        {{ document.reviewed_at|date:"d M Y H:i" }}
+
+                                        {% if document.reviewed_by %}
+
+                                            by
+                                            {{ document.reviewed_by.get_full_name|default:document.reviewed_by.username }}
+
+                                        {% endif %}
+
+                                    </p>
+
+                                {% endif %}
+
+
+                                {% if document.review_notes %}
+
+                                    <div
+                                        style="
+                                            margin-top:12px;
+                                            padding:12px 14px;
+                                            border-radius:10px;
+                                            background:#fff;
+                                            border:1px solid #e4edf4;
+                                        "
+                                    >
+
+                                        <strong
+                                            style="
+                                                display:block;
+                                                margin-bottom:4px;
+                                                font-size:12px;
+                                                color:#334155;
+                                            "
+                                        >
+                                            Previous HR Review
+                                        </strong>
+
+                                        <span
+                                            style="
+                                                color:#64748b;
+                                                font-size:13px;
+                                                line-height:1.5;
+                                            "
+                                        >
+                                            {{ document.review_notes }}
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- DOCUMENT ACTION -->
+
+                        <div
+                            style="
+                                display:flex;
+                                justify-content:flex-end;
+                                gap:10px;
+                                margin-top:20px;
+                                padding-top:18px;
+                                border-top:1px solid #edf2f7;
+                            "
+                        >
+
+                            <a
+                                href="{% url 'onboarding_document_download' document.id %}"
+                                class="btn-secondary"
+                            >
+                                Download Document
+                            </a>
+
+                        </div>
+
+
+                        <!-- REVIEW FORM -->
+
+                        <form
+                            method="post"
+                            action="{% url 'onboarding_document_review' document.id %}"
+                            style="
+                                margin-top:18px;
+                                padding:20px;
+                                border-radius:16px;
+                                background:#f8fbfd;
+                                border:1px solid #e4edf4;
+                            "
+                        >
+
+                            {% csrf_token %}
+
+
+                            <div
+                                style="
+                                    display:grid;
+                                    grid-template-columns:
+                                        minmax(180px, 220px)
+                                        minmax(220px, 1fr)
+                                        minmax(160px, 200px);
+                                    gap:16px;
+                                    align-items:end;
+                                "
+                            >
+
+                                <!-- STATUS -->
+
+                                <div>
+
+                                    <label
+                                        for="status-{{ document.id }}"
+                                        style="
+                                            display:block;
+                                            margin-bottom:7px;
+                                            font-size:12px;
+                                            font-weight:800;
+                                            color:#334155;
+                                        "
+                                    >
+                                        Review Status
+                                    </label>
+
+
+                                    <select
+                                        id="status-{{ document.id }}"
+                                        name="status"
+                                        style="
+                                            width:100%;
+                                            min-height:42px;
+                                            padding:0 12px;
+                                            border:1px solid #d8e5ee;
+                                            border-radius:10px;
+                                            background:#fff;
+                                            color:#172033;
+                                            box-sizing:border-box;
+                                        "
+                                    >
+
+                                        <option
+                                            value="pending"
+                                            {% if document.status == "pending" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Pending Review
+                                        </option>
+
+
+                                        <option
+                                            value="approved"
+                                            {% if document.status == "approved" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Approved
+                                        </option>
+
+
+                                        <option
+                                            value="rejected"
+                                            {% if document.status == "rejected" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Rejected
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- REVIEW NOTES -->
+
+                                <div>
+
+                                    <label
+                                        for="notes-{{ document.id }}"
+                                        style="
+                                            display:block;
+                                            margin-bottom:7px;
+                                            font-size:12px;
+                                            font-weight:800;
+                                            color:#334155;
+                                        "
+                                    >
+                                        Review Notes
+                                    </label>
+
+
+                                    <input
+                                        id="notes-{{ document.id }}"
+                                        type="text"
+                                        name="review_notes"
+                                        value="{{ document.review_notes }}"
+                                        placeholder="Add HR review notes..."
+                                        style="
+                                            width:100%;
+                                            min-height:42px;
+                                            padding:0 12px;
+                                            border:1px solid #d8e5ee;
+                                            border-radius:10px;
+                                            background:#fff;
+                                            color:#172033;
+                                            box-sizing:border-box;
+                                        "
+                                    >
+
+                                </div>
+
+
+                                <!-- EXPIRY DATE -->
+
+                                <div>
+
+                                    <label
+                                        for="expires-{{ document.id }}"
+                                        style="
+                                            display:block;
+                                            margin-bottom:7px;
+                                            font-size:12px;
+                                            font-weight:800;
+                                            color:#334155;
+                                        "
+                                    >
+                                        Expiry Date
+                                    </label>
+
+
+                                    <input
+                                        id="expires-{{ document.id }}"
+                                        type="date"
+                                        name="expires_at"
+                                        value="{{ document.expires_at|date:'Y-m-d' }}"
+                                        style="
+                                            width:100%;
+                                            min-height:42px;
+                                            padding:0 12px;
+                                            border:1px solid #d8e5ee;
+                                            border-radius:10px;
+                                            background:#fff;
+                                            color:#172033;
+                                            box-sizing:border-box;
+                                        "
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- SAVE REVIEW -->
+
+                            <div
+                                style="
+                                    display:flex;
+                                    justify-content:flex-end;
+                                    align-items:center;
+                                    gap:10px;
+                                    margin-top:16px;
+                                "
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="upload-button"
+                                >
+                                    Save Review
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </article>
+
+            {% empty %}
+
+                <div class="empty-state">
+
+                    <strong>
+                        No employee documents have been uploaded yet.
+                    </strong>
+
+                    <p
+                        style="
+                            margin-top:8px;
+                            color:#64748b;
+                        "
+                    >
+                        Once the employee uploads their required
+                        documents, they will appear here for HR review.
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         HR PROFILE NOTES
+    =========================================================== -->
+
+    {% if profile.notes %}
+
+        <section class="onboarding-section">
+
+            <div class="ready-banner">
+
+                <strong>
+                    HR Notes
+                </strong>
+
+                <p>
+                    {{ profile.notes }}
+                </p>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+</div>
+
+{% endblock %}

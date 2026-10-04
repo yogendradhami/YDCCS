@@ -2,6 +2,7 @@ from datetime import date, time
 
 from django.db import transaction
 from django.utils import timezone
+from induction.models import EmployeeOnboardingProfile
 
 from leave_management.models import LeaveRequest
 
@@ -67,6 +68,27 @@ def create_booking(*, customer, service_type, booking_date, booking_time, addres
                 return existing, False
 
         if assigned_employee:
+
+            onboarding_profile = (
+                EmployeeOnboardingProfile.objects
+                .filter(employee=assigned_employee)
+                .first()
+            )
+
+            if onboarding_profile is None:
+                raise ValueError(
+                    "The assigned employee does not have "
+                    "an onboarding profile."
+                )
+
+            if onboarding_profile.status != "ready":
+                raise ValueError(
+                    f"{assigned_employee.full_name} is not "
+                    "Ready for Work and cannot be assigned "
+                    "to this booking."
+                )
+
+            
             if LeaveRequest.objects.filter(
                 employee=assigned_employee,
                 status="approved",

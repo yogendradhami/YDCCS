@@ -15,7 +15,6 @@ import sys
 import warnings
 from pathlib import Path
 
-import dj_database_url
 import environ
 
 
@@ -172,6 +171,8 @@ INSTALLED_APPS = [
     "bookings",
     "invoices",
     "employees",
+    "induction",
+
     "portal",
     "reports",
     "notifications.apps.NotificationsConfig",
@@ -245,6 +246,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
 
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "induction.middleware.EmployeeInductionMiddleware",
 
     "django.contrib.messages.middleware.MessageMiddleware",
 
@@ -310,11 +312,6 @@ REDIS_URL = env.str(
     default="",
 ).strip()
 
-if IS_PRODUCTION and not REDIS_URL:
-    raise RuntimeError(
-        "REDIS_URL must be configured when IS_PRODUCTION=True."
-    )
-
 if REDIS_URL:
     CHANNEL_LAYERS = {
         "default": {
@@ -353,15 +350,37 @@ DATABASES["default"]["CONN_MAX_AGE"] = 60
 # CACHE
 # ==========================================================
 
-# Kept as LocMemCache intentionally.
-# Cache behaviour is controlled separately by
-# core.middleware.CacheHeaderMiddleware.
+# Use Redis when configured, but safely fall back to local memory
+# when Redis is not available or not configured. This keeps local
+# development simple while allowing a production-style cache backend
+# when the environment is prepared.
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "ydcleaning-cache",
     }
 }
+
+if REDIS_URL:
+    try:
+        import django_redis  # noqa: F401
+
+        CACHES = {
+            "default": {
+                "BACKEND": "django_redis.cache.RedisCache",
+                "LOCATION": REDIS_URL,
+                "OPTIONS": {
+                    "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                },
+            }
+        }
+    except ImportError:
+        CACHES = {
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+                "LOCATION": "ydcleaning-cache",
+            }
+        }
 
 
 # ==========================================================

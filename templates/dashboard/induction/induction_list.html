@@ -1,0 +1,880 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/employee-induction.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="induction-shell">
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="ind-page-header">
+
+        <div>
+
+            <div class="ind-eyebrow">
+                People &amp; Compliance
+            </div>
+
+            <h1>
+                Employee Induction
+            </h1>
+
+            <p>
+                Manage employee onboarding, mandatory training
+                and compliance requirements.
+            </p>
+
+        </div>
+
+
+        <div class="ind-actions">
+
+            <span class="ind-pill ind-pill-blue">
+                HR Compliance
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         KPI SUMMARY
+         ===================================================== -->
+
+    <div class="ind-kpis">
+
+
+        <!-- TOTAL -->
+
+        <div class="ind-kpi">
+
+            <div class="ind-kpi-icon">
+                ◎
+            </div>
+
+            <div class="ind-kpi-value">
+                {{ total }}
+            </div>
+
+            <div class="ind-kpi-label">
+                Total inductions
+            </div>
+
+        </div>
+
+
+        <!-- ASSIGNED -->
+
+        <div class="ind-kpi orange">
+
+            <div class="ind-kpi-icon">
+                ◷
+            </div>
+
+            <div class="ind-kpi-value">
+                {{ assigned }}
+            </div>
+
+            <div class="ind-kpi-label">
+                Assigned / awaiting start
+            </div>
+
+        </div>
+
+
+        <!-- IN PROGRESS -->
+
+        <div class="ind-kpi purple">
+
+            <div class="ind-kpi-icon">
+                ↗
+            </div>
+
+            <div class="ind-kpi-value">
+                {{ in_progress }}
+            </div>
+
+            <div class="ind-kpi-label">
+                Currently in progress
+            </div>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+
+        <div class="ind-kpi green">
+
+            <div class="ind-kpi-icon">
+                ✓
+            </div>
+
+            <div class="ind-kpi-value">
+                {{ completed }}
+            </div>
+
+            <div class="ind-kpi-label">
+                Completed
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN EMPLOYEE INDUCTION CARD
+         ===================================================== -->
+
+    <section class="ind-card">
+
+
+        <!-- CARD HEADER -->
+
+        <div class="ind-card-header">
+
+            <div>
+
+                <h2 class="ind-card-title">
+                    Employee inductions
+                </h2>
+
+                <p class="ind-card-subtitle">
+                    Monitor employee onboarding progress,
+                    training and compliance.
+                </p>
+
+            </div>
+
+
+            <div>
+
+                <span class="ind-pill ind-pill-neutral">
+
+                    {{ total }}
+                    employee{{ total|pluralize }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FILTERS
+             ================================================= -->
+
+        <div class="ind-filters">
+
+
+            <!-- SEARCH -->
+
+            <input
+                id="inductionSearch"
+                class="ind-input"
+                type="search"
+                placeholder="Search employee or email..."
+                autocomplete="off"
+            >
+
+
+            <!-- STATUS -->
+
+            <select
+                id="statusFilter"
+                class="ind-select"
+            >
+
+                <option value="">
+                    All statuses
+                </option>
+
+                <option value="assigned">
+                    Assigned
+                </option>
+
+                <option value="in progress">
+                    In Progress
+                </option>
+
+                <option value="completed">
+                    Completed
+                </option>
+
+                <option value="cancelled">
+                    Cancelled
+                </option>
+
+            </select>
+
+
+            <!-- ROLE -->
+
+            <select
+                id="roleFilter"
+                class="ind-select"
+            >
+
+                <option value="">
+                    All roles
+                </option>
+
+                <option value="cleaner">
+                    Cleaner
+                </option>
+
+                <option value="supervisor">
+                    Supervisor
+                </option>
+
+                <option value="manager">
+                    Manager
+                </option>
+
+                <option value="admin">
+                    Admin
+                </option>
+
+            </select>
+
+
+            <!-- DATE -->
+
+            <input
+                id="dateFilter"
+                class="ind-input"
+                type="date"
+                title="Filter by start date"
+            >
+
+
+            <!-- CLEAR -->
+
+            <button
+                id="clearInductionFilters"
+                type="button"
+                class="ind-btn"
+            >
+                Clear
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             TABLE
+             ================================================= -->
+
+        <div class="ind-table-wrap">
+
+            <table
+                id="inductionTable"
+                class="ind-table"
+            >
+
+
+                <!-- TABLE HEADER -->
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Employee
+                        </th>
+
+                        <th>
+                            Role
+                        </th>
+
+                        <th>
+                            Start date
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Progress
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <!-- TABLE BODY -->
+
+                <tbody>
+
+
+                {% for induction in inductions %}
+
+
+                    <tr
+                        data-search="{{ induction.employee.full_name|default:''|lower }} {{ induction.employee.user.email|default:''|lower }}"
+                        data-status="{{ induction.get_status_display|default:''|lower }}"
+                        data-role="{{ induction.employee.role|default:''|lower }}"
+                        data-date="{{ induction.start_date|date:'Y-m-d' }}"
+                    >
+
+
+                        <!-- =================================
+                             EMPLOYEE
+                             ================================= -->
+
+                        <td>
+
+                            <div class="ind-employee">
+
+
+                                <div class="ind-avatar">
+
+                                    {% if induction.employee.full_name %}
+
+                                        {{ induction.employee.full_name|slice:":1"|upper }}
+
+                                    {% else %}
+
+                                        E
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div>
+
+                                    <div class="ind-employee-name">
+
+                                        {{ induction.employee.full_name|default:"Employee" }}
+
+                                    </div>
+
+
+                                    <div class="ind-employee-meta">
+
+                                        {% if induction.employee.user.email %}
+
+                                            {{ induction.employee.user.email }}
+
+                                        {% else %}
+
+                                            No email recorded
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- =================================
+                             ROLE
+                             ================================= -->
+
+                        <td>
+
+                            <span class="ind-pill ind-pill-blue">
+
+                                {% if induction.employee.get_role_display %}
+
+                                    {{ induction.employee.get_role_display }}
+
+                                {% elif induction.employee.role %}
+
+                                    {{ induction.employee.role|title }}
+
+                                {% else %}
+
+                                    Employee
+
+                                {% endif %}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- =================================
+                             START DATE
+                             ================================= -->
+
+                        <td>
+
+                            {% if induction.start_date %}
+
+                                {{ induction.start_date|date:"d M Y" }}
+
+                            {% else %}
+
+                                <span class="ind-category">
+                                    Not set
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- =================================
+                             STATUS
+                             ================================= -->
+
+                        <td>
+
+
+                            {% if induction.status == "completed" %}
+
+                                <span class="ind-pill ind-pill-success">
+                                    ● Completed
+                                </span>
+
+
+                            {% elif induction.status == "in_progress" %}
+
+                                <span class="ind-pill ind-pill-blue">
+                                    ● In progress
+                                </span>
+
+
+                            {% elif induction.status == "assigned" %}
+
+                                <span class="ind-pill ind-pill-warning">
+                                    ● Assigned
+                                </span>
+
+
+                            {% elif induction.status == "cancelled" %}
+
+                                <span class="ind-pill ind-pill-neutral">
+                                    ● Cancelled
+                                </span>
+
+
+                            {% else %}
+
+                                <span class="ind-pill ind-pill-neutral">
+
+                                    {{ induction.get_status_display }}
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </td>
+
+
+                        <!-- =================================
+                             PROGRESS
+                             ================================= -->
+
+                        <td>
+
+                            <div class="ind-progress">
+
+
+                                <div class="ind-progress-head">
+
+
+                                    <span>
+
+                                        {{ induction.completion_count }}
+
+                                        /
+
+                                        {{ induction.required_count }}
+
+                                    </span>
+
+
+                                    <span>
+
+                                        {% if induction.required_count %}
+
+                                            {% widthratio induction.completion_count induction.required_count 100 %}%
+
+                                        {% else %}
+
+                                            0%
+
+                                        {% endif %}
+
+                                    </span>
+
+
+                                </div>
+
+
+                                <div class="ind-progress-track">
+
+
+                                    <div
+                                        class="
+                                            ind-progress-fill
+                                            {% if induction.status == 'completed' %}
+                                                success
+                                            {% endif %}
+                                        "
+                                        style="
+                                            width:
+                                            {% if induction.required_count %}
+                                                {% widthratio induction.completion_count induction.required_count 100 %}
+                                            {% else %}
+                                                0
+                                            {% endif %}%;
+                                        "
+                                    ></div>
+
+
+                                </div>
+
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- =================================
+                             ACTIONS
+                             ================================= -->
+
+                        <td>
+
+                            <div class="ind-row-actions">
+
+
+                                <a
+                                    href="{% url 'induction_detail' induction.id %}"
+                                    class="ind-mini-btn"
+                                >
+                                    View
+                                </a>
+
+
+                                {% if induction.status != "completed" %}
+
+                                    <a
+                                        href="{% url 'induction_setup' induction.id %}"
+                                        class="ind-mini-btn"
+                                    >
+                                        Edit
+                                    </a>
+
+                                {% endif %}
+
+
+                            </div>
+
+                        </td>
+
+
+                    </tr>
+
+
+                {% empty %}
+
+
+                    <!-- =================================
+                         EMPTY STATE
+                         ================================= -->
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            style="
+                                padding:65px 30px;
+                                text-align:center;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    width:64px;
+                                    height:64px;
+                                    margin:0 auto 16px;
+                                    border-radius:18px;
+                                    display:grid;
+                                    place-items:center;
+                                    background:#eaf2ff;
+                                    color:#1769ff;
+                                    font-size:25px;
+                                    font-weight:900;
+                                "
+                            >
+                                ◎
+                            </div>
+
+
+                            <strong
+                                style="
+                                    display:block;
+                                    font-size:15px;
+                                    color:#142033;
+                                "
+                            >
+                                No employee inductions yet
+                            </strong>
+
+
+                            <div
+                                class="ind-category"
+                                style="
+                                    margin-top:8px;
+                                "
+                            >
+                                Employee induction records will
+                                appear here once they are assigned.
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+    </section>
+
+
+</div>
+
+
+<!-- =========================================================
+     FILTER JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+(function () {
+
+    "use strict";
+
+
+    const search =
+        document.getElementById(
+            "inductionSearch"
+        );
+
+
+    const status =
+        document.getElementById(
+            "statusFilter"
+        );
+
+
+    const role =
+        document.getElementById(
+            "roleFilter"
+        );
+
+
+    const date =
+        document.getElementById(
+            "dateFilter"
+        );
+
+
+    const clear =
+        document.getElementById(
+            "clearInductionFilters"
+        );
+
+
+    const table =
+        document.getElementById(
+            "inductionTable"
+        );
+
+
+    if (
+        !search ||
+        !status ||
+        !role ||
+        !date ||
+        !clear ||
+        !table
+    ) {
+
+        return;
+
+    }
+
+
+    function filterRows() {
+
+
+        const query =
+            search.value
+                .toLowerCase()
+                .trim();
+
+
+        const statusValue =
+            status.value
+                .toLowerCase()
+                .trim();
+
+
+        const roleValue =
+            role.value
+                .toLowerCase()
+                .trim();
+
+
+        const dateValue =
+            date.value;
+
+
+        const rows =
+            table.querySelectorAll(
+                "tbody tr[data-search]"
+            );
+
+
+        rows.forEach(
+            function (row) {
+
+
+                const rowSearch =
+                    row.dataset.search || "";
+
+
+                const rowStatus =
+                    row.dataset.status || "";
+
+
+                const rowRole =
+                    row.dataset.role || "";
+
+
+                const rowDate =
+                    row.dataset.date || "";
+
+
+                const matchesSearch =
+                    !query ||
+                    rowSearch.includes(query);
+
+
+                const matchesStatus =
+                    !statusValue ||
+                    rowStatus.includes(
+                        statusValue
+                    );
+
+
+                const matchesRole =
+                    !roleValue ||
+                    rowRole.includes(
+                        roleValue
+                    );
+
+
+                const matchesDate =
+                    !dateValue ||
+                    rowDate === dateValue;
+
+
+                const visible =
+                    matchesSearch &&
+                    matchesStatus &&
+                    matchesRole &&
+                    matchesDate;
+
+
+                row.style.display =
+                    visible
+                        ? ""
+                        : "none";
+
+
+            }
+        );
+
+
+    }
+
+
+    search.addEventListener(
+        "input",
+        filterRows
+    );
+
+
+    status.addEventListener(
+        "change",
+        filterRows
+    );
+
+
+    role.addEventListener(
+        "change",
+        filterRows
+    );
+
+
+    date.addEventListener(
+        "change",
+        filterRows
+    );
+
+
+    clear.addEventListener(
+        "click",
+        function () {
+
+
+            search.value = "";
+
+            status.value = "";
+
+            role.value = "";
+
+            date.value = "";
+
+
+            filterRows();
+
+
+            search.focus();
+
+
+        }
+    );
+
+
+})();
+
+</script>
+
+
+{% endblock %}

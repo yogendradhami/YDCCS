@@ -1,0 +1,978 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Employee Induction | YD Commercial Cleaning</title>
+
+    <meta
+        name="description"
+        content="Complete your YD Commercial Cleaning employee induction and workplace training."
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/pages/employee-induction.css' %}"
+    >
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body class="employee-induction-page">
+
+<header class="employee-header">
+    <div class="employee-header-inner">
+
+        <a
+            href="{% url 'employee_dashboard' %}"
+            class="employee-brand"
+        >
+            <span class="brand-mark">
+                <i class="fa-solid fa-sparkles"></i>
+            </span>
+
+            <span class="brand-copy">
+                <strong>YD</strong>
+                <span>Commercial Cleaning</span>
+            </span>
+        </a>
+
+        <nav
+            class="employee-nav"
+            aria-label="Employee navigation"
+        >
+            <a href="{% url 'employee_dashboard' %}">
+                <i class="fa-solid fa-grid-2"></i>
+                <span>Home</span>
+            </a>
+
+            <a href="{% url 'employee_jobs' %}">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>My Jobs</span>
+            </a>
+
+            <a href="{% url 'employee_profile' %}">
+                <i class="fa-regular fa-user"></i>
+                <span>Profile</span>
+            </a>
+
+            <a
+                href="{% url 'employee_induction' %}"
+                class="active"
+            >
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Induction</span>
+            </a>
+        </nav>
+
+        <div class="employee-header-actions">
+
+            <div class="employee-mini-profile">
+
+                <div class="employee-avatar">
+                    {{ employee.user.first_name|default:employee.user.username|first|upper }}
+                </div>
+
+                <div class="employee-mini-copy">
+                    <strong>
+                        {{ employee.user.get_full_name|default:employee.user.username }}
+                    </strong>
+
+                    <span>Employee</span>
+                </div>
+
+            </div>
+
+            <a
+                href="{% url 'employee_logout' %}"
+                class="logout-button"
+                title="Sign out"
+            >
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
+
+        </div>
+
+    </div>
+</header>
+
+
+<main class="induction-shell">
+
+    <!-- HERO -->
+
+    <section class="induction-hero">
+
+        <div class="hero-grid"></div>
+
+        <div class="hero-glow hero-glow-one"></div>
+        <div class="hero-glow hero-glow-two"></div>
+
+        <div class="induction-hero-inner">
+
+            <div class="hero-main">
+
+                <div class="hero-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    EMPLOYEE LEARNING CENTRE
+                </div>
+
+                <h1>
+                    Build your foundation.
+                    <span>Work with confidence.</span>
+                </h1>
+
+                <p class="hero-description">
+                    Complete your YD Commercial Cleaning induction to understand
+                    our workplace expectations, safety standards, cleaning
+                    procedures and professional responsibilities.
+                </p>
+
+                <div class="hero-employee">
+
+                    <div class="hero-avatar">
+                        {{ employee.user.first_name|default:employee.user.username|first|upper }}
+                    </div>
+
+                    <div>
+                        <span class="hero-welcome">
+                            Welcome to the team
+                        </span>
+
+                        <strong>
+                            {{ employee.user.get_full_name|default:employee.user.username }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-progress-card">
+
+                <div class="progress-card-top">
+
+                    <div>
+                        <span class="progress-label">
+                            INDUCTION PROGRESS
+                        </span>
+
+                        <strong>
+                            {{ completed }} of {{ total }}
+                        </strong>
+                    </div>
+
+                    <div class="progress-percentage">
+                        {{ progress }}%
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="progress-ring"
+                    style="--progress: {{ progress }}%;"
+                >
+                    <div class="progress-ring-value">
+                        <strong>{{ progress }}%</strong>
+                        <span>complete</span>
+                    </div>
+                </div>
+
+
+                <div class="progress-track">
+                    <span style="width: {{ progress }}%;"></span>
+                </div>
+
+
+                {% if progress == 100 %}
+
+                    <div class="progress-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        All required modules completed
+                    </div>
+
+                {% else %}
+
+                    <div class="progress-helper">
+                        Continue through each required module.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- STATUS -->
+
+    <section class="induction-status-wrap">
+
+        <div class="induction-status-bar">
+
+            <div class="status-item">
+
+                <span class="status-icon blue">
+                    <i class="fa-solid fa-layer-group"></i>
+                </span>
+
+                <div>
+                    <span>Programme</span>
+
+                    <strong>
+                        {{ induction.programme.name }}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="status-divider"></div>
+
+
+            <div class="status-item">
+
+                <span class="status-icon purple">
+                    <i class="fa-solid fa-code-branch"></i>
+                </span>
+
+                <div>
+                    <span>Version</span>
+
+                    <strong>
+                        v{{ induction.programme.version }}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="status-divider"></div>
+
+
+            <div class="status-item">
+
+                <span class="status-icon green">
+                    <i class="fa-regular fa-clock"></i>
+                </span>
+
+                <div>
+                    <span>Estimated time</span>
+
+                    <strong>
+                        {{ induction.induction_duration_minutes }} minutes
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="status-divider"></div>
+
+
+            <div class="status-item">
+
+                <span class="status-icon orange">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </span>
+
+                <div>
+                    <span>Status</span>
+
+                    <strong>
+                        {{ induction.get_status_display }}
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MAIN CONTENT -->
+
+    <div class="induction-content-grid">
+
+        <section class="induction-main-column">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="section-kicker">
+                        YOUR LEARNING PATH
+                    </span>
+
+                    <h2>
+                        Complete your induction
+                    </h2>
+
+                    <p>
+                        Work through each module carefully. Some modules contain
+                        important workplace, safety and operational requirements
+                        that you will be expected to apply during your work.
+                    </p>
+
+                </div>
+
+                <div class="module-count-badge">
+                    <strong>{{ total }}</strong>
+                    <span>modules</span>
+                </div>
+
+            </div>
+
+
+            <div class="module-roadmap">
+
+                {% for module in modules %}
+
+                    <article
+                        class="induction-module-card
+                        {% if module.id in completed_ids %}
+                            completed
+                        {% else %}
+                            pending
+                        {% endif %}"
+                    >
+
+                        <div class="module-number">
+
+                            {% if module.id in completed_ids %}
+
+                                <i class="fa-solid fa-check"></i>
+
+                            {% else %}
+
+                                {{ forloop.counter|stringformat:"02d" }}
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="module-card-content">
+
+                            <div class="module-card-top">
+
+                                <div class="module-meta">
+
+                                    <span class="module-category">
+
+                                        {% if module.category == "welcome" %}
+                                            <i class="fa-solid fa-hand-wave"></i>
+
+                                        {% elif module.category == "whs" %}
+                                            <i class="fa-solid fa-shield-halved"></i>
+
+                                        {% elif module.category == "operations" %}
+                                            <i class="fa-solid fa-broom"></i>
+
+                                        {% elif module.category == "conduct" %}
+                                            <i class="fa-solid fa-user-shield"></i>
+
+                                        {% elif module.category == "role" %}
+                                            <i class="fa-solid fa-user-gear"></i>
+
+                                        {% else %}
+                                            <i class="fa-solid fa-book-open"></i>
+                                        {% endif %}
+
+                                        {{ module.get_category_display }}
+
+                                    </span>
+
+
+                                    {% if module.mandatory %}
+
+                                        <span class="mandatory-badge">
+                                            Required
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if module.id in completed_ids %}
+
+                                    <span class="module-status completed">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        Completed
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="module-status">
+                                        <i class="fa-regular fa-circle"></i>
+                                        Not completed
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <h3>
+                                {{ module.title }}
+                            </h3>
+
+
+                            <p class="module-summary">
+                                {{ module.summary|default:"Complete this training module and review the requirements before acknowledging it." }}
+                            </p>
+
+
+                            <div class="module-card-footer">
+
+                                <div class="module-information">
+
+                                    <span>
+                                        <i class="fa-regular fa-file-lines"></i>
+                                        Training module
+                                    </span>
+
+                                    <span>
+                                        <i class="fa-solid fa-shield"></i>
+                                        Workplace standard
+                                    </span>
+
+                                    <span>
+                                        <i class="fa-solid fa-code-branch"></i>
+                                        v{{ module.version }}
+                                    </span>
+
+                                </div>
+
+
+                                <a
+                                    href="{% url 'employee_induction_module' module_id=module.id %}"
+                                    class="module-action-button"
+                                >
+
+                                    <span>
+                                        {% if module.id in completed_ids %}
+                                            Review module
+                                        {% else %}
+                                            Open module
+                                        {% endif %}
+                                    </span>
+
+                                    <i
+                                        class="fa-solid
+                                        {% if module.id in completed_ids %}
+                                            fa-arrow-up-right-from-square
+                                        {% else %}
+                                            fa-arrow-right
+                                        {% endif %}"
+                                    ></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% empty %}
+
+                    <div class="empty-module-state">
+
+                        <div class="empty-icon">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+
+                        <h3>
+                            No induction modules assigned
+                        </h3>
+
+                        <p>
+                            Your induction programme does not currently have
+                            any active required modules.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- STANDARD -->
+
+            <section class="learning-principles">
+
+                <div class="section-heading compact">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            OUR STANDARD
+                        </span>
+
+                        <h2>
+                            What we expect from every employee
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="principles-grid">
+
+                    <article class="principle-card">
+
+                        <div class="principle-icon blue">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+
+                        <h3>
+                            Safety first
+                        </h3>
+
+                        <p>
+                            Follow safe work procedures, use equipment correctly,
+                            identify hazards and speak up when something does not
+                            look right.
+                        </p>
+
+                    </article>
+
+
+                    <article class="principle-card">
+
+                        <div class="principle-icon green">
+                            <i class="fa-solid fa-sparkles"></i>
+                        </div>
+
+                        <h3>
+                            Quality matters
+                        </h3>
+
+                        <p>
+                            Every site should be cleaned with consistency,
+                            attention to detail and respect for the customer's
+                            environment.
+                        </p>
+
+                    </article>
+
+
+                    <article class="principle-card">
+
+                        <div class="principle-icon purple">
+                            <i class="fa-solid fa-people-group"></i>
+                        </div>
+
+                        <h3>
+                            Work professionally
+                        </h3>
+
+                        <p>
+                            Communicate clearly, arrive prepared, respect
+                            colleagues and customers, and represent YD Commercial
+                            Cleaning professionally.
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            {% if progress == 100 %}
+
+                <section class="completion-panel">
+
+                    <div class="completion-icon">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+
+                    <div class="completion-content">
+
+                        <span class="completion-kicker">
+                            TRAINING COMPLETE
+                        </span>
+
+                        <h2>
+                            Your induction modules are complete.
+                        </h2>
+
+                        <p>
+                            You have completed all required training modules.
+                            Please complete the final declaration below to
+                            formally confirm your induction.
+                        </p>
+
+                        <a
+                            href="{% url 'employee_induction_completion_pdf' %}"
+                            class="completion-download"
+                        >
+                            <i class="fa-solid fa-file-pdf"></i>
+                            Download completion record
+                        </a>
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="induction-sidebar">
+
+            <section class="sidebar-card assignment-card">
+
+                <div class="sidebar-card-header">
+
+                    <div class="sidebar-card-icon blue">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+
+                    <div>
+                        <span>YOUR ASSIGNMENT</span>
+                        <h3>Work profile</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="assignment-list">
+
+                    <div class="assignment-row">
+
+                        <span>
+                            <i class="fa-solid fa-user-tie"></i>
+                            Employment
+                        </span>
+
+                        <strong>
+                            {{ induction.get_employment_type_display }}
+                        </strong>
+
+                    </div>
+
+
+                    {% if induction.start_date %}
+
+                        <div class="assignment-row">
+
+                            <span>
+                                <i class="fa-regular fa-calendar"></i>
+                                Start date
+                            </span>
+
+                            <strong>
+                                {{ induction.start_date|date:"d M Y" }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if induction.supervisor_name %}
+
+                        <div class="assignment-row">
+
+                            <span>
+                                <i class="fa-solid fa-user-check"></i>
+                                Supervisor
+                            </span>
+
+                            <strong>
+                                {{ induction.supervisor_name }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if induction.primary_work_location %}
+
+                        <div class="assignment-row">
+
+                            <span>
+                                <i class="fa-solid fa-location-dot"></i>
+                                Location
+                            </span>
+
+                            <strong>
+                                {{ induction.primary_work_location }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+
+            <section class="sidebar-card">
+
+                <div class="sidebar-card-header">
+
+                    <div class="sidebar-card-icon green">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+
+                    <div>
+                        <span>BEFORE YOU FINISH</span>
+                        <h3>Completion checklist</h3>
+                    </div>
+
+                </div>
+
+
+                <ul class="completion-checklist">
+
+                    <li class="{% if completed > 0 %}active{% endif %}">
+                        <span>
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                        Review every assigned module
+                    </li>
+
+                    <li class="{% if progress == 100 %}active{% endif %}">
+                        <span>
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                        Complete all required acknowledgements
+                    </li>
+
+                    <li>
+                        <span>
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                        Ask your supervisor if anything is unclear
+                    </li>
+
+                    <li>
+                        <span>
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                        Complete your final declaration
+                    </li>
+
+                </ul>
+
+            </section>
+
+
+            <section class="sidebar-card support-card">
+
+                <div class="support-decoration">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+
+                <span class="support-kicker">
+                    NEED HELP?
+                </span>
+
+                <h3>
+                    Something isn't clear?
+                </h3>
+
+                <p>
+                    If you are unsure about a safety requirement, cleaning
+                    procedure or workplace expectation, speak with your
+                    supervisor before continuing.
+                </p>
+
+                <div class="support-note">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Never guess when safety is involved.
+                </div>
+
+            </section>
+
+        </aside>
+
+    </div>
+
+
+    <!-- FINAL DECLARATION -->
+
+    {% if progress == 100 %}
+
+        <section class="declaration-section">
+
+            <div class="declaration-inner">
+
+                <div class="declaration-heading">
+
+                    <span class="section-kicker">
+                        FINAL STEP
+                    </span>
+
+                    <h2>
+                        Confirm your induction
+                    </h2>
+
+                    <p>
+                        By completing this declaration, you confirm that you
+                        have reviewed the required induction material and
+                        understand your responsibility to follow YD Commercial
+                        Cleaning's workplace, safety and operational requirements.
+                    </p>
+
+                </div>
+
+
+                <form
+                    method="post"
+                    action="{% url 'employee_induction_complete' %}"
+                    class="declaration-form"
+                >
+
+                    {% csrf_token %}
+
+                    {% if declaration_form.non_field_errors %}
+
+                        <div class="form-errors">
+                            {{ declaration_form.non_field_errors }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="declaration-field">
+
+                        <label
+                            for="{{ declaration_form.declaration_name.id_for_label }}"
+                        >
+                            Full name / electronic signature
+                        </label>
+
+                        {{ declaration_form.declaration_name }}
+
+                        {% if declaration_form.declaration_name.errors %}
+
+                            <div class="field-error">
+                                {{ declaration_form.declaration_name.errors }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <label class="declaration-checkbox">
+
+                        {{ declaration_form.declaration }}
+
+                        <span class="custom-checkbox"></span>
+
+                        <span class="checkbox-copy">
+                            I confirm that I completed the required induction
+                            material, understood the instructions provided,
+                            and will follow YD Commercial Cleaning's workplace,
+                            safety and operational requirements.
+                        </span>
+
+                    </label>
+
+
+                    {% if declaration_form.declaration.errors %}
+
+                        <div class="field-error">
+                            {{ declaration_form.declaration.errors }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <button
+                        type="submit"
+                        class="declaration-submit"
+                    >
+                        <span>
+                            Complete induction
+                        </span>
+
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+</main>
+
+
+<footer class="employee-footer">
+
+    <div class="footer-inner">
+
+        <div>
+            <strong>
+                YD Commercial Cleaning
+            </strong>
+
+            <span>
+                Employee Learning Centre
+            </span>
+        </div>
+
+        <div class="footer-security">
+            <i class="fa-solid fa-lock"></i>
+            Secure employee portal
+        </div>
+
+    </div>
+
+</footer>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document
+        .querySelectorAll(".induction-module-card")
+        .forEach(function (card, index) {
+
+            card.style.setProperty(
+                "--card-delay",
+                (index * 70) + "ms"
+            );
+
+        });
+
+});
+</script>
+
+</body>
+</html>

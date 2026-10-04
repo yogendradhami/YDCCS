@@ -1,11 +1,27 @@
 from django import forms
+from induction.models import EmployeeOnboardingProfile
 
+from leave_management.models import LeaveRequest
+
+from .models import Booking, JobPhoto
 from leave_management.models import LeaveRequest
 
 from .models import Booking, JobPhoto
 
 
+
 class BookingForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["assigned_employee"].queryset = (
+            self.fields["assigned_employee"]
+            .queryset
+            .filter(onboarding__status="ready")
+            .distinct()
+        )
+
     class Meta:
         model = Booking
 
@@ -81,6 +97,24 @@ class BookingForm(forms.ModelForm):
         booking_date = cleaned_data.get("booking_date")
         assigned_employee = cleaned_data.get("assigned_employee")
 
+        if assigned_employee:
+            onboarding_profile = (
+                EmployeeOnboardingProfile.objects
+                .filter(employee=assigned_employee)
+                .first()
+            )
+
+            if onboarding_profile is None:
+                raise forms.ValidationError(
+                    "The selected employee does not have an onboarding profile."
+                )
+
+            if onboarding_profile.status != "ready":
+                raise forms.ValidationError(
+                    f"{assigned_employee.full_name} is not Ready for Work "
+                    "and cannot be assigned to this booking."
+                )
+
         if booking_date and assigned_employee:
 
             approved_leave = LeaveRequest.objects.filter(
@@ -119,7 +153,6 @@ class BookingForm(forms.ModelForm):
                     )
 
         return cleaned_data
-
 
 class PublicBookingForm(forms.ModelForm):
     name = forms.CharField(max_length=150)

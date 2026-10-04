@@ -1,71 +1,1371 @@
 {% extends 'dashboard_base.html' %}
 
+{% load static %}
+
 {% block title %}Bookings | YD Dashboard{% endblock %}
 {% block page_title %}Bookings{% endblock %}
-{% block page_subtitle %}Manage cleaning bookings without using Django Admin.{% endblock %}
+{% block page_subtitle %}Manage schedules, customers, employees and booking operations.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/bookings/booking-list.css' %}">
+{% endblock %}
 
 {% block content %}
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/bookings/add/">+ Add Booking</a>
-    <a href="/dashboard/calendar/">Calendar</a>
-    <a href="/dashboard/">Back to Dashboard</a>
-</section>
+<div class="bookings-page">
 
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>All Bookings</h2>
-    </div>
+    <!-- =========================================================
+         PREMIUM HERO
+    ========================================================== -->
+    <section class="booking-hero">
 
-    {% if bookings %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Suburb</th>
-                        <th>Employee</th>
-                        <th>Status</th>
-                        <th>Price</th>
-                        <th>Report</th>
-                        <th>Invoice</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
+        <div class="booking-hero-content">
 
-                <tbody>
-                    {% for booking in bookings %}
-                        <tr>
-                            <td>{{ booking.customer.full_name }}</td>
-                            <td>{{ booking.service_type }}</td>
-                            <td>{{ booking.booking_date }}</td>
-                            <td>{{ booking.booking_time }}</td>
-                            <td>{{ booking.suburb_postcode }}</td>
-                            <td>
-                                {% if booking.assigned_employee %}
-                                    {{ booking.assigned_employee.full_name }}
-                                {% else %}
-                                    Not assigned
-                                {% endif %}
-                            </td>
-                            <td>{{ booking.get_status_display }}</td>
-                            <td>${{ booking.quoted_price }}</td>
-                            <td><a href="/reports/booking/{{ booking.id }}/" class="small-link-btn">Report</a></td>
-                            <td> <a href="/dashboard/bookings/{{ booking.id }}/create-invoice/" class="small-link-btn" > Create Invoice </a> </td>
-                            <td><a href="/dashboard/bookings/{{ booking.id }}/edit/" class="small-link-btn">Edit</a></td>
-                            <td><a href="/dashboard/bookings/{{ booking.id }}/delete/" class="small-delete-btn">Delete</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="booking-eyebrow">
+                <span></span>
+                YD COMMERCIAL CLEANING
+            </div>
+
+            <h1>
+                Booking
+                <strong>Command Centre.</strong>
+            </h1>
+
+            <p>
+                Manage customers, cleaning services, schedules, employees,
+                invoices and booking operations from one central workspace.
+            </p>
+
+            <div class="hero-actions">
+
+                <a
+                    href="/dashboard/bookings/add/"
+                    class="hero-primary"
+                >
+                    <span>+</span>
+                    Add Booking
+                </a>
+
+                <a
+                    href="/dashboard/calendar/"
+                    class="hero-secondary"
+                >
+                    <span>▣</span>
+                    Open Calendar
+                </a>
+
+            </div>
+
         </div>
-    {% else %}
-        <p>No bookings found.</p>
-    {% endif %}
-</section>
+
+
+        <!-- HERO SUMMARY -->
+        <div class="booking-hero-panel">
+
+            <span class="hero-panel-label">
+                BOOKING PIPELINE
+            </span>
+
+            <div class="hero-panel-number">
+                {{ total_bookings|default:bookings|length }}
+            </div>
+
+            <div class="hero-panel-text">
+                Total bookings currently managed
+            </div>
+
+            <div class="hero-mini-grid">
+
+                <div>
+                    <strong>{{ pending_bookings|default:"0" }}</strong>
+                    <span>Pending</span>
+                </div>
+
+                <div>
+                    <strong>{{ confirmed_bookings|default:"0" }}</strong>
+                    <span>Confirmed</span>
+                </div>
+
+                <div>
+                    <strong>{{ completed_bookings|default:"0" }}</strong>
+                    <span>Completed</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         KPI STRIP
+    ========================================================== -->
+    <section class="booking-kpis">
+
+        <div class="booking-kpi">
+
+            <div class="kpi-icon blue">
+                ◉
+            </div>
+
+            <div>
+                <span>Total Bookings</span>
+                <strong>{{ total_bookings|default:bookings|length }}</strong>
+                <small>All booking records</small>
+            </div>
+
+        </div>
+
+
+        <div class="booking-kpi">
+
+            <div class="kpi-icon amber">
+                ◷
+            </div>
+
+            <div>
+                <span>Pending</span>
+                <strong>{{ pending_bookings|default:"0" }}</strong>
+                <small>Awaiting confirmation</small>
+            </div>
+
+        </div>
+
+
+        <div class="booking-kpi">
+
+            <div class="kpi-icon green">
+                ✓
+            </div>
+
+            <div>
+                <span>Confirmed</span>
+                <strong>{{ confirmed_bookings|default:"0" }}</strong>
+                <small>Confirmed bookings</small>
+            </div>
+
+        </div>
+
+
+        <div class="booking-kpi">
+
+            <div class="kpi-icon red">
+                !
+            </div>
+
+            <div>
+                <span>Unassigned</span>
+                <strong>{{ unassigned_bookings|default:"0" }}</strong>
+                <small>Require employee</small>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         FILTER / CONTROL PANEL
+    ========================================================== -->
+    <section class="booking-control-panel">
+
+        <div class="filter-header">
+
+            <div>
+                <span>BOOKING CONTROLS</span>
+                <h2>Search &amp; Filter Bookings</h2>
+            </div>
+
+            <a
+                href="/dashboard/bookings/"
+                class="clear-filter-btn"
+            >
+                Clear Filters
+            </a>
+
+        </div>
+
+
+        <form
+            method="get"
+            action="/dashboard/bookings/"
+            class="booking-filter-form"
+        >
+
+            <!-- SEARCH -->
+            <div class="booking-search">
+
+                <span class="search-icon">⌕</span>
+
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ search|default:'' }}"
+                    placeholder="Search customer, service, suburb or booking..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- FILTER GRID -->
+            <div class="filter-grid">
+
+                <!-- STATUS -->
+                <div class="filter-field">
+
+                    <label for="booking-status">
+                        Status
+                    </label>
+
+                    <select
+                        id="booking-status"
+                        name="status"
+                    >
+                        <option value="">All statuses</option>
+
+                        <option
+                            value="pending"
+                            {% if selected_status == "pending" %}selected{% endif %}
+                        >
+                            Pending
+                        </option>
+
+                        <option
+                            value="confirmed"
+                            {% if selected_status == "confirmed" %}selected{% endif %}
+                        >
+                            Confirmed
+                        </option>
+
+                        <option
+                            value="assigned"
+                            {% if selected_status == "assigned" %}selected{% endif %}
+                        >
+                            Assigned
+                        </option>
+
+                        <option
+                            value="in_progress"
+                            {% if selected_status == "in_progress" %}selected{% endif %}
+                        >
+                            In Progress
+                        </option>
+
+                        <option
+                            value="completed"
+                            {% if selected_status == "completed" %}selected{% endif %}
+                        >
+                            Completed
+                        </option>
+
+                        <option
+                            value="cancelled"
+                            {% if selected_status == "cancelled" %}selected{% endif %}
+                        >
+                            Cancelled
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- SERVICE -->
+                <div class="filter-field">
+
+                    <label for="booking-service">
+                        Service
+                    </label>
+
+                    <select
+                        id="booking-service"
+                        name="service"
+                    >
+
+                        <option value="">
+                            All services
+                        </option>
+
+                        {% for service in services %}
+
+                            <option
+                                value="{{ service }}"
+                                {% if selected_service == service %}selected{% endif %}
+                            >
+                                {{ service }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- EMPLOYEE -->
+                <div class="filter-field">
+
+                    <label for="booking-employee">
+                        Employee
+                    </label>
+
+                    <select
+                        id="booking-employee"
+                        name="employee"
+                    >
+
+                        <option value="">
+                            All employees
+                        </option>
+
+                        {% for employee in employees %}
+
+                            <option
+                                value="{{ employee.id }}"
+                                {% if selected_employee == employee.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ employee.full_name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- ASSIGNMENT -->
+                <div class="filter-field">
+
+                    <label for="booking-assignment">
+                        Assignment
+                    </label>
+
+                    <select
+                        id="booking-assignment"
+                        name="assignment"
+                    >
+
+                        <option value="">
+                            All assignments
+                        </option>
+
+                        <option
+                            value="assigned"
+                            {% if selected_assignment == "assigned" %}selected{% endif %}
+                        >
+                            Assigned
+                        </option>
+
+                        <option
+                            value="unassigned"
+                            {% if selected_assignment == "unassigned" %}selected{% endif %}
+                        >
+                            Unassigned
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- DATE FROM -->
+                <div class="filter-field">
+
+                    <label for="date-from">
+                        From Date
+                    </label>
+
+                    <input
+                        id="date-from"
+                        type="date"
+                        name="date_from"
+                        value="{{ date_from|default:'' }}"
+                    >
+
+                </div>
+
+
+                <!-- DATE TO -->
+                <div class="filter-field">
+
+                    <label for="date-to">
+                        To Date
+                    </label>
+
+                    <input
+                        id="date-to"
+                        type="date"
+                        name="date_to"
+                        value="{{ date_to|default:'' }}"
+                    >
+
+                </div>
+
+
+                <!-- SORT -->
+                <div class="filter-field">
+
+                    <label for="booking-sort">
+                        Sort By
+                    </label>
+
+                    <select
+                        id="booking-sort"
+                        name="sort"
+                    >
+
+                        <option
+                            value="-booking_date"
+                            {% if selected_sort == "-booking_date" %}selected{% endif %}
+                        >
+                            Newest first
+                        </option>
+
+                        <option
+                            value="booking_date"
+                            {% if selected_sort == "booking_date" %}selected{% endif %}
+                        >
+                            Oldest first
+                        </option>
+
+                        <option
+                            value="customer"
+                            {% if selected_sort == "customer" %}selected{% endif %}
+                        >
+                            Customer name
+                        </option>
+
+                        <option
+                            value="status"
+                            {% if selected_sort == "status" %}selected{% endif %}
+                        >
+                            Status
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- PER PAGE -->
+                <div class="filter-field">
+
+                    <label for="booking-per-page">
+                        Per Page
+                    </label>
+
+                    <select
+                        id="booking-per-page"
+                        name="per_page"
+                    >
+
+                        <option
+                            value="10"
+                            {% if selected_per_page == "10" %}selected{% endif %}
+                        >
+                            10 bookings
+                        </option>
+
+                        <option
+                            value="25"
+                            {% if selected_per_page == "25" %}selected{% endif %}
+                        >
+                            25 bookings
+                        </option>
+
+                        <option
+                            value="50"
+                            {% if selected_per_page == "50" %}selected{% endif %}
+                        >
+                            50 bookings
+                        </option>
+
+                        <option
+                            value="100"
+                            {% if selected_per_page == "100" %}selected{% endif %}
+                        >
+                            100 bookings
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- APPLY -->
+                <div class="filter-submit">
+
+                    <button
+                        type="submit"
+                        class="apply-filter-btn"
+                    >
+                        Apply Filters
+                        <span>→</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =========================================================
+         BOOKINGS TABLE
+    ========================================================== -->
+    <section class="booking-table-card">
+
+        <div class="table-topbar">
+
+            <div>
+
+                <span class="table-kicker">
+                    BOOKING REGISTER
+                </span>
+
+                <h2>
+                    All Bookings
+                </h2>
+
+                <p>
+                    {% if page_obj %}
+                        Showing
+                        <strong>
+                            {{ page_obj.start_index }}–{{ page_obj.end_index }}
+                        </strong>
+                        of
+                        <strong>
+                            {{ page_obj.paginator.count }}
+                        </strong>
+                        bookings
+                    {% else %}
+                        Showing
+                        <strong>{{ bookings|length }}</strong>
+                        bookings
+                    {% endif %}
+                </p>
+
+            </div>
+
+
+            <div class="table-top-actions">
+
+                <a
+                    href="/dashboard/bookings/add/"
+                    class="new-booking-btn"
+                >
+                    <span>+</span>
+                    New Booking
+                </a>
+
+            </div>
+
+        </div>
+
+
+        {% if page_obj %}
+
+            {% if page_obj.object_list %}
+
+                <div class="booking-table-wrapper">
+
+                    <table class="premium-booking-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Schedule</th>
+                                <th>Location</th>
+                                <th>Employee</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for booking in page_obj %}
+
+                                <tr>
+
+                                    <!-- CUSTOMER -->
+                                    <td>
+
+                                        <div class="customer-cell">
+
+                                            <div class="customer-avatar">
+                                                {{ booking.customer.full_name|slice:":1"|upper }}
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    {{ booking.customer.full_name }}
+                                                </strong>
+
+                                                <span>
+                                                    Booking #{{ booking.id }}
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- SERVICE -->
+                                    <td>
+
+                                        <div class="service-cell">
+
+                                            <strong>
+                                                {{ booking.service_type }}
+                                            </strong>
+
+                                            <span>
+                                                Cleaning service
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- SCHEDULE -->
+                                    <td>
+
+                                        <div class="schedule-cell">
+
+                                            <strong>
+                                                {{ booking.booking_date }}
+                                            </strong>
+
+                                            <span>
+                                                {{ booking.booking_time }}
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- LOCATION -->
+                                    <td>
+
+                                        <div class="location-cell">
+
+                                            <span class="location-icon">
+                                                ⌖
+                                            </span>
+
+                                            <span>
+                                                {{ booking.suburb_postcode }}
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- EMPLOYEE -->
+                                    <td>
+
+                                        {% if booking.assigned_employee %}
+
+                                            <div class="employee-cell">
+
+                                                <div class="employee-avatar">
+                                                    {{ booking.assigned_employee.full_name|slice:":1"|upper }}
+                                                </div>
+
+                                                <div>
+
+                                                    <strong>
+                                                        {{ booking.assigned_employee.full_name }}
+                                                    </strong>
+
+                                                    <span class="assigned-label">
+                                                        Assigned
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <div class="unassigned-cell">
+
+                                                <span class="warning-icon">
+                                                    !
+                                                </span>
+
+                                                <div>
+
+                                                    <strong>
+                                                        Not assigned
+                                                    </strong>
+
+                                                    <span>
+                                                        Employee required
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- STATUS -->
+                                    <td>
+
+                                        {% if booking.status == "completed" %}
+
+                                            <span class="booking-status status-completed">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "confirmed" %}
+
+                                            <span class="booking-status status-confirmed">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "pending" %}
+
+                                            <span class="booking-status status-pending">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "assigned" %}
+
+                                            <span class="booking-status status-assigned">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "in_progress" %}
+
+                                            <span class="booking-status status-progress">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "cancelled" %}
+
+                                            <span class="booking-status status-cancelled">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="booking-status status-default">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- PRICE -->
+                                    <td>
+
+                                        <div class="price-cell">
+
+                                            <strong>
+                                                ${{ booking.quoted_price }}
+                                            </strong>
+
+                                            <span>
+                                                Quoted
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- ACTIONS -->
+                                    <td>
+
+                                        <div class="row-actions">
+
+                                            <a
+                                                href="/reports/booking/{{ booking.id }}/"
+                                                class="row-action report"
+                                                title="View Report"
+                                            >
+                                                Report
+                                            </a>
+
+                                            <a
+                                                href="/dashboard/bookings/{{ booking.id }}/create-invoice/"
+                                                class="row-action invoice"
+                                                title="Create Invoice"
+                                            >
+                                                Invoice
+                                            </a>
+
+                                            <a
+                                                href="/dashboard/bookings/{{ booking.id }}/edit/"
+                                                class="row-action edit"
+                                                title="Edit Booking"
+                                            >
+                                                Edit
+                                            </a>
+
+                                            <a
+                                                href="/dashboard/bookings/{{ booking.id }}/delete/"
+                                                class="row-action delete"
+                                                title="Delete Booking"
+                                            >
+                                                Delete
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- =================================================
+                     PAGINATION
+                ================================================== -->
+                <div class="booking-pagination">
+
+                    <div class="pagination-info">
+
+                        {% if page_obj.paginator.count %}
+
+                            Showing
+                            <strong>{{ page_obj.start_index }}</strong>
+                            to
+                            <strong>{{ page_obj.end_index }}</strong>
+                            of
+                            <strong>{{ page_obj.paginator.count }}</strong>
+                            bookings
+
+                        {% else %}
+
+                            No bookings found
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="pagination-controls">
+
+                        {% if page_obj.has_previous %}
+
+                            <a
+                                href="?{{ pagination_query }}&page={{ page_obj.previous_page_number }}"
+                                class="page-arrow"
+                                aria-label="Previous page"
+                            >
+                                ←
+                            </a>
+
+                        {% else %}
+
+                            <span class="page-arrow disabled">
+                                ←
+                            </span>
+
+                        {% endif %}
+
+
+                        {% for number in page_obj.paginator.page_range %}
+
+                            {% if page_obj.number == number %}
+
+                                <span class="page-number active">
+                                    {{ number }}
+                                </span>
+
+                            {% else %}
+
+                                <a
+                                    href="?{{ pagination_query }}&page={{ number }}"
+                                    class="page-number"
+                                >
+                                    {{ number }}
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        {% if page_obj.has_next %}
+
+                            <a
+                                href="?{{ pagination_query }}&page={{ page_obj.next_page_number }}"
+                                class="page-arrow"
+                                aria-label="Next page"
+                            >
+                                →
+                            </a>
+
+                        {% else %}
+
+                            <span class="page-arrow disabled">
+                                →
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <form
+                        method="get"
+                        class="per-page-form"
+                    >
+
+                        {% for key, value in request.GET.items %}
+
+                            {% if key != "per_page" and key != "page" %}
+
+                                <input
+                                    type="hidden"
+                                    name="{{ key }}"
+                                    value="{{ value }}"
+                                >
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                        <label for="pagination-per-page">
+                            Per page
+                        </label>
+
+                        <select
+                            id="pagination-per-page"
+                            name="per_page"
+                            onchange="this.form.submit()"
+                        >
+
+                            <option
+                                value="10"
+                                {% if selected_per_page == "10" %}selected{% endif %}
+                            >
+                                10
+                            </option>
+
+                            <option
+                                value="25"
+                                {% if selected_per_page == "25" %}selected{% endif %}
+                            >
+                                25
+                            </option>
+
+                            <option
+                                value="50"
+                                {% if selected_per_page == "50" %}selected{% endif %}
+                            >
+                                50
+                            </option>
+
+                            <option
+                                value="100"
+                                {% if selected_per_page == "100" %}selected{% endif %}
+                            >
+                                100
+                            </option>
+
+                        </select>
+
+                    </form>
+
+                </div>
+
+            {% else %}
+
+                <div class="booking-empty">
+
+                    <div class="empty-icon">
+                        ▤
+                    </div>
+
+                    <h2>
+                        No bookings found
+                    </h2>
+
+                    <p>
+                        No bookings match your current search or filter
+                        criteria. Try clearing the filters or create a new
+                        booking.
+                    </p>
+
+                    <a
+                        href="/dashboard/bookings/"
+                        class="clear-empty-btn"
+                    >
+                        Clear Filters
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        {% else %}
+
+            {% if bookings %}
+
+                <div class="booking-table-wrapper">
+
+                    <table class="premium-booking-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Schedule</th>
+                                <th>Location</th>
+                                <th>Employee</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for booking in bookings %}
+
+                                <tr>
+
+                                    <td>
+                                        <div class="customer-cell">
+
+                                            <div class="customer-avatar">
+                                                {{ booking.customer.full_name|slice:":1"|upper }}
+                                            </div>
+
+                                            <div>
+                                                <strong>
+                                                    {{ booking.customer.full_name }}
+                                                </strong>
+
+                                                <span>
+                                                    Booking #{{ booking.id }}
+                                                </span>
+                                            </div>
+
+                                        </div>
+                                    </td>
+
+
+                                    <td>
+                                        <div class="service-cell">
+
+                                            <strong>
+                                                {{ booking.service_type }}
+                                            </strong>
+
+                                            <span>
+                                                Cleaning service
+                                            </span>
+
+                                        </div>
+                                    </td>
+
+
+                                    <td>
+                                        <div class="schedule-cell">
+
+                                            <strong>
+                                                {{ booking.booking_date }}
+                                            </strong>
+
+                                            <span>
+                                                {{ booking.booking_time }}
+                                            </span>
+
+                                        </div>
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="location-cell">
+
+                                            <span class="location-icon">
+                                                ⌖
+                                            </span>
+
+                                            <span>
+                                                {{ booking.suburb_postcode }}
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if booking.assigned_employee %}
+
+                                            <div class="employee-cell">
+
+                                                <div class="employee-avatar">
+                                                    {{ booking.assigned_employee.full_name|slice:":1"|upper }}
+                                                </div>
+
+                                                <div>
+
+                                                    <strong>
+                                                        {{ booking.assigned_employee.full_name }}
+                                                    </strong>
+
+                                                    <span class="assigned-label">
+                                                        Assigned
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <div class="unassigned-cell">
+
+                                                <span class="warning-icon">
+                                                    !
+                                                </span>
+
+                                                <div>
+
+                                                    <strong>
+                                                        Not assigned
+                                                    </strong>
+
+                                                    <span>
+                                                        Employee required
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if booking.status == "completed" %}
+
+                                            <span class="booking-status status-completed">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "confirmed" %}
+
+                                            <span class="booking-status status-confirmed">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "pending" %}
+
+                                            <span class="booking-status status-pending">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "assigned" %}
+
+                                            <span class="booking-status status-assigned">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "in_progress" %}
+
+                                            <span class="booking-status status-progress">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% elif booking.status == "cancelled" %}
+
+                                            <span class="booking-status status-cancelled">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="booking-status status-default">
+                                                <span></span>
+                                                {{ booking.get_status_display }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="price-cell">
+
+                                            <strong>
+                                                ${{ booking.quoted_price }}
+                                            </strong>
+
+                                            <span>
+                                                Quoted
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="row-actions">
+
+                                            <a
+                                                href="/reports/booking/{{ booking.id }}/"
+                                                class="row-action report"
+                                            >
+                                                Report
+                                            </a>
+
+                                            <a
+                                                href="/dashboard/bookings/{{ booking.id }}/create-invoice/"
+                                                class="row-action invoice"
+                                            >
+                                                Invoice
+                                            </a>
+
+                                            <a
+                                                href="/dashboard/bookings/{{ booking.id }}/edit/"
+                                                class="row-action edit"
+                                            >
+                                                Edit
+                                            </a>
+
+                                            <a
+                                                href="/dashboard/bookings/{{ booking.id }}/delete/"
+                                                class="row-action delete"
+                                            >
+                                                Delete
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="booking-empty">
+
+                    <div class="empty-icon">
+                        ▤
+                    </div>
+
+                    <h2>
+                        No bookings found
+                    </h2>
+
+                    <p>
+                        You currently have no cleaning bookings.
+                        Create your first booking to get started.
+                    </p>
+
+                    <a
+                        href="/dashboard/bookings/add/"
+                        class="clear-empty-btn"
+                    >
+                        + Add Booking
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+    <footer class="booking-footer">
+
+        <a href="/dashboard/">
+            Dashboard
+        </a>
+
+        <a href="/dashboard/bookings/">
+            Bookings
+        </a>
+
+        <a href="/dashboard/calendar/">
+            Calendar
+        </a>
+
+        <a href="/dashboard/bookings/add/">
+            Add Booking
+        </a>
+
+    </footer>
+
+</div>
 
 {% endblock %}

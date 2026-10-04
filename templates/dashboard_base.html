@@ -185,6 +185,29 @@
                         {% endif %}
                     </a>
 
+                    <a href="/dashboard/induction/">
+                        <span>Employee Induction</span>
+                        {% if notification_counts.induction %}
+                            <span class="side-badge">{{ notification_counts.induction }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="{% url 'onboarding_dashboard' %}">
+                        <span>Onboarding & Compliance</span>
+                        {% if notification_counts.onboarding %}
+                            <span class="side-badge">{{ notification_counts.onboarding }}</span>
+                        {% endif %}
+
+
+
+
+                    <a href="/dashboard/employee-training/">
+                        <span>Employee Training</span>
+                        {% if notification_counts.training %}
+                            <span class="side-badge">{{ notification_counts.training }}</span>
+                        {% endif %}
+                    </a>
+
 
                     <a href="/dashboard/employee-performance-centre/">
 

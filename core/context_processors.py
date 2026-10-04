@@ -5,16 +5,49 @@
 # ====================================================
 
 from .faq_data import FAQ_PAGE_CONFIG
-from .views import _build_why_choose_section
+
+
+def _build_why_choose_section(why_choose):
+    """Normalise Why Choose Us data for the shared template."""
+    if not why_choose:
+        return None
+
+    cards = why_choose.get("cards") or why_choose.get("items") or []
+    items = []
+
+    for card in cards:
+        if not isinstance(card, dict):
+            continue
+
+        title = card.get("title") or ""
+        description = card.get("description") or card.get("text") or ""
+
+        if not title and not description:
+            continue
+
+        items.append(
+            {
+                "icon": card.get("icon", ""),
+                "title": title,
+                "description": description,
+                "featured": card.get("featured", False),
+            }
+        )
+
+    if not items:
+        return None
+
+    return {
+        "title": why_choose.get("title") or why_choose.get("heading") or "Why Choose YD Commercial Cleaning?",
+        "description": why_choose.get("description") or why_choose.get("intro") or "",
+        "items": items,
+    }
 
 
 def faq_section(request):
     section = FAQ_PAGE_CONFIG.get("generic", {}).copy()
     section["page_key"] = "generic"
     return {"faq_section": section}
-
-
-
 
 
 def global_why_choose(request):

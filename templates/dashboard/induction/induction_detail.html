@@ -1,0 +1,660 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/employee-induction.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="induction-shell">
+
+
+    <!-- BREADCRUMB -->
+
+    <div
+        style="
+            display:flex;
+            gap:8px;
+            align-items:center;
+            margin-bottom:16px;
+            color:#718096;
+            font-size:12px;
+        "
+    >
+
+        <a
+            href="{% url 'induction_dashboard' %}"
+            style="
+                color:#1769ff;
+                text-decoration:none;
+                font-weight:800;
+            "
+        >
+            Employee Inductions
+        </a>
+
+        <span>›</span>
+
+        <span>
+            {{ induction.employee.full_name }}
+        </span>
+
+    </div>
+
+
+    <!-- PROFILE HERO -->
+
+    <section class="ind-profile-hero">
+
+        <div class="ind-profile-top">
+
+            <div class="ind-profile-person">
+
+                <div class="ind-profile-avatar">
+
+                    {{ induction.employee.full_name|default:"Employee"|slice:":1"|upper }}
+
+                </div>
+
+
+                <div>
+
+                    <h1 class="ind-profile-name">
+
+                        {{ induction.employee.full_name }}
+
+                    </h1>
+
+
+                    <div class="ind-profile-role">
+
+                        {{ induction.employee.get_role_display|default:induction.employee.role|default:"Employee" }}
+
+                        {% if induction.employee.user.email %}
+
+                            · {{ induction.employee.user.email }}
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="ind-profile-actions">
+
+                <a
+                    href="{% url 'induction_dashboard' %}"
+                    class="ind-btn"
+                >
+                    ← Back
+                </a>
+
+
+                <a
+                    href="{% url 'induction_setup' induction.id %}"
+                    class="ind-btn ind-btn-primary"
+                >
+                    Edit induction
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- PROFILE METRICS -->
+
+        <div class="ind-profile-metrics">
+
+            <div class="ind-profile-metric">
+
+                <div class="ind-profile-metric-label">
+                    Status
+                </div>
+
+                <div class="ind-profile-metric-value">
+                    {{ induction.get_status_display }}
+                </div>
+
+            </div>
+
+
+            <div class="ind-profile-metric">
+
+                <div class="ind-profile-metric-label">
+                    Start date
+                </div>
+
+                <div class="ind-profile-metric-value">
+
+                    {% if induction.start_date %}
+
+                        {{ induction.start_date|date:"d M Y" }}
+
+                    {% else %}
+
+                        Not set
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="ind-profile-metric">
+
+                <div class="ind-profile-metric-label">
+                    Modules
+                </div>
+
+                <div class="ind-profile-metric-value">
+
+                    {{ induction.completion_count }}
+                    /
+                    {{ induction.required_count }}
+
+                </div>
+
+            </div>
+
+
+            <div class="ind-profile-metric">
+
+                <div class="ind-profile-metric-label">
+                    Completed
+                </div>
+
+                <div class="ind-profile-metric-value">
+
+                    {% if induction.completed_at %}
+
+                        {{ induction.completed_at|date:"d M Y H:i" }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    {% widthratio induction.completion_count induction.required_count 100 as progress %}
+
+
+    <!-- SUMMARY -->
+
+    <div class="ind-detail-grid">
+
+
+        <!-- PROGRESS -->
+
+        <section class="ind-card ind-completion">
+
+            <div class="ind-card-header" style="padding:0 0 17px;">
+
+                <div>
+
+                    <h2 class="ind-card-title">
+                        Induction progress
+                    </h2>
+
+                    <p class="ind-card-subtitle">
+                        Mandatory onboarding completion.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="ind-completion-layout">
+
+
+                <!-- RING -->
+
+                <div
+                    class="ind-ring"
+                    style="
+                        --progress:
+                        {% if induction.required_count %}
+                            {{ progress }}%
+                        {% else %}
+                            0%
+                        {% endif %};
+                    "
+                >
+
+                    <div class="ind-ring-content">
+
+                        <div class="ind-ring-value">
+                            {{ progress|default:"0" }}%
+                        </div>
+
+                        <div class="ind-ring-label">
+                            Completed
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CHECKLIST -->
+
+                <div class="ind-check-list">
+
+
+                    <div class="ind-check-item">
+
+                        <div class="ind-check-icon">
+                            ✓
+                        </div>
+
+                        <div class="ind-check-text">
+
+                            <strong>
+                                {{ induction.completion_count }}
+                                /
+                                {{ induction.required_count }}
+                            </strong>
+
+                            <span>
+                                Modules completed
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="ind-check-item">
+
+                        <div class="ind-check-icon">
+                            ✓
+                        </div>
+
+                        <div class="ind-check-text">
+
+                            <strong>
+                                {{ induction.required_count }}
+                            </strong>
+
+                            <span>
+                                Mandatory modules
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="ind-check-item">
+
+                        <div class="ind-check-icon">
+                            {% if induction.declaration_at %}
+                                ✓
+                            {% else %}
+                                !
+                            {% endif %}
+                        </div>
+
+                        <div class="ind-check-text">
+
+                            <strong>
+
+                                {% if induction.declaration_at %}
+                                    Signed
+                                {% else %}
+                                    Pending
+                                {% endif %}
+
+                            </strong>
+
+                            <span>
+                                Employee declaration
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- STATUS BANNER -->
+
+        <section
+            class="ind-card"
+            style="padding:20px;"
+        >
+
+            {% if induction.status == "completed" %}
+
+                <div class="ind-success-banner">
+
+                    <div class="ind-success-icon">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Induction completed
+                        </h3>
+
+                        <p>
+
+                            {{ induction.employee.full_name }}
+                            has successfully completed all required
+                            induction modules and submitted the required
+                            declaration.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <div
+                    class="ind-success-banner"
+                    style="
+                        border-color:#dce8fb;
+                        background:
+                            linear-gradient(
+                                135deg,
+                                #f5f9ff,
+                                #fff
+                            );
+                    "
+                >
+
+                    <div
+                        class="ind-success-icon"
+                        style="
+                            background:#eaf2ff;
+                            color:#1769ff;
+                        "
+                    >
+                        !
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Induction requires attention
+                        </h3>
+
+                        <p>
+
+                            This employee has outstanding onboarding
+                            requirements. Review the progress before
+                            the employee starts work.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+
+    <!-- MODULES -->
+
+    <section class="ind-card">
+
+        <div class="ind-card-header">
+
+            <div>
+
+                <h2 class="ind-card-title">
+                    Required modules
+                </h2>
+
+                <p class="ind-card-subtitle">
+                    Training and acknowledgements assigned to this employee.
+                </p>
+
+            </div>
+
+
+            <span
+                class="
+                    ind-pill
+                    {% if induction.status == 'completed' %}
+                        ind-pill-success
+                    {% else %}
+                        ind-pill-blue
+                    {% endif %}
+                "
+            >
+
+                {{ induction.completion_count }}
+                /
+                {{ induction.required_count }}
+                complete
+
+            </span>
+
+        </div>
+
+
+        <div class="ind-table-wrap">
+
+            <table class="ind-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            #
+                        </th>
+
+                        <th>
+                            Module
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Requirement
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for module in modules %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="ind-module-number">
+
+                                {{ forloop.counter }}
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="ind-module-name">
+
+                                {{ module.title }}
+
+                            </div>
+
+
+                            {% if module.summary %}
+
+                                <div class="ind-employee-meta">
+
+                                    {{ module.summary }}
+
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="ind-category">
+
+                                {{ module.get_category_display }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if module.mandatory %}
+
+                                <span class="ind-pill ind-pill-blue">
+                                    Required
+                                </span>
+
+                            {% else %}
+
+                                <span class="ind-pill ind-pill-neutral">
+                                    Optional
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if module.id in completed_ids %}
+
+                                <span class="ind-pill ind-pill-success">
+                                    ✓ Completed
+                                </span>
+
+                            {% else %}
+
+                                <span class="ind-pill ind-pill-warning">
+                                    ● Outstanding
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            style="
+                                padding:50px;
+                                text-align:center;
+                            "
+                        >
+
+                            No mandatory modules are assigned.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- NOTES -->
+
+    {% if induction.notes %}
+
+        <section
+            class="ind-card"
+            style="margin-top:17px;"
+        >
+
+            <div class="ind-card-header">
+
+                <div>
+
+                    <h2 class="ind-card-title">
+                        Internal notes
+                    </h2>
+
+                    <p class="ind-card-subtitle">
+                        Internal onboarding notes.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                style="
+                    padding:22px;
+                    font-size:13px;
+                    line-height:1.7;
+                "
+            >
+
+                {{ induction.notes|linebreaks }}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+</div>
+
+{% endblock %}

@@ -25,6 +25,8 @@ urlpatterns = [
     path("", include("invoices.urls")),
     path("", include("portal.urls")),
     path("", include("employees.urls")),
+    path("", include("induction.urls")),
+
     path("", include("reports.urls")),
     path("", include("gallery.urls")),
     path("", include("reviews.urls")),

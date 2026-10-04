@@ -1,0 +1,1376 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#0b172a"
+    >
+
+    <title>
+        Onboarding & Compliance | YD Commercial Cleaning
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/pages/employee-onboarding.css' %}"
+    >
+
+</head>
+
+
+<body class="employee-portal">
+
+
+<!-- =========================================================
+     EMPLOYEE PORTAL HEADER
+========================================================= -->
+
+<header class="employee-topbar">
+
+    <div class="employee-topbar-inner">
+
+        <!-- BRAND -->
+
+        <a
+            href="{% url 'employee_dashboard' %}"
+            class="employee-brand"
+        >
+
+            <div class="employee-brand-mark">
+                YD
+            </div>
+
+            <div class="employee-brand-copy">
+
+                <strong>
+                    YD Commercial Cleaning
+                </strong>
+
+                <span>
+                    Employee Portal
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <!-- DESKTOP NAV -->
+
+        <nav
+            class="employee-main-nav"
+            aria-label="Employee navigation"
+        >
+
+            <a
+                href="{% url 'employee_dashboard' %}"
+            >
+                Home
+            </a>
+
+            <a
+                href="{% url 'employee_jobs' %}"
+            >
+                My Jobs
+            </a>
+
+            <a
+                href="{% url 'employee_roster' %}"
+            >
+                Roster
+            </a>
+
+            <a
+                href="{% url 'attendance_dashboard' %}"
+            >
+                Attendance
+            </a>
+
+            <a
+                href="{% url 'employee_induction' %}"
+            >
+                Induction
+            </a>
+
+            <a
+                href="{% url 'employee_onboarding' %}"
+                class="active"
+            >
+                Onboarding
+            </a>
+
+        </nav>
+
+
+        <!-- USER -->
+
+        <div class="employee-user">
+
+            <div class="employee-user-avatar">
+
+                {{ employee.full_name|slice:":1"|upper }}
+
+            </div>
+
+            <div class="employee-user-copy">
+
+                <strong>
+                    {{ employee.full_name }}
+                </strong>
+
+                <span>
+                    Employee
+                </span>
+
+            </div>
+
+            <a
+                href="{% url 'employee_logout' %}"
+                class="employee-logout"
+                title="Sign out"
+            >
+                ↗
+            </a>
+
+        </div>
+
+
+        <!-- MOBILE MENU -->
+
+        <button
+            type="button"
+            class="employee-mobile-toggle"
+            id="employeeMobileToggle"
+            aria-label="Open navigation"
+            aria-expanded="false"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+    </div>
+
+
+    <!-- MOBILE NAV -->
+
+    <div
+        class="employee-mobile-nav"
+        id="employeeMobileNav"
+    >
+
+        <a href="{% url 'employee_dashboard' %}">
+            Home
+        </a>
+
+        <a href="{% url 'employee_jobs' %}">
+            My Jobs
+        </a>
+
+        <a href="{% url 'employee_roster' %}">
+            Roster
+        </a>
+
+        <a href="{% url 'attendance_dashboard' %}">
+            Attendance
+        </a>
+
+        <a href="{% url 'employee_induction' %}">
+            Induction
+        </a>
+
+        <a
+            href="{% url 'employee_onboarding' %}"
+            class="active"
+        >
+            Onboarding
+        </a>
+
+        <a href="{% url 'employee_logout' %}">
+            Sign out
+        </a>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================================================
+     PAGE
+========================================================= -->
+
+<main class="employee-onboarding-page">
+
+
+    <!-- =====================================================
+         PAGE INTRO
+    ====================================================== -->
+
+    <section class="onboarding-intro">
+
+        <div class="intro-copy">
+
+            <div class="intro-eyebrow">
+
+                <span class="intro-eyebrow-dot"></span>
+
+                EMPLOYEE COMPLIANCE
+
+            </div>
+
+
+            <h1>
+                Onboarding &
+                <span>Compliance</span>
+            </h1>
+
+
+            <p>
+                Complete your employment documentation and
+                compliance requirements before you begin work.
+            </p>
+
+
+            <div class="intro-meta">
+
+                <span>
+                    <strong>Employee</strong>
+                    {{ employee.full_name }}
+                </span>
+
+                <span class="intro-divider"></span>
+
+                <span>
+                    <strong>Status</strong>
+
+                    {% if profile.get_status_display %}
+                        {{ profile.get_status_display }}
+                    {% else %}
+                        Under review
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMPLETION CARD -->
+
+        <div class="completion-card">
+
+            <div class="completion-card-header">
+
+                <div>
+
+                    <span>
+                        YOUR PROGRESS
+                    </span>
+
+                    <strong>
+                        {{ profile.completion_percentage }}%
+                    </strong>
+
+                </div>
+
+
+                <div class="completion-orbit">
+
+                    <svg
+                        viewBox="0 0 42 42"
+                        aria-hidden="true"
+                    >
+
+                        <circle
+                            class="orbit-bg"
+                            cx="21"
+                            cy="21"
+                            r="16"
+                        ></circle>
+
+                        <circle
+                            class="orbit-progress"
+                            cx="21"
+                            cy="21"
+                            r="16"
+                            style="
+                                stroke-dasharray:
+                                {{ profile.completion_percentage }}
+                                100;
+                            "
+                        ></circle>
+
+                    </svg>
+
+                    <span>
+                        {{ profile.completion_percentage }}%
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="completion-bar">
+
+                <div
+                    class="completion-bar-value"
+                    style="
+                        width:
+                        {{ profile.completion_percentage }}%;
+                    "
+                ></div>
+
+            </div>
+
+
+            <div class="completion-footer">
+
+                <span>
+                    {{ profile.approved_required_count }}
+                    of
+                    {{ profile.required_count }}
+                    approved
+                </span>
+
+                {% if profile.completion_percentage >= 100 %}
+
+                    <span class="completion-complete">
+                        Complete
+                    </span>
+
+                {% else %}
+
+                    <span>
+                        Action required
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         STATUS STRIP
+    ====================================================== -->
+
+    <section class="onboarding-status-strip">
+
+        <div class="status-strip-item">
+
+            <div class="status-strip-icon blue">
+                ✓
+            </div>
+
+            <div>
+
+                <span>
+                    Required
+                </span>
+
+                <strong>
+                    {{ profile.required_count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="status-strip-item">
+
+            <div class="status-strip-icon green">
+                ✓
+            </div>
+
+            <div>
+
+                <span>
+                    Approved
+                </span>
+
+                <strong>
+                    {{ profile.approved_required_count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="status-strip-item">
+
+            <div class="status-strip-icon orange">
+                ◷
+            </div>
+
+            <div>
+
+                <span>
+                    Pending
+                </span>
+
+                <strong>
+                    {{ profile.pending_documents.count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="status-strip-item">
+
+            <div class="status-strip-icon red">
+                !
+            </div>
+
+            <div>
+
+                <span>
+                    Rejected
+                </span>
+
+                <strong>
+                    {{ profile.rejected_documents.count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         IMPORTANT NOTICE
+    ====================================================== -->
+
+    {% if profile.completion_percentage < 100 %}
+
+        <section class="employee-notice">
+
+            <div class="notice-icon">
+                !
+            </div>
+
+            <div class="notice-content">
+
+                <strong>
+                    Complete your onboarding
+                </strong>
+
+                <p>
+                    Please upload any outstanding documents below.
+                    Your documents will be reviewed by HR before
+                    your onboarding can be marked complete.
+                </p>
+
+            </div>
+
+            <div class="notice-label">
+                {{ profile.pending_documents.count }}
+                pending
+            </div>
+
+        </section>
+
+    {% else %}
+
+        <section class="employee-notice notice-success">
+
+            <div class="notice-icon">
+                ✓
+            </div>
+
+            <div class="notice-content">
+
+                <strong>
+                    Your onboarding documents are complete
+                </strong>
+
+                <p>
+                    All required documents have been submitted.
+                    HR will complete the final compliance review.
+                </p>
+
+            </div>
+
+            <div class="notice-label">
+                Complete
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <div class="onboarding-content-grid">
+
+
+        <!-- =================================================
+             REQUIREMENTS
+        ================================================== -->
+
+        <section class="documents-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="section-kicker">
+                        REQUIRED DOCUMENTS
+                    </span>
+
+                    <h2>
+                        Employment documentation
+                    </h2>
+
+                    <p>
+                        Upload the documents required to complete
+                        your employment onboarding.
+                    </p>
+
+                </div>
+
+                <div class="section-count">
+
+                    <strong>
+                        {{ profile.required_count }}
+                    </strong>
+
+                    <span>
+                        requirements
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="employee-document-list">
+
+                {% for row in requirement_rows %}
+
+                    <article class="employee-document-card">
+
+
+                        <!-- DOCUMENT STATUS LINE -->
+
+                        <div
+                            class="
+                                document-status-line
+                                {% if row.document %}
+                                    status-{{ row.document.status }}
+                                {% else %}
+                                    status-missing
+                                {% endif %}
+                            "
+                        ></div>
+
+
+                        <!-- DOCUMENT ICON -->
+
+                        <div
+                            class="
+                                employee-document-icon
+                                {% if row.document %}
+                                    icon-{{ row.document.status }}
+                                {% else %}
+                                    icon-missing
+                                {% endif %}
+                            "
+                        >
+
+                            {% if row.document %}
+
+                                {% if row.document.status == "approved" %}
+
+                                    ✓
+
+                                {% elif row.document.status == "rejected" %}
+
+                                    !
+
+                                {% else %}
+
+                                    ◷
+
+                                {% endif %}
+
+                            {% else %}
+
+                                ↑
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- DOCUMENT CONTENT -->
+
+                        <div class="employee-document-content">
+
+                            <div class="document-title-row">
+
+                                <div>
+
+                                    <h3>
+                                        {{ row.requirement.title }}
+                                    </h3>
+
+                                    {% if row.requirement.description %}
+
+                                        <p>
+                                            {{ row.requirement.description }}
+                                        </p>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if row.document %}
+
+                                    <span
+                                        class="
+                                            document-status-badge
+                                            badge-{{ row.document.status }}
+                                        "
+                                    >
+
+                                        <span></span>
+
+                                        {{ row.document.get_status_display }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span
+                                        class="
+                                            document-status-badge
+                                            badge-missing
+                                        "
+                                    >
+
+                                        <span></span>
+
+                                        Required
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if row.document %}
+
+                                <div class="document-details">
+
+                                    {% if row.document.original_filename %}
+
+                                        <span>
+
+                                            <b>FILE</b>
+
+                                            {{ row.document.original_filename }}
+
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    <span>
+
+                                        <b>VERSION</b>
+
+                                        {{ row.document.version }}
+
+                                    </span>
+
+
+                                    {% if row.document.expires_at %}
+
+                                        <span>
+
+                                            <b>EXPIRES</b>
+
+                                            {{ row.document.expires_at }}
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if row.document.status == "rejected" %}
+
+                                    {% if row.document.review_notes %}
+
+                                        <div class="document-feedback">
+
+                                            <strong>
+                                                HR feedback
+                                            </strong>
+
+                                            <p>
+                                                {{ row.document.review_notes }}
+                                            </p>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <div class="document-missing-message">
+
+                                    <span>
+                                        ↑
+                                    </span>
+
+                                    Upload this document to continue
+                                    your onboarding.
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ACTIONS -->
+
+                        <div class="employee-document-actions">
+
+
+                            {% if row.document %}
+
+                                <a
+                                    href="{% url 'onboarding_document_download' row.document.id %}"
+                                    class="document-btn document-btn-secondary"
+                                >
+                                    View
+                                </a>
+
+                            {% endif %}
+
+
+                            <!-- UPLOAD / REPLACE -->
+
+                            <form
+                                method="post"
+                                enctype="multipart/form-data"
+                                action="{% url 'employee_onboarding_upload' row.requirement.id %}"
+                                class="document-upload-form"
+                            >
+
+                                {% csrf_token %}
+
+                                <input
+                                    type="file"
+                                    name="file"
+                                    id="document-file-{{ row.requirement.id }}"
+                                    class="document-file-input"
+                                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                >
+
+                                <label
+                                    for="document-file-{{ row.requirement.id }}"
+                                    class="document-btn document-btn-primary"
+                                >
+
+                                    {% if row.document %}
+                                        Replace
+                                    {% else %}
+                                        Upload
+                                    {% endif %}
+
+                                </label>
+
+                                <button
+                                    type="submit"
+                                    class="document-submit-hidden"
+                                >
+                                    Submit
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </article>
+
+                {% empty %}
+
+                    <div class="employee-empty-state">
+
+                        <div class="empty-state-icon">
+                            ✓
+                        </div>
+
+                        <h3>
+                            No documents required
+                        </h3>
+
+                        <p>
+                            Your onboarding profile does not currently
+                            have any required documents.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SIDE PANEL
+        ================================================== -->
+
+        <aside class="onboarding-side-panel">
+
+
+            <!-- WORK READINESS -->
+
+            <div
+                class="
+                    readiness-card
+                    {% if profile.completion_percentage >= 100 %}
+                        readiness-card-ready
+                    {% else %}
+                        readiness-card-pending
+                    {% endif %}
+                "
+            >
+
+                <div class="readiness-card-top">
+
+                    <span class="section-kicker">
+                        WORK READINESS
+                    </span>
+
+
+                    <div class="readiness-status-icon">
+
+                        {% if profile.completion_percentage >= 100 %}
+
+                            ✓
+
+                        {% else %}
+
+                            !
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                {% if profile.completion_percentage >= 100 %}
+
+                    <h3>
+                        Onboarding complete
+                    </h3>
+
+                    <p>
+                        Your required documentation has been
+                        submitted and is ready for final HR review.
+                    </p>
+
+                    <div class="readiness-label ready">
+                        Documentation complete
+                    </div>
+
+                {% else %}
+
+                    <h3>
+                        More information required
+                    </h3>
+
+                    <p>
+                        Complete your outstanding documentation
+                        before your onboarding can be finalised.
+                    </p>
+
+                    <div class="readiness-label pending">
+                        Action required
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+
+            <!-- CHECKLIST -->
+
+            <div class="checklist-card">
+
+                <div class="side-card-heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            CHECKLIST
+                        </span>
+
+                        <h3>
+                            Your onboarding
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="checklist">
+
+                    <div class="checklist-item completed">
+
+                        <div class="checklist-icon">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Employee profile
+                            </strong>
+
+                            <span>
+                                Profile created
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            checklist-item
+                            {% if profile.approved_required_count > 0 %}
+                                completed
+                            {% else %}
+                                current
+                            {% endif %}
+                        "
+                    >
+
+                        <div class="checklist-icon">
+
+                            {% if profile.approved_required_count > 0 %}
+                                ✓
+                            {% else %}
+                                2
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Employment documents
+                            </strong>
+
+                            <span>
+                                {{ profile.approved_required_count }}
+                                of
+                                {{ profile.required_count }}
+                                approved
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            checklist-item
+                            {% if profile.completion_percentage >= 100 %}
+                                completed
+                            {% else %}
+                                upcoming
+                            {% endif %}
+                        "
+                    >
+
+                        <div class="checklist-icon">
+
+                            {% if profile.completion_percentage >= 100 %}
+                                ✓
+                            {% else %}
+                                3
+                            {% endif %}
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                HR final review
+                            </strong>
+
+                            <span>
+
+                                {% if profile.completion_percentage >= 100 %}
+                                    Ready for review
+                                {% else %}
+                                    Pending documents
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- HELP -->
+
+            <div class="help-card">
+
+                <div class="help-card-icon">
+                    ?
+                </div>
+
+                <div>
+
+                    <span class="section-kicker">
+                        NEED HELP?
+                    </span>
+
+                    <h3>
+                        Not sure what to upload?
+                    </h3>
+
+                    <p>
+                        Contact your supervisor or HR team if you
+                        need help understanding a requirement.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- SECURITY -->
+
+            <div class="security-card">
+
+                <div class="security-icon">
+                    ✓
+                </div>
+
+                <div>
+
+                    <strong>
+                        Your documents are protected
+                    </strong>
+
+                    <p>
+                        Uploaded documents are securely handled
+                        as part of the employee onboarding process.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         HR NOTES
+    ====================================================== -->
+
+    {% if profile.notes %}
+
+        <section class="employee-notes">
+
+            <div class="employee-notes-icon">
+                i
+            </div>
+
+            <div>
+
+                <span class="section-kicker">
+                    ONBOARDING INFORMATION
+                </span>
+
+                <h3>
+                    Important information
+                </h3>
+
+                <p>
+                    {{ profile.notes }}
+                </p>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="employee-portal-footer">
+
+        <div>
+
+            <strong>
+                YD Commercial Cleaning
+            </strong>
+
+            <span>
+                Employee Portal
+            </span>
+
+        </div>
+
+        <div>
+
+            <span>
+                Need assistance?
+            </span>
+
+            <a href="mailto:info@ydcleaning.com.au">
+                Contact HR
+            </a>
+
+        </div>
+
+    </footer>
+
+</main>
+
+
+
+<!-- =========================================================
+     UPLOAD INTERACTION
+========================================================= -->
+
+<script>
+
+(function () {
+
+    "use strict";
+
+
+    /*
+     * Submit the upload form immediately after the employee
+     * selects a file.
+     */
+
+    const fileInputs =
+        document.querySelectorAll(
+            ".document-file-input"
+        );
+
+
+    fileInputs.forEach(function (input) {
+
+        input.addEventListener(
+            "change",
+            function () {
+
+                if (!input.files || !input.files.length) {
+                    return;
+                }
+
+
+                const form =
+                    input.closest(
+                        ".document-upload-form"
+                    );
+
+
+                if (!form) {
+                    return;
+                }
+
+
+                const label =
+                    form.querySelector(
+                        "label"
+                    );
+
+
+                if (label) {
+
+                    label.classList.add(
+                        "uploading"
+                    );
+
+                    label.textContent =
+                        "Uploading...";
+
+                }
+
+
+                /*
+                 * Submit through the hidden button so the
+                 * browser performs normal multipart upload.
+                 */
+
+                const button =
+                    form.querySelector(
+                        ".document-submit-hidden"
+                    );
+
+
+                if (button) {
+                    button.click();
+                }
+
+            }
+        );
+
+    });
+
+
+
+    /*
+     * Mobile navigation.
+     */
+
+    const toggle =
+        document.getElementById(
+            "employeeMobileToggle"
+        );
+
+    const mobileNav =
+        document.getElementById(
+            "employeeMobileNav"
+        );
+
+
+    if (toggle && mobileNav) {
+
+        toggle.addEventListener(
+            "click",
+            function () {
+
+                const open =
+                    toggle.getAttribute(
+                        "aria-expanded"
+                    ) === "true";
+
+
+                toggle.setAttribute(
+                    "aria-expanded",
+                    String(!open)
+                );
+
+
+                toggle.classList.toggle(
+                    "open",
+                    !open
+                );
+
+
+                mobileNav.classList.toggle(
+                    "open",
+                    !open
+                );
+
+            }
+        );
+
+    }
+
+
+
+    /*
+     * Prevent accidental double submission.
+     */
+
+    document
+        .querySelectorAll(
+            ".document-upload-form"
+        )
+        .forEach(function (form) {
+
+            form.addEventListener(
+                "submit",
+                function () {
+
+                    const label =
+                        form.querySelector(
+                            "label"
+                        );
+
+
+                    if (label) {
+
+                        label.classList.add(
+                            "uploading"
+                        );
+
+                        label.textContent =
+                            "Uploading...";
+
+                    }
+
+                }
+            );
+
+        });
+
+})();
+
+</script>
+
+</body>
+
+</html>

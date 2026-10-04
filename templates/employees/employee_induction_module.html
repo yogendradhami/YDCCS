@@ -1,0 +1,1164 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ module.title }} | YD Commercial Cleaning
+    </title>
+
+    <meta
+        name="description"
+        content="{{ module.summary|default:'YD Commercial Cleaning employee induction module.' }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/pages/employee-induction-module.css' %}"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+</head>
+
+<body class="employee-module-page">
+
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="module-header">
+
+    <div class="module-header-inner">
+
+
+        <a
+            href="{% url 'employee_induction' %}"
+            class="module-brand"
+        >
+
+            <span class="brand-mark">
+                <i class="fa-solid fa-sparkles"></i>
+            </span>
+
+            <span class="brand-text">
+
+                <strong>
+                    YD
+                </strong>
+
+                <span>
+                    Employee Learning
+                </span>
+
+            </span>
+
+        </a>
+
+
+        <div class="module-header-centre">
+
+            <span class="header-course-label">
+                EMPLOYEE INDUCTION
+            </span>
+
+            <span class="header-course-name">
+                {{ induction.programme.name }}
+            </span>
+
+        </div>
+
+
+        <div class="module-header-actions">
+
+            <a
+                href="{% url 'employee_induction' %}"
+                class="header-back"
+            >
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                <span>
+                    Back to induction
+                </span>
+
+            </a>
+
+
+            <div class="module-avatar">
+
+                {{ employee.user.first_name|default:employee.user.username|first|upper }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     MODULE HERO
+========================================================= -->
+
+<main class="module-shell">
+
+
+<section class="module-hero">
+
+    <div class="module-hero-background"></div>
+
+    <div class="module-hero-inner">
+
+
+        <div class="module-breadcrumb">
+
+            <a href="{% url 'employee_induction' %}">
+                Induction
+            </a>
+
+            <i class="fa-solid fa-chevron-right"></i>
+
+            <span>
+                {{ module.title }}
+            </span>
+
+        </div>
+
+
+        <div class="module-hero-grid">
+
+
+            <div class="module-hero-main">
+
+
+                <div class="module-category-pill">
+
+                    {% if module.category == "welcome" %}
+
+                        <i class="fa-solid fa-hand-wave"></i>
+
+                    {% elif module.category == "whs" %}
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                    {% elif module.category == "operations" %}
+
+                        <i class="fa-solid fa-broom"></i>
+
+                    {% elif module.category == "conduct" %}
+
+                        <i class="fa-solid fa-user-shield"></i>
+
+                    {% elif module.category == "role" %}
+
+                        <i class="fa-solid fa-user-gear"></i>
+
+                    {% else %}
+
+                        <i class="fa-solid fa-book-open"></i>
+
+                    {% endif %}
+
+                    {{ module.get_category_display }}
+
+                </div>
+
+
+                <h1>
+                    {{ module.title }}
+                </h1>
+
+
+                {% if module.summary %}
+
+                    <p class="module-hero-summary">
+                        {{ module.summary }}
+                    </p>
+
+                {% else %}
+
+                    <p class="module-hero-summary">
+                        Complete this module carefully and make sure you
+                        understand the workplace requirements before
+                        acknowledging your completion.
+                    </p>
+
+                {% endif %}
+
+
+                <div class="module-hero-meta">
+
+                    <span>
+                        <i class="fa-regular fa-clock"></i>
+                        Training module
+                    </span>
+
+                    <span>
+                        <i class="fa-solid fa-code-branch"></i>
+                        Version {{ module.version }}
+                    </span>
+
+                    {% if module.mandatory %}
+
+                        <span class="required-pill">
+                            <i class="fa-solid fa-asterisk"></i>
+                            Required
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="module-hero-status">
+
+
+                {% if completion %}
+
+                    <div class="status-complete-icon">
+
+                        <i class="fa-solid fa-check"></i>
+
+                    </div>
+
+                    <span class="status-label">
+                        MODULE COMPLETE
+                    </span>
+
+                    <strong>
+                        Reviewed & acknowledged
+                    </strong>
+
+                    <p>
+                        You have already completed this module.
+                        You can review the training content below.
+                    </p>
+
+                {% else %}
+
+                    <div class="status-open-icon">
+
+                        <i class="fa-solid fa-book-open"></i>
+
+                    </div>
+
+                    <span class="status-label">
+                        CURRENT MODULE
+                    </span>
+
+                    <strong>
+                        Ready to complete
+                    </strong>
+
+                    <p>
+                        Review the material carefully before confirming
+                        your acknowledgement.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CONTENT AREA
+========================================================= -->
+
+<div class="module-content-layout">
+
+
+    <!-- =====================================================
+         MAIN TRAINING CONTENT
+    ====================================================== -->
+
+    <article class="module-training-content">
+
+
+        <!-- Learning objectives -->
+
+        <section class="training-card objectives-card">
+
+            <div class="training-card-heading">
+
+                <div class="training-icon blue">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        MODULE OBJECTIVES
+                    </span>
+
+                    <h2>
+                        What you should understand
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="objective-grid">
+
+                <div class="objective-item">
+
+                    <span>
+                        01
+                    </span>
+
+                    <div>
+                        <strong>
+                            Understand the standard
+                        </strong>
+
+                        <p>
+                            Know what YD Commercial Cleaning expects from
+                            you in relation to this area of work.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="objective-item">
+
+                    <span>
+                        02
+                    </span>
+
+                    <div>
+                        <strong>
+                            Apply it on site
+                        </strong>
+
+                        <p>
+                            Understand how the information should influence
+                            your actions during everyday work.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="objective-item">
+
+                    <span>
+                        03
+                    </span>
+
+                    <div>
+                        <strong>
+                            Know when to ask
+                        </strong>
+
+                        <p>
+                            Recognise when you need support, clarification or
+                            supervisor guidance.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             CORE TRAINING
+        ================================================== -->
+
+        <section class="training-card content-card">
+
+            <div class="training-card-heading">
+
+                <div class="training-icon purple">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        TRAINING CONTENT
+                    </span>
+
+                    <h2>
+                        Read and understand
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="module-rich-content">
+
+                {{ module.content|linebreaks }}
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             PRACTICAL EXPECTATIONS
+        ================================================== -->
+
+        <section class="training-card">
+
+            <div class="training-card-heading">
+
+                <div class="training-icon green">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        ON THE JOB
+                    </span>
+
+                    <h2>
+                        How this applies to your work
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="practical-grid">
+
+                <div class="practical-item">
+
+                    <div class="practical-number">
+                        01
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Arrive prepared
+                        </h3>
+
+                        <p>
+                            Make sure you have the required uniform,
+                            equipment and information before starting work.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="practical-item">
+
+                    <div class="practical-number">
+                        02
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Follow the procedure
+                        </h3>
+
+                        <p>
+                            Do not skip required steps simply because a task
+                            appears familiar or straightforward.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="practical-item">
+
+                    <div class="practical-number">
+                        03
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Check your work
+                        </h3>
+
+                        <p>
+                            Take a moment to inspect the result and correct
+                            anything that does not meet the expected standard.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="practical-item">
+
+                    <div class="practical-number">
+                        04
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Communicate early
+                        </h3>
+
+                        <p>
+                            Report hazards, incidents, damaged equipment,
+                            access issues or other concerns promptly.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             GOLD STANDARD
+        ================================================== -->
+
+        <section class="gold-standard-card">
+
+            <div class="gold-standard-icon">
+                <i class="fa-solid fa-sparkles"></i>
+            </div>
+
+            <div>
+
+                <span>
+                    THE YD STANDARD
+                </span>
+
+                <h2>
+                    Clean like someone is going to inspect it.
+                </h2>
+
+                <p>
+                    Our standard is not simply to finish a task. It is to
+                    deliver a clean, safe and professional result that we
+                    would be confident putting our name behind.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             SAFETY CALLOUT
+        ================================================== -->
+
+        <section class="safety-callout">
+
+            <div class="safety-icon">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+                    SAFETY REMINDER
+                </span>
+
+                <h3>
+                    Never take shortcuts where safety is concerned.
+                </h3>
+
+                <p>
+                    If you are unsure about a chemical, piece of equipment,
+                    hazard, access condition or work procedure, stop and
+                    speak with your supervisor before proceeding.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             BEFORE ACKNOWLEDGING
+        ================================================== -->
+
+        <section class="training-card review-card">
+
+            <div class="training-card-heading">
+
+                <div class="training-icon orange">
+                    <i class="fa-solid fa-circle-question"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        BEFORE YOU ACKNOWLEDGE
+                    </span>
+
+                    <h2>
+                        Ask yourself these questions
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="review-question-list">
+
+                <div class="review-question">
+
+                    <span>
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+
+                    <p>
+                        Do I understand what is expected of me?
+                    </p>
+
+                </div>
+
+
+                <div class="review-question">
+
+                    <span>
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+
+                    <p>
+                        Do I understand how this applies to my work?
+                    </p>
+
+                </div>
+
+
+                <div class="review-question">
+
+                    <span>
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+
+                    <p>
+                        Do I know what to do if I encounter a problem?
+                    </p>
+
+                </div>
+
+
+                <div class="review-question">
+
+                    <span>
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+
+                    <p>
+                        Have I reviewed the complete module content?
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ACKNOWLEDGEMENT
+        ================================================== -->
+
+        <section class="acknowledgement-section">
+
+
+            {% if completion %}
+
+                <div class="completed-module-banner">
+
+                    <div class="completed-module-icon">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            MODULE COMPLETED
+                        </span>
+
+                        <h2>
+                            You have acknowledged this module.
+                        </h2>
+
+                        <p>
+                            You may continue reviewing the content at any
+                            time from your induction dashboard.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="acknowledgement-heading">
+
+                    <span>
+                        FINAL STEP
+                    </span>
+
+                    <h2>
+                        Acknowledge this module
+                    </h2>
+
+                    <p>
+                        Only acknowledge this module once you have read and
+                        understood the training material above.
+                    </p>
+
+                </div>
+
+
+                <form
+                    method="post"
+                    class="module-completion-form"
+                >
+
+                    {% csrf_token %}
+
+
+                    {% if completion_form.non_field_errors %}
+
+                        <div class="form-errors">
+                            {{ completion_form.non_field_errors }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <label class="acknowledgement-check">
+
+                        {{ completion_form.acknowledgement }}
+
+                        <span class="custom-check"></span>
+
+                        <span class="acknowledgement-text">
+
+                            {{ module.acknowledgement_text }}
+
+                        </span>
+
+                    </label>
+
+
+                    {% if completion_form.acknowledgement.errors %}
+
+                        <div class="field-error">
+
+                            {{ completion_form.acknowledgement.errors }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="notes-field">
+
+                        <label
+                            for="{{ completion_form.notes.id_for_label }}"
+                        >
+                            Optional notes
+                        </label>
+
+                        {{ completion_form.notes }}
+
+                        <span>
+                            You can leave a note for your own reference.
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="complete-module-button"
+                    >
+
+                        <span>
+                            Complete module
+                        </span>
+
+                        <i class="fa-solid fa-check"></i>
+
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- =================================================
+             MODULE NAVIGATION
+        ================================================== -->
+
+        <div class="module-navigation">
+
+
+            {% for item in modules %}
+
+                {% if item.id == module.id %}
+
+                    {% if not forloop.first %}
+
+                        {% for previous in modules %}
+
+                            {% if forloop.counter == forloop.parentloop.counter|add:"-1" %}
+
+                                <a
+                                    href="{% url 'employee_induction_module' module_id=previous.id %}"
+                                    class="module-nav-button previous"
+                                >
+
+                                    <i class="fa-solid fa-arrow-left"></i>
+
+                                    <span>
+
+                                        <small>
+                                            Previous module
+                                        </small>
+
+                                        <strong>
+                                            {{ previous.title }}
+                                        </strong>
+
+                                    </span>
+
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <a
+                            href="{% url 'employee_induction' %}"
+                            class="module-nav-button previous"
+                        >
+
+                            <i class="fa-solid fa-arrow-left"></i>
+
+                            <span>
+
+                                <small>
+                                    Return to
+                                </small>
+
+                                <strong>
+                                    Induction overview
+                                </strong>
+
+                            </span>
+
+                        </a>
+
+                    {% endif %}
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            {% for item in modules %}
+
+                {% if item.id == module.id %}
+
+                    {% if not forloop.last %}
+
+                        {% for next_module in modules %}
+
+                            {% if forloop.counter == forloop.parentloop.counter|add:"1" %}
+
+                                <a
+                                    href="{% url 'employee_induction_module' module_id=next_module.id %}"
+                                    class="module-nav-button next"
+                                >
+
+                                    <span>
+
+                                        <small>
+                                            Next module
+                                        </small>
+
+                                        <strong>
+                                            {{ next_module.title }}
+                                        </strong>
+
+                                    </span>
+
+                                    <i class="fa-solid fa-arrow-right"></i>
+
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    {% endif %}
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+
+    </article>
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="module-sidebar">
+
+
+        <!-- Progress -->
+
+        <section class="module-sidebar-card progress-sidebar">
+
+            <div class="sidebar-title">
+
+                <span>
+                    YOUR PROGRESS
+                </span>
+
+                <strong>
+                    {{ completed_ids|length }}/{{ modules|length }}
+                </strong>
+
+            </div>
+
+
+            <div class="sidebar-progress-track">
+
+                <span
+                    style="width: {% widthratio completed_ids|length modules|length 100 %}%;"
+                ></span>
+
+            </div>
+
+
+            <p>
+                Keep moving through your assigned induction modules.
+            </p>
+
+        </section>
+
+
+        <!-- Module list -->
+
+        <section class="module-sidebar-card">
+
+            <div class="sidebar-section-heading">
+
+                <span>
+                    LEARNING PATH
+                </span>
+
+                <strong>
+                    {{ modules|length }} modules
+                </strong>
+
+            </div>
+
+
+            <div class="sidebar-module-list">
+
+                {% for item in modules %}
+
+                    <a
+                        href="{% url 'employee_induction_module' module_id=item.id %}"
+                        class="
+                            sidebar-module-item
+                            {% if item.id == module.id %}
+                                current
+                            {% endif %}
+                            {% if item.id in completed_ids %}
+                                completed
+                            {% endif %}
+                        "
+                    >
+
+                        <span class="sidebar-module-number">
+
+                            {% if item.id in completed_ids %}
+
+                                <i class="fa-solid fa-check"></i>
+
+                            {% else %}
+
+                                {{ forloop.counter }}
+
+                            {% endif %}
+
+                        </span>
+
+
+                        <span class="sidebar-module-copy">
+
+                            <strong>
+                                {{ item.title }}
+                            </strong>
+
+                            <small>
+                                {{ item.get_category_display }}
+                            </small>
+
+                        </span>
+
+
+                        {% if item.id == module.id %}
+
+                            <i class="fa-solid fa-chevron-right current-arrow"></i>
+
+                        {% endif %}
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Need help -->
+
+        <section class="module-sidebar-card help-card">
+
+            <div class="help-icon">
+
+                <i class="fa-solid fa-headset"></i>
+
+            </div>
+
+            <span>
+                NEED HELP?
+            </span>
+
+            <h3>
+                Ask before guessing.
+            </h3>
+
+            <p>
+                If something in this module is unclear, speak with your
+                supervisor before applying it at work.
+            </p>
+
+            <div class="help-rule">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                Safety questions should always be raised.
+
+            </div>
+
+        </section>
+
+
+    </aside>
+
+</div>
+
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer class="module-footer">
+
+    <div class="module-footer-inner">
+
+        <div>
+
+            <strong>
+                YD Commercial Cleaning
+            </strong>
+
+            <span>
+                Employee Learning Centre
+            </span>
+
+        </div>
+
+
+        <div>
+
+            <i class="fa-solid fa-lock"></i>
+
+            Secure training environment
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+</body>
+</html>
