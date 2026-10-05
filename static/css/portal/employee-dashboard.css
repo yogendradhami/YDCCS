@@ -1,0 +1,1892 @@
+/* ============================================================
+   YD COMMERCIAL CLEANING
+   EMPLOYEE PORTAL — PREMIUM DASHBOARD
+   ============================================================ */
+
+:root {
+    --portal-bg: #f5f7fa;
+    --portal-surface: #ffffff;
+    --portal-surface-soft: #f8fafc;
+    --portal-border: #e6eaf0;
+    --portal-text: #172033;
+    --portal-text-soft: #667085;
+    --portal-text-muted: #98a2b3;
+
+    --portal-primary: #0f172a;
+    --portal-primary-soft: #e9eef5;
+
+    --portal-accent: #16a34a;
+    --portal-accent-dark: #15803d;
+    --portal-accent-soft: #ecfdf3;
+
+    --portal-blue: #2563eb;
+    --portal-blue-soft: #eff6ff;
+
+    --portal-danger: #dc2626;
+    --portal-danger-soft: #fef2f2;
+
+    --portal-radius-sm: 10px;
+    --portal-radius: 16px;
+    --portal-radius-lg: 22px;
+
+    --portal-shadow-sm:
+        0 1px 2px rgba(16, 24, 40, 0.04);
+
+    --portal-shadow:
+        0 8px 30px rgba(16, 24, 40, 0.06);
+
+    --portal-shadow-hover:
+        0 16px 40px rgba(16, 24, 40, 0.10);
+
+    --portal-container: 1440px;
+}
+
+
+/* ============================================================
+   RESET / BASE
+   ============================================================ */
+
+.employee-portal {
+    min-height: 100vh;
+    background: var(--portal-bg);
+    color: var(--portal-text);
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+.employee-portal *,
+.employee-portal *::before,
+.employee-portal *::after {
+    box-sizing: border-box;
+}
+
+.employee-portal a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.employee-portal-container {
+    width: min(
+        calc(100% - 48px),
+        var(--portal-container)
+    );
+
+    margin: 0 auto;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.employee-portal-header {
+    background: rgba(255, 255, 255, 0.94);
+    border-bottom: 1px solid var(--portal-border);
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.portal-topbar {
+    min-height: 76px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+}
+
+
+/* BRAND */
+
+.portal-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.portal-brand-mark {
+    width: 42px;
+    height: 42px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 12px;
+
+    background: var(--portal-primary);
+    color: white;
+
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+
+    box-shadow:
+        0 5px 14px rgba(15, 23, 42, 0.18);
+}
+
+.portal-brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.portal-brand-copy strong {
+    font-size: 14px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.portal-brand-copy small {
+    color: var(--portal-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+/* TOP ACTIONS */
+
+.portal-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.portal-notification {
+    width: 42px;
+    height: 42px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--portal-border);
+    border-radius: 12px;
+
+    background: white;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.portal-notification:hover {
+    transform: translateY(-1px);
+    background: var(--portal-surface-soft);
+    border-color: #d5dae3;
+}
+
+.portal-notification-icon svg {
+    width: 19px;
+    height: 19px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+/* USER */
+
+.portal-user-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding-right: 8px;
+}
+
+.portal-user-mini img,
+.portal-user-mini > span:first-child {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+.portal-user-mini > span:first-child {
+    display: grid;
+    place-items: center;
+
+    background: var(--portal-primary);
+    color: white;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.portal-user-mini-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.portal-user-mini-copy strong {
+    font-size: 13px;
+}
+
+.portal-user-mini-copy small {
+    color: var(--portal-text-muted);
+    font-size: 11px;
+}
+
+.portal-logout {
+    padding: 10px 14px;
+
+    border: 1px solid var(--portal-border);
+    border-radius: 10px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.portal-logout:hover {
+    background: var(--portal-danger-soft);
+    border-color: #fecaca;
+    color: var(--portal-danger);
+}
+
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+
+.employee-portal-main {
+    padding: 38px 0 60px;
+}
+
+
+/* ============================================================
+   WELCOME HERO
+   ============================================================ */
+
+.employee-welcome {
+    min-height: 270px;
+
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 40px;
+
+    padding: 42px;
+
+    border-radius: var(--portal-radius-lg);
+
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(255, 255, 255, 0.14),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #0f172a 0%,
+            #182437 55%,
+            #0d3b2a 100%
+        );
+
+    color: white;
+
+    box-shadow:
+        0 20px 50px rgba(15, 23, 42, 0.16);
+}
+
+.employee-welcome::after {
+    content: "";
+
+    position: absolute;
+    width: 360px;
+    height: 360px;
+
+    right: -130px;
+    bottom: -210px;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.employee-welcome-content {
+    max-width: 760px;
+    position: relative;
+    z-index: 2;
+}
+
+.employee-welcome-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 14px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    color: rgba(255, 255, 255, 0.70);
+
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #4ade80;
+
+    box-shadow:
+        0 0 0 4px rgba(74, 222, 128, 0.12);
+}
+
+.employee-welcome h1 {
+    margin: 0;
+
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.03;
+
+    letter-spacing: -0.045em;
+
+    font-weight: 800;
+}
+
+.employee-welcome h1 span {
+    color: #86efac;
+}
+
+.employee-welcome p {
+    max-width: 680px;
+
+    margin: 17px 0 25px;
+
+    color: rgba(255, 255, 255, 0.70);
+
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.employee-welcome-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* HERO PROFILE */
+
+.employee-welcome-profile {
+    min-width: 260px;
+
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    padding: 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    backdrop-filter: blur(12px);
+}
+
+.profile-avatar-large {
+    width: 66px;
+    height: 66px;
+
+    flex: 0 0 66px;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.14);
+
+    display: grid;
+    place-items: center;
+}
+
+.profile-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar-large span {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.profile-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.profile-identity strong {
+    font-size: 15px;
+}
+
+.profile-role {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.60);
+}
+
+.availability-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    width: fit-content;
+
+    margin-top: 4px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    color: #bbf7d0;
+}
+
+.availability-badge span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+}
+
+
+/* BUTTONS */
+
+.portal-primary-btn,
+.portal-secondary-btn {
+    min-height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    padding: 0 17px;
+
+    border-radius: 11px;
+
+    font-size: 13px;
+    font-weight: 750;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.portal-primary-btn {
+    background: white;
+    color: var(--portal-primary);
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.portal-primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 26px rgba(0, 0, 0, 0.20);
+}
+
+.portal-primary-btn svg {
+    width: 17px;
+    height: 17px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.portal-secondary-btn {
+    border: 1px solid var(--portal-border);
+    background: white;
+    color: var(--portal-text);
+}
+
+.employee-welcome .portal-secondary-btn {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+
+.portal-secondary-btn:hover {
+    transform: translateY(-1px);
+    background: var(--portal-surface-soft);
+}
+
+
+/* ============================================================
+   METRICS
+   ============================================================ */
+
+.employee-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 15px;
+
+    margin-top: 18px;
+}
+
+.employee-metric-card {
+    min-height: 145px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    padding: 22px;
+
+    border: 1px solid var(--portal-border);
+    border-radius: var(--portal-radius);
+
+    background: var(--portal-surface);
+
+    box-shadow: var(--portal-shadow-sm);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.employee-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--portal-shadow);
+}
+
+.employee-metric-card.metric-primary {
+    border-color: rgba(22, 163, 74, 0.18);
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f3fbf6
+        );
+}
+
+.metric-icon {
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 12px;
+
+    background: var(--portal-primary-soft);
+    color: var(--portal-primary);
+}
+
+.metric-primary .metric-icon {
+    background: var(--portal-accent-soft);
+    color: var(--portal-accent-dark);
+}
+
+.metric-icon svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.metric-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-content > span {
+    color: var(--portal-text-soft);
+
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.metric-content strong {
+    margin-top: 7px;
+
+    font-size: 29px;
+    line-height: 1;
+
+    letter-spacing: -0.04em;
+}
+
+.metric-content small {
+    margin-top: 8px;
+
+    color: var(--portal-text-muted);
+
+    font-size: 11px;
+}
+
+.metric-content .metric-status {
+    font-size: 19px;
+    line-height: 1.2;
+}
+
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+
+.portal-section {
+    margin-top: 42px;
+}
+
+.portal-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 17px;
+}
+
+.section-kicker {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: var(--portal-accent-dark);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.portal-section-heading h2 {
+    margin: 0;
+
+    font-size: 23px;
+    line-height: 1.2;
+
+    letter-spacing: -0.025em;
+}
+
+.portal-section-heading p {
+    margin: 6px 0 0;
+
+    color: var(--portal-text-soft);
+
+    font-size: 13px;
+}
+
+.section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    color: var(--portal-primary);
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.section-link span {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.section-link:hover span {
+    transform: translateX(4px);
+}
+
+
+/* ============================================================
+   QUICK ACTION GRID
+   ============================================================ */
+
+.employee-action-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 13px;
+}
+
+.employee-action-card {
+    min-height: 105px;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 18px;
+
+    border: 1px solid var(--portal-border);
+    border-radius: var(--portal-radius);
+
+    background: var(--portal-surface);
+
+    box-shadow: var(--portal-shadow-sm);
+
+    transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        border-color 0.22s ease;
+}
+
+.employee-action-card:hover {
+    transform: translateY(-3px);
+
+    border-color: #d3d9e2;
+
+    box-shadow: var(--portal-shadow-hover);
+}
+
+.employee-action-card.featured {
+    border-color: rgba(22, 163, 74, 0.20);
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f2fbf5
+        );
+}
+
+.action-card-icon {
+    width: 44px;
+    height: 44px;
+
+    flex: 0 0 44px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 12px;
+
+    background: var(--portal-surface-soft);
+    color: var(--portal-primary);
+}
+
+.featured .action-card-icon {
+    background: var(--portal-accent-soft);
+    color: var(--portal-accent-dark);
+}
+
+.action-card-icon svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.action-card-content {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.action-card-content strong {
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.action-card-content small {
+    color: var(--portal-text-soft);
+
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.action-arrow {
+    margin-left: auto;
+
+    color: var(--portal-text-muted);
+
+    font-size: 18px;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.employee-action-card:hover .action-arrow {
+    color: var(--portal-primary);
+    transform: translateX(3px);
+}
+
+
+/* ============================================================
+   JOBS PANEL
+   ============================================================ */
+
+.jobs-panel {
+    overflow: hidden;
+
+    border: 1px solid var(--portal-border);
+    border-radius: var(--portal-radius);
+
+    background: white;
+
+    box-shadow: var(--portal-shadow-sm);
+}
+
+.jobs-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.employee-jobs-table {
+    width: 100%;
+    min-width: 900px;
+
+    border-collapse: collapse;
+}
+
+.employee-jobs-table thead {
+    background: #f8fafc;
+}
+
+.employee-jobs-table th {
+    padding: 13px 18px;
+
+    border-bottom: 1px solid var(--portal-border);
+
+    color: var(--portal-text-muted);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.employee-jobs-table td {
+    padding: 16px 18px;
+
+    border-bottom: 1px solid #eef1f4;
+
+    color: var(--portal-text-soft);
+
+    font-size: 12px;
+
+    vertical-align: middle;
+}
+
+.employee-jobs-table tbody tr {
+    transition: background 0.18s ease;
+}
+
+.employee-jobs-table tbody tr:hover {
+    background: #fafbfc;
+}
+
+.employee-jobs-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* SERVICE */
+
+.job-service {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--portal-text);
+}
+
+.job-service-icon {
+    width: 34px;
+    height: 34px;
+
+    flex: 0 0 34px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 9px;
+
+    background: var(--portal-primary-soft);
+    color: var(--portal-primary);
+}
+
+.job-service-icon svg {
+    width: 17px;
+    height: 17px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.job-service strong,
+.customer-name {
+    color: var(--portal-text);
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.job-time,
+.job-date {
+    color: var(--portal-text);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.job-location {
+    display: block;
+
+    max-width: 220px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* STATUS */
+
+.job-status {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 6px 9px;
+
+    border-radius: 999px;
+
+    background: var(--portal-accent-soft);
+    color: var(--portal-accent-dark);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+/* VIEW */
+
+.job-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 7px 10px;
+
+    border: 1px solid var(--portal-border);
+    border-radius: 8px;
+
+    background: white;
+
+    color: var(--portal-primary);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.job-view-btn:hover {
+    background: var(--portal-primary);
+    border-color: var(--portal-primary);
+    color: white;
+}
+
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.portal-empty-state {
+    min-height: 180px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 17px;
+
+    padding: 30px;
+
+    border: 1px dashed #d7dde6;
+    border-radius: var(--portal-radius);
+
+    background: rgba(255, 255, 255, 0.65);
+}
+
+.empty-state-icon {
+    width: 48px;
+    height: 48px;
+
+    flex: 0 0 48px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 14px;
+
+    background: var(--portal-primary-soft);
+    color: var(--portal-primary);
+}
+
+.empty-state-icon svg {
+    width: 22px;
+    height: 22px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.portal-empty-state h3 {
+    margin: 0;
+
+    font-size: 14px;
+}
+
+.portal-empty-state p {
+    margin: 5px 0 0;
+
+    color: var(--portal-text-soft);
+
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.employee-portal-footer {
+    margin-top: 65px;
+    padding-top: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    border-top: 1px solid var(--portal-border);
+
+    color: var(--portal-text-muted);
+
+    font-size: 11px;
+}
+
+.employee-portal-footer > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.employee-portal-footer strong {
+    color: var(--portal-text-soft);
+}
+
+.employee-footer-links {
+    display: flex;
+    gap: 18px;
+}
+
+.employee-footer-links a:hover {
+    color: var(--portal-primary);
+}
+
+
+/* ============================================================
+   RESPONSIVE — TABLET
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .employee-action-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .employee-metrics {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .employee-welcome {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .employee-welcome-profile {
+        min-width: 0;
+        width: 100%;
+        max-width: 360px;
+    }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+   ============================================================ */
+
+@media (max-width: 720px) {
+
+    .employee-portal-container {
+        width: min(
+            calc(100% - 28px),
+            var(--portal-container)
+        );
+    }
+
+    .employee-portal-main {
+        padding-top: 22px;
+        padding-bottom: 40px;
+    }
+
+
+    /* HEADER */
+
+    .portal-topbar {
+        min-height: 68px;
+    }
+
+    .portal-brand-copy {
+        display: none;
+    }
+
+    .portal-user-mini-copy,
+    .portal-logout {
+        display: none;
+    }
+
+    .portal-notification {
+        width: 40px;
+        height: 40px;
+    }
+
+
+    /* HERO */
+
+    .employee-welcome {
+        padding: 27px 22px;
+
+        border-radius: 18px;
+
+        gap: 25px;
+    }
+
+    .employee-welcome h1 {
+        font-size: 34px;
+    }
+
+    .employee-welcome p {
+        font-size: 13px;
+    }
+
+    .employee-welcome-actions {
+        width: 100%;
+
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .portal-primary-btn,
+    .employee-welcome .portal-secondary-btn {
+        width: 100%;
+    }
+
+    .employee-welcome-profile {
+        width: 100%;
+    }
+
+
+    /* METRICS */
+
+    .employee-metrics {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 10px;
+    }
+
+    .employee-metric-card {
+        min-height: 125px;
+
+        padding: 15px;
+
+        gap: 10px;
+    }
+
+    .metric-icon {
+        width: 36px;
+        height: 36px;
+
+        flex-basis: 36px;
+    }
+
+    .metric-icon svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .metric-content strong {
+        font-size: 24px;
+    }
+
+    .metric-content .metric-status {
+        font-size: 15px;
+    }
+
+
+    /* SECTION */
+
+    .portal-section {
+        margin-top: 34px;
+    }
+
+    .portal-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+    .portal-section-heading h2 {
+        font-size: 20px;
+    }
+
+
+    /* ACTIONS */
+
+    .employee-action-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .employee-action-card {
+        min-height: 88px;
+    }
+
+
+    /* MOBILE TABLE */
+
+    .jobs-panel {
+        border-radius: 14px;
+    }
+
+    .employee-jobs-table,
+    .employee-jobs-table tbody,
+    .employee-jobs-table tr,
+    .employee-jobs-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .employee-jobs-table thead {
+        display: none;
+    }
+
+    .employee-jobs-table tr {
+        padding: 15px;
+
+        border-bottom: 1px solid var(--portal-border);
+    }
+
+    .employee-jobs-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .employee-jobs-table td {
+        position: relative;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 15px;
+
+        padding: 7px 0;
+
+        border: none;
+
+        text-align: right;
+    }
+
+    .employee-jobs-table td::before {
+        content: attr(data-label);
+
+        color: var(--portal-text-muted);
+
+        font-size: 10px;
+        font-weight: 800;
+
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+
+        text-align: left;
+    }
+
+    .employee-jobs-table td:first-child {
+        padding-top: 0;
+        padding-bottom: 12px;
+    }
+
+    .employee-jobs-table td:first-child::before {
+        display: none;
+    }
+
+    .job-service {
+        width: 100%;
+    }
+
+    .job-location {
+        max-width: 190px;
+    }
+
+    .job-view-btn {
+        margin-left: auto;
+    }
+
+
+    /* EMPTY */
+
+    .portal-empty-state {
+        flex-direction: column;
+
+        text-align: center;
+
+        padding: 28px 20px;
+    }
+
+
+    /* FOOTER */
+
+    .employee-portal-footer {
+        align-items: flex-start;
+        flex-direction: column;
+
+        margin-top: 45px;
+    }
+
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 420px) {
+
+    .employee-portal-container {
+        width: calc(100% - 22px);
+    }
+
+    .employee-welcome h1 {
+        font-size: 30px;
+    }
+
+    .employee-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-metric-card {
+        min-height: 105px;
+    }
+
+    .profile-avatar-large {
+        width: 56px;
+        height: 56px;
+        flex-basis: 56px;
+    }
+
+    .employee-welcome-profile {
+        padding: 14px;
+    }
+
+}
+
+
+
+
+/* ============================================================
+   YD EMPLOYEE PORTAL
+   FINAL VISUAL OVERRIDES
+   Fixes:
+   - Hero heading colour
+   - Primary button visibility
+   - Employee name wrapping
+   - Page background
+   - Section contrast
+   - Premium card separation
+   ============================================================ */
+
+
+/* ============================================================
+   1. PAGE BACKGROUND
+   ============================================================ */
+
+.employee-portal {
+    background:
+        radial-gradient(
+            circle at 10% 0%,
+            rgba(37, 99, 235, 0.035),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 90% 20%,
+            rgba(22, 163, 74, 0.035),
+            transparent 25%
+        ),
+        #eef2f6 !important;
+}
+
+
+/* ============================================================
+   2. MAIN CONTENT BACKGROUND
+   ============================================================ */
+
+.employee-portal-main {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(238, 242, 246, 0.65)
+        );
+}
+
+
+/* ============================================================
+   3. HERO HEADING
+   ------------------------------------------------------------
+   Global website CSS is overriding the hero h1 colour.
+   Force the hero heading to remain white.
+   ============================================================ */
+
+.employee-welcome h1,
+.employee-welcome h1 span {
+    color: #ffffff !important;
+}
+
+
+/* Employee name gets the green accent */
+
+.employee-welcome h1 span {
+    color: #86efac !important;
+
+    /* Keep first and last name together */
+    white-space: nowrap;
+}
+
+
+/* Make the greeting slightly softer */
+
+.employee-welcome h1 {
+    color: #ffffff !important;
+
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.12);
+
+    max-width: 760px;
+}
+
+
+/* ============================================================
+   4. PRIMARY HERO BUTTON
+   ------------------------------------------------------------
+   Fixes invisible "View My Jobs" text.
+   ============================================================ */
+
+.employee-welcome .portal-primary-btn {
+    background: #ffffff !important;
+    color: #0f172a !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.95);
+
+    font-weight: 800;
+
+    box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.16);
+}
+
+.employee-welcome .portal-primary-btn span {
+    color: #0f172a !important;
+}
+
+.employee-welcome .portal-primary-btn svg {
+    color: #0f172a !important;
+    stroke: #0f172a !important;
+}
+
+.employee-welcome .portal-primary-btn:hover {
+    background: #f1f5f9 !important;
+    color: #020617 !important;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.20);
+}
+
+
+/* ============================================================
+   5. SECONDARY HERO BUTTON
+   ============================================================ */
+
+.employee-welcome .portal-secondary-btn {
+    background: rgba(255, 255, 255, 0.10) !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+
+    color: #ffffff !important;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.employee-welcome .portal-secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.17) !important;
+
+    border-color: rgba(255, 255, 255, 0.32) !important;
+
+    color: #ffffff !important;
+}
+
+
+/* ============================================================
+   6. HERO LAYOUT
+   ------------------------------------------------------------
+   Give the text more room so names don't wrap unnecessarily.
+   ============================================================ */
+
+.employee-welcome {
+    align-items: center;
+
+    gap: 50px;
+}
+
+.employee-welcome-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.employee-welcome-profile {
+    flex: 0 0 270px;
+}
+
+
+/* ============================================================
+   7. EMPLOYEE NAME
+   ============================================================ */
+
+.employee-welcome h1 span {
+    display: inline-block;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   8. METRIC CARDS
+   ------------------------------------------------------------
+   Increase contrast against the new page background.
+   ============================================================ */
+
+.employee-metric-card {
+    background: #ffffff !important;
+
+    border-color: #dfe5ec !important;
+
+    box-shadow:
+        0 2px 8px rgba(15, 23, 42, 0.045),
+        0 1px 2px rgba(15, 23, 42, 0.035);
+}
+
+.employee-metric-card:hover {
+    box-shadow:
+        0 12px 30px rgba(15, 23, 42, 0.085);
+}
+
+.employee-metric-card.metric-primary {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f3fbf6 100%
+        ) !important;
+
+    border-color: rgba(22, 163, 74, 0.20) !important;
+}
+
+
+/* ============================================================
+   9. QUICK ACTION CARDS
+   ============================================================ */
+
+.employee-action-card {
+    background: #ffffff !important;
+
+    border-color: #dfe5ec !important;
+
+    box-shadow:
+        0 2px 7px rgba(15, 23, 42, 0.035);
+}
+
+.employee-action-card:hover {
+    border-color: #cbd5e1 !important;
+
+    box-shadow:
+        0 14px 32px rgba(15, 23, 42, 0.085);
+}
+
+.employee-action-card.featured {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f0fbf4 100%
+        ) !important;
+
+    border-color: rgba(22, 163, 74, 0.20) !important;
+}
+
+
+/* ============================================================
+   10. JOBS PANEL
+   ============================================================ */
+
+.jobs-panel {
+    background: #ffffff !important;
+
+    border-color: #dfe5ec !important;
+
+    box-shadow:
+        0 3px 12px rgba(15, 23, 42, 0.045);
+}
+
+
+/* ============================================================
+   11. SECTION HEADINGS
+   ============================================================ */
+
+.portal-section-heading h2 {
+    color: #111827 !important;
+}
+
+.portal-section-heading p {
+    color: #64748b !important;
+}
+
+.section-kicker {
+    color: #15803d !important;
+}
+
+
+/* ============================================================
+   12. JOB TABLE
+   ============================================================ */
+
+.employee-jobs-table thead {
+    background: #f8fafc !important;
+}
+
+.employee-jobs-table th {
+    color: #64748b !important;
+}
+
+.employee-jobs-table td {
+    color: #64748b;
+}
+
+.employee-jobs-table tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+.job-service strong,
+.customer-name {
+    color: #172033 !important;
+}
+
+
+/* ============================================================
+   13. STATUS BADGE
+   ============================================================ */
+
+.job-status {
+    background: #ecfdf3 !important;
+
+    color: #15803d !important;
+
+    border: 1px solid #bbf7d0;
+}
+
+
+/* ============================================================
+   14. VIEW BUTTON
+   ============================================================ */
+
+.job-view-btn {
+    background: #ffffff !important;
+
+    color: #172033 !important;
+
+    border-color: #dbe1e8 !important;
+}
+
+.job-view-btn:hover {
+    background: #0f172a !important;
+
+    border-color: #0f172a !important;
+
+    color: #ffffff !important;
+}
+
+
+/* ============================================================
+   15. EMPTY STATE
+   ============================================================ */
+
+.portal-empty-state {
+    background: rgba(255, 255, 255, 0.72) !important;
+
+    border-color: #d5dce5 !important;
+}
+
+
+/* ============================================================
+   16. HEADER
+   ============================================================ */
+
+.employee-portal-header {
+    background: rgba(255, 255, 255, 0.97) !important;
+
+    border-bottom-color: #e2e8f0 !important;
+}
+
+
+/* ============================================================
+   17. HERO — IMPROVED PREMIUM GRADIENT
+   ============================================================ */
+
+.employee-welcome {
+    background:
+        radial-gradient(
+            circle at 90% 20%,
+            rgba(52, 211, 153, 0.16),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 65% 100%,
+            rgba(34, 197, 94, 0.10),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #0b1324 0%,
+            #142238 52%,
+            #103b2d 100%
+        ) !important;
+}
+
+
+/* ============================================================
+   18. HERO PROFILE CARD
+   ============================================================ */
+
+.employee-welcome-profile {
+    background: rgba(255, 255, 255, 0.08) !important;
+
+    border-color: rgba(255, 255, 255, 0.13) !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+
+/* ============================================================
+   19. MOBILE
+   ============================================================ */
+
+@media (max-width: 720px) {
+
+    .employee-welcome {
+        gap: 28px;
+    }
+
+    .employee-welcome-profile {
+        flex-basis: auto;
+        width: 100%;
+    }
+
+    .employee-welcome h1 span {
+        white-space: normal;
+    }
+
+    .employee-portal {
+        background: #eef2f6 !important;
+    }
+}
+
+
+/* ============================================================
+   20. VERY SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 420px) {
+
+    .employee-welcome h1 span {
+        white-space: normal;
+    }
+}

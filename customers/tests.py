@@ -1,5 +1,6 @@
 # Create your tests here.
 from django.contrib.auth.models import User
+from django.urls import reverse
 from django.test import TestCase
 
 from .models import Customer
@@ -55,3 +56,49 @@ class CustomerServiceTests(TestCase):
 			Customer.objects.filter(email__iexact="retry@example.com").count(),
 			1,
 		)
+
+
+class CustomerDirectoryViewTests(TestCase):
+	def test_directory_renders_customer_metrics_and_account_status_counts(self):
+		user = User.objects.create_user("directory-customer", is_staff=True)
+		Customer.objects.create(
+			user=user,
+			full_name="Linked Customer",
+			email="linked@example.com",
+			phone="0400",
+			jobs_completed=3,
+			total_revenue="450.50",
+		)
+		Customer.objects.create(
+			full_name="Unlinked Customer",
+			email="unlinked@example.com",
+			phone="0401",
+			jobs_completed=2,
+			total_revenue="125.00",
+		)
+		self.client.force_login(user)
+
+		response = self.client.get(reverse("customer_list"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.context["customer_count"], 2)
+		self.assertEqual(response.context["linked_customer_count"], 1)
+		self.assertEqual(response.context["unlinked_customer_count"], 1)
+		self.assertEqual(response.context["customer_jobs_total"], 5)
+		self.assertEqual(response.context["customer_revenue_total"], 575.5)
+
+	def test_edit_page_renders_customer_profile_sections(self):
+		user = User.objects.create_user("customer-editor", is_staff=True)
+		customer = Customer.objects.create(
+			full_name="Edit Customer",
+			email="edit@example.com",
+			phone="0402",
+		)
+		self.client.force_login(user)
+
+		response = self.client.get(reverse("edit_customer", args=[customer.pk]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Customer details")
+		self.assertContains(response, "Service profile")
+		self.assertContains(response, "Internal notes")

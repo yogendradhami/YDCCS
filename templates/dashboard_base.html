@@ -18,7 +18,7 @@
 
 <body class="crm-body">
 
-<button class="crm-mobile-menu-btn" id="crmMenuButton" type="button">☰</button>
+<button class="crm-mobile-menu-btn" id="crmMenuButton" type="button" aria-label="Open dashboard menu" aria-controls="crmSidebar" aria-expanded="false">☰</button>
 <div class="crm-overlay" id="crmOverlay"></div>
 
 <div class="crm-layout">
@@ -31,7 +31,7 @@
             <p>Business CRM</p>
         </div>
 
-        <nav class="crm-menu">
+        <nav class="crm-menu" aria-label="Dashboard navigation">
 
             <a href="/dashboard/">
                 <span>Dashboard</span>
@@ -53,7 +53,7 @@
                     <a href="/dashboard/leads/">
                         <span>Leads / Quotes</span>
                         {% if notification_counts.quote %}
-                            <span class="side-badge">{{ notification_counts.quote }}</span>
+                            <span class="side-badge" data-notification-type="quote">{{ notification_counts.quote }}</span>
                         {% endif %}
                     </a>
 
@@ -87,7 +87,7 @@
                     <a href="/dashboard/customers/">
                         <span>Customers</span>
                         {% if notification_counts.customer %}
-                            <span class="side-badge">{{ notification_counts.customer }}</span>
+                            <span class="side-badge" data-notification-type="customer">{{ notification_counts.customer }}</span>
                         {% endif %}
                     </a>
 
@@ -137,14 +137,14 @@
                     <a href="/dashboard/bookings/">
                         <span>Bookings</span>
                         {% if notification_counts.booking %}
-                            <span class="side-badge">{{ notification_counts.booking }}</span>
+                            <span class="side-badge" data-notification-type="booking">{{ notification_counts.booking }}</span>
                         {% endif %}
                     </a>
 
                     <a href="/dashboard/contracts/">
                         <span>Recurring Contracts</span>
                         {% if notification_counts.contract %}
-                            <span class="side-badge">{{ notification_counts.contract }}</span>
+                            <span class="side-badge" data-notification-type="contract">{{ notification_counts.contract }}</span>
                         {% endif %}
                     </a>
                     <a href="/dashboard/contracts/renewals/">
@@ -158,14 +158,14 @@
                     <a href="/dashboard/reports/">
                         <span>Cleaning Reports</span>
                         {% if notification_counts.report %}
-                            <span class="side-badge">{{ notification_counts.report }}</span>
+                            <span class="side-badge" data-notification-type="report">{{ notification_counts.report }}</span>
                         {% endif %}
                     </a>
 
                     <a href="/dashboard/gallery/">
                         <span>Gallery</span>
                         {% if notification_counts.gallery %}
-                            <span class="side-badge">{{ notification_counts.gallery }}</span>
+                            <span class="side-badge" data-notification-type="gallery">{{ notification_counts.gallery }}</span>
                         {% endif %}
                     </a>
                 </div>
@@ -181,7 +181,7 @@
                     <a href="/dashboard/employees/">
                         <span>Employees</span>
                         {% if notification_counts.employee %}
-                            <span class="side-badge">{{ notification_counts.employee }}</span>
+                            <span class="side-badge" data-notification-type="employee">{{ notification_counts.employee }}</span>
                         {% endif %}
                     </a>
 
@@ -197,9 +197,7 @@
                         {% if notification_counts.onboarding %}
                             <span class="side-badge">{{ notification_counts.onboarding }}</span>
                         {% endif %}
-
-
-
+                    </a>
 
                     <a href="/dashboard/employee-training/">
                         <span>Employee Training</span>
@@ -232,7 +230,7 @@
                     <a href="/dashboard/attendance/">
                         <span>Attendance Report</span>
                         {% if notification_counts.attendance %}
-                            <span class="side-badge">{{ notification_counts.attendance }}</span>
+                            <span class="side-badge" data-notification-type="attendance">{{ notification_counts.attendance }}</span>
                         {% endif %}
                     </a>
 
@@ -251,21 +249,21 @@
                     <a href="/dashboard/leave/">
                         <span>Leave Management</span>
                         {% if notification_counts.leave %}
-                            <span class="side-badge">{{ notification_counts.leave }}</span>
+                            <span class="side-badge" data-notification-type="leave">{{ notification_counts.leave }}</span>
                         {% endif %}
                     </a>
 
                     <a href="/dashboard/rosters/">
                         <span>Roster</span>
                         {% if notification_counts.roster %}
-                            <span class="side-badge">{{ notification_counts.roster }}</span>
+                            <span class="side-badge" data-notification-type="roster">{{ notification_counts.roster }}</span>
                         {% endif %}
                     </a>
 
                     <a href="/dashboard/payroll/">
                         <span>Payroll</span>
                         {% if notification_counts.payroll %}
-                            <span class="side-badge">{{ notification_counts.payroll }}</span>
+                            <span class="side-badge" data-notification-type="payroll">{{ notification_counts.payroll }}</span>
                         {% endif %}
                     </a>
 
@@ -296,7 +294,7 @@
                     <a href="/dashboard/invoices/">
                         <span>Invoices</span>
                         {% if notification_counts.invoice %}
-                            <span class="side-badge">{{ notification_counts.invoice }}</span>
+                            <span class="side-badge" data-notification-type="invoice">{{ notification_counts.invoice }}</span>
                         {% endif %}
                     </a>
 
@@ -337,7 +335,7 @@
                     <a href="/dashboard/reviews/">
                         <span>Reviews</span>
                         {% if notification_counts.review %}
-                            <span class="side-badge">{{ notification_counts.review }}</span>
+                            <span class="side-badge" data-notification-type="review">{{ notification_counts.review }}</span>
                         {% endif %}
                     </a>
 
@@ -542,7 +540,7 @@
                     <a href="/dashboard/reminders/">
                         <span>Reminder Center</span>
                         {% if notification_counts.reminders %}
-                            <span class="side-badge">{{ notification_counts.reminders }}</span>
+                            <span class="side-badge" data-reminder-count>{{ notification_counts.reminders }}</span>
                         {% endif %}
                     </a>
 
@@ -603,7 +601,7 @@
 
             <div class="crm-top-actions">
                 <div class="crm-notification-box">
-                    <button class="notification-bell" id="notificationBell" type="button">
+                    <button class="notification-bell" id="notificationBell" type="button" aria-label="Notifications" aria-controls="notificationDropdown" aria-expanded="false">
                         🔔
 
                         {% if global_unread_notifications > 0 %}
@@ -613,18 +611,22 @@
                         {% endif %}
                     </button>
 
-                    <div class="notification-dropdown">
-                        <h4>Notifications</h4>
-
-                        {% for note in global_notifications %}
-                            <a href="{{ note.link|default:'#' }}" class="{% if not note.is_read %}unread{% endif %}">
-                                <strong>{{ note.title }}</strong>
-                                <small>{{ note.message }}</small>
-                                <em>{{ note.created_at|date:"d M, g:i A" }}</em>
-                            </a>
-                        {% empty %}
-                            <p>No notifications yet.</p>
-                        {% endfor %}
+                    <div class="notification-dropdown" id="notificationDropdown" role="region" aria-label="Recent notifications">
+                        <div class="notification-dropdown-heading">
+                            <h4>Notifications</h4>
+                            <button id="markNotificationsRead" type="button" {% if not global_unread_notifications %}hidden{% endif %}>Mark all as read</button>
+                        </div>
+                        <div id="notificationItems" class="notification-items" aria-live="polite">
+                            {% for note in global_notifications %}
+                                <a href="{{ note.link|default:'#' }}" class="{% if not note.is_read %}unread{% endif %}">
+                                    <strong>{{ note.title }}</strong>
+                                    <small>{{ note.message }}</small>
+                                    <em>{{ note.created_at|date:"d M, g:i A" }}</em>
+                                </a>
+                            {% empty %}
+                                <p>No notifications yet.</p>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
 
@@ -663,8 +665,11 @@
 document.addEventListener("DOMContentLoaded", function () {
     const bell = document.getElementById("notificationBell");
     const count = document.getElementById("notificationCount");
+    const markRead = document.getElementById("markNotificationsRead");
     const dropdown = document.querySelector(".crm-notification-box .notification-dropdown");
-    if (!bell || !count || !dropdown) return;
+    const notificationItems = document.getElementById("notificationItems");
+    const notificationBox = bell && bell.closest(".crm-notification-box");
+    if (!bell || !count || !markRead || !dropdown || !notificationItems || !notificationBox) return;
 
     function getCookie(name) {
         return document.cookie.split(";").map(function (cookie) {
@@ -675,9 +680,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderNotifications(items) {
-        dropdown.innerHTML = "<h4>Notifications</h4>";
+        notificationItems.innerHTML = "";
         if (!items.length) {
-            dropdown.insertAdjacentHTML("beforeend", "<p>No notifications yet.</p>");
+            const emptyMessage = document.createElement("p");
+            emptyMessage.textContent = "No notifications yet.";
+            notificationItems.appendChild(emptyMessage);
             return;
         }
         items.forEach(function (item) {
@@ -688,7 +695,17 @@ document.addEventListener("DOMContentLoaded", function () {
             link.querySelector("strong").textContent = item.title;
             link.querySelector("small").textContent = item.message;
             link.querySelector("em").textContent = item.created_at;
-            dropdown.appendChild(link);
+            notificationItems.appendChild(link);
+        });
+    }
+
+    function updateSidebarNotificationBadges(unreadByType) {
+        document.querySelectorAll(".side-badge[data-notification-type]").forEach(function (badge) {
+            const count = Number(unreadByType[badge.dataset.notificationType] || 0);
+            badge.textContent = count > 99 ? "99+" : String(count);
+            badge.hidden = count === 0;
+            badge.setAttribute("aria-label", count + " unread notifications");
+            badge.title = count + " unread notifications";
         });
     }
 
@@ -701,21 +718,51 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!response.ok) throw new Error("Notification request failed");
             return response.json();
         }).then(function (data) {
-            if (!data.success) return;
+            if (!data.success) throw new Error("Notification status response was unsuccessful");
             count.textContent = data.unread_count;
             count.style.display = data.unread_count ? "inline-flex" : "none";
+            bell.setAttribute("aria-label", data.unread_count + " unread notifications");
+            markRead.hidden = data.unread_count === 0;
             renderNotifications(data.notifications);
-        }).catch(function () {});
+            updateSidebarNotificationBadges(data.unread_by_type || {});
+        }).catch(function (error) {
+            console.error("Unable to refresh dashboard notifications.", error);
+        });
     }
 
     bell.addEventListener("click", function () {
+        const isOpen = notificationBox.classList.toggle("active");
+        bell.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    markRead.addEventListener("click", function () {
         fetch("{% url 'mark_notifications_read' %}", {
             method: "POST",
             credentials: "same-origin",
             headers: {"X-CSRFToken": getCookie("csrftoken"), "X-Requested-With": "XMLHttpRequest"}
-        }).then(function () {
-            refreshNotifications();
-        }).catch(function () {});
+        }).then(function (response) {
+            if (!response.ok) throw new Error("Notification update request failed");
+            return response.json();
+        }).then(function (data) {
+            if (!data.success) throw new Error("Notification update response was unsuccessful");
+            return refreshNotifications();
+        }).catch(function (error) {
+            console.error("Unable to mark dashboard notifications as read.", error);
+        });
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!notificationBox.contains(event.target)) {
+            notificationBox.classList.remove("active");
+            bell.setAttribute("aria-expanded", "false");
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            notificationBox.classList.remove("active");
+            bell.setAttribute("aria-expanded", "false");
+        }
     });
 
     refreshNotifications();

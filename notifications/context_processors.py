@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.db.models import Count, F
 from django.utils import timezone
 
-from bookings.models import Booking
 from dashboard.models import (
     CleaningSupply,
     Equipment,
@@ -12,8 +11,8 @@ from dashboard.models import (
     Supplier,
     Vehicle,
 )
+from dashboard.reminders import count_unseen_reminders, get_reminder_center_items
 from employees.models import Employee
-from invoices.models import Invoice
 from leave_management.models import LeaveRequest
 from quotes.models import QuoteRequest
 from support.models import LiveChatConversation, SupportTicket
@@ -43,8 +42,6 @@ def notification_context(request):
         }
 
     today = timezone.now().date()
-    overdue_quote_date = today - timedelta(days=2)
-
     unread_by_type = {
         entry["notification_type"]: entry["total"]
         for entry in request.user.notifications.filter(is_read=False)
@@ -52,25 +49,9 @@ def notification_context(request):
         .annotate(total=Count("id"))
     }
 
-    overdue_invoices_count = (
-        Invoice.objects.exclude(status="paid").filter(due_date__lt=today).count()
-    )
-
-    unassigned_jobs_count = (
-        Booking.objects.filter(
-            assigned_employee__isnull=True, booking_date__gte=today
-        )
-        .exclude(status="cancelled")
-        .count()
-    )
-
-    pending_quotes_count = QuoteRequest.objects.filter(
-        status__in=["new", "contacted", "quoted"],
-        created_at__date__lte=overdue_quote_date,
-    ).count()
-
-    reminder_count = (
-        overdue_invoices_count + unassigned_jobs_count + pending_quotes_count
+    reminder_count = count_unseen_reminders(
+        request.user,
+        get_reminder_center_items(today),
     )
 
     notification_counts = {

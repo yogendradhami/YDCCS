@@ -37,3 +37,16 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ReminderCenterReadState(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reminder_center_read_state",
+    )
+    seen_reminder_keys = models.JSONField(default=list, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Reminder center read state for {self.user}"

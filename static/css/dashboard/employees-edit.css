@@ -1,0 +1,318 @@
+.employee-edit-page {
+    --ee-ink: #152332;
+    --ee-muted: #647383;
+    --ee-line: #dce4e8;
+    --ee-accent: #087e78;
+    --ee-accent-dark: #05645f;
+    --ee-soft: #e7f4f2;
+    --ee-danger: #b33e49;
+
+    color: var(--ee-ink);
+}
+
+
+/* ==========================================================
+   CURRENT PHOTO
+========================================================== */
+
+.employee-edit-page .employee-current-photo {
+    position: relative;
+
+    display: flex;
+
+    min-height: 190px;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border: 1px solid var(--ee-line);
+    border-radius: 10px;
+
+    background: #eef3f3;
+}
+
+
+.employee-edit-page .employee-current-photo img {
+    width: 100%;
+    height: 190px;
+
+    display: block;
+
+    object-fit: cover;
+}
+
+
+.employee-edit-page .employee-current-fallback {
+    width: 92px;
+    height: 92px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 24px;
+
+    background: var(--ee-soft);
+    color: var(--ee-accent-dark);
+
+    font-size: 34px;
+    font-weight: 800;
+}
+
+
+.employee-edit-page .employee-photo-badge {
+    position: absolute;
+
+    left: 10px;
+    bottom: 10px;
+
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    background: rgba(21, 35, 50, .88);
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 750;
+
+    backdrop-filter: blur(8px);
+}
+
+
+/* ==========================================================
+   PHOTO UPLOAD
+========================================================== */
+
+.employee-edit-page .employee-photo-drop {
+    min-height: 105px;
+    margin-top: 10px;
+}
+
+
+.employee-edit-page .employee-photo-drop
+.employee-photo-placeholder {
+    padding: 12px;
+}
+
+
+.employee-edit-page .employee-photo-drop
+.employee-photo-icon {
+    width: 31px;
+    height: 31px;
+
+    font-size: 17px;
+}
+
+
+.employee-edit-page .employee-photo-preview {
+    z-index: 5;
+}
+
+
+.employee-edit-page .employee-photo-preview img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+.employee-edit-page .employee-clear-photo {
+    display: flex;
+
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 10px;
+
+    color: var(--ee-muted);
+
+    font-size: 11px;
+}
+
+
+.employee-edit-page .employee-clear-photo input {
+    width: 15px;
+    height: 15px;
+
+    accent-color: var(--ee-danger);
+}
+
+
+/* ==========================================================
+   LOGIN ACCOUNT
+========================================================== */
+
+.employee-edit-page .employee-login-card {
+    display: flex;
+
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 4px;
+    padding: 13px;
+
+    border: 1px solid #e1e9e9;
+    border-radius: 9px;
+
+    background: #f9fbfb;
+}
+
+
+.employee-edit-page .employee-login-avatar {
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
+
+    display: grid;
+    place-items: center;
+
+    overflow: hidden;
+
+    border-radius: 11px;
+
+    background: var(--ee-soft);
+    color: var(--ee-accent-dark);
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+
+.employee-edit-page .employee-login-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+.employee-edit-page .employee-login-copy {
+    min-width: 0;
+
+    display: grid;
+    gap: 3px;
+}
+
+
+.employee-edit-page .employee-login-copy strong {
+    font-size: 11px;
+}
+
+
+.employee-edit-page .employee-login-copy span {
+    overflow: hidden;
+
+    color: var(--ee-muted);
+
+    font-size: 10px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.employee-edit-page .employee-danger-note {
+    margin: 12px 0 0;
+
+    color: var(--ee-muted);
+
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+
+/* ==========================================================
+   SUMMARY AVATAR
+========================================================== */
+
+.employee-edit-page .employee-summary-photo {
+    display: flex;
+
+    align-items: center;
+    gap: 11px;
+
+    margin: 15px 0 3px;
+    padding-bottom: 14px;
+
+    border-bottom: 1px solid #edf1f2;
+}
+
+
+.employee-edit-page .employee-summary-avatar {
+    width: 48px;
+    height: 48px;
+
+    flex: 0 0 48px;
+
+    display: grid;
+    place-items: center;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+
+    background: var(--ee-soft);
+    color: var(--ee-accent-dark);
+
+    font-size: 17px;
+    font-weight: 800;
+}
+
+
+.employee-edit-page .employee-summary-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+.employee-edit-page .employee-summary-photo div {
+    min-width: 0;
+}
+
+
+.employee-edit-page .employee-summary-photo strong {
+    display: block;
+
+    overflow: hidden;
+
+    font-size: 12px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.employee-edit-page .employee-summary-photo span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: var(--ee-muted);
+
+    font-size: 10px;
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 760px) {
+
+    .employee-edit-page .employee-current-photo,
+    .employee-edit-page .employee-current-photo img {
+        height: 165px;
+        min-height: 165px;
+    }
+
+    .employee-edit-page .employee-login-card {
+        align-items: flex-start;
+    }
+
+}

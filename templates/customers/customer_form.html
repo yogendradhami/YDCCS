@@ -1,83 +1,160 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
 {% block title %}{{ page_title }} | YD Dashboard{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
-{% block page_subtitle %}Create or update customer CRM records.{% endblock %}
+{% block page_subtitle %}Maintain customer contact information, service profile, and portal access.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/employees-add.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/customer-admin.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="employee-add-page employee-edit-page customer-admin-page customer-form-page">
+    <nav class="employee-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'dashboard_home' %}">Dashboard</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'customer_list' %}">Customers</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ page_title }}</span>
+    </nav>
 
-<section class="crm-panel">
+    <header class="employee-page-heading">
+        <div>
+            <p class="employee-eyebrow">Customer relationships</p>
+            <h1>{{ page_title }}</h1>
+            <p class="employee-page-intro">Update the customer record and keep their service and portal details in sync.</p>
+        </div>
+        <a class="employee-button employee-button-secondary" href="{% url 'customer_list' %}"><span aria-hidden="true">←</span> Back to customers</a>
+    </header>
 
+    {% if form.errors %}
+        <div class="employee-error-summary" role="alert" aria-labelledby="customer-error-title">
+            <strong id="customer-error-title">Some details need attention</strong>
+            <p>Review the highlighted fields and submit the form again.</p>
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
 
-    <form method="POST">
+    <form method="post" class="customer-form">
         {% csrf_token %}
+        <div class="employee-form-layout">
+            <div class="employee-form-main">
+                <section class="employee-section" aria-labelledby="customer-details-heading">
+                    <div class="employee-section-heading">
+                        <span class="employee-section-index">01</span>
+                        <div>
+                            <h2 id="customer-details-heading">Customer details</h2>
+                            <p>Contact information and the login account associated with this profile.</p>
+                        </div>
+                    </div>
+                    <div class="employee-profile-fields">
+                        <div class="employee-field employee-field-wide">
+                            <label for="{{ form.full_name.id_for_label }}">Full name <span class="employee-required">Required</span></label>
+                            {{ form.full_name }}
+                            <p class="employee-field-error">{{ form.full_name.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.email.id_for_label }}">Email <span class="employee-optional">Optional</span></label>
+                            {{ form.email }}
+                            <p class="employee-field-error">{{ form.email.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.phone.id_for_label }}">Phone <span class="employee-required">Required</span></label>
+                            {{ form.phone }}
+                            <p class="employee-field-error">{{ form.phone.errors }}</p>
+                        </div>
+                        <div class="employee-field employee-field-wide">
+                            <label for="{{ form.user.id_for_label }}">Portal login account <span class="employee-optional">Optional</span></label>
+                            {{ form.user }}
+                            <p class="employee-field-error">{{ form.user.errors }}</p>
+                            <p class="employee-help">Select an existing user to connect their customer portal login, or leave this empty when no login is linked.</p>
+                        </div>
+                    </div>
+                </section>
 
-        <div class="auth-grid">
-            <div class="form-group">
-                <label>Portal User</label>
-                {{ form.user }}
-                <div class="text-danger">{{ form.user.errors }}</div>
+                <section class="employee-section" aria-labelledby="service-profile-heading">
+                    <div class="employee-section-heading">
+                        <span class="employee-section-index">02</span>
+                        <div>
+                            <h2 id="service-profile-heading">Service profile</h2>
+                            <p>Keep the customer’s service location and CRM summary details current.</p>
+                        </div>
+                    </div>
+                    <div class="employee-profile-fields">
+                        <div class="employee-field">
+                            <label for="{{ form.property_type.id_for_label }}">Property type <span class="employee-optional">Optional</span></label>
+                            {{ form.property_type }}
+                            <p class="employee-field-error">{{ form.property_type.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.suburb_postcode.id_for_label }}">Suburb / postcode <span class="employee-optional">Optional</span></label>
+                            {{ form.suburb_postcode }}
+                            <p class="employee-field-error">{{ form.suburb_postcode.errors }}</p>
+                        </div>
+                        <div class="employee-field employee-field-wide">
+                            <label for="{{ form.address.id_for_label }}">Street address <span class="employee-optional">Optional</span></label>
+                            {{ form.address }}
+                            <p class="employee-field-error">{{ form.address.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.jobs_completed.id_for_label }}">Jobs completed</label>
+                            {{ form.jobs_completed }}
+                            <p class="employee-field-error">{{ form.jobs_completed.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.total_revenue.id_for_label }}">Total revenue</label>
+                            {{ form.total_revenue }}
+                            <p class="employee-field-error">{{ form.total_revenue.errors }}</p>
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <div class="form-group">
-                <label>Full Name</label>
-                {{ form.full_name }}
-                <div class="text-danger">{{ form.full_name.errors }}</div>
-            </div>
+            <aside class="employee-form-aside">
+                <section class="employee-summary-panel" aria-labelledby="customer-summary-heading">
+                    <div class="employee-aside-heading">
+                        <span class="employee-aside-icon" aria-hidden="true">↗</span>
+                        <div>
+                            <h2 id="customer-summary-heading">Record summary</h2>
+                            <p>Service and portal overview</p>
+                        </div>
+                    </div>
+                    <dl class="employee-summary-list">
+                        <div><dt>Portal account</dt><dd>{% if form.instance.user %}Connected{% else %}Not linked{% endif %}</dd></div>
+                        <div><dt>Jobs completed</dt><dd>{{ form.instance.jobs_completed|default:"0" }}</dd></div>
+                        <div><dt>Total revenue</dt><dd>${{ form.instance.total_revenue|default:"0.00" }}</dd></div>
+                        {% if form.instance.pk %}
+                            <div><dt>Customer ID</dt><dd>#{{ form.instance.pk }}</dd></div>
+                            <div><dt>Last updated</dt><dd>{{ form.instance.updated_at|date:"d M Y" }}</dd></div>
+                        {% endif %}
+                    </dl>
+                </section>
 
-            <div class="form-group">
-                <label>Email</label>
-                {{ form.email }}
-                <div class="text-danger">{{ form.email.errors }}</div>
-            </div>
+                <section class="employee-notes-panel" aria-labelledby="customer-notes-heading">
+                    <div class="employee-aside-heading employee-aside-section-heading">
+                        <span class="employee-aside-icon" aria-hidden="true">✎</span>
+                        <div>
+                            <h2 id="customer-notes-heading">Internal notes</h2>
+                            <p>Private CRM context for your team</p>
+                        </div>
+                    </div>
+                    <div class="employee-field">
+                        <label for="{{ form.notes.id_for_label }}" class="visually-hidden">Internal notes</label>
+                        {{ form.notes }}
+                        <p class="employee-field-error">{{ form.notes.errors }}</p>
+                    </div>
+                </section>
 
-            <div class="form-group">
-                <label>Phone</label>
-                {{ form.phone }}
-                <div class="text-danger">{{ form.phone.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Property Type</label>
-                {{ form.property_type }}
-                <div class="text-danger">{{ form.property_type.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Suburb/Postcode</label>
-                {{ form.suburb_postcode }}
-                <div class="text-danger">{{ form.suburb_postcode.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Jobs Completed</label>
-                {{ form.jobs_completed }}
-                <div class="text-danger">{{ form.jobs_completed.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Total Revenue</label>
-                {{ form.total_revenue }}
-                <div class="text-danger">{{ form.total_revenue.errors }}</div>
-            </div>
+                <p class="employee-security-note"><span aria-hidden="true">●</span> Customer account details are only visible to authorised dashboard users.</p>
+            </aside>
         </div>
 
-        <div class="form-group">
-            <label>Address</label>
-            {{ form.address }}
-            <div class="text-danger">{{ form.address.errors }}</div>
+        <div class="employee-form-actions">
+            <a class="employee-button employee-button-secondary" href="{% url 'customer_list' %}">Cancel</a>
+            <button class="employee-button employee-button-primary" type="submit">{{ button_text }}</button>
         </div>
-
-        <div class="form-group">
-            <label>Notes</label>
-            {{ form.notes }}
-            <div class="text-danger">{{ form.notes.errors }}</div>
-        </div>
-
-        <button type="submit" class="btn-fill">{{ button_text }}</button>
-        <a href="/dashboard/customers/" class="btn-outline">Back to Customers</a>
     </form>
-
-</section>
-
+</div>
 {% endblock %}

@@ -123,3 +123,236 @@
         justify-content: center;
     }
 }
+
+/* Structured dashboard navigation and notification states */
+.crm-sidebar {
+    padding: 18px 14px;
+    border-right: 1px solid rgba(255, 255, 255, .08);
+    background: linear-gradient(180deg, #102a35 0%, #10232e 55%, #111d28 100%);
+    box-shadow: 12px 0 32px rgba(15, 35, 46, .08);
+    scrollbar-color: rgba(199, 226, 226, .35) transparent;
+}
+
+.crm-logo {
+    margin: 2px 4px 18px;
+    padding: 14px 10px 16px;
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .045);
+}
+
+.crm-logo img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+    border: 2px solid rgba(226, 246, 243, .65);
+    border-radius: 13px;
+}
+
+.crm-logo h2 {
+    margin: 0;
+    color: #f1fbfa;
+    font-size: 15px;
+    letter-spacing: .01em;
+}
+
+.crm-logo p {
+    margin: 4px 0 0;
+    color: #9eb9be;
+    font-size: 10px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.crm-menu {
+    gap: 7px;
+}
+
+.crm-menu > a,
+.crm-menu .sidebar-dropdown {
+    margin: 0 2px;
+}
+
+.crm-menu > a {
+    min-height: 42px;
+    padding: 11px 13px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: #c9d8dc;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.crm-menu > a:hover,
+.crm-menu > a[aria-current="page"] {
+    transform: none;
+    border-color: rgba(103, 196, 183, .25);
+    background: rgba(31, 130, 120, .2);
+    color: #f2fffd;
+}
+
+.crm-menu .sidebar-dropdown {
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .075);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .025);
+}
+
+.crm-menu .sidebar-dropdown.open {
+    border-color: rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, .045);
+}
+
+.crm-menu .sidebar-dropdown-btn {
+    min-height: 43px;
+    padding: 11px 12px;
+    border-radius: 0;
+    color: #edf6f6;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .025em;
+}
+
+.crm-menu .sidebar-dropdown-btn:hover {
+    transform: none;
+    background: rgba(255, 255, 255, .06);
+}
+
+.sidebar-arrow {
+    color: #8eb0b4;
+    font-size: 9px;
+}
+
+.crm-menu .sidebar-submenu {
+    display: none;
+    padding: 5px 6px 8px;
+    border-top: 1px solid rgba(255, 255, 255, .075);
+}
+
+.crm-menu .sidebar-dropdown.open .sidebar-submenu {
+    display: grid;
+    gap: 2px;
+}
+
+.crm-menu .sidebar-submenu a {
+    display: flex;
+    min-width: 0;
+    min-height: 34px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 9px 7px 12px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: #afc2c7;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: left;
+}
+
+.crm-menu .sidebar-submenu a:hover,
+.crm-menu .sidebar-submenu a[aria-current="page"] {
+    transform: none;
+    border-color: rgba(103, 196, 183, .18);
+    background: rgba(31, 130, 120, .17);
+    color: #f3fffd;
+}
+
+.crm-menu a:focus-visible,
+.crm-menu button:focus-visible {
+    outline: 2px solid #78d1c4;
+    outline-offset: 2px;
+}
+
+.side-badge {
+    display: inline-flex;
+    min-width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 0 auto;
+    padding: 0 6px;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 999px;
+    background: #b94f54;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.side-badge[hidden] {
+    display: none;
+}
+
+.crm-notification-box.active .notification-dropdown,
+.crm-notification-box:focus-within .notification-dropdown {
+    display: block;
+}
+
+.notification-dropdown-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 2px 10px;
+    border-bottom: 1px solid #e7edef;
+}
+
+.notification-dropdown-heading h4 {
+    margin: 0;
+}
+
+.notification-dropdown-heading button {
+    padding: 5px 7px;
+    border: 0;
+    border-radius: 5px;
+    background: #e7f4f2;
+    color: #05645f;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.notification-dropdown-heading button:hover {
+    background: #d5ece8;
+}
+
+.notification-dropdown-heading button:focus-visible {
+    outline: 2px solid #087e78;
+    outline-offset: 2px;
+}
+
+.notification-items > p {
+    margin: 12px 4px 4px;
+    color: #647383;
+    font-size: 12px;
+}
+
+.crm-menu .sidebar-link {
+    margin: 8px 2px 0;
+}
+
+@media (max-width: 1100px) {
+    .crm-sidebar {
+        padding: 18px 14px;
+    }
+
+    .crm-menu > a,
+    .crm-menu .sidebar-submenu a {
+        text-align: left;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .crm-sidebar *,
+    .crm-sidebar *::before,
+    .crm-sidebar *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}

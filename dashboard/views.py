@@ -577,8 +577,23 @@ def update_quote_status(request, quote_id):
 
 @login_required
 def customer_list(request):
-    customers = Customer.objects.all().order_by("-created_at")
-    return render(request, "customers/customer_list.html", {"customers": customers})
+    customers = Customer.objects.select_related("user").all().order_by("-created_at")
+    customer_totals = customers.aggregate(
+        total_revenue=Sum("total_revenue"),
+        jobs_completed=Sum("jobs_completed"),
+    )
+    return render(
+        request,
+        "customers/customer_list.html",
+        {
+            "customers": customers,
+            "customer_count": customers.count(),
+            "linked_customer_count": customers.filter(user__isnull=False).count(),
+            "unlinked_customer_count": customers.filter(user__isnull=True).count(),
+            "customer_revenue_total": customer_totals["total_revenue"] or 0,
+            "customer_jobs_total": customer_totals["jobs_completed"] or 0,
+        },
+    )
 
 
 @login_required
@@ -5294,31 +5309,14 @@ def add_maintenance(request):
 
 @login_required
 def reminder_centre(request):
-
-    from dashboard.models import (
-        CleaningSupply,
-        Equipment,
-        MaintenanceHistory,
-        PurchaseOrder,
-        Vehicle,
-    )
-
     today = timezone.localdate()
+    from dashboard.reminders import get_reminder_center_items, get_reminder_keys
+    from notifications.models import ReminderCenterReadState
 
-    context = {
-        "overdue_equipment": Equipment.objects.filter(next_service_date__lt=today),
-        "low_stock_supplies": CleaningSupply.objects.filter(
-            current_stock__lte=F("minimum_stock")
-        ),
-        "draft_purchase_orders": PurchaseOrder.objects.filter(status="draft"),
-        "vehicle_alerts": Vehicle.objects.filter(service_due_date__lt=today),
-        "maintenance_due": MaintenanceHistory.objects.filter(
-            next_service_date__lt=today
-        ),
-        "contracts_expiring": CleaningContract.objects.filter(
-            end_date__lte=today + timedelta(days=30)
-        ),
-    }
+    context = get_reminder_center_items(today)
+    read_state, _ = ReminderCenterReadState.objects.get_or_create(user=request.user)
+    read_state.seen_reminder_keys = get_reminder_keys(context)
+    read_state.save(update_fields=["seen_reminder_keys", "updated_at"])
 
     return render(request, "dashboard/communications/reminder_centre.html", context)
 
@@ -6934,6 +6932,4 @@ def _build_dashboard_gallery_groups(gallery_items):
         )
 
     return gallery_groups
-
-
 

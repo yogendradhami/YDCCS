@@ -1,462 +1,1400 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 Customer Dashboard | YD Commercial Cleaning
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portal/portal-dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<!-- ===================================================== -->
-<!-- Customer Dashboard Hero -->
-<!-- ===================================================== -->
+<section class="customer-portal">
 
-<section class="customer-portal-hero">
-    <div class="container">
-        <div class="customer-hero-box">
+    <!-- =====================================================
+         CUSTOMER PORTAL HEADER
+    ====================================================== -->
+    <header class="customer-portal-header">
 
-            <div>
-                <h1>Welcome, {{ customer.full_name }}</h1>
-                <p>Manage your bookings, invoices, reports and cleaning verification.</p>
-            </div>
+        <div class="customer-portal-container">
 
-            <a href="/portal/logout/" class="customer-back-btn">
-                Logout
-            </a>
+            <div class="customer-topbar">
 
-        </div>
-    </div>
-</section>
+                <a href="{% url 'home' %}" class="customer-brand">
 
-<!-- ===================================================== -->
-<!-- Customer Dashboard Content -->
-<!-- ===================================================== -->
+                    <span class="customer-brand-mark">
+                        YD
+                    </span>
 
-<section class="section customer-dashboard-section">
-    <div class="container">
-        <!-- ===================================================== -->
-        <!-- Email Verification Warning -->
-        <!-- ===================================================== -->
+                    <span class="customer-brand-copy">
+                        <strong>YD Commercial Cleaning</strong>
+                        <small>Customer Portal</small>
+                    </span>
 
-        {% if not customer.email_verified %}
-
-        <div style="
-            background:#fff3cd;
-            color:#856404;
-            border:1px solid #ffeeba;
-            padding:16px;
-            margin-bottom:20px;
-            border-radius:10px;
-            font-weight:600;
-        ">
-
-            ⚠ Please verify your email address.
-
-            Check your inbox and click the verification link sent by
-            YD Commercial Cleaning Services.
-
-        </div>
-
-        {% endif %}
+                </a>
 
 
-        <!-- Customer quick action cards -->
-        <div class="customer-action-grid">
+                <div class="customer-topbar-actions">
 
-            <a href="/portal/bookings/" class="customer-action-card">
-                <strong>My Bookings</strong>
-                <span>View all cleaning jobs</span>
-            </a>
+                    <a href="#customer-notifications"
+                       class="customer-notification"
+                       aria-label="Notifications">
 
-            <a href="/portal/invoices/" class="customer-action-card">
-                <strong>My Invoices</strong>
-                <span>Payments and invoice history</span>
-            </a>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                            <path d="M10 21h4"/>
+                        </svg>
 
-            <a href="/portal/documents/" class="customer-action-card">
-                <strong>My Documents</strong>
-                <span>Invoices, Reports & Contracts</span>
-            </a>
+                        {% if unread_notifications %}
+                            <span class="notification-count">
+                                {{ unread_notifications }}
+                            </span>
+                        {% endif %}
 
-            <a href="/portal/profile/" class="customer-action-card">
-                <strong>My Profile</strong>
-                <span>Update account details</span>
-            </a>
+                    </a>
 
-            <a href="{% url 'home' %}#quote" class="customer-action-card highlight">
-                <strong>Request Quote</strong>
-                <span>Book another cleaning service</span>
-            </a>
 
-            <a href="/portal/support/" class="customer-action-card">
-                <strong>Support Centre</strong>
-                <span>Create and track support tickets</span>
-            </a>
+                    <a href="/portal/profile/" class="customer-user-mini">
 
-        </div>
+                        <span class="customer-avatar-small">
+                            {{ customer.full_name|first|upper }}
+                        </span>
 
-        <!-- Customer summary cards -->
-      <div class="dashboard-grid customer-stats-grid">    
+                        <span class="customer-user-copy">
+                            <strong>{{ customer.full_name }}</strong>
+                            <small>{{ customer.email }}</small>
+                        </span>
 
-            <div class="dashboard-card">
-                <h3>{{ active_contracts }}</h3>
-                <p>Active Contracts</p>
-            </div>
+                    </a>
 
-            <div class="dashboard-card">
-                <h3>{{ expiring_contracts }}</h3>
-                <p>Contract Renewals</p>
-            </div>
 
-            <div class="dashboard-card">
-                <h3>{{ upcoming_bookings }}</h3>
-                <p>Upcoming Bookings</p>
-            </div>
+                    <a href="/portal/logout/" class="customer-logout">
+                        Logout
+                    </a>
 
-            <div class="dashboard-card">
-                <h3>{{ completed_jobs }}</h3>
-                <p>Completed Jobs</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>${{ outstanding_balance }}</h3>
-                <p>Outstanding Balance</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>${{ total_paid }}</h3>
-                <p>Total Paid</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ paid_invoices }}</h3>
-                <p>Paid Invoices</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ unpaid_invoices }}</h3>
-                <p>Unpaid Invoices</p>
-            </div>
-
-        </div>
-
-        {% if last_cleaning %}
-            <div class="customer-panel">
-                <div class="customer-panel-header">
-                    <h2>Last Completed Cleaning</h2>
                 </div>
 
-                <p><strong>Service:</strong> {{ last_cleaning.service_type }}</p>
-                <p><strong>Date:</strong> {{ last_cleaning.booking_date }}</p>
-                <p><strong>Address:</strong> {{ last_cleaning.address }}</p>
-            </div>
-        {% endif %}
-
-            <div class="dashboard-card">
-                <h3>{{ bookings|length }}</h3>
-                <p>Recent Bookings</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ invoices|length }}</h3>
-                <p>Recent Invoices</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ paid_invoices }}</h3>
-                <p>Paid Invoices</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ unpaid_invoices }}</h3>
-                <p>Unpaid Invoices</p>
             </div>
 
         </div>
 
-        <div class="customer-panel">
-
-            <div class="customer-panel-header">
-                <h2>My Contracts</h2>
-                <a href="/portal/documents/">View All</a>
-            </div>
-
-            <p>
-                Active Contracts:
-                <strong>{{ active_contracts }}</strong>
-            </p>
-
-            <p>
-                Contract Renewals:
-                <strong>{{ expiring_contracts }}</strong>
-            </p>
-
-        </div>
-
-        
+    </header>
 
 
-        <div class="customer-panel">
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+    <main class="customer-portal-main">
 
-            <div class="customer-panel-header">
-                <h2>
-                    Notifications
+        <div class="customer-portal-container">
 
-                    {% if unread_notifications %}
-                        ({{ unread_notifications }})
+
+            <!-- =================================================
+                 WELCOME HERO
+            ================================================== -->
+            <section class="customer-welcome">
+
+                <div class="customer-welcome-content">
+
+                    <div class="customer-welcome-eyebrow">
+                        <span class="customer-status-dot"></span>
+                        Customer workspace
+                    </div>
+
+
+                    <h1 class="customer-welcome-title">
+
+                        <span class="customer-welcome-text">
+                            Welcome back,
+                        </span>
+
+                        <span class="customer-name">
+                            {{ customer.full_name }}
+                        </span>
+
+                    </h1>
+
+
+                    <p>
+                        Manage your cleaning services, bookings, invoices,
+                        reports and account information from one place.
+                    </p>
+
+
+                    <div class="customer-welcome-actions">
+
+                        <a href="/portal/bookings/"
+                           class="customer-primary-btn">
+
+                            <span>View My Bookings</span>
+
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 12h14"/>
+                                <path d="m13 6 6 6-6 6"/>
+                            </svg>
+
+                        </a>
+
+
+                        <a href="{% url 'home' %}#quote"
+                           class="customer-secondary-btn">
+
+                            Request a Quote
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="customer-welcome-profile">
+
+                    <div class="customer-avatar-large">
+                        {{ customer.full_name|first|upper }}
+                    </div>
+
+
+                    <div class="customer-profile-copy">
+
+                        <strong>
+                            {{ customer.full_name }}
+                        </strong>
+
+                        <span>
+                            Customer account
+                        </span>
+
+                        {% if customer.email_verified %}
+
+                            <span class="customer-verified">
+                                <span></span>
+                                Email verified
+                            </span>
+
+                        {% else %}
+
+                            <span class="customer-unverified">
+                                Email verification required
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 EMAIL VERIFICATION ALERT
+            ================================================== -->
+            {% if not customer.email_verified %}
+
+                <div class="customer-alert">
+
+                    <div class="customer-alert-icon">
+                        !
+                    </div>
+
+                    <div class="customer-alert-content">
+
+                        <strong>
+                            Email verification required
+                        </strong>
+
+                        <p>
+                            Please verify your email address using the
+                            verification link sent to your inbox.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 BUSINESS METRICS
+            ================================================== -->
+            <section class="customer-metrics"
+                     aria-label="Account overview">
+
+
+                <article class="customer-metric-card metric-contract">
+
+                    <div class="customer-metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/>
+                            <path d="M9 8h6"/>
+                            <path d="M9 12h6"/>
+                        </svg>
+                    </div>
+
+                    <div class="customer-metric-content">
+
+                        <span>Active Contracts</span>
+
+                        <strong>
+                            {{ active_contracts }}
+                        </strong>
+
+                        <small>
+                            Current service agreements
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="customer-metric-card">
+
+                    <div class="customer-metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="17" rx="2"/>
+                            <path d="M8 2v4"/>
+                            <path d="M16 2v4"/>
+                            <path d="M3 10h18"/>
+                        </svg>
+                    </div>
+
+                    <div class="customer-metric-content">
+
+                        <span>Upcoming Bookings</span>
+
+                        <strong>
+                            {{ upcoming_bookings }}
+                        </strong>
+
+                        <small>
+                            Scheduled services
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="customer-metric-card">
+
+                    <div class="customer-metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5"/>
+                        </svg>
+                    </div>
+
+                    <div class="customer-metric-content">
+
+                        <span>Completed Jobs</span>
+
+                        <strong>
+                            {{ completed_jobs }}
+                        </strong>
+
+                        <small>
+                            Completed services
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="customer-metric-card metric-money">
+
+                    <div class="customer-metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M15 8.5c-.7-.7-1.7-1-3-1-1.7 0-3 .8-3 2s1.2 2 3 2 3 .8 3 2-1.3 2-3 2c-1.3 0-2.3-.3-3-1"/>
+                            <path d="M12 6v12"/>
+                        </svg>
+                    </div>
+
+                    <div class="customer-metric-content">
+
+                        <span>Outstanding Balance</span>
+
+                        <strong>
+                            ${{ outstanding_balance }}
+                        </strong>
+
+                        <small>
+                            Current amount outstanding
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+            </section>
+
+
+            <!-- =================================================
+                 FINANCIAL SUMMARY
+            ================================================== -->
+            <section class="customer-financial-strip">
+
+                <div class="financial-summary">
+
+                    <div class="financial-summary-label">
+                        <span>Account financial summary</span>
+                        <strong>Payment overview</strong>
+                    </div>
+
+
+                    <div class="financial-summary-item">
+
+                        <span>Total Paid</span>
+
+                        <strong>
+                            ${{ total_paid }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="financial-summary-item">
+
+                        <span>Paid Invoices</span>
+
+                        <strong>
+                            {{ paid_invoices }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="financial-summary-item">
+
+                        <span>Unpaid Invoices</span>
+
+                        <strong>
+                            {{ unpaid_invoices }}
+                        </strong>
+
+                    </div>
+
+
+                    <a href="/portal/invoices/"
+                       class="financial-summary-link">
+
+                        View invoices
+                        <span>→</span>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 QUICK ACTIONS
+            ================================================== -->
+            <section class="customer-section">
+
+                <div class="customer-section-heading">
+
+                    <div>
+
+                        <span class="customer-section-kicker">
+                            Workspace
+                        </span>
+
+                        <h2>
+                            Quick actions
+                        </h2>
+
+                        <p>
+                            Everything you need to manage your cleaning services.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="customer-action-grid">
+
+
+                    <a href="/portal/bookings/"
+                       class="customer-action-card featured">
+
+                        <span class="customer-action-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="17" rx="2"/>
+                                <path d="M8 2v4"/>
+                                <path d="M16 2v4"/>
+                                <path d="M3 10h18"/>
+                            </svg>
+                        </span>
+
+                        <span class="customer-action-content">
+
+                            <strong>
+                                My Bookings
+                            </strong>
+
+                            <small>
+                                View upcoming and previous cleaning services
+                            </small>
+
+                        </span>
+
+                        <span class="customer-action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="/portal/invoices/"
+                       class="customer-action-card">
+
+                        <span class="customer-action-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/>
+                                <path d="M9 8h6"/>
+                                <path d="M9 12h6"/>
+                                <path d="M9 16h4"/>
+                            </svg>
+                        </span>
+
+                        <span class="customer-action-content">
+
+                            <strong>
+                                My Invoices
+                            </strong>
+
+                            <small>
+                                Review invoices, payments and balances
+                            </small>
+
+                        </span>
+
+                        <span class="customer-action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="/portal/documents/"
+                       class="customer-action-card">
+
+                        <span class="customer-action-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 3h9l3 3v15H6z"/>
+                                <path d="M14 3v4h4"/>
+                                <path d="M9 13h6"/>
+                                <path d="M9 17h4"/>
+                            </svg>
+                        </span>
+
+                        <span class="customer-action-content">
+
+                            <strong>
+                                My Documents
+                            </strong>
+
+                            <small>
+                                Access reports, contracts and documents
+                            </small>
+
+                        </span>
+
+                        <span class="customer-action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="/portal/profile/"
+                       class="customer-action-card">
+
+                        <span class="customer-action-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4"/>
+                                <path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/>
+                            </svg>
+                        </span>
+
+                        <span class="customer-action-content">
+
+                            <strong>
+                                My Profile
+                            </strong>
+
+                            <small>
+                                Update your account information
+                            </small>
+
+                        </span>
+
+                        <span class="customer-action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="{% url 'home' %}#quote"
+                       class="customer-action-card featured">
+
+                        <span class="customer-action-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 5v14"/>
+                                <path d="M5 12h14"/>
+                            </svg>
+                        </span>
+
+                        <span class="customer-action-content">
+
+                            <strong>
+                                Request a Quote
+                            </strong>
+
+                            <small>
+                                Book another cleaning service
+                            </small>
+
+                        </span>
+
+                        <span class="customer-action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="/portal/support/"
+                       class="customer-action-card">
+
+                        <span class="customer-action-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/>
+                                <path d="M12 17h.01"/>
+                            </svg>
+                        </span>
+
+                        <span class="customer-action-content">
+
+                            <strong>
+                                Support Centre
+                            </strong>
+
+                            <small>
+                                Get help and track support requests
+                            </small>
+
+                        </span>
+
+                        <span class="customer-action-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 LAST COMPLETED CLEANING
+            ================================================== -->
+            {% if last_cleaning %}
+
+                <section class="customer-section">
+
+                    <div class="customer-section-heading">
+
+                        <div>
+
+                            <span class="customer-section-kicker">
+                                Service history
+                            </span>
+
+                            <h2>
+                                Last completed cleaning
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="last-cleaning-card">
+
+                        <div class="last-cleaning-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 20h16"/>
+                                <path d="M7 20V9h10v11"/>
+                                <path d="M9 9V5h6v4"/>
+                            </svg>
+                        </div>
+
+
+                        <div class="last-cleaning-info">
+
+                            <span>Service</span>
+
+                            <strong>
+                                {{ last_cleaning.service_type }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="last-cleaning-info">
+
+                            <span>Date</span>
+
+                            <strong>
+                                {{ last_cleaning.booking_date }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="last-cleaning-info last-cleaning-address">
+
+                            <span>Address</span>
+
+                            <strong>
+                                {{ last_cleaning.address }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 CONTRACTS
+            ================================================== -->
+            <section class="customer-section">
+
+                <div class="customer-section-heading">
+
+                    <div>
+
+                        <span class="customer-section-kicker">
+                            Agreements
+                        </span>
+
+                        <h2>
+                            My contracts
+                        </h2>
+
+                        <p>
+                            Keep track of your current cleaning agreements.
+                        </p>
+
+                    </div>
+
+
+                    <a href="/portal/documents/"
+                       class="customer-section-link">
+
+                        View documents
+                        <span>→</span>
+
+                    </a>
+
+                </div>
+
+
+                <div class="contracts-card">
+
+                    <div class="contract-summary-item">
+
+                        <div class="contract-summary-icon">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Active Contracts
+                            </span>
+
+                            <strong>
+                                {{ active_contracts }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="contract-divider"></div>
+
+
+                    <div class="contract-summary-item">
+
+                        <div class="contract-summary-icon renewal">
+                            !
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Contract Renewals
+                            </span>
+
+                            <strong>
+                                {{ expiring_contracts }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 NOTIFICATIONS
+            ================================================== -->
+            <section class="customer-section"
+                     id="customer-notifications">
+
+                <div class="customer-section-heading">
+
+                    <div>
+
+                        <span class="customer-section-kicker">
+                            Updates
+                        </span>
+
+                        <h2>
+                            Notifications
+
+                            {% if unread_notifications %}
+                                <span class="section-count">
+                                    {{ unread_notifications }}
+                                </span>
+                            {% endif %}
+
+                        </h2>
+
+                        <p>
+                            Important updates from YD Commercial Cleaning.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="customer-table-panel">
+
+                    {% if notifications %}
+
+                        <div class="customer-table-wrapper">
+
+                            <table class="customer-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Message</th>
+                                        <th>Date</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {% for notification in notifications %}
+
+                                        <tr>
+
+                                            <td data-label="Title">
+
+                                                <strong class="notification-title">
+                                                    {{ notification.title }}
+                                                </strong>
+
+                                            </td>
+
+                                            <td data-label="Message">
+                                                {{ notification.message }}
+                                            </td>
+
+                                            <td data-label="Date">
+
+                                                <span class="notification-date">
+                                                    {{ notification.created_at|date:"d M Y" }}
+                                                </span>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="customer-empty-state">
+
+                            <div class="customer-empty-icon">
+                                ✓
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    You're all caught up
+                                </h3>
+
+                                <p>
+                                    There are no new notifications at the moment.
+                                </p>
+
+                            </div>
+
+                        </div>
+
                     {% endif %}
-                </h2>
-            </div>
-
-            {% if notifications %}
-
-                <div class="table-wrapper">
-
-                    <table class="dashboard-table">
-
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Message</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            {% for notification in notifications %}
-
-                            <tr>
-
-                                <td>
-                                    {{ notification.title }}
-                                </td>
-
-                                <td>
-                                    {{ notification.message }}
-                                </td>
-
-                                <td>
-                                    {{ notification.created_at|date:"d M Y" }}
-                                </td>
-
-                            </tr>
-
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
 
                 </div>
 
-            {% else %}
+            </section>
 
-                <p>No notifications available.</p>
 
-            {% endif %}
+            <!-- =================================================
+                 RECENT BOOKINGS
+            ================================================== -->
+            <section class="customer-section">
+
+                <div class="customer-section-heading">
+
+                    <div>
+
+                        <span class="customer-section-kicker">
+                            Service activity
+                        </span>
+
+                        <h2>
+                            Recent bookings
+                        </h2>
+
+                        <p>
+                            Your latest cleaning services.
+                        </p>
+
+                    </div>
+
+
+                    <a href="/portal/bookings/"
+                       class="customer-section-link">
+
+                        View all bookings
+                        <span>→</span>
+
+                    </a>
+
+                </div>
+
+
+                {% if bookings %}
+
+                    <div class="customer-table-panel">
+
+                        <div class="customer-table-wrapper">
+
+                            <table class="customer-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Address</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {% for booking in bookings %}
+
+                                        <tr>
+
+                                            <td data-label="Service">
+
+                                                <div class="booking-service">
+
+                                                    <span class="booking-service-icon">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="M4 20h16"/>
+                                                            <path d="M7 20V9h10v11"/>
+                                                            <path d="M9 9V5h6v4"/>
+                                                        </svg>
+                                                    </span>
+
+                                                    <strong>
+                                                        {{ booking.service_type }}
+                                                    </strong>
+
+                                                </div>
+
+                                            </td>
+
+
+                                            <td data-label="Date">
+
+                                                <strong class="booking-date">
+                                                    {{ booking.booking_date }}
+                                                </strong>
+
+                                            </td>
+
+
+                                            <td data-label="Time">
+
+                                                <strong class="booking-time">
+                                                    {{ booking.booking_time }}
+                                                </strong>
+
+                                            </td>
+
+
+                                            <td data-label="Address">
+
+                                                <span class="booking-address">
+                                                    {{ booking.address }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td data-label="Status">
+
+                                                <span class="booking-status">
+                                                    {{ booking.get_status_display }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td data-label="Actions">
+
+                                                <div class="booking-actions">
+
+                                                    <a href="/portal/bookings/{{ booking.id }}/"
+                                                       class="table-action-btn">
+
+                                                        View
+
+                                                    </a>
+
+
+                                                    <a href="/reports/booking/{{ booking.id }}/"
+                                                       class="table-action-btn secondary">
+
+                                                        Report
+
+                                                    </a>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="customer-empty-state">
+
+                        <div class="customer-empty-icon">
+                            +
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                No bookings yet
+                            </h3>
+
+                            <p>
+                                Your cleaning bookings will appear here.
+                            </p>
+
+                        </div>
+
+                        <a href="{% url 'home' %}#quote"
+                           class="customer-primary-btn">
+
+                            Request a Quote
+
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- =================================================
+                 CLEANING REPORTS
+            ================================================== -->
+            <section class="customer-section">
+
+                <div class="customer-section-heading">
+
+                    <div>
+
+                        <span class="customer-section-kicker">
+                            Service records
+                        </span>
+
+                        <h2>
+                            Cleaning reports
+                        </h2>
+
+                        <p>
+                            Download reports generated after your services.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="customer-table-panel">
+
+                    {% if reports %}
+
+                        <div class="customer-table-wrapper">
+
+                            <table class="customer-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Booking</th>
+                                        <th>Date</th>
+                                        <th>Report</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {% for report in reports %}
+
+                                        <tr>
+
+                                            <td data-label="Booking">
+
+                                                <strong>
+                                                    {{ report.booking.service_type }}
+                                                </strong>
+
+                                            </td>
+
+
+                                            <td data-label="Date">
+
+                                                {{ report.generated_at|date:"d M Y" }}
+
+                                            </td>
+
+
+                                            <td data-label="Report">
+
+                                                {% if report.pdf_file %}
+
+                                                    <a href="{{ report.pdf_file.url }}"
+                                                       target="_blank"
+                                                       class="download-report-btn">
+
+                                                        Download PDF
+                                                        <span>↓</span>
+
+                                                    </a>
+
+                                                {% else %}
+
+                                                    <span class="report-unavailable">
+                                                        Not Available
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="customer-empty-state compact">
+
+                            <div class="customer-empty-icon">
+                                PDF
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    No cleaning reports yet
+                                </h3>
+
+                                <p>
+                                    Reports will appear here when they are available.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 RECENT INVOICES
+            ================================================== -->
+            <section class="customer-section">
+
+                <div class="customer-section-heading">
+
+                    <div>
+
+                        <span class="customer-section-kicker">
+                            Billing
+                        </span>
+
+                        <h2>
+                            Recent invoices
+                        </h2>
+
+                        <p>
+                            Review your latest invoices and payment status.
+                        </p>
+
+                    </div>
+
+
+                    <a href="/portal/invoices/"
+                       class="customer-section-link">
+
+                        View all invoices
+                        <span>→</span>
+
+                    </a>
+
+                </div>
+
+
+                {% if invoices %}
+
+                    <div class="customer-table-panel">
+
+                        <div class="customer-table-wrapper">
+
+                            <table class="customer-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Invoice</th>
+                                        <th>Date</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {% for invoice in invoices %}
+
+                                        <tr>
+
+                                            <td data-label="Invoice">
+
+                                                <strong class="invoice-number">
+                                                    {{ invoice.invoice_number }}
+                                                </strong>
+
+                                            </td>
+
+
+                                            <td data-label="Date">
+
+                                                {{ invoice.issue_date }}
+
+                                            </td>
+
+
+                                            <td data-label="Total">
+
+                                                <strong class="invoice-total">
+                                                    ${{ invoice.total_amount }}
+                                                </strong>
+
+                                            </td>
+
+
+                                            <td data-label="Status">
+
+                                                <span class="invoice-status">
+                                                    {{ invoice.get_status_display }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <td data-label="Action">
+
+                                                <a href="/portal/invoices/{{ invoice.id }}/"
+                                                   class="table-action-btn">
+
+                                                    View
+
+                                                </a>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="customer-empty-state">
+
+                        <div class="customer-empty-icon">
+                            $
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                No invoices yet
+                            </h3>
+
+                            <p>
+                                Your invoices will appear here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+            <footer class="customer-portal-footer">
+
+                <div>
+
+                    <strong>
+                        YD Commercial Cleaning
+                    </strong>
+
+                    <span>
+                        Customer Portal
+                    </span>
+
+                </div>
+
+
+                <div class="customer-footer-links">
+
+                    <a href="/portal/profile/">
+                        Profile
+                    </a>
+
+                    <a href="/portal/bookings/">
+                        Bookings
+                    </a>
+
+                    <a href="/portal/invoices/">
+                        Invoices
+                    </a>
+
+                    <a href="/portal/support/">
+                        Support
+                    </a>
+
+                    <a href="/portal/logout/">
+                        Logout
+                    </a>
+
+                </div>
+
+            </footer>
 
         </div>
 
+    </main>
 
-
-
-        <!-- Recent bookings table -->
-        <div class="customer-panel">
-
-            <div class="customer-panel-header">
-                <h2>Recent Bookings</h2>
-                <a href="/portal/bookings/">View All</a>
-            </div>
-
-            {% if bookings %}
-
-                <div class="table-wrapper">
-
-                    <table class="dashboard-table advanced-table">
-
-                        <thead>
-                            <tr>
-                                <th>Service</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Address</th>
-                                <th>Status</th>
-                                <th>Details</th>
-                                <th>Report</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {% for booking in bookings %}
-                                <tr>
-                                    <td>{{ booking.service_type }}</td>
-                                    <td>{{ booking.booking_date }}</td>
-                                    <td>{{ booking.booking_time }}</td>
-                                    <td>{{ booking.address }}</td>
-                                    <td>{{ booking.get_status_display }}</td>
-                                    <td>
-                                        <a href="/portal/bookings/{{ booking.id }}/"
-                                           class="small-link-btn">
-                                            View
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="/reports/booking/{{ booking.id }}/"
-                                           class="small-link-btn">
-                                            Report
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            {% else %}
-
-                <div class="empty-box">
-                    <h3>No bookings yet.</h3>
-                    <p>Your cleaning bookings will appear here.</p>
-                </div>
-
-            {% endif %}
-
-        </div>
-
-        <div class="customer-panel">
-
-            <div class="customer-panel-header">
-                <h2>Cleaning Reports</h2>
-            </div>
-
-            {% if reports %}
-
-                <div class="table-wrapper">
-
-                    <table class="dashboard-table">
-
-                        <thead>
-                            <tr>
-                                <th>Booking</th>
-                                <th>Date</th>
-                                <th>Report</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            {% for report in reports %}
-
-                            <tr>
-
-                                <td>
-                                    {{ report.booking.service_type }}
-                                </td>
-
-                                <td>
-                                    {{ report.generated_at|date:"d M Y" }}
-                                </td>
-
-                                <td>
-
-                                    {% if report.pdf_file %}
-
-                                        <a
-                                            href="{{ report.pdf_file.url }}"
-                                            target="_blank"
-                                            class="small-link-btn"
-                                        >
-                                            Download
-                                        </a>
-
-                                    {% else %}
-
-                                        Not Available
-
-                                    {% endif %}
-
-                                </td>
-
-                            </tr>
-
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            {% else %}
-
-                <p>No cleaning reports available yet.</p>
-
-            {% endif %}
-
-        </div>
-
-
-
-
-        <!-- Recent invoices table -->
-        <div class="customer-panel">
-
-            <div class="customer-panel-header">
-                <h2>Recent Invoices</h2>
-                <a href="/portal/invoices/">View All</a>
-            </div>
-
-            {% if invoices %}
-
-                <div class="table-wrapper">
-
-                    <table class="dashboard-table advanced-table">
-
-                        <thead>
-                            <tr>
-                                <th>Invoice</th>
-                                <th>Date</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>View</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {% for invoice in invoices %}
-                                <tr>
-                                    <td>{{ invoice.invoice_number }}</td>
-                                    <td>{{ invoice.issue_date }}</td>
-                                    <td>${{ invoice.total_amount }}</td>
-                                    <td>{{ invoice.get_status_display }}</td>
-                                    <td>
-                                        <a href="/portal/invoices/{{ invoice.id }}/"
-                                           class="small-link-btn">
-                                            View
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            {% else %}
-
-                <div class="empty-box">
-                    <h3>No invoices yet.</h3>
-                    <p>Your invoices will appear here.</p>
-                </div>
-
-            {% endif %}
-
-        </div>
-
-    </div>
 </section>
 
 {% endblock %}

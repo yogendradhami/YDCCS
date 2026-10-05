@@ -23,9 +23,23 @@ class EmployeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user_model = get_user_model()
+        current_user = getattr(self.instance, "user", None)
+        self.fields["user"].required = False
+        self.fields["user"].empty_label = "No portal login linked"
         self.fields["user"].queryset = user_model._default_manager.filter(
-            Q(employee_profile__isnull=True) | Q(pk=self.instance.user_id)
+            Q(employee_profile__isnull=True) | Q(pk=current_user.pk if current_user else None)
         ).order_by(user_model.USERNAME_FIELD)
+
+    def clean_user(self):
+        user = self.cleaned_data.get("user")
+        if user is None:
+            return None
+
+        related_employee = getattr(user, "employee_profile", None)
+        if related_employee is not None and related_employee.pk != self.instance.pk:
+            raise ValidationError("This account is already linked to another employee.")
+
+        return user
 
     class Meta:
         model = Employee

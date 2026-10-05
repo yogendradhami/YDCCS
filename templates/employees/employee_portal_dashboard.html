@@ -1,303 +1,747 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 Employee Dashboard | YD Commercial Cleaning
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portal/employee-dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<!-- ===================================================== -->
-<!-- Employee Dashboard Hero Section -->
-<!-- ===================================================== -->
+<section class="employee-portal">
 
-<section class="employee-portal-hero">
-    <div class="container">
-        <div class="employee-hero-box">
+    <!-- =========================================================
+         PORTAL HEADER
+    ========================================================== -->
+    <header class="employee-portal-header">
+        <div class="employee-portal-container">
 
-            <div>
-                <h1>Welcome, {{ employee.full_name }}</h1>
+            <div class="portal-topbar">
 
-                <p>
-                    Manage your jobs, attendance, payslips,
-                    leave requests, profile and weekly schedule.
-                </p>
-            </div>
+                <a href="/" class="portal-brand" aria-label="YD Commercial Cleaning">
+                    <span class="portal-brand-mark">YD</span>
 
-            <div class="employee-status-pill">
-                {{ employee.get_availability_display }}
-            </div>
+                    <span class="portal-brand-copy">
+                        <strong>YD Commercial Cleaning</strong>
+                        <small>Employee Portal</small>
+                    </span>
+                </a>
 
-        </div>
-    </div>
-</section>
+                <div class="portal-topbar-actions">
 
-<!-- ===================================================== -->
-<!-- Dashboard Content -->
-<!-- ===================================================== -->
+                    <a href="#notificationBell"
+                       class="portal-notification"
+                       aria-label="Notifications">
+                        <span class="portal-notification-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                                <path d="M10 21h4"/>
+                            </svg>
+                        </span>
+                    </a>
 
-<section class="section employee-dashboard-section">
-    <div class="container">
+                    <a href="/employee/profile/" class="portal-user-mini">
+                        {% if employee.image %}
+                            <img
+                                src="{{ employee.image.url }}"
+                                alt="{{ employee.full_name }}"
+                            >
+                        {% else %}
+                            <span>
+                                {{ employee.full_name|first|upper }}
+                            </span>
+                        {% endif %}
 
-        <!-- ================================================= -->
-        <!-- Quick Action Cards -->
-        <!-- ================================================= -->
+                        <span class="portal-user-mini-copy">
+                            <strong>{{ employee.full_name }}</strong>
+                            <small>{{ employee.get_availability_display }}</small>
+                        </span>
+                    </a>
 
-        <div class="employee-action-grid">
-
-            <!-- Jobs -->
-            <a href="/employee/jobs/" class="employee-action-card">
-                <strong>My Jobs</strong>
-                <span>View assigned jobs</span>
-            </a>
-
-            <!-- Induction -->  
-
-
-            <a
-                href="{% url 'employee_induction' %}"
-                class="employee-action-card highlight"
-            >
-                <strong>
-                    Employee Induction
-                </strong>
-
-                <span>
-                    Complete onboarding and safety training
-                </span>
-            </a>
-
-            <a
-                href="{% url 'employee_onboarding' %}"
-                class="employee-action-card highlight"
-            >
-                <strong>Onboarding & Compliance</strong>
-                <span>
-                    Upload employment and compliance documents
-                </span>
-            </a>
-
-            <!-- Attendance -->
-            <a href="/employee/attendance/" class="employee-action-card">
-                <strong>Attendance</strong>
-                <span>Check in / check out</span>
-            </a>
-
-            <!-- Payslips -->
-            <a href="/employee/payslips/" class="employee-action-card">
-                <strong>My Payslips</strong>
-                <span>View and download payroll records</span>
-            </a>
-
-            <!-- Apply Leave -->
-            <a href="/employee/leave/request/" class="employee-action-card highlight">
-                <strong>Apply Leave</strong>
-                <span>Submit leave request</span>
-            </a>
-
-            <!-- Leave History -->
-            <a href="/employee/leave/" class="employee-action-card">
-                <strong>Leave History</strong>
-                <span>Track leave status</span>
-            </a>
-
-            <!-- Schedule -->
-            <a href="/employee/roster/" class="employee-action-card">
-                <strong>My Schedule</strong>
-                <span>View roster shifts</span>
-            </a>
-
-            <!-- Employee Profile -->
-            <a href="/employee/profile/" class="employee-action-card">
-                <strong>My Profile</strong>
-                <span>Update account details</span>
-            </a>
-
-            <!-- Notifications -->
-            <a href="#notificationBell" class="employee-action-card">
-                <strong>Notifications</strong>
-                <span>View latest updates</span>
-            </a>
-
-            <!-- Logout -->
-            <a href="/employee/logout/" class="employee-action-card danger">
-                <strong>Logout</strong>
-                <span>Exit portal</span>
-            </a>
-
-        </div>
-
-        <!-- ================================================= -->
-        <!-- Statistics Cards -->
-        <!-- ================================================= -->
-
-        <div class="dashboard-grid employee-stats-grid">
-
-            <div class="dashboard-card">
-                <h3>{{ today_jobs|length }}</h3>
-                <p>Today's Jobs</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ upcoming_jobs|length }}</h3>
-                <p>Upcoming Jobs</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ completed_jobs }}</h3>
-                <p>Completed Jobs</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>{{ employee.get_availability_display }}</h3>
-                <p>Availability</p>
-            </div>
-
-        </div>
-
-        <!-- ================================================= -->
-        <!-- Today's Jobs -->
-        <!-- ================================================= -->
-
-        <div class="employee-panel">
-
-            <div class="employee-panel-header">
-                <h2>Today's Jobs</h2>
-                <a href="/employee/jobs/">View All</a>
-            </div>
-
-            {% if today_jobs %}
-
-                <div class="table-wrapper">
-
-                    <table class="dashboard-table advanced-table">
-
-                        <thead>
-                            <tr>
-                                <th>Service</th>
-                                <th>Time</th>
-                                <th>Customer</th>
-                                <th>Address</th>
-                                <th>Status</th>
-                                <th>View</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            {% for job in today_jobs %}
-                                <tr>
-
-                                    <td>{{ job.service_type }}</td>
-
-                                    <td>{{ job.booking_time }}</td>
-
-                                    <td>{{ job.customer.full_name }}</td>
-
-                                    <td>{{ job.address }}</td>
-
-                                    <td>{{ job.get_status_display }}</td>
-
-                                    <td>
-                                        <a href="/employee/jobs/{{ job.id }}/"
-                                           class="small-link-btn">
-                                            View
-                                        </a>
-                                    </td>
-
-                                </tr>
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
+                    <a href="/employee/logout/" class="portal-logout">
+                        Logout
+                    </a>
 
                 </div>
 
-            {% else %}
-
-                <div class="empty-box">
-                    <h3>No jobs assigned for today.</h3>
-                    <p>Your daily jobs will appear here.</p>
-                </div>
-
-            {% endif %}
-
-        </div>
-
-        <!-- ================================================= -->
-        <!-- Upcoming Jobs -->
-        <!-- ================================================= -->
-
-        <div class="employee-panel">
-
-            <div class="employee-panel-header">
-                <h2>Upcoming Jobs</h2>
-                <a href="/employee/roster/">My Schedule</a>
             </div>
 
-            {% if upcoming_jobs %}
+        </div>
+    </header>
 
-                <div class="table-wrapper">
 
-                    <table class="dashboard-table advanced-table">
+    <!-- =========================================================
+         MAIN CONTENT
+    ========================================================== -->
+    <main class="employee-portal-main">
+        <div class="employee-portal-container">
 
-                        <thead>
-                            <tr>
-                                <th>Service</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Customer</th>
-                                <th>Suburb</th>
-                                <th>Status</th>
-                                <th>View</th>
-                            </tr>
-                        </thead>
+            <!-- =================================================
+                 WELCOME HERO
+            ================================================== -->
+            <section class="employee-welcome">
 
-                        <tbody>
+                <div class="employee-welcome-content">
 
-                            {% for job in upcoming_jobs %}
-                                <tr>
+                    <div class="employee-welcome-eyebrow">
+                        <span class="status-dot"></span>
+                        Employee workspace
+                    </div>
 
-                                    <td>{{ job.service_type }}</td>
+                    <h1>
+                        Good to see you,
+                        <span>{{ employee.full_name }}</span>.
+                    </h1>
 
-                                    <td>{{ job.booking_date }}</td>
+                    <p>
+                        Manage your schedule, assigned jobs, attendance,
+                        leave, payslips and employee requirements from one place.
+                    </p>
 
-                                    <td>{{ job.booking_time }}</td>
+                    <div class="employee-welcome-actions">
 
-                                    <td>{{ job.customer.full_name }}</td>
+                        <a href="/employee/jobs/" class="portal-primary-btn">
+                            <span>View My Jobs</span>
 
-                                    <td>{{ job.suburb_postcode }}</td>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 12h14"/>
+                                <path d="m13 6 6 6-6 6"/>
+                            </svg>
+                        </a>
 
-                                    <td>{{ job.get_status_display }}</td>
+                        <a href="/employee/roster/" class="portal-secondary-btn">
+                            View Schedule
+                        </a>
 
-                                    <td>
-                                        <a href="/employee/jobs/{{ job.id }}/"
-                                           class="small-link-btn">
-                                            View
-                                        </a>
-                                    </td>
-
-                                </tr>
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
+                    </div>
 
                 </div>
 
-            {% else %}
+                <div class="employee-welcome-profile">
 
-                <div class="empty-box">
-                    <h3>No upcoming jobs assigned.</h3>
-                    <p>Your upcoming bookings will appear here.</p>
+                    <div class="profile-avatar-large">
+                        {% if employee.image %}
+                            <img
+                                src="{{ employee.image.url }}"
+                                alt="{{ employee.full_name }}"
+                            >
+                        {% else %}
+                            <span>
+                                {{ employee.full_name|first|upper }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="profile-identity">
+                        <strong>{{ employee.full_name }}</strong>
+
+                        <span class="profile-role">
+                            Employee
+                        </span>
+
+                        <span class="availability-badge">
+                            <span></span>
+                            {{ employee.get_availability_display }}
+                        </span>
+                    </div>
+
                 </div>
 
-            {% endif %}
+            </section>
+
+
+            <!-- =================================================
+                 KPI / METRICS
+            ================================================== -->
+            <section class="employee-metrics"
+                     aria-label="Employee overview">
+
+                <article class="employee-metric-card metric-primary">
+
+                    <div class="metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="17" rx="2"/>
+                            <path d="M16 2v4"/>
+                            <path d="M8 2v4"/>
+                            <path d="M3 10h18"/>
+                            <path d="M8 14h3"/>
+                            <path d="M8 17h6"/>
+                        </svg>
+                    </div>
+
+                    <div class="metric-content">
+                        <span>Today's Jobs</span>
+                        <strong>{{ today_jobs|length }}</strong>
+                        <small>Assigned for today</small>
+                    </div>
+
+                </article>
+
+
+                <article class="employee-metric-card">
+
+                    <div class="metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 12h18"/>
+                            <path d="M13 6l6 6-6 6"/>
+                            <path d="M5 6h6"/>
+                            <path d="M5 18h6"/>
+                        </svg>
+                    </div>
+
+                    <div class="metric-content">
+                        <span>Upcoming Jobs</span>
+                        <strong>{{ upcoming_jobs|length }}</strong>
+                        <small>Scheduled ahead</small>
+                    </div>
+
+                </article>
+
+
+                <article class="employee-metric-card">
+
+                    <div class="metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5"/>
+                        </svg>
+                    </div>
+
+                    <div class="metric-content">
+                        <span>Completed Jobs</span>
+                        <strong>{{ completed_jobs }}</strong>
+                        <small>Total completed</small>
+                    </div>
+
+                </article>
+
+
+                <article class="employee-metric-card">
+
+                    <div class="metric-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 7v5l3 2"/>
+                        </svg>
+                    </div>
+
+                    <div class="metric-content">
+                        <span>Availability</span>
+                        <strong class="metric-status">
+                            {{ employee.get_availability_display }}
+                        </strong>
+                        <small>Current availability</small>
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- =================================================
+                 QUICK ACTIONS
+            ================================================== -->
+            <section class="portal-section">
+
+                <div class="portal-section-heading">
+                    <div>
+                        <span class="section-kicker">Workspace</span>
+                        <h2>Quick actions</h2>
+                    </div>
+                </div>
+
+
+                <div class="employee-action-grid">
+
+                    <a href="/employee/jobs/" class="employee-action-card">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="16" rx="2"/>
+                                <path d="M8 9h8"/>
+                                <path d="M8 13h5"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>My Jobs</strong>
+                            <small>View your assigned cleaning jobs</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="{% url 'employee_induction' %}"
+                       class="employee-action-card featured">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/>
+                                <path d="m9 12 2 2 4-4"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>Employee Induction</strong>
+                            <small>Complete safety and onboarding training</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="{% url 'employee_onboarding' %}"
+                       class="employee-action-card featured">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 3h9l3 3v15H6z"/>
+                                <path d="M14 3v4h4"/>
+                                <path d="M9 13h6"/>
+                                <path d="M9 17h4"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>Onboarding & Compliance</strong>
+                            <small>Manage employment and compliance documents</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="/employee/attendance/" class="employee-action-card">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 7v5l3 2"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>Attendance</strong>
+                            <small>Check in and manage attendance</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="/employee/payslips/" class="employee-action-card">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/>
+                                <path d="M9 8h6"/>
+                                <path d="M9 12h6"/>
+                                <path d="M9 16h4"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>My Payslips</strong>
+                            <small>View and download payroll records</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="/employee/leave/request/"
+                       class="employee-action-card">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 5v14"/>
+                                <path d="M5 12h14"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>Apply Leave</strong>
+                            <small>Submit a new leave request</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="/employee/leave/" class="employee-action-card">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 5h16v14H4z"/>
+                                <path d="M8 3v4"/>
+                                <path d="M16 3v4"/>
+                                <path d="M4 10h16"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>Leave History</strong>
+                            <small>Track previous and pending requests</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="/employee/roster/" class="employee-action-card">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="17" rx="2"/>
+                                <path d="M16 2v4"/>
+                                <path d="M8 2v4"/>
+                                <path d="M3 10h18"/>
+                                <path d="M8 14h2"/>
+                                <path d="M14 14h2"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>My Schedule</strong>
+                            <small>View roster and upcoming shifts</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+
+                    <a href="/employee/profile/" class="employee-action-card">
+
+                        <span class="action-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4"/>
+                                <path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/>
+                            </svg>
+                        </span>
+
+                        <span class="action-card-content">
+                            <strong>My Profile</strong>
+                            <small>Manage your employee information</small>
+                        </span>
+
+                        <span class="action-arrow">→</span>
+
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 TODAY'S JOBS
+            ================================================== -->
+            <section class="portal-section">
+
+                <div class="portal-section-heading">
+
+                    <div>
+                        <span class="section-kicker">Today</span>
+                        <h2>Today's jobs</h2>
+                        <p>Your assigned work for today.</p>
+                    </div>
+
+                    <a href="/employee/jobs/" class="section-link">
+                        View all jobs
+                        <span>→</span>
+                    </a>
+
+                </div>
+
+
+                {% if today_jobs %}
+
+                    <div class="jobs-panel">
+
+                        <div class="jobs-table-wrapper">
+
+                            <table class="employee-jobs-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Time</th>
+                                        <th>Customer</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for job in today_jobs %}
+
+                                        <tr>
+
+                                            <td data-label="Service">
+                                                <div class="job-service">
+                                                    <span class="job-service-icon">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="M4 20h16"/>
+                                                            <path d="M7 20V9h10v11"/>
+                                                            <path d="M9 9V5h6v4"/>
+                                                        </svg>
+                                                    </span>
+
+                                                    <strong>
+                                                        {{ job.service_type }}
+                                                    </strong>
+                                                </div>
+                                            </td>
+
+                                            <td data-label="Time">
+                                                <span class="job-time">
+                                                    {{ job.booking_time }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Customer">
+                                                <strong class="customer-name">
+                                                    {{ job.customer.full_name }}
+                                                </strong>
+                                            </td>
+
+                                            <td data-label="Location">
+                                                <span class="job-location">
+                                                    {{ job.address }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Status">
+                                                <span class="job-status">
+                                                    {{ job.get_status_display }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Action">
+                                                <a href="/employee/jobs/{{ job.id }}/"
+                                                   class="job-view-btn">
+                                                    View
+                                                    <span>→</span>
+                                                </a>
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="portal-empty-state">
+
+                        <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="17" rx="2"/>
+                                <path d="M16 2v4"/>
+                                <path d="M8 2v4"/>
+                                <path d="M3 10h18"/>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3>No jobs assigned today</h3>
+                            <p>
+                                You currently have no cleaning jobs scheduled for today.
+                            </p>
+                        </div>
+
+                        <a href="/employee/roster/" class="portal-secondary-btn">
+                            View Schedule
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- =================================================
+                 UPCOMING JOBS
+            ================================================== -->
+            <section class="portal-section">
+
+                <div class="portal-section-heading">
+
+                    <div>
+                        <span class="section-kicker">Schedule</span>
+                        <h2>Upcoming jobs</h2>
+                        <p>Stay ahead of your upcoming assignments.</p>
+                    </div>
+
+                    <a href="/employee/roster/" class="section-link">
+                        Open schedule
+                        <span>→</span>
+                    </a>
+
+                </div>
+
+
+                {% if upcoming_jobs %}
+
+                    <div class="jobs-panel">
+
+                        <div class="jobs-table-wrapper">
+
+                            <table class="employee-jobs-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Customer</th>
+                                        <th>Suburb</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for job in upcoming_jobs %}
+
+                                        <tr>
+
+                                            <td data-label="Service">
+                                                <div class="job-service">
+                                                    <span class="job-service-icon">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="M4 20h16"/>
+                                                            <path d="M7 20V9h10v11"/>
+                                                            <path d="M9 9V5h6v4"/>
+                                                        </svg>
+                                                    </span>
+
+                                                    <strong>
+                                                        {{ job.service_type }}
+                                                    </strong>
+                                                </div>
+                                            </td>
+
+                                            <td data-label="Date">
+                                                <span class="job-date">
+                                                    {{ job.booking_date }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Time">
+                                                <span class="job-time">
+                                                    {{ job.booking_time }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Customer">
+                                                <strong class="customer-name">
+                                                    {{ job.customer.full_name }}
+                                                </strong>
+                                            </td>
+
+                                            <td data-label="Suburb">
+                                                <span class="job-location">
+                                                    {{ job.suburb|default:"-" }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Status">
+                                                <span class="job-status">
+                                                    {{ job.get_status_display }}
+                                                </span>
+                                            </td>
+
+                                            <td data-label="Action">
+                                                <a href="/employee/jobs/{{ job.id }}/"
+                                                   class="job-view-btn">
+                                                    View
+                                                    <span>→</span>
+                                                </a>
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="portal-empty-state">
+
+                        <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 5h16v14H4z"/>
+                                <path d="M8 3v4"/>
+                                <path d="M16 3v4"/>
+                                <path d="M4 10h16"/>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3>No upcoming jobs</h3>
+                            <p>
+                                Your next assigned work will appear here.
+                            </p>
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+            <footer class="employee-portal-footer">
+
+                <div>
+                    <strong>YD Commercial Cleaning</strong>
+                    <span>Employee Portal</span>
+                </div>
+
+                <div class="employee-footer-links">
+                    <a href="/employee/profile/">Profile</a>
+                    <a href="/employee/roster/">Schedule</a>
+                    <a href="/employee/logout/">Logout</a>
+                </div>
+
+            </footer>
 
         </div>
+    </main>
 
-    </div>
 </section>
 
 {% endblock %}

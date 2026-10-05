@@ -25,6 +25,7 @@ class EmployeeProfileForm(forms.ModelForm):
             "phone",
             "address",
             "availability",
+            "image",
             "notes",
         ]
 
@@ -34,6 +35,12 @@ class EmployeeProfileForm(forms.ModelForm):
             "phone": forms.TextInput(attrs={"class": "form-control"}),
             "address": forms.TextInput(attrs={"class": "form-control"}),
             "availability": forms.Select(attrs={"class": "form-control"}),
+            "image": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": "image/*",
+                }
+            ),
             "notes": forms.Textarea(
                 attrs={
                     "class": "form-control",

@@ -595,7 +595,11 @@ def employee_profile(request):
 
         if form_type == "profile":
 
-            profile_form = EmployeeProfileForm(request.POST, instance=employee)
+            profile_form = EmployeeProfileForm(
+                request.POST,
+                request.FILES,
+                instance=employee,
+            )
 
             if profile_form.is_valid():
 

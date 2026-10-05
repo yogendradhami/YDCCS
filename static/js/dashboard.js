@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
     setupMobileSidebar();
-    setupNotifications();
     setupAdvancedTables();
     setupDashboardCharts();
     setupSidebarDropdowns();
+    setupActiveSidebarNavigation();
+    setupSidebarBadges();
 });
 
 function setupMobileSidebar() {
@@ -19,12 +20,16 @@ function setupMobileSidebar() {
         sidebar.classList.add("active");
         overlay.classList.add("active");
         button.textContent = "×";
+        button.setAttribute("aria-label", "Close dashboard menu");
+        button.setAttribute("aria-expanded", "true");
     }
 
     function closeMenu() {
         sidebar.classList.remove("active");
         overlay.classList.remove("active");
         button.textContent = "☰";
+        button.setAttribute("aria-label", "Open dashboard menu");
+        button.setAttribute("aria-expanded", "false");
     }
 
     button.addEventListener("click", function () {
@@ -36,66 +41,6 @@ function setupMobileSidebar() {
     });
 
     overlay.addEventListener("click", closeMenu);
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-
-    return cookieValue;
-}
-
-function setupNotifications() {
-    const bell = document.getElementById("notificationBell");
-    const count = document.getElementById("notificationCount");
-
-    if (!bell) {
-        return;
-    }
-
-    bell.addEventListener("click", function () {
-        fetch("/notifications/mark-read/", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken"),
-                "X-Requested-With": "XMLHttpRequest"
-            }
-        })
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (data) {
-            if (data.success) {
-                if (count) {
-                    count.textContent = "0";
-                    count.style.display = "none";
-                }
-
-                document.querySelectorAll(".side-badge").forEach(function (badge) {
-                    badge.remove();
-                });
-
-                document.querySelectorAll(".notification-dropdown a.unread").forEach(function (item) {
-                    item.classList.remove("unread");
-                });
-            }
-        })
-        .catch(function () {
-            console.log("Notification update failed.");
-        });
-    });
 }
 
 function setupAdvancedTables() {
@@ -307,28 +252,80 @@ function setupDashboardCharts() {
     }
 }
 
-function setupDashboardCharts() {
-
-    // Dashboard home has its own premium chart controller.
-    if (document.querySelector(".dashboard-home")) {
-        return;
-    }
-
-    // existing code continues below...
-
-    
 function setupSidebarDropdowns() {
     const dropdownButtons = document.querySelectorAll(".sidebar-dropdown-btn");
 
     dropdownButtons.forEach(function (button) {
-        button.addEventListener("click", function () {
-            const parent = button.closest(".sidebar-dropdown");
+        const parent = button.closest(".sidebar-dropdown");
+        const submenu = parent && parent.querySelector(".sidebar-submenu");
+        if (submenu && !submenu.id) {
+            const index = Array.prototype.indexOf.call(
+                document.querySelectorAll(".sidebar-submenu"),
+                submenu
+            );
+            submenu.id = "sidebar-submenu-" + (index + 1);
+        }
+        if (submenu) {
+            button.setAttribute("aria-controls", submenu.id);
+        }
+        if (parent) {
+            button.setAttribute("aria-expanded", parent.classList.contains("open") ? "true" : "false");
+        }
 
+        button.addEventListener("click", function () {
             if (!parent) {
                 return;
             }
 
-            parent.classList.toggle("open");
+            const isOpen = parent.classList.toggle("open");
+            button.setAttribute("aria-expanded", isOpen ? "true" : "false");
         });
     });
+}
+
+function setupActiveSidebarNavigation() {
+    const rawPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    const currentPath = rawPath.replace(/^\/dashboard\/customer\//, "/dashboard/customers/");
+    const links = document.querySelectorAll(".crm-sidebar a[href]");
+    let activeLink = null;
+
+    links.forEach(function (link) {
+        const target = new URL(link.href, window.location.origin);
+        const targetPath = target.pathname.replace(/\/+$/, "") || "/";
+        const isDashboardHome = targetPath === "/dashboard";
+        const isCurrent = isDashboardHome
+            ? currentPath === targetPath
+            : currentPath === targetPath || currentPath.startsWith(targetPath + "/");
+
+        if (isCurrent && (!activeLink || targetPath.length > new URL(activeLink.href).pathname.length)) {
+            activeLink = link;
+        }
+    });
+
+    if (activeLink) {
+        activeLink.setAttribute("aria-current", "page");
+        const dropdown = activeLink.closest(".sidebar-dropdown");
+        if (dropdown) {
+            dropdown.classList.add("open");
+            const button = dropdown.querySelector(".sidebar-dropdown-btn");
+            if (button) {
+                button.setAttribute("aria-expanded", "true");
+            }
+        }
+
+        function setupSidebarBadges() {
+            document.querySelectorAll(".side-badge").forEach(function (badge) {
+                if (badge.dataset.notificationType) {
+                    return;
+                }
+
+                const link = badge.closest("a");
+                const label = link ? link.querySelector("span") : null;
+                const count = badge.textContent.trim();
+                const item = label ? label.textContent.trim() : "dashboard";
+                badge.setAttribute("aria-label", count + " items needing attention in " + item);
+                badge.title = count + " items needing attention";
+            });
+        }
+    }
 }

@@ -1,0 +1,9 @@
+{% with display_name=user.full_name|default:user.user.get_full_name|default:user.email|default:user.username|default:'User' %}
+<div class="user-avatar{% if size %} user-avatar--{{ size }}{% endif %}" aria-label="{{ display_name }}">
+    {% if user.image and user.image.url %}
+        <img src="{{ user.image.url }}" alt="{{ display_name }}" class="user-avatar__image">
+    {% else %}
+        <span class="user-avatar__initials">{{ display_name|slice:':2'|upper }}</span>
+    {% endif %}
+</div>
+{% endwith %}

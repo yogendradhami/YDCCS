@@ -501,6 +501,14 @@ class SupportTicketWorkflowTests(TestCase):
 
 	def test_customer_creates_and_views_ticket(self):
 		self.client.force_login(self.customer_user)
+		tickets_page = self.client.get("/portal/support/")
+		self.assertEqual(tickets_page.status_code, 200)
+		self.assertNotContains(tickets_page, 'class="crm-sidebar"')
+
+		create_page = self.client.get("/portal/support/new/")
+		self.assertEqual(create_page.status_code, 200)
+		self.assertNotContains(create_page, 'class="crm-sidebar"')
+
 		response = self.client.post(
 			"/portal/support/new/",
 			{"subject": "Booking question", "message": "Please help.", "priority": "medium"},
@@ -508,9 +516,9 @@ class SupportTicketWorkflowTests(TestCase):
 
 		self.assertRedirects(response, "/portal/support/")
 		ticket = self.customer.support_tickets.get()
-		self.assertTrue(
-			self.client.get(f"/portal/support/{ticket.id}/").status_code == 200
-		)
+		detail_page = self.client.get(f"/portal/support/{ticket.id}/")
+		self.assertEqual(detail_page.status_code, 200)
+		self.assertNotContains(detail_page, 'class="crm-sidebar"')
 		self.assertEqual(Notification.objects.filter(user=self.staff_user).count(), 1)
 
 	def test_staff_updates_ticket_and_replies_to_customer(self):

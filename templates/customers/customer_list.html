@@ -1,64 +1,124 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
 {% block title %}Customers | YD Dashboard{% endblock %}
 {% block page_title %}Customers{% endblock %}
-{% block page_subtitle %}Manage your customer database without using Django Admin.{% endblock %}
+{% block page_subtitle %}Manage customer records, portal access, and relationship history.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/employees-add.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/customer-admin.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="employee-add-page customer-admin-page customer-list-page">
+    <nav class="employee-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'dashboard_home' %}">Dashboard</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Customers</span>
+    </nav>
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/customers/add/">+ Add Customer</a>
-    <a href="/dashboard/">Back to Dashboard</a>
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Customer List</h2>
-    </div>
-
-    {% if customers %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th>Suburb</th>
-                        <th>Jobs</th>
-                        <th>Revenue</th>
-                        <th>Portal User</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for customer in customers %}
-                        <tr>
-                            <td><a href="{% url 'customer_profile_360' customer.id %}"> {{ customer.full_name }} </a></td>
-                            <td>{{ customer.phone }}</td>
-                            <td>{{ customer.email }}</td>
-                            <td>{{ customer.suburb_postcode }}</td>
-                            <td>{{ customer.jobs_completed }}</td>
-                            <td>${{ customer.total_revenue }}</td>
-                            <td>
-                                {% if customer.user %}
-                                    {{ customer.user.username }}
-                                {% else %}
-                                    Not linked
-                                {% endif %}
-                            </td>
-                            <td><a href="/dashboard/customers/{{ customer.id }}/edit/" class="small-link-btn">Edit</a></td>
-                            <td><a href="/dashboard/customers/{{ customer.id }}/delete/" class="small-delete-btn">Delete</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <header class="employee-page-heading">
+        <div>
+            <p class="employee-eyebrow">Customer relationships</p>
+            <h1>Customer directory</h1>
+            <p class="employee-page-intro">A single view of customer contact details, service history, value, and portal access.</p>
         </div>
-    {% else %}
-        <p>No customers added yet.</p>
-    {% endif %}
-</section>
+        <div class="customer-page-actions">
+            <a class="employee-button employee-button-secondary" href="{% url 'dashboard_home' %}">Dashboard</a>
+            <a class="employee-button employee-button-primary" href="{% url 'add_customer' %}"><span aria-hidden="true">＋</span> Add customer</a>
+        </div>
+    </header>
 
+    <section class="customer-metric-grid" aria-label="Customer overview">
+        <article class="customer-metric-card">
+            <span class="customer-metric-icon" aria-hidden="true">01</span>
+            <div><p>Total customers</p><strong>{{ customer_count }}</strong><small>Customer records in the CRM</small></div>
+        </article>
+        <article class="customer-metric-card">
+            <span class="customer-metric-icon" aria-hidden="true">02</span>
+            <div><p>Portal access</p><strong>{{ linked_customer_count }}</strong><small>{{ unlinked_customer_count }} without a linked login</small></div>
+        </article>
+        <article class="customer-metric-card">
+            <span class="customer-metric-icon" aria-hidden="true">03</span>
+            <div><p>Jobs completed</p><strong>{{ customer_jobs_total }}</strong><small>Recorded across customer profiles</small></div>
+        </article>
+        <article class="customer-metric-card customer-metric-card-accent">
+            <span class="customer-metric-icon" aria-hidden="true">$</span>
+            <div><p>Lifetime revenue</p><strong>${{ customer_revenue_total|floatformat:2 }}</strong><small>Combined customer-reported value</small></div>
+        </article>
+    </section>
+
+    <section class="customer-directory-card" aria-labelledby="customer-directory-heading">
+        <div class="customer-directory-heading">
+            <div>
+                <p class="employee-eyebrow">CRM records</p>
+                <h2 id="customer-directory-heading">All customers</h2>
+                <p>Search and review customer details, completed work, and account connection.</p>
+            </div>
+            <span class="customer-record-count">{{ customer_count }} records</span>
+        </div>
+
+        {% if customers %}
+            <div class="table-wrapper customer-table-wrapper">
+                <table class="dashboard-table advanced-table customer-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Customer</th>
+                            <th scope="col">Contact</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Jobs</th>
+                            <th scope="col">Revenue</th>
+                            <th scope="col">Portal account</th>
+                            <th scope="col" class="customer-actions-heading">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                            <tr>
+                                <td>
+                                    <a class="customer-name-link" href="{% url 'customer_profile_360' customer.id %}">
+                                        <span class="customer-avatar" aria-hidden="true">{{ customer.full_name|slice:":1"|upper }}</span>
+                                        <span class="customer-name-copy">
+                                            <strong>{{ customer.full_name }}</strong>
+                                            <small>Customer #{{ customer.id }}</small>
+                                        </span>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="customer-contact">{{ customer.email|default:"No email provided" }}</span>
+                                    <small class="customer-secondary-contact">{{ customer.phone|default:"No phone provided" }}</small>
+                                </td>
+                                <td>{{ customer.suburb_postcode|default:"—" }}</td>
+                                <td><span class="customer-number">{{ customer.jobs_completed }}</span></td>
+                                <td class="customer-revenue">${{ customer.total_revenue|floatformat:2 }}</td>
+                                <td>
+                                    {% if customer.user %}
+                                        <span class="customer-account-status is-linked"><span aria-hidden="true"></span>{{ customer.user.get_username }}</span>
+                                    {% else %}
+                                        <span class="customer-account-status is-unlinked"><span aria-hidden="true"></span>Not linked</span>
+                                    {% endif %}
+                                </td>
+                                <td class="customer-actions-cell">
+                                    <a class="customer-action-link" href="{% url 'edit_customer' customer.id %}">Edit</a>
+                                    <form method="post" action="{% url 'delete_customer' customer.id %}" class="customer-delete-form">
+                                        {% csrf_token %}
+                                        <button class="customer-delete-button" type="submit" onclick="return confirm('Delete {{ customer.full_name|escapejs }}? This cannot be undone.')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="customer-empty-state">
+                <span class="customer-empty-icon" aria-hidden="true">＋</span>
+                <h3>No customers yet</h3>
+                <p>Add your first customer to start building your CRM directory.</p>
+                <a class="employee-button employee-button-primary" href="{% url 'add_customer' %}">Add customer</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}
