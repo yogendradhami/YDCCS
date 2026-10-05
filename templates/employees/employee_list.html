@@ -1,60 +1,63 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
 {% block title %}Employees | YD Dashboard{% endblock %}
-{% block page_title %}Employees{% endblock %}
-{% block page_subtitle %}Manage cleaners and staff from your CRM dashboard.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/employees-list.css' %}">{% endblock %}
 
 {% block content %}
+<div class="employee-directory">
+    <nav class="employee-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'dashboard_home' %}">Dashboard</a><span aria-hidden="true">/</span><span aria-current="page">Employees</span></nav>
+    <header class="directory-heading">
+        <div><p class="directory-eyebrow">People operations</p><h1>Employees</h1><p>Manage your workforce, employment details and portal access.</p></div>
+        <div class="directory-heading-actions"><a class="directory-button directory-button-muted" href="{% url 'dashboard_home' %}">← Dashboard</a><a class="directory-button directory-button-primary" href="{% url 'add_employee' %}"><span aria-hidden="true">＋</span> Add employee</a></div>
+    </header>
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/employees/add/">+ Add Employee</a>
-    <a href="/dashboard/">Back to Dashboard</a>
-</section>
+    {% if created_employee %}
+    <section class="employee-created-banner" role="status" aria-labelledby="employee-created-title">
+        <span class="created-check" aria-hidden="true">✓</span>
+        <div class="created-copy"><h2 id="employee-created-title">Employee created successfully</h2><p>{{ created_employee.full_name }} · Portal access: <strong>{% if created_login %}Enabled{% else %}Not enabled{% endif %}</strong>{% if created_login and created_employee.user.email %} · Login account: <strong>{% if created_access_mode == 'create' %}Created{% else %}Linked{% endif %}</strong> <a href="mailto:{{ created_employee.user.email }}">{{ created_employee.user.email }}</a>{% endif %}</p></div>
+        <div class="created-actions"><a href="#employee-{{ created_employee.id }}">View employee</a><a href="{% url 'edit_employee' created_employee.id %}">Edit employee</a><a href="{% url 'induction_dashboard' %}">View induction</a><a href="{% url 'add_employee' %}">Add another</a><a href="#employeeDirectory">Back to employees</a></div>
+    </section>
+    {% endif %}
 
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Employee List</h2>
-    </div>
+    <section class="directory-metrics" aria-label="Employee summary">
+        <article class="directory-metric"><span class="metric-label">Total employees</span><strong>{{ total_count }}</strong><span class="metric-detail">All profiles</span><span class="metric-icon metric-icon-blue" aria-hidden="true">◎</span></article>
+        <article class="directory-metric"><span class="metric-label">Active</span><strong>{{ active_count }}</strong><span class="metric-detail">Currently employed</span><span class="metric-icon metric-icon-green" aria-hidden="true">✓</span></article>
+        <article class="directory-metric"><span class="metric-label">Available</span><strong>{{ available_count }}</strong><span class="metric-detail">Ready for assignment</span><span class="metric-icon metric-icon-orange" aria-hidden="true">◷</span></article>
+        <article class="directory-metric"><span class="metric-label">Portal accounts</span><strong>{{ portal_count }}</strong><span class="metric-detail">Linked login access</span><span class="metric-icon metric-icon-ink" aria-hidden="true">⌘</span></article>
+    </section>
 
-    {% if employees %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Availability</th>
-                        <th>Hourly Rate</th>
-                        <th>Jobs Completed</th>
-                        <th>Active</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
-
-                <tbody>
+    <section class="directory-panel" id="employeeDirectory" aria-labelledby="directory-title">
+        <div class="directory-panel-heading"><div><h2 id="directory-title">Team directory</h2><p>Employee profiles and current work status</p></div><span class="directory-count">{{ total_count }} record{{ total_count|pluralize }}</span></div>
+        <div class="directory-toolbar">
+            <label class="directory-search"><span aria-hidden="true">⌕</span><span class="visually-hidden">Search employees</span><input id="employeeSearch" type="search" placeholder="Search name, email or phone" autocomplete="off"></label>
+            <label><span class="visually-hidden">Filter by role</span><select id="employeeRoleFilter"><option value="">All roles</option>{% for value, label in role_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+            <label><span class="visually-hidden">Filter by status</span><select id="employeeStatusFilter"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+            <button class="directory-clear" id="clearEmployeeFilters" type="button">Clear</button>
+        </div>
+        <div class="directory-table-wrap">
+            <table class="directory-table">
+                <thead><tr><th scope="col">Employee</th><th scope="col">Role</th><th scope="col">Availability</th><th scope="col">Portal</th><th scope="col">Rate</th><th scope="col">Jobs</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                <tbody id="employeeRows">
                     {% for employee in employees %}
-                        <tr>
-                            <td>{{ employee.full_name }}</td>
-                            <td>{{ employee.phone }}</td>
-                            <td>{{ employee.email }}</td>
-                            <td>{{ employee.get_role_display }}</td>
-                            <td>{{ employee.get_availability_display }}</td>
-                            <td>${{ employee.hourly_rate }}</td>
-                            <td>{{ employee.jobs_completed }}</td>
-                            <td>{% if employee.active %}Yes{% else %}No{% endif %}</td>
-                            <td><a href="/dashboard/employees/{{ employee.id }}/edit/" class="small-link-btn">Edit</a></td>
-                            <td><a href="/dashboard/employees/{{ employee.id }}/delete/" class="small-delete-btn">Delete</a></td>
-                        </tr>
+                    <tr id="employee-{{ employee.id }}" data-search="{{ employee.full_name|lower }} {{ employee.email|lower }} {{ employee.phone|lower }}" data-role="{{ employee.role }}" data-status="{% if employee.active %}active{% else %}inactive{% endif %}">
+                        <td data-label="Employee"><div class="directory-person">{% if employee.image %}<img class="directory-avatar" src="{{ employee.image.url }}" alt="" loading="lazy">{% else %}<span class="directory-avatar directory-avatar-initial" aria-hidden="true">{{ employee.full_name|slice:":1"|upper }}</span>{% endif %}<div><strong>{{ employee.full_name }}</strong><small>{{ employee.email|default:"No contact email" }}</small></div></div></td>
+                        <td data-label="Role">{{ employee.get_role_display }}</td>
+                        <td data-label="Availability"><span class="availability-dot availability-{{ employee.availability }}"></span>{{ employee.get_availability_display }}</td>
+                        <td data-label="Portal">{% if employee.user %}<span class="portal-indicator is-enabled">Enabled</span>{% else %}<span class="portal-indicator">Not linked</span>{% endif %}</td>
+                        <td data-label="Rate">${{ employee.hourly_rate|floatformat:2 }}<small class="rate-unit">/ hr</small></td>
+                        <td data-label="Jobs">{{ employee.jobs_completed }}</td>
+                        <td data-label="Status"><span class="employee-state {% if employee.active %}state-active{% else %}state-inactive{% endif %}">{% if employee.active %}Active{% else %}Inactive{% endif %}</span></td>
+                        <td data-label="Actions"><div class="directory-row-actions"><a class="row-action" href="{% url 'edit_employee' employee.id %}" aria-label="Edit {{ employee.full_name }}">Edit</a><form method="post" action="{% url 'delete_employee' employee.id %}" data-delete-employee="{{ employee.full_name }}">{% csrf_token %}<button class="row-action row-action-danger" type="submit" aria-label="Delete {{ employee.full_name }}">Delete</button></form></div></td>
+                    </tr>
+                    {% empty %}
+                    <tr class="directory-empty"><td colspan="8"><span class="empty-icon" aria-hidden="true">◎</span><strong>No employees yet</strong><p>Add an employee profile to start building your team directory.</p><a class="directory-button directory-button-primary" href="{% url 'add_employee' %}">Add employee</a></td></tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <p class="directory-no-results" id="employeeNoResults" hidden>No employees match your search.</p>
         </div>
-    {% else %}
-        <p>No employees added yet.</p>
-    {% endif %}
-</section>
-
+    </section>
+</div>
+<script defer src="{% static 'js/dashboard/employees-list.js' %}"></script>
 {% endblock %}

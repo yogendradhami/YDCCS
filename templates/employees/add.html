@@ -1,0 +1,232 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Add employee | YD Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/employees-add.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="employee-add-page">
+    <nav class="employee-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'dashboard_home' %}">Dashboard</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'employee_list' %}">Employees</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Add employee</span>
+    </nav>
+
+    <header class="employee-page-heading">
+        <div>
+            <p class="employee-eyebrow">People operations</p>
+            <h1>Add employee</h1>
+            <p class="employee-page-intro">Create an employee profile, configure employment details and optionally provide dashboard access.</p>
+        </div>
+        <a class="employee-button employee-button-secondary" href="{% url 'employee_list' %}">
+            <span aria-hidden="true">←</span> Back to employees
+        </a>
+    </header>
+
+    {% if form.errors %}
+    <div class="employee-error-summary" role="alert" aria-labelledby="employee-error-title">
+        <strong id="employee-error-title">Some details need attention</strong>
+        <p>Review the highlighted fields and submit the form again.</p>
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form id="employeeCreateForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="employee-form-layout">
+            <div class="employee-form-main">
+                <section class="employee-section" aria-labelledby="profile-heading">
+                    <div class="employee-section-heading">
+                        <span class="employee-section-index">01</span>
+                        <div>
+                            <h2 id="profile-heading">Employee profile</h2>
+                            <p>Contact details and the photo used across your employee directory and public team page.</p>
+                        </div>
+                    </div>
+
+                    <div class="employee-profile-layout">
+                        <div class="employee-photo-column">
+                            <label class="employee-photo-drop" for="{{ form.image.id_for_label }}" id="employeePhotoDrop">
+                                <input class="employee-photo-input" id="{{ form.image.id_for_label }}" name="{{ form.image.html_name }}" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="employee-photo-help employee-photo-error">
+                                <span class="employee-photo-preview" id="employeePhotoPreview" hidden>
+                                    <img id="employeePhotoImage" alt="Selected employee photo preview">
+                                </span>
+                                <span class="employee-photo-placeholder" id="employeePhotoPlaceholder">
+                                    <span class="employee-photo-icon" aria-hidden="true">＋</span>
+                                    <strong>Upload employee photo</strong>
+                                    <span>Drag an image here or browse files</span>
+                                </span>
+                            </label>
+                            <div class="employee-photo-actions">
+                                <span id="employeePhotoFilename">JPG, PNG or WebP · up to 5 MB</span>
+                                <button class="employee-text-button" type="button" id="removeEmployeePhoto" hidden>Remove</button>
+                            </div>
+                            <p class="employee-field-error" id="employee-photo-error" aria-live="polite">{{ form.image.errors }}</p>
+                            <p class="employee-help" id="employee-photo-help">A clear, professional headshot helps customers recognise your team.</p>
+                        </div>
+
+                        <div class="employee-profile-fields">
+                            <div class="employee-field employee-field-wide">
+                                <label for="{{ form.full_name.id_for_label }}">Full name <span class="employee-required">Required</span></label>
+                                {{ form.full_name }}
+                                <p class="employee-field-error">{{ form.full_name.errors }}</p>
+                            </div>
+                            <div class="employee-field">
+                                <label for="{{ form.email.id_for_label }}">Contact email <span class="employee-optional">Optional</span></label>
+                                {{ form.email }}
+                                <p class="employee-field-error">{{ form.email.errors }}</p>
+                            </div>
+                            <div class="employee-field">
+                                <label for="{{ form.phone.id_for_label }}">Phone <span class="employee-required">Required</span></label>
+                                {{ form.phone }}
+                                <p class="employee-field-error">{{ form.phone.errors }}</p>
+                            </div>
+                            <div class="employee-field employee-field-wide">
+                                <label for="{{ form.address.id_for_label }}">Address <span class="employee-optional">Optional</span></label>
+                                {{ form.address }}
+                                <p class="employee-field-error">{{ form.address.errors }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="employee-section" aria-labelledby="employment-heading">
+                    <div class="employee-section-heading">
+                        <span class="employee-section-index">02</span>
+                        <div>
+                            <h2 id="employment-heading">Employment details</h2>
+                            <p>Set the role, current availability and core employment information.</p>
+                        </div>
+                    </div>
+                    <div class="employee-field-grid">
+                        <div class="employee-field">
+                            <label for="{{ form.role.id_for_label }}">Role <span class="employee-required">Required</span></label>
+                            {{ form.role }}
+                            <p class="employee-field-error">{{ form.role.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.availability.id_for_label }}">Availability</label>
+                            {{ form.availability }}
+                            <p class="employee-field-error">{{ form.availability.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.hourly_rate.id_for_label }}">Hourly rate</label>
+                            <div class="employee-money-input"><span aria-hidden="true">$</span>{{ form.hourly_rate }}<span class="employee-input-suffix">AUD / hr</span></div>
+                            <p class="employee-field-error">{{ form.hourly_rate.errors }}</p>
+                        </div>
+                        <div class="employee-field">
+                            <label for="{{ form.jobs_completed.id_for_label }}">Jobs completed</label>
+                            {{ form.jobs_completed }}
+                            <p class="employee-field-error">{{ form.jobs_completed.errors }}</p>
+                        </div>
+                        <div class="employee-field employee-field-wide employee-active-row">
+                            <label class="employee-toggle" for="{{ form.active.id_for_label }}">
+                                {{ form.active }}
+                                <span><strong>Active employee</strong><small>Inactive employees cannot access the employee portal.</small></span>
+                            </label>
+                            <p class="employee-field-error">{{ form.active.errors }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="employee-section" aria-labelledby="access-heading">
+                    <div class="employee-section-heading">
+                        <span class="employee-section-index">03</span>
+                        <div>
+                            <h2 id="access-heading">Dashboard access</h2>
+                            <p>Portal access is optional. Choose how this employee should sign in.</p>
+                        </div>
+                    </div>
+                    <fieldset class="employee-access-fieldset">
+                        <legend class="visually-hidden">Choose dashboard access</legend>
+                        <div class="employee-access-options">
+                            {% for value, label in form.access_mode.field.choices %}
+                            <label class="employee-access-option" for="id_access_mode_{{ forloop.counter0 }}">
+                                <input id="id_access_mode_{{ forloop.counter0 }}" type="radio" name="access_mode" value="{{ value }}" {% if form.access_mode.value == value or not form.access_mode.value and value == 'none' %}checked{% endif %}>
+                                <span class="employee-radio-mark" aria-hidden="true"></span>
+                                <span class="employee-access-option-copy"><strong>{{ label }}</strong><small>{% if value == 'none' %}Profile only, no employee sign-in{% elif value == 'create' %}Set up a new employee portal account{% else %}Connect an existing unlinked account{% endif %}</small></span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <p class="employee-field-error">{{ form.access_mode.errors }}</p>
+                    </fieldset>
+
+                    <div class="employee-access-panel" data-access-panel="create" {% if form.access_mode.value != 'create' %}hidden{% endif %}>
+                        <div class="employee-info-note"><span aria-hidden="true">i</span><p>Create a secure employee login so this employee can access the employee portal.</p></div>
+                        <div class="employee-field-grid">
+                            <div class="employee-field">
+                                <label for="{{ form.login_email.id_for_label }}">Login email <span class="employee-required">Required</span></label>
+                                {{ form.login_email }}
+                                <p class="employee-field-error">{{ form.login_email.errors }}</p>
+                            </div>
+                            <div class="employee-field">
+                                <label for="{{ form.username.id_for_label }}">Username {% if username_required %}<span class="employee-required">Required</span>{% else %}<span class="employee-optional">Optional</span>{% endif %}</label>
+                                {{ form.username }}
+                                <p class="employee-field-error">{{ form.username.errors }}</p>
+                            </div>
+                            <div class="employee-field">
+                                <label for="{{ form.password1.id_for_label }}">Temporary password <span class="employee-required">Required</span></label>
+                                <div class="employee-password-control">{{ form.password1 }}<button type="button" class="employee-icon-button" data-password-toggle="{{ form.password1.id_for_label }}" aria-label="Show temporary password">Show</button></div>
+                                <p class="employee-field-error">{{ form.password1.errors }}</p>
+                            </div>
+                            <div class="employee-field">
+                                <label for="{{ form.password2.id_for_label }}">Confirm password <span class="employee-required">Required</span></label>
+                                <div class="employee-password-control">{{ form.password2 }}<button type="button" class="employee-icon-button" data-password-toggle="{{ form.password2.id_for_label }}" aria-label="Show password confirmation">Show</button></div>
+                                <p class="employee-field-error">{{ form.password2.errors }}</p>
+                            </div>
+                        </div>
+                        <button class="employee-generate-button" type="button" id="generateEmployeePassword"><span aria-hidden="true">⟳</span> Generate secure password</button>
+                    </div>
+
+                    <div class="employee-access-panel" data-access-panel="link" {% if form.access_mode.value != 'link' %}hidden{% endif %}>
+                        <div class="employee-field">
+                            <label for="{{ form.existing_user.id_for_label }}">Existing account <span class="employee-required">Required</span></label>
+                            <input class="employee-user-search" id="employeeUserSearch" type="search" placeholder="Search username or email" autocomplete="off" aria-label="Search eligible accounts">
+                            {{ form.existing_user }}
+                            <p class="employee-help">Only active, non-privileged accounts that are not linked to an employee are shown.</p>
+                            <p class="employee-field-error">{{ form.existing_user.errors }}</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="employee-form-aside">
+                <section class="employee-summary-panel" aria-labelledby="summary-heading">
+                    <div class="employee-aside-heading"><span class="employee-aside-icon" aria-hidden="true">▤</span><div><h2 id="summary-heading">Account summary</h2><p>Updates as you configure access.</p></div></div>
+                    <dl class="employee-summary-list">
+                        <div><dt>Employee</dt><dd id="summaryName">New employee</dd></div>
+                        <div><dt>Portal access</dt><dd><span class="employee-status-chip" id="summaryPortal">Not enabled</span></dd></div>
+                        <div data-summary-row="login" hidden><dt>Login</dt><dd><a id="summaryLogin" href="mailto:">Not set</a></dd></div>
+                        <div><dt>Role</dt><dd id="summaryRole">Cleaner</dd></div>
+                        <div><dt>Status</dt><dd id="summaryStatus">Active</dd></div>
+                    </dl>
+                </section>
+                <section class="employee-notes-panel" aria-labelledby="notes-heading">
+                    <div class="employee-section-heading employee-aside-section-heading">
+                        <span class="employee-section-index">04</span>
+                        <div><h2 id="notes-heading">Internal notes</h2><p>Visible to authorised dashboard users only.</p></div>
+                    </div>
+                    <div class="employee-field">
+                        <label for="{{ form.notes.id_for_label }}">Notes <span class="employee-optional">Optional</span></label>
+                        {{ form.notes }}
+                        <p class="employee-help">Keep private employment or operational information here. Do not include passwords or sensitive credentials.</p>
+                        <p class="employee-field-error">{{ form.notes.errors }}</p>
+                    </div>
+                </section>
+                <p class="employee-security-note"><span aria-hidden="true">●</span> Employee account credentials are securely hashed and never stored in this profile.</p>
+            </aside>
+        </div>
+
+        <div class="employee-form-actions">
+            <a class="employee-button employee-button-secondary" href="{% url 'employee_list' %}">Cancel</a>
+            <button class="employee-button employee-button-primary" type="submit" id="saveEmployeeButton"><span class="employee-submit-label">Save employee</span><span class="employee-submit-loading" hidden>Saving employee…</span><span aria-hidden="true">→</span></button>
+        </div>
+    </form>
+</div>
+<script defer src="{% static 'js/dashboard/employees-add.js' %}"></script>
+{% endblock %}

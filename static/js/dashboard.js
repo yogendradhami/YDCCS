@@ -306,6 +306,17 @@ function setupDashboardCharts() {
         });
     }
 }
+
+function setupDashboardCharts() {
+
+    // Dashboard home has its own premium chart controller.
+    if (document.querySelector(".dashboard-home")) {
+        return;
+    }
+
+    // existing code continues below...
+
+    
 function setupSidebarDropdowns() {
     const dropdownButtons = document.querySelectorAll(".sidebar-dropdown-btn");
 

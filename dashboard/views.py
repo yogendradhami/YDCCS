@@ -21,6 +21,8 @@ from django.views.decorators.http import require_POST
 from .decorators import admin_required
 import logging
 
+from django.core.exceptions import ValidationError
+from django.db import DatabaseError, IntegrityError
 from django.core.mail import EmailMessage,EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.utils.html import format_html
@@ -45,8 +47,9 @@ from contracts.models import CleaningContract
 from customers.forms import CustomerForm, MarketingSignupForm
 from customers.models import Customer, MarketingSubscriber
 from dashboard.models import CampaignLog, CleaningSupply, Equipment, Vehicle, CareerApplication
-from employees.forms import EmployeeForm
+from employees.forms import EmployeeCreateForm, EmployeeForm
 from employees.models import Employee
+from employees.services import create_employee_from_form
 from expenses.models import Expense
 from gallery.forms import GalleryItemForm
 from gallery.models import GalleryItem, GalleryImage
@@ -91,9 +94,8 @@ from .models import (
     EmailLog,
     PurchaseOrder,
     ReviewRequestLog,
-
- 
 )
+
 from analytics.models import (
     ActivityEvent,
     SearchEvent,
@@ -1524,46 +1526,77 @@ def send_invoice_email(request, invoice):
     return True
 
 
-@login_required
+@admin_required
 def employee_list(request):
-    employees = Employee.objects.all().order_by("-created_at")
-    return render(request, "employees/employee_list.html", {"employees": employees})
+    employees = Employee.objects.select_related("user").order_by("-created_at")
+    created_employee = None
+    created_employee_id = request.session.pop("employee_created_id", None)
+    created_login = request.session.pop("employee_created_login", False)
+    created_access_mode = request.session.pop("employee_created_access_mode", "none")
+    if created_employee_id:
+        created_employee = Employee.objects.select_related("user").filter(
+            pk=created_employee_id
+        ).first()
+
+    context = {
+        "employees": employees,
+        "total_count": employees.count(),
+        "active_count": employees.filter(active=True).count(),
+        "portal_count": employees.filter(user__isnull=False).count(),
+        "available_count": employees.filter(availability="available", active=True).count(),
+        "created_employee": created_employee,
+        "created_login": created_login,
+        "created_access_mode": created_access_mode,
+        "role_choices": Employee.ROLE_CHOICES,
+    }
+    return render(request, "employees/employee_list.html", context)
 
 
 @admin_required
 def add_employee(request):
     if request.method == "POST":
-        form = EmployeeForm(request.POST, request.FILES)
-
+        form = EmployeeCreateForm(request.POST, request.FILES)
         if form.is_valid():
-            employee = form.save()
+            try:
+                employee, portal_enabled = create_employee_from_form(form)
+            except ValidationError as error:
+                form.add_error(None, error)
+            except (IntegrityError, DatabaseError):
+                logger.exception(
+                    "Employee creation failed for dashboard user %s",
+                    request.user.pk,
+                )
+                form.add_error(
+                    None,
+                    "We could not save this employee. Check for a duplicate login and try again.",
+                )
+            else:
+                try:
+                    create_activity_log(
+                        request.user,
+                        "employee",
+                        "Employee Added",
+                        f"{employee.full_name} was added to the employee database.",
+                    )
+                except DatabaseError:
+                    logger.exception(
+                        "Employee activity logging failed: employee=%s",
+                        employee.pk,
+                    )
 
-            # ==================================================
-            # Activity Log
-            # ==================================================
-            create_activity_log(
-                request.user,
-                "employee",
-                "Employee Added",
-                f"{employee.full_name} was added to the employee database.",
-            )
-
-            messages.success(request, "✅ Employee added successfully.")
-
-            return redirect("employee_list")
-
-        messages.error(request, "❌ Please check the employee form.")
-
+                request.session["employee_created_id"] = employee.pk
+                request.session["employee_created_login"] = portal_enabled
+                request.session["employee_created_access_mode"] = form.cleaned_data["access_mode"]
+                return redirect("employee_list")
     else:
-        form = EmployeeForm()
+        form = EmployeeCreateForm()
 
     return render(
         request,
-        "employees/employee_form.html",
+        "employees/add.html",
         {
             "form": form,
-            "page_title": "Add Employee",
-            "button_text": "Save Employee",
+            "username_required": form.fields["username"].required,
         },
     )
 
@@ -1574,26 +1607,16 @@ def edit_employee(request, employee_id):
 
     if request.method == "POST":
         form = EmployeeForm(request.POST, request.FILES, instance=employee)
-
         if form.is_valid():
             updated_employee = form.save()
-
-            # ==================================================
-            # Activity Log
-            # ==================================================
             create_activity_log(
                 request.user,
                 "employee",
                 "Employee Updated",
                 f"{updated_employee.full_name}'s profile was updated.",
             )
-
             messages.success(request, "✅ Employee updated successfully.")
-
             return redirect("employee_list")
-
-        messages.error(request, "❌ Please check the employee form.")
-
     else:
         form = EmployeeForm(instance=employee)
 
@@ -1612,35 +1635,17 @@ def edit_employee(request, employee_id):
 @admin_required
 def delete_employee(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
-
     employee_name = employee.full_name
+    employee.delete()
 
-    if request.method == "POST":
-
-        employee.delete()
-
-        # ==================================================
-        # Activity Log
-        # ==================================================
-        create_activity_log(
-            request.user,
-            "employee",
-            "Employee Deleted",
-            f"{employee_name} was removed from the employee database.",
-        )
-
-        messages.success(request, "✅ Employee deleted successfully.")
-
-        return redirect("employee_list")
-
-    return render(
-        request,
-        "shared/confirm_delete.html",
-        {
-            "object_name": employee_name,
-            "cancel_url": "/dashboard/employees/",
-        },
+    create_activity_log(
+        request.user,
+        "employee",
+        "Employee Deleted",
+        f"{employee_name} was removed from the employee database.",
     )
+    messages.success(request, "✅ Employee deleted successfully.")
+    return redirect("employee_list")
 
 
 # ============================================================
