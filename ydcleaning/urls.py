@@ -39,5 +39,6 @@ urlpatterns = [
     path("", include("google_reviews.urls")),
     path("", include("support.urls")),
     path("", include("core.urls")),
+    path("dashboard/company-documents/", include("company_documents.urls")),
 
 ]

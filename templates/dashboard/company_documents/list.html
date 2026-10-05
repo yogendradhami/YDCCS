@@ -1,0 +1,647 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+    Company Documents · YD Commercial Cleaning
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/list.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="cd-list-page">
+
+    <!-- ==================================================
+         HEADER
+    =================================================== -->
+
+    <div class="cd-page-header">
+
+        <div class="cd-page-header-copy">
+
+            <div class="cd-eyebrow">
+                DOCUMENT CENTRE
+            </div>
+
+            <h1>
+                Company Documents
+            </h1>
+
+            <p>
+                Securely manage company, employee, customer,
+                insurance, vehicle, contract and operational documents.
+            </p>
+
+        </div>
+
+
+        <div class="cd-page-header-actions">
+
+            <a
+                href="{% url 'company_documents:upload' %}"
+                class="cd-button cd-button-primary"
+            >
+                + Upload document
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         KPI CARDS
+    =================================================== -->
+
+    <div class="cd-kpi-grid">
+
+        <div class="cd-kpi-card">
+
+            <span class="cd-kpi-label">
+                Total documents
+            </span>
+
+            <strong>
+                {{ total_documents }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                Across the company
+            </span>
+
+        </div>
+
+
+        <div class="cd-kpi-card">
+
+            <span class="cd-kpi-label">
+                Active
+            </span>
+
+            <strong>
+                {{ active_documents }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                Currently in use
+            </span>
+
+        </div>
+
+
+        <div class="cd-kpi-card cd-kpi-warning">
+
+            <span class="cd-kpi-label">
+                Expiring soon
+            </span>
+
+            <strong>
+                {{ expiring_30_days }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                Within 30 days
+            </span>
+
+        </div>
+
+
+        <div class="cd-kpi-card cd-kpi-danger">
+
+            <span class="cd-kpi-label">
+                Expired
+            </span>
+
+            <strong>
+                {{ expired_documents }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                Require attention
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         FILTER BAR
+    =================================================== -->
+
+    <section class="cd-filter-card">
+
+        <form
+            method="get"
+            class="cd-filter-form"
+        >
+
+            <div class="cd-search-field">
+
+                <label for="document-search">
+                    Search
+                </label>
+
+                <input
+                    id="document-search"
+                    type="search"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Search documents..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="cd-filter-field">
+
+                <label for="document-category">
+                    Category
+                </label>
+
+                <select
+                    id="document-category"
+                    name="category"
+                >
+
+                    <option value="">
+                        All categories
+                    </option>
+
+                    {% for value, label in categories %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if selected_category == value %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="cd-filter-field">
+
+                <label for="document-status">
+                    Status
+                </label>
+
+                <select
+                    id="document-status"
+                    name="status"
+                >
+
+                    <option value="">
+                        All statuses
+                    </option>
+
+                    {% for value, label in statuses %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if selected_status == value %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="cd-filter-field">
+
+                <label for="document-expiry">
+                    Expiry
+                </label>
+
+                <select
+                    id="document-expiry"
+                    name="expiry"
+                >
+
+                    <option value="">
+                        Any expiry
+                    </option>
+
+                    <option
+                        value="expired"
+                        {% if selected_expiry == "expired" %}
+                            selected
+                        {% endif %}
+                    >
+                        Expired
+                    </option>
+
+                    <option
+                        value="30"
+                        {% if selected_expiry == "30" %}
+                            selected
+                        {% endif %}
+                    >
+                        Next 30 days
+                    </option>
+
+                    <option
+                        value="60"
+                        {% if selected_expiry == "60" %}
+                            selected
+                        {% endif %}
+                    >
+                        Next 60 days
+                    </option>
+
+                    <option
+                        value="90"
+                        {% if selected_expiry == "90" %}
+                            selected
+                        {% endif %}
+                    >
+                        Next 90 days
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="cd-filter-actions">
+
+                <button
+                    type="submit"
+                    class="cd-button cd-button-primary"
+                >
+                    Apply
+                </button>
+
+                <a
+                    href="{% url 'company_documents:list' %}"
+                    class="cd-button cd-button-secondary"
+                >
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- ==================================================
+         TABLE
+    =================================================== -->
+
+    <section class="cd-table-card">
+
+        <div class="cd-table-header">
+
+            <div>
+
+                <span class="cd-eyebrow">
+                    DOCUMENT LIBRARY
+                </span>
+
+                <h2>
+                    Stored documents
+                </h2>
+
+            </div>
+
+            <span class="cd-table-count">
+                {{ paginator.count }} document{{ paginator.count|pluralize }}
+            </span>
+
+        </div>
+
+
+        <div class="cd-table-wrapper">
+
+            <table class="cd-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Document
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Reference
+                        </th>
+
+                        <th>
+                            Expiry
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Uploaded
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for document in documents %}
+
+                        <tr>
+
+                            <td>
+
+                                <div class="cd-document-cell">
+
+                                    <div class="cd-document-icon">
+                                        DOC
+                                    </div>
+
+                                    <div>
+
+                                        <strong>
+                                            {{ document.name }}
+                                        </strong>
+
+                                        <span>
+                                            {{ document.original_filename|default:"No filename" }}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="cd-category-badge">
+                                    {{ document.get_category_display }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if document.document_reference %}
+
+                                    <span>
+                                        {{ document.document_reference }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="cd-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if document.expiry_date %}
+
+                                    <div class="cd-expiry-cell">
+
+                                        <strong>
+                                            {{ document.expiry_date|date:"d M Y" }}
+                                        </strong>
+
+                                        {% if document.calculated_status %}
+                                            <span>
+                                                {{ document.status_label }}
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="cd-muted">
+                                        No expiry
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="cd-status-badge">
+                                    {{ document.status_label }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <span>
+                                    {{ document.uploaded_at|date:"d M Y" }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="cd-row-actions">
+
+                                    <a
+                                        href="{% url 'company_documents:detail' document.pk %}"
+                                        class="cd-action-button"
+                                    >
+                                        View
+                                    </a>
+
+
+                                    <a
+                                        href="{% url 'company_documents:edit' document.pk %}"
+                                        class="cd-action-button"
+                                    >
+                                        Edit
+                                    </a>
+
+
+                                    <form
+                                        method="post"
+                                        action="{% url 'company_documents:delete' document.pk %}"
+                                        class="cd-delete-form"
+                                        data-confirm="Permanently delete this document? This cannot be undone."
+                                    >
+
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="cd-action-button cd-action-button-delete"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="cd-empty-cell"
+                            >
+
+                                <div class="cd-empty-state">
+
+                                    <div class="cd-empty-icon">
+                                        DOC
+                                    </div>
+
+                                    <h3>
+                                        No documents found
+                                    </h3>
+
+                                    <p>
+                                        Upload your first company
+                                        document to start building
+                                        your document library.
+                                    </p>
+
+                                    <a
+                                        href="{% url 'company_documents:upload' %}"
+                                        class="cd-button cd-button-primary"
+                                    >
+                                        Upload document
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- ==================================================
+             PAGINATION
+        =================================================== -->
+
+        {% if page_obj.has_other_pages %}
+
+            <div class="cd-pagination">
+
+                <div class="cd-pagination-summary">
+
+                    Showing
+                    <strong>
+                        {{ page_obj.start_index }}
+                    </strong>
+                    –
+                    <strong>
+                        {{ page_obj.end_index }}
+                    </strong>
+                    of
+                    <strong>
+                        {{ paginator.count }}
+                    </strong>
+
+                </div>
+
+
+                <div class="cd-pagination-controls">
+
+                    {% if page_obj.has_previous %}
+
+                        <a
+                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&page={{ page_obj.previous_page_number }}"
+                            class="cd-pagination-button"
+                        >
+                            ← Previous
+                        </a>
+
+                    {% endif %}
+
+
+                    <span class="cd-pagination-current">
+                        Page {{ page_obj.number }}
+                        of {{ paginator.num_pages }}
+                    </span>
+
+
+                    {% if page_obj.has_next %}
+
+                        <a
+                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&page={{ page_obj.next_page_number }}"
+                            class="cd-pagination-button"
+                        >
+                            Next →
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{% static 'js/dashboard/company-documents.js' %}"></script>
+
+{% endblock %}

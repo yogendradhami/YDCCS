@@ -1,0 +1,613 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if is_edit %}
+        Edit Document
+    {% else %}
+        Upload Document
+    {% endif %}
+    · YD Commercial Cleaning
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/form.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="cd-page">
+
+    <!-- ==================================================
+         HEADER
+    =================================================== -->
+
+    <div class="cd-page-header">
+
+        <div class="cd-page-header-copy">
+
+            <a
+                href="{% url 'company_documents:list' %}"
+                class="cd-back-link"
+            >
+                ← Company Documents
+            </a>
+
+            <div class="cd-eyebrow">
+                DOCUMENT CENTRE
+            </div>
+
+            <h1>
+                {% if is_edit %}
+                    Edit document
+                {% else %}
+                    Upload document
+                {% endif %}
+            </h1>
+
+            <p>
+                {% if is_edit %}
+                    Update document information or replace the
+                    stored company file.
+                {% else %}
+                    Securely add a company document to your
+                    central document library.
+                {% endif %}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         FORM
+    =================================================== -->
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        class="cd-form"
+        data-confirm="false"
+    >
+
+        {% csrf_token %}
+
+
+        {% if form.non_field_errors %}
+            <div class="cd-alert cd-alert-error">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+
+        <!-- ==================================================
+             BASIC INFORMATION
+        =================================================== -->
+
+        <section class="cd-form-card">
+
+            <div class="cd-section-heading">
+
+                <div>
+                    <span class="cd-section-number">
+                        01
+                    </span>
+
+                    <div>
+                        <h2>Document information</h2>
+                        <p>
+                            Identify and describe the document.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="cd-form-grid cd-form-grid-2">
+
+                <div class="cd-field">
+
+                    <label for="{{ form.name.id_for_label }}">
+                        Document name
+                        <span>*</span>
+                    </label>
+
+                    {{ form.name }}
+
+                    {% for error in form.name.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="cd-field">
+
+                    <label for="{{ form.category.id_for_label }}">
+                        Category
+                        <span>*</span>
+                    </label>
+
+                    {{ form.category }}
+
+                    {% for error in form.category.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="cd-field">
+
+                    <label for="{{ form.document_type.id_for_label }}">
+                        Document type
+                    </label>
+
+                    {{ form.document_type }}
+
+                    {% for error in form.document_type.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="cd-field">
+
+                    <label for="{{ form.document_reference.id_for_label }}">
+                        Document reference
+                    </label>
+
+                    {{ form.document_reference }}
+
+                    {% for error in form.document_reference.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <div class="cd-field">
+
+                <label for="{{ form.description.id_for_label }}">
+                    Description
+                </label>
+
+                {{ form.description }}
+
+                {% for error in form.description.errors %}
+                    <div class="cd-field-error">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================================
+             RELATIONSHIP
+        =================================================== -->
+
+        <section class="cd-form-card">
+
+            <div class="cd-section-heading">
+
+                <div>
+                    <span class="cd-section-number">
+                        02
+                    </span>
+
+                    <div>
+                        <h2>Document relationship</h2>
+                        <p>
+                            Connect this document to a company
+                            record when applicable.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="cd-field">
+
+                <label for="{{ form.related_type.id_for_label }}">
+                    Related to
+                </label>
+
+                {{ form.related_type }}
+
+                {% for error in form.related_type.errors %}
+                    <div class="cd-field-error">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+
+            </div>
+
+
+            <div
+                class="cd-related-field"
+                data-related-field="employee"
+            >
+
+                <div class="cd-field">
+
+                    <label for="{{ form.employee.id_for_label }}">
+                        Employee
+                    </label>
+
+                    {{ form.employee }}
+
+                    {% for error in form.employee.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="cd-related-field"
+                data-related-field="customer"
+            >
+
+                <div class="cd-field">
+
+                    <label for="{{ form.customer.id_for_label }}">
+                        Customer
+                    </label>
+
+                    {{ form.customer }}
+
+                    {% for error in form.customer.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="cd-related-field"
+                data-related-field="vehicle"
+            >
+
+                <div class="cd-field">
+
+                    <label for="{{ form.vehicle.id_for_label }}">
+                        Vehicle
+                    </label>
+
+                    {{ form.vehicle }}
+
+                    {% for error in form.vehicle.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="cd-related-field"
+                data-related-field="supplier"
+            >
+
+                <div class="cd-field">
+
+                    <label for="{{ form.supplier.id_for_label }}">
+                        Supplier
+                    </label>
+
+                    {{ form.supplier }}
+
+                    {% for error in form.supplier.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="cd-related-field"
+                data-related-field="contract"
+            >
+
+                <div class="cd-field">
+
+                    <label for="{{ form.contract.id_for_label }}">
+                        Cleaning contract
+                    </label>
+
+                    {{ form.contract }}
+
+                    {% for error in form.contract.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================================
+             COMPLIANCE
+        =================================================== -->
+
+        <section class="cd-form-card">
+
+            <div class="cd-section-heading">
+
+                <div>
+                    <span class="cd-section-number">
+                        03
+                    </span>
+
+                    <div>
+                        <h2>Compliance dates</h2>
+                        <p>
+                            Track important document dates.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="cd-form-grid cd-form-grid-3">
+
+                <div class="cd-field">
+
+                    <label for="{{ form.issue_date.id_for_label }}">
+                        Issue date
+                    </label>
+
+                    {{ form.issue_date }}
+
+                    {% for error in form.issue_date.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="cd-field">
+
+                    <label for="{{ form.expiry_date.id_for_label }}">
+                        Expiry date
+                    </label>
+
+                    {{ form.expiry_date }}
+
+                    {% for error in form.expiry_date.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="cd-field">
+
+                    <label for="{{ form.review_date.id_for_label }}">
+                        Review date
+                    </label>
+
+                    {{ form.review_date }}
+
+                    {% for error in form.review_date.errors %}
+                        <div class="cd-field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <label class="cd-checkbox-row">
+
+                {{ form.is_sensitive }}
+
+                <span>
+                    <strong>
+                        Sensitive document
+                    </strong>
+
+                    <small>
+                        Restrict access to authorised document
+                        administrators.
+                    </small>
+                </span>
+
+            </label>
+
+            {% for error in form.is_sensitive.errors %}
+                <div class="cd-field-error">
+                    {{ error }}
+                </div>
+            {% endfor %}
+
+        </section>
+
+
+        <!-- ==================================================
+             FILE
+        =================================================== -->
+
+        <section class="cd-form-card">
+
+            <div class="cd-section-heading">
+
+                <div>
+                    <span class="cd-section-number">
+                        04
+                    </span>
+
+                    <div>
+                        <h2>
+                            {% if is_edit %}
+                                Replace file
+                            {% else %}
+                                Document file
+                            {% endif %}
+                        </h2>
+
+                        <p>
+                            {% if is_edit %}
+                                Upload a new file only if you want
+                                to replace the current version.
+                            {% else %}
+                                Upload the document you want to store.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+
+            {% if is_edit and document %}
+                <div class="cd-current-file">
+
+                    <div class="cd-current-file-icon">
+                        DOC
+                    </div>
+
+                    <div class="cd-current-file-info">
+
+                        <strong>
+                            {{ document.original_filename|default:document.name }}
+                        </strong>
+
+                        <span>
+                            Current version:
+                            {{ document.version|default:"1" }}
+                        </span>
+
+                    </div>
+
+                </div>
+            {% endif %}
+
+
+            <label
+                class="cd-upload-zone"
+                for="{{ form.file.id_for_label }}"
+            >
+
+                <div class="cd-upload-icon">
+                    ↑
+                </div>
+
+                <strong>
+                    {% if is_edit %}
+                        Choose replacement file
+                    {% else %}
+                        Choose a file
+                    {% endif %}
+                </strong>
+
+                <span>
+                    {% if is_edit %}
+                        Leave blank to keep the current file.
+                    {% else %}
+                        Any file type · Maximum 50 MB
+                    {% endif %}
+                </span>
+
+                {{ form.file }}
+
+            </label>
+
+
+            {% for error in form.file.errors %}
+                <div class="cd-field-error">
+                    {{ error }}
+                </div>
+            {% endfor %}
+
+        </section>
+
+
+        <!-- ==================================================
+             ACTIONS
+        =================================================== -->
+
+        <div class="cd-form-actions">
+
+            <a
+                href="{% if is_edit %}{% url 'company_documents:detail' document.pk %}{% else %}{% url 'company_documents:list' %}{% endif %}"
+                class="cd-button cd-button-secondary"
+            >
+                Cancel
+            </a>
+
+
+            <button
+                type="submit"
+                class="cd-button cd-button-primary"
+            >
+
+                {% if is_edit %}
+                    Save changes
+                {% else %}
+                    Upload document
+                {% endif %}
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{% static 'js/dashboard/company-documents.js' %}"></script>
+
+{% endblock %}

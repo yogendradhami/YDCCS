@@ -1,0 +1,305 @@
+/* ==========================================================
+   YD COMMERCIAL CLEANING
+   COMPANY DOCUMENTS — EMAIL
+   ========================================================== */
+
+
+.cd-email-page {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 32px 50px;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.cd-page-header {
+    margin-bottom: 25px;
+}
+
+.cd-back-link {
+    display: inline-flex;
+    margin-bottom: 17px;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.cd-back-link:hover {
+    color: #111827;
+}
+
+.cd-eyebrow {
+    margin-bottom: 8px;
+    color: #6b7280;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.cd-page-header h1 {
+    margin: 0;
+    color: #111827;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+}
+
+.cd-page-header p {
+    max-width: 650px;
+    margin: 10px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   GRID
+   ========================================================== */
+
+.cd-email-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+    gap: 18px;
+}
+
+
+/* ==========================================================
+   CARD
+   ========================================================== */
+
+.cd-email-card,
+.cd-sidebar-card {
+    border: 1px solid #e8ebf0;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035);
+}
+
+.cd-email-card {
+    padding: 25px;
+}
+
+.cd-email-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cd-sidebar-card {
+    padding: 19px;
+}
+
+.cd-card-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: #9ca3af;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.cd-sidebar-card h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.cd-sidebar-card p {
+    margin: 8px 0 0;
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+.cd-sidebar-card > span:last-child {
+    display: block;
+    margin-top: 7px;
+    color: #9ca3af;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   FORM
+   ========================================================== */
+
+.cd-email-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.cd-field {
+    margin-bottom: 17px;
+}
+
+.cd-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.cd-field label span {
+    color: #dc2626;
+}
+
+.cd-field input,
+.cd-field textarea {
+    display: block;
+    width: 100%;
+    border: 1px solid #dfe3e8;
+    border-radius: 9px;
+    outline: none;
+    box-sizing: border-box;
+    color: #111827;
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.cd-field input {
+    height: 44px;
+    padding: 0 12px;
+}
+
+.cd-field textarea {
+    min-height: 160px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.cd-field input:focus,
+.cd-field textarea:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.055);
+}
+
+.cd-field input::placeholder,
+.cd-field textarea::placeholder {
+    color: #b0b6bf;
+}
+
+
+/* ==========================================================
+   ACTIONS
+   ========================================================== */
+
+.cd-email-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.cd-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 17px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        transform 150ms ease,
+        background-color 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.cd-button:hover {
+    transform: translateY(-1px);
+}
+
+.cd-button-primary {
+    color: #ffffff;
+    background: #111827;
+    border-color: #111827;
+    box-shadow: 0 7px 18px rgba(17, 24, 39, 0.12);
+}
+
+.cd-button-primary:hover {
+    color: #ffffff;
+    background: #1f2937;
+}
+
+.cd-button-secondary {
+    color: #374151;
+    background: #ffffff;
+    border-color: #e1e5ea;
+}
+
+.cd-button-secondary:hover {
+    color: #111827;
+    background: #f9fafb;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 850px) {
+
+    .cd-email-page {
+        padding: 22px 20px 40px;
+    }
+
+    .cd-email-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-email-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .cd-email-page {
+        padding: 18px 14px 32px;
+    }
+
+    .cd-email-card {
+        padding: 18px;
+    }
+
+    .cd-email-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-email-actions {
+        flex-direction: column-reverse;
+    }
+
+    .cd-email-actions .cd-button {
+        width: 100%;
+    }
+}

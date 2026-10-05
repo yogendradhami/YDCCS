@@ -1,0 +1,558 @@
+/* ==========================================================
+   YD COMMERCIAL CLEANING
+   COMPANY DOCUMENTS — FORM
+   ========================================================== */
+
+
+.cd-page {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 28px 32px 50px;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.cd-page-header {
+    margin-bottom: 28px;
+}
+
+.cd-page-header-copy {
+    max-width: 850px;
+}
+
+.cd-back-link {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 18px;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 150ms ease;
+}
+
+.cd-back-link:hover {
+    color: #111827;
+}
+
+.cd-eyebrow {
+    margin-bottom: 8px;
+    color: #6b7280;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.cd-page-header h1 {
+    margin: 0;
+    color: #111827;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+}
+
+.cd-page-header p {
+    margin: 10px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   ALERT
+   ========================================================== */
+
+.cd-alert {
+    margin-bottom: 18px;
+    padding: 13px 15px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.cd-alert-error {
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    background: #fef2f2;
+}
+
+
+/* ==========================================================
+   FORM CARD
+   ========================================================== */
+
+.cd-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cd-form-card {
+    padding: 24px;
+    border: 1px solid #e8ebf0;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035);
+}
+
+
+/* ==========================================================
+   SECTION HEADING
+   ========================================================== */
+
+.cd-section-heading {
+    margin-bottom: 24px;
+}
+
+.cd-section-heading > div {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.cd-section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    color: #6b7280;
+    background: #f9fafb;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.cd-section-heading h2 {
+    margin: 0;
+    color: #111827;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.cd-section-heading p {
+    margin: 4px 0 0;
+    color: #9ca3af;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   GRID
+   ========================================================== */
+
+.cd-form-grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.cd-form-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cd-form-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+
+/* ==========================================================
+   FIELDS
+   ========================================================== */
+
+.cd-field {
+    min-width: 0;
+    margin-bottom: 16px;
+}
+
+.cd-form-grid .cd-field {
+    margin-bottom: 0;
+}
+
+.cd-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.cd-field label span {
+    color: #dc2626;
+}
+
+.cd-form input[type="text"],
+.cd-form input[type="date"],
+.cd-form input[type="email"],
+.cd-form input[type="number"],
+.cd-form select,
+.cd-form textarea {
+    display: block;
+    width: 100%;
+    border: 1px solid #dfe3e8;
+    border-radius: 9px;
+    outline: none;
+    box-sizing: border-box;
+    color: #111827;
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        background-color 150ms ease;
+}
+
+.cd-form input[type="text"],
+.cd-form input[type="date"],
+.cd-form input[type="email"],
+.cd-form input[type="number"],
+.cd-form select {
+    height: 44px;
+    padding: 0 12px;
+}
+
+.cd-form textarea {
+    min-height: 110px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.cd-form input:focus,
+.cd-form select:focus,
+.cd-form textarea:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.055);
+}
+
+.cd-form input::placeholder,
+.cd-form textarea::placeholder {
+    color: #b0b6bf;
+}
+
+
+/* ==========================================================
+   ERRORS
+   ========================================================== */
+
+.cd-field-error {
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   RELATED FIELDS
+   ========================================================== */
+
+.cd-related-field {
+    display: none;
+    animation: cdFadeIn 160ms ease;
+}
+
+.cd-related-field.is-visible {
+    display: block;
+}
+
+@keyframes cdFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ==========================================================
+   CHECKBOX
+   ========================================================== */
+
+.cd-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-top: 8px;
+    padding: 14px;
+    border: 1px solid #e8ebf0;
+    border-radius: 10px;
+    background: #fafbfc;
+    cursor: pointer;
+}
+
+.cd-checkbox-row input {
+    width: 17px;
+    height: 17px;
+    margin: 1px 0 0;
+    accent-color: #111827;
+}
+
+.cd-checkbox-row span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.cd-checkbox-row strong {
+    color: #374151;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.cd-checkbox-row small {
+    color: #9ca3af;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   CURRENT FILE
+   ========================================================== */
+
+.cd-current-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding: 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.cd-current-file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    color: #4b5563;
+    background: #ffffff;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.cd-current-file-info {
+    min-width: 0;
+}
+
+.cd-current-file-info strong {
+    display: block;
+    overflow: hidden;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cd-current-file-info span {
+    display: block;
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+
+/* ==========================================================
+   UPLOAD ZONE
+   ========================================================== */
+
+.cd-upload-zone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 190px;
+    padding: 30px;
+    border: 1.5px dashed #d4d9df;
+    border-radius: 14px;
+    box-sizing: border-box;
+    background: #fafbfc;
+    text-align: center;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background-color 160ms ease,
+        transform 160ms ease;
+}
+
+.cd-upload-zone:hover,
+.cd-upload-zone.is-dragging {
+    border-color: #9ca3af;
+    background: #f7f8fa;
+}
+
+.cd-upload-zone.is-dragging {
+    transform: scale(1.005);
+}
+
+.cd-upload-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    color: #4b5563;
+    background: #ffffff;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.cd-upload-zone strong {
+    color: #374151;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.cd-upload-zone > span {
+    margin-top: 5px;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.cd-form-file {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0;
+    cursor: pointer;
+}
+
+
+/* ==========================================================
+   ACTIONS
+   ========================================================== */
+
+.cd-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    padding-top: 4px;
+}
+
+.cd-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    padding: 0 18px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        transform 150ms ease,
+        background-color 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.cd-button:hover {
+    transform: translateY(-1px);
+}
+
+.cd-button-primary {
+    color: #ffffff;
+    background: #111827;
+    border-color: #111827;
+    box-shadow: 0 7px 18px rgba(17, 24, 39, 0.12);
+}
+
+.cd-button-primary:hover {
+    color: #ffffff;
+    background: #1f2937;
+}
+
+.cd-button-secondary {
+    color: #374151;
+    background: #ffffff;
+    border-color: #e1e5ea;
+}
+
+.cd-button-secondary:hover {
+    color: #111827;
+    background: #f9fafb;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 800px) {
+
+    .cd-page {
+        padding: 22px 20px 40px;
+    }
+
+    .cd-form-grid-2,
+    .cd-form-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .cd-page {
+        padding: 18px 14px 32px;
+    }
+
+    .cd-page-header h1 {
+        font-size: 29px;
+    }
+
+    .cd-form-card {
+        padding: 18px;
+        border-radius: 13px;
+    }
+
+    .cd-section-heading {
+        margin-bottom: 20px;
+    }
+
+    .cd-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .cd-form-actions .cd-button {
+        width: 100%;
+    }
+
+    .cd-upload-zone {
+        min-height: 165px;
+        padding: 24px 15px;
+    }
+}

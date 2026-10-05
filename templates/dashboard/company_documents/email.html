@@ -1,0 +1,184 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+    Email Document · {{ document.name }}
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/email.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="cd-email-page">
+
+    <div class="cd-page-header">
+
+        <div>
+
+            <a
+                href="{% url 'company_documents:detail' document.pk %}"
+                class="cd-back-link"
+            >
+                ← Back to document
+            </a>
+
+            <div class="cd-eyebrow">
+                DOCUMENT DELIVERY
+            </div>
+
+            <h1>
+                Email document
+            </h1>
+
+            <p>
+                Send a secure copy of this document as an email attachment.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="cd-email-grid">
+
+        <main class="cd-email-card">
+
+            <form
+                method="post"
+                class="cd-email-form"
+            >
+
+                {% csrf_token %}
+
+
+                <div class="cd-field">
+
+                    <label for="recipient">
+                        Recipient email
+                        <span>*</span>
+                    </label>
+
+                    <input
+                        id="recipient"
+                        type="email"
+                        name="recipient"
+                        placeholder="recipient@example.com"
+                        required
+                        autocomplete="email"
+                    >
+
+                </div>
+
+
+                <div class="cd-field">
+
+                    <label for="subject">
+                        Subject
+                        <span>*</span>
+                    </label>
+
+                    <input
+                        id="subject"
+                        type="text"
+                        name="subject"
+                        value="{{ document.name }}"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="cd-field">
+
+                    <label for="message">
+                        Message
+                    </label>
+
+                    <textarea
+                        id="message"
+                        name="message"
+                        rows="8"
+                        placeholder="Write your message..."
+                    >Please find the requested document attached.</textarea>
+
+                </div>
+
+
+                <div class="cd-email-actions">
+
+                    <a
+                        href="{% url 'company_documents:detail' document.pk %}"
+                        class="cd-button cd-button-secondary"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="cd-button cd-button-primary"
+                    >
+                        Send document
+                    </button>
+
+                </div>
+
+            </form>
+
+        </main>
+
+
+        <aside class="cd-email-sidebar">
+
+            <div class="cd-sidebar-card">
+
+                <span class="cd-card-eyebrow">
+                    ATTACHMENT
+                </span>
+
+                <h3>
+                    {{ document.name }}
+                </h3>
+
+                <p>
+                    {{ document.original_filename|default:"Document file" }}
+                </p>
+
+                {% if document.file_size %}
+                    <span>
+                        {{ document.file_size|filesizeformat }}
+                    </span>
+                {% endif %}
+
+            </div>
+
+
+            <div class="cd-sidebar-card">
+
+                <span class="cd-card-eyebrow">
+                    SECURITY
+                </span>
+
+                <h3>
+                    Secure delivery
+                </h3>
+
+                <p>
+                    The stored document is retrieved from the secure
+                    document storage and attached directly to the email.
+                </p>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+{% endblock %}

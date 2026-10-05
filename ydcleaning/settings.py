@@ -186,6 +186,9 @@ INSTALLED_APPS = [
     "support",
     "analytics",
     "corporate",
+    # Third-party apps
+    "company_documents",
+
 ]
 
 
@@ -214,6 +217,11 @@ STORAGES = {
     },
 }
 
+# ==========================================================
+# COMPANY DOCUMENT UPLOADS
+# ==========================================================
+
+COMPANY_DOCUMENT_MAX_SIZE = 50 * 1024 * 1024
 
 # ==========================================================
 # TEST MEDIA STORAGE

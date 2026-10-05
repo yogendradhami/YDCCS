@@ -1,0 +1,553 @@
+/* ==========================================================
+   YD COMMERCIAL CLEANING
+   COMPANY DOCUMENTS — DETAIL
+   ========================================================== */
+
+
+.cd-detail-page {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 32px 50px;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.cd-detail-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.cd-detail-header h1 {
+    margin: 0;
+    color: #111827;
+    font-size: clamp(28px, 3.4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+}
+
+.cd-back-link {
+    display: inline-flex;
+    margin-bottom: 17px;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.cd-back-link:hover {
+    color: #111827;
+}
+
+.cd-eyebrow {
+    margin-bottom: 8px;
+    color: #6b7280;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.cd-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 11px;
+}
+
+.cd-detail-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 0 9px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    color: #6b7280;
+    background: #f9fafb;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.cd-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.cd-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 41px;
+    padding: 0 15px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        transform 150ms ease,
+        background-color 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.cd-button:hover {
+    transform: translateY(-1px);
+}
+
+.cd-button-primary {
+    color: #ffffff;
+    background: #111827;
+    border-color: #111827;
+    box-shadow: 0 7px 18px rgba(17, 24, 39, 0.12);
+}
+
+.cd-button-primary:hover {
+    color: #ffffff;
+    background: #1f2937;
+}
+
+.cd-button-secondary {
+    color: #374151;
+    background: #ffffff;
+    border-color: #e1e5ea;
+}
+
+.cd-button-secondary:hover {
+    color: #111827;
+    background: #f9fafb;
+}
+
+
+/* ==========================================================
+   MAIN GRID
+   ========================================================== */
+
+.cd-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 310px;
+    align-items: start;
+    gap: 18px;
+}
+
+.cd-detail-main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cd-detail-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+
+/* ==========================================================
+   CARDS
+   ========================================================== */
+
+.cd-detail-card,
+.cd-sidebar-card {
+    border: 1px solid #e8ebf0;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035);
+}
+
+.cd-detail-card {
+    padding: 23px;
+}
+
+.cd-sidebar-card {
+    padding: 19px;
+}
+
+.cd-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 21px;
+}
+
+.cd-card-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    color: #9ca3af;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.cd-card-heading h2,
+.cd-sidebar-card h3 {
+    margin: 0;
+    color: #111827;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.cd-card-heading h2 {
+    font-size: 17px;
+}
+
+.cd-sidebar-card h3 {
+    font-size: 15px;
+}
+
+
+/* ==========================================================
+   INFO GRID
+   ========================================================== */
+
+.cd-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid #eef0f3;
+    border-left: 1px solid #eef0f3;
+}
+
+.cd-info-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cd-info-item {
+    min-width: 0;
+    padding: 14px;
+    border-right: 1px solid #eef0f3;
+    border-bottom: 1px solid #eef0f3;
+}
+
+.cd-info-item span {
+    display: block;
+    margin-bottom: 6px;
+    color: #9ca3af;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.cd-info-item strong {
+    display: block;
+    overflow: hidden;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+}
+
+
+/* ==========================================================
+   DESCRIPTION
+   ========================================================== */
+
+.cd-description {
+    margin-top: 18px;
+    padding: 15px;
+    border: 1px solid #eef0f3;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.cd-description > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #9ca3af;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.cd-description p {
+    margin: 0;
+    color: #4b5563;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   RELATED RECORD
+   ========================================================== */
+
+.cd-related-record {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #eef0f3;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.cd-related-record strong {
+    color: #374151;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.cd-related-record span {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+
+/* ==========================================================
+   AUDIT
+   ========================================================== */
+
+.cd-audit-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.cd-audit-item {
+    display: flex;
+    gap: 13px;
+    padding: 13px 0;
+    border-bottom: 1px solid #eef0f3;
+}
+
+.cd-audit-item:first-child {
+    padding-top: 0;
+}
+
+.cd-audit-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.cd-audit-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 26px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    color: #6b7280;
+    background: #f3f4f6;
+    font-size: 8px;
+}
+
+.cd-audit-content strong {
+    display: block;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.cd-audit-content span {
+    display: block;
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+.cd-empty-audit {
+    padding: 25px;
+    border: 1px dashed #e1e5ea;
+    border-radius: 10px;
+    color: #9ca3af;
+    background: #fafbfc;
+    font-size: 11px;
+    text-align: center;
+}
+
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+
+.cd-sidebar-card p {
+    margin: 10px 0 0;
+    color: #9ca3af;
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+
+/* ==========================================================
+   SECURITY
+   ========================================================== */
+
+.cd-security-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 27px;
+    padding: 0 9px;
+    margin-top: 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.cd-security-standard {
+    color: #374151;
+    background: #f3f4f6;
+}
+
+.cd-security-sensitive {
+    color: #991b1b;
+    background: #fef2f2;
+}
+
+
+/* ==========================================================
+   VERSION
+   ========================================================== */
+
+.cd-version-number {
+    margin-top: 12px;
+    color: #111827;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1;
+}
+
+
+/* ==========================================================
+   DANGER
+   ========================================================== */
+
+.cd-danger-card {
+    border-color: #f1dddd;
+}
+
+.cd-inline-form {
+    margin: 12px 0 0;
+}
+
+.cd-danger-button {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #991b1b;
+    background: #fff7f7;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease;
+}
+
+.cd-danger-button:hover {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+.cd-danger-button-dark {
+    color: #ffffff;
+    border-color: #991b1b;
+    background: #991b1b;
+}
+
+.cd-danger-button-dark:hover {
+    border-color: #7f1d1d;
+    background: #7f1d1d;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 1050px) {
+
+    .cd-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-detail-sidebar {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 800px) {
+
+    .cd-detail-page {
+        padding: 22px 20px 40px;
+    }
+
+    .cd-detail-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cd-detail-actions {
+        width: 100%;
+    }
+
+    .cd-detail-actions .cd-button {
+        flex: 1;
+    }
+
+    .cd-detail-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-info-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .cd-detail-page {
+        padding: 18px 14px 32px;
+    }
+
+    .cd-detail-header h1 {
+        font-size: 29px;
+    }
+
+    .cd-detail-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .cd-detail-actions .cd-button:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .cd-detail-card {
+        padding: 18px;
+    }
+
+    .cd-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-related-record {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

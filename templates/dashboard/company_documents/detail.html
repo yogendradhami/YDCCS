@@ -1,0 +1,538 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+    {{ document.name }} · Company Documents
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/detail.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="cd-detail-page">
+
+    <!-- ==================================================
+         HEADER
+    =================================================== -->
+
+    <div class="cd-detail-header">
+
+        <div>
+
+            <a
+                href="{% url 'company_documents:list' %}"
+                class="cd-back-link"
+            >
+                ← Company Documents
+            </a>
+
+            <div class="cd-eyebrow">
+                DOCUMENT DETAILS
+            </div>
+
+            <h1>
+                {{ document.name }}
+            </h1>
+
+            <div class="cd-detail-meta">
+
+                <span>
+                    Version {{ document.version|default:"1" }}
+                </span>
+
+                {% if document.status_label %}
+                    <span>
+                        {{ document.status_label }}
+                    </span>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             ACTIONS
+        =================================================== -->
+
+        <div class="cd-detail-actions">
+
+            <a
+                href="{% url 'company_documents:download' document.pk %}"
+                class="cd-button cd-button-primary"
+            >
+                ↓ Download
+            </a>
+
+            <a
+                href="{% url 'company_documents:email' document.pk %}"
+                class="cd-button cd-button-secondary"
+            >
+                ✉ Email
+            </a>
+
+            <a
+                href="{% url 'company_documents:edit' document.pk %}"
+                class="cd-button cd-button-secondary"
+            >
+                Edit
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         STATUS
+    =================================================== -->
+
+    <div class="cd-detail-grid">
+
+        <main class="cd-detail-main">
+
+            <!-- ==================================================
+                 DOCUMENT SUMMARY
+            =================================================== -->
+
+            <section class="cd-detail-card">
+
+                <div class="cd-card-heading">
+
+                    <div>
+                        <span class="cd-card-eyebrow">
+                            DOCUMENT
+                        </span>
+
+                        <h2>
+                            Document information
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <div class="cd-info-grid">
+
+                    <div class="cd-info-item">
+                        <span>Name</span>
+                        <strong>
+                            {{ document.name }}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Category</span>
+                        <strong>
+                            {{ document.get_category_display }}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Document type</span>
+                        <strong>
+                            {{ document.document_type|default:"—" }}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Reference</span>
+                        <strong>
+                            {{ document.document_reference|default:"—" }}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Original filename</span>
+                        <strong>
+                            {{ document.original_filename|default:"—" }}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>File size</span>
+                        <strong>
+                            {% if document.file_size %}
+                                {{ document.file_size|filesizeformat }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Uploaded</span>
+                        <strong>
+                            {{ document.uploaded_at|date:"d M Y, H:i" }}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Uploaded by</span>
+                        <strong>
+                            {% if document.uploaded_by %}
+                                {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                {% if document.description %}
+
+                    <div class="cd-description">
+
+                        <span>
+                            Description
+                        </span>
+
+                        <p>
+                            {{ document.description|linebreaksbr }}
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- ==================================================
+                 COMPLIANCE
+            =================================================== -->
+
+            <section class="cd-detail-card">
+
+                <div class="cd-card-heading">
+
+                    <div>
+                        <span class="cd-card-eyebrow">
+                            COMPLIANCE
+                        </span>
+
+                        <h2>
+                            Important dates
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <div class="cd-info-grid cd-info-grid-3">
+
+                    <div class="cd-info-item">
+                        <span>Issue date</span>
+                        <strong>
+                            {% if document.issue_date %}
+                                {{ document.issue_date|date:"d M Y" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Expiry date</span>
+                        <strong>
+                            {% if document.expiry_date %}
+                                {{ document.expiry_date|date:"d M Y" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="cd-info-item">
+                        <span>Review date</span>
+                        <strong>
+                            {% if document.review_date %}
+                                {{ document.review_date|date:"d M Y" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 RELATIONSHIP
+            =================================================== -->
+
+            <section class="cd-detail-card">
+
+                <div class="cd-card-heading">
+
+                    <div>
+                        <span class="cd-card-eyebrow">
+                            RELATIONSHIP
+                        </span>
+
+                        <h2>
+                            Related record
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <div class="cd-related-record">
+
+                    {% if document.related_object %}
+
+                        <strong>
+                            {{ document.related_name }}
+                        </strong>
+
+                        <span>
+                            {{ document.get_related_type_display }}
+                        </span>
+
+                    {% else %}
+
+                        <strong>
+                            Company-wide document
+                        </strong>
+
+                        <span>
+                            Not linked to a specific record
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 AUDIT TRAIL
+            =================================================== -->
+
+            <section class="cd-detail-card">
+
+                <div class="cd-card-heading">
+
+                    <div>
+                        <span class="cd-card-eyebrow">
+                            SECURITY
+                        </span>
+
+                        <h2>
+                            Activity history
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                {% if audit_events %}
+
+                    <div class="cd-audit-list">
+
+                        {% for audit in audit_events %}
+
+                            <div class="cd-audit-item">
+
+                                <div class="cd-audit-marker">
+                                    ●
+                                </div>
+
+                                <div class="cd-audit-content">
+
+                                    <strong>
+                                        {{ audit.get_action_display }}
+                                    </strong>
+
+                                    <span>
+                                        {% if audit.user %}
+                                            {{ audit.user.get_full_name|default:audit.user.username }}
+                                        {% else %}
+                                            System
+                                        {% endif %}
+
+                                        ·
+
+                                        {{ audit.created_at|date:"d M Y, H:i" }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="cd-empty-audit">
+                        No activity has been recorded yet.
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+        </main>
+
+
+        <!-- ==================================================
+             SIDEBAR
+        =================================================== -->
+
+        <aside class="cd-detail-sidebar">
+
+            <!-- SECURITY -->
+
+            <section class="cd-sidebar-card">
+
+                <span class="cd-card-eyebrow">
+                    SECURITY
+                </span>
+
+                <h3>
+                    Access control
+                </h3>
+
+                {% if document.is_sensitive %}
+
+                    <div class="cd-security-badge cd-security-sensitive">
+                        Sensitive document
+                    </div>
+
+                    <p>
+                        This document is restricted to authorised
+                        document administrators.
+                    </p>
+
+                {% else %}
+
+                    <div class="cd-security-badge cd-security-standard">
+                        Standard document
+                    </div>
+
+                    <p>
+                        This document is available to authorised
+                        company administrators.
+                    </p>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- VERSION -->
+
+            <section class="cd-sidebar-card">
+
+                <span class="cd-card-eyebrow">
+                    VERSION
+                </span>
+
+                <h3>
+                    Version control
+                </h3>
+
+                <div class="cd-version-number">
+                    {{ document.version|default:"1" }}
+                </div>
+
+                <p>
+                    Replace the file from the Edit screen to create
+                    a new document version.
+                </p>
+
+            </section>
+
+
+            <!-- DANGER ZONE -->
+
+            <section class="cd-sidebar-card cd-danger-card">
+
+                <span class="cd-card-eyebrow">
+                    DANGER ZONE
+                </span>
+
+                <h3>
+                    Document lifecycle
+                </h3>
+
+                {% if document.status != "archived" %}
+
+                    <form
+                        method="post"
+                        action="{% url 'company_documents:archive' document.pk %}"
+                        class="cd-inline-form"
+                        data-confirm="Archive this document?"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="cd-danger-button"
+                        >
+                            Archive document
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+
+                <form
+                    method="post"
+                    action="{% url 'company_documents:delete' document.pk %}"
+                    class="cd-inline-form"
+                    data-confirm="Permanently delete this document? This cannot be undone."
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="cd-danger-button cd-danger-button-dark"
+                    >
+                        Permanently delete
+                    </button>
+
+                </form>
+
+            </section>
+
+        </aside>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{% static 'js/dashboard/company-documents.js' %}"></script>
+
+{% endblock %}
