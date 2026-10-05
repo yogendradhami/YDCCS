@@ -1,0 +1,23 @@
+.employee-edit-page{--ee-ink:#152332;--ee-muted:#647383;--ee-line:#dce4e8;--ee-accent:#087e78;--ee-accent-dark:#05645f;--ee-soft:#e7f4f2;--ee-danger:#b33e49;color:var(--ee-ink)}
+.employee-edit-page .employee-current-photo{position:relative;display:flex;min-height:190px;align-items:center;justify-content:center;overflow:hidden;border-radius:9px;background:#eef3f3;border:1px solid var(--ee-line)}
+.employee-edit-page .employee-current-photo img{width:100%;height:190px;object-fit:cover;display:block}
+.employee-edit-page .employee-current-fallback{display:grid;place-items:center;width:92px;height:92px;border-radius:24px;background:var(--ee-soft);color:var(--ee-accent-dark);font-size:34px;font-weight:800}
+.employee-edit-page .employee-photo-badge{position:absolute;left:10px;bottom:10px;padding:5px 8px;border-radius:999px;background:rgba(21,35,50,.86);color:#fff;font-size:10px;font-weight:750;backdrop-filter:blur(8px)}
+.employee-edit-page .employee-photo-drop{min-height:92px;margin-top:9px}
+.employee-edit-page .employee-photo-drop .employee-photo-placeholder{padding:10px}
+.employee-edit-page .employee-photo-drop .employee-photo-icon{width:30px;height:30px;font-size:17px}
+.employee-edit-page .employee-photo-preview{z-index:2}
+.employee-edit-page .employee-photo-preview img{width:100%;height:100%;object-fit:cover}
+.employee-edit-page .employee-clear-photo{display:flex;align-items:center;gap:8px;margin-top:9px;color:var(--ee-muted);font-size:11px}
+.employee-edit-page .employee-clear-photo input{width:15px;height:15px;accent-color:var(--ee-danger)}
+.employee-edit-page .employee-login-card{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border:1px solid #e1e9e9;border-radius:8px;background:#f9fbfb}
+.employee-edit-page .employee-login-avatar{display:grid;flex:0 0 38px;width:38px;height:38px;place-items:center;overflow:hidden;border-radius:11px;background:var(--ee-soft);color:var(--ee-accent-dark);font-size:14px;font-weight:800}
+.employee-edit-page .employee-login-avatar img{width:100%;height:100%;object-fit:cover}
+.employee-edit-page .employee-login-copy{min-width:0;display:grid;gap:2px}.employee-edit-page .employee-login-copy strong{font-size:11px}.employee-edit-page .employee-login-copy span{overflow:hidden;color:var(--ee-muted);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.employee-edit-page .employee-summary-photo{display:flex;align-items:center;gap:11px;margin:15px 0 3px;padding-bottom:14px;border-bottom:1px solid #edf1f2}
+.employee-edit-page .employee-summary-avatar{display:grid;flex:0 0 46px;width:46px;height:46px;place-items:center;overflow:hidden;border-radius:14px;background:var(--ee-soft);color:var(--ee-accent-dark);font-size:17px;font-weight:800}
+.employee-edit-page .employee-summary-avatar img{width:100%;height:100%;object-fit:cover}
+.employee-edit-page .employee-summary-photo div{min-width:0}.employee-edit-page .employee-summary-photo strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.employee-edit-page .employee-summary-photo span{display:block;margin-top:3px;color:var(--ee-muted);font-size:10px}
+.employee-edit-page .employee-user-field select{width:100%}
+.employee-edit-page .employee-danger-note{color:var(--ee-muted);font-size:10px;line-height:1.5;margin:12px 0 0}
+@media(max-width:760px){.employee-edit-page .employee-current-photo,.employee-edit-page .employee-current-photo img{min-height:165px;height:165px}.employee-edit-page .employee-login-card{align-items:flex-start}}
