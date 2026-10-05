@@ -1,28 +1,381 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
 
-{% block title %}Page Not Found | YD Commercial Cleaning Services{% endblock %}
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-{% block meta_description %}The page you are looking for cannot be found. Explore our Adelaide cleaning services or contact us for help.{% endblock %}
+    <title>Page Not Found | YD Commercial Cleaning Services</title>
 
-{% block content %}
-<section class="section not-found-section">
-    <div class="container">
-        <div class="not-found-card">
-            <h1>404 — Page Not Found</h1>
-            <p>We couldn’t locate the page you were looking for. Try one of our Adelaide cleaning services below or return home.</p>
-            <div class="not-found-actions">
-                <a href="/services/" class="btn-fill">View Services</a>
-                <a href="/" class="btn-outline">Return Home</a>
+    <meta
+        name="description"
+        content="The page you were looking for could not be found. Explore YD Commercial Cleaning's professional cleaning services across Adelaide."
+    >
+
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/static/css/pages/404.css"
+    >
+</head>
+
+<body>
+
+    <main class="error-page" aria-labelledby="error-title">
+
+        <div class="error-page__glow error-page__glow--one"></div>
+        <div class="error-page__glow error-page__glow--two"></div>
+
+        <div class="error-page__container">
+
+            <section class="error-page__content">
+
+                <div class="error-page__eyebrow">
+                    <span class="error-page__status-dot"></span>
+                    <span>ERROR 404</span>
+                </div>
+
+                <div
+                    class="error-page__number"
+                    aria-hidden="true"
+                >
+                    404
+                </div>
+
+                <h1 id="error-title">
+                    Looks like this page
+                    <span>needs a little cleaning.</span>
+                </h1>
+
+                <p class="error-page__description">
+                    We couldn't find the page you're looking for.
+                    It may have been moved, renamed, or no longer exists.
+                    Let's get you back to somewhere useful.
+                </p>
+
+                <div class="error-page__actions">
+
+                    <a
+                        href="/"
+                        class="error-btn error-btn--primary"
+                    >
+                        <span>Return Home</span>
+
+                        <span
+                            class="error-btn__icon"
+                            aria-hidden="true"
+                        >
+                            →
+                        </span>
+                    </a>
+
+                    <a
+                        href="/services/"
+                        class="error-btn error-btn--secondary"
+                    >
+                        Explore Services
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <div
+                class="error-page__visual"
+                aria-hidden="true"
+            >
+
+                <div
+                    class="cleaning-orbit cleaning-orbit--outer"
+                ></div>
+
+                <div
+                    class="cleaning-orbit cleaning-orbit--inner"
+                ></div>
+
+
+                <div class="error-page__visual-card">
+
+                    <div class="error-page__visual-icon">
+
+                        <svg
+                            viewBox="0 0 64 64"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+
+                            <path
+                                d="M32 7C20.402 7 11 16.402 11 28V34C11 45.598 20.402 55 32 55C43.598 55 53 45.598 53 34V28C53 16.402 43.598 7 32 7Z"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                            />
+
+                            <path
+                                d="M21 31L27.5 37.5L43 22"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+
+                        </svg>
+
+                    </div>
+
+                    <span>
+                        Let's get you back on track.
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="error-page__spark error-page__spark--one"
+                ></div>
+
+                <div
+                    class="error-page__spark error-page__spark--two"
+                ></div>
+
+                <div
+                    class="error-page__spark error-page__spark--three"
+                ></div>
+
             </div>
-            <div class="not-found-links">
-                <ul>
-                    <li><a href="/services/house-cleaning-adelaide/">House Cleaning Adelaide</a></li>
-                    <li><a href="/services/commercial-cleaning-adelaide/">Commercial Cleaning Adelaide</a></li>
-                    <li><a href="/services/office-cleaning-adelaide/">Office Cleaning Adelaide</a></li>
-                    <li><a href="/services/end-of-lease-cleaning-adelaide/">End of Lease Cleaning Adelaide</a></li>
-                </ul>
-            </div>
+
         </div>
-    </div>
-</section>
-{% endblock %}
+
+    </main>
+
+
+    <section class="error-destinations">
+
+        <div class="error-destinations__container">
+
+            <div class="error-destinations__header">
+
+                <div>
+
+                    <span class="section-label">
+                        FIND YOUR WAY
+                    </span>
+
+                    <h2>
+                        Popular cleaning services
+                    </h2>
+
+                </div>
+
+                <p>
+                    Looking for professional cleaning in Adelaide?
+                    Start with one of our most requested services.
+                </p>
+
+            </div>
+
+
+            <div class="error-service-grid">
+
+                <a
+                    href="/services/house-cleaning-adelaide/"
+                    class="error-service-card"
+                >
+
+                    <div class="error-service-card__number">
+                        01
+                    </div>
+
+                    <div class="error-service-card__content">
+
+                        <h3>
+                            House Cleaning Adelaide
+                        </h3>
+
+                        <p>
+                            Reliable professional cleaning for homes
+                            across Adelaide.
+                        </p>
+
+                    </div>
+
+                    <span
+                        class="error-service-card__arrow"
+                        aria-hidden="true"
+                    >
+                        →
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="/services/commercial-cleaning-adelaide/"
+                    class="error-service-card"
+                >
+
+                    <div class="error-service-card__number">
+                        02
+                    </div>
+
+                    <div class="error-service-card__content">
+
+                        <h3>
+                            Commercial Cleaning Adelaide
+                        </h3>
+
+                        <p>
+                            Professional cleaning solutions for
+                            workplaces and businesses.
+                        </p>
+
+                    </div>
+
+                    <span
+                        class="error-service-card__arrow"
+                        aria-hidden="true"
+                    >
+                        →
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="/services/office-cleaning-adelaide/"
+                    class="error-service-card"
+                >
+
+                    <div class="error-service-card__number">
+                        03
+                    </div>
+
+                    <div class="error-service-card__content">
+
+                        <h3>
+                            Office Cleaning Adelaide
+                        </h3>
+
+                        <p>
+                            Keep your workplace clean, presentable
+                            and ready for business.
+                        </p>
+
+                    </div>
+
+                    <span
+                        class="error-service-card__arrow"
+                        aria-hidden="true"
+                    >
+                        →
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="/services/end-of-lease-cleaning-adelaide/"
+                    class="error-service-card"
+                >
+
+                    <div class="error-service-card__number">
+                        04
+                    </div>
+
+                    <div class="error-service-card__content">
+
+                        <h3>
+                            End of Lease Cleaning Adelaide
+                        </h3>
+
+                        <p>
+                            Detailed end-of-lease cleaning designed
+                            for a smooth handover.
+                        </p>
+
+                    </div>
+
+                    <span
+                        class="error-service-card__arrow"
+                        aria-hidden="true"
+                    >
+                        →
+                    </span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="error-help">
+
+        <div class="error-help__container">
+
+            <div class="error-help__inner">
+
+                <div>
+
+                    <span class="section-label">
+                        NEED HELP?
+                    </span>
+
+                    <h2>
+                        Can't find what you're looking for?
+                    </h2>
+
+                    <p>
+                        Our team can help you find the right cleaning
+                        service for your home, workplace or commercial
+                        property.
+                    </p>
+
+                </div>
+
+
+                <div class="error-help__actions">
+
+                    <a
+                        href="/contact/"
+                        class="error-btn error-btn--light"
+                    >
+                        <span>Contact Us</span>
+
+                        <span aria-hidden="true">
+                            →
+                        </span>
+                    </a>
+
+                    <a
+                        href="/services/"
+                        class="error-help__text-link"
+                    >
+                        View all services
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</body>
+</html>

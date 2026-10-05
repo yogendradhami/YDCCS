@@ -1,0 +1,1283 @@
+/* ==========================================================
+   YD COMMERCIAL CLEANING
+   Premium 404 Error Page
+   Standalone page stylesheet
+   ========================================================== */
+
+
+/* ==========================================================
+   RESET / BASE
+   ========================================================== */
+
+html {
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    background: #07120f;
+    color: #10251e;
+    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+    max-width: 100%;
+}
+
+a {
+    color: inherit;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+    background: rgba(95, 217, 133, 0.28);
+    color: #07120f;
+}
+
+
+/* ==========================================================
+   CONTAINER SYSTEM
+   ========================================================== */
+
+.error-page__container,
+.error-destinations__container,
+.error-help__container {
+    width: min(1180px, calc(100% - 48px));
+    margin-inline: auto;
+}
+
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+
+.error-page {
+    position: relative;
+    min-height: 720px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 78% 35%,
+            rgba(34, 197, 94, 0.14),
+            transparent 31%
+        ),
+        radial-gradient(
+            circle at 12% 85%,
+            rgba(95, 217, 133, 0.07),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            #06110e 0%,
+            #0a1c17 50%,
+            #102a21 100%
+        );
+
+    color: #ffffff;
+}
+
+
+/* Subtle grid texture */
+
+.error-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.22;
+
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 56px 56px;
+
+    mask-image: linear-gradient(
+        to bottom,
+        black 0%,
+        transparent 90%
+    );
+
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        black 0%,
+        transparent 90%
+    );
+}
+
+
+/* ==========================================================
+   HERO GLOWS
+   ========================================================== */
+
+.error-page__glow {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(2px);
+}
+
+.error-page__glow--one {
+    width: 520px;
+    height: 520px;
+    top: -250px;
+    right: -150px;
+
+    background: radial-gradient(
+        circle,
+        rgba(95, 217, 133, 0.12),
+        transparent 68%
+    );
+}
+
+.error-page__glow--two {
+    width: 420px;
+    height: 420px;
+    bottom: -240px;
+    left: -160px;
+
+    background: radial-gradient(
+        circle,
+        rgba(113, 229, 154, 0.07),
+        transparent 68%
+    );
+}
+
+
+/* ==========================================================
+   HERO CONTAINER
+   ========================================================== */
+
+.error-page__container {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.1fr)
+        minmax(380px, 0.9fr);
+
+    align-items: center;
+    gap: 70px;
+
+    padding-top: 90px;
+    padding-bottom: 90px;
+}
+
+
+/* ==========================================================
+   HERO CONTENT
+   ========================================================== */
+
+.error-page__content {
+    max-width: 700px;
+}
+
+.error-page__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 22px;
+    padding: 8px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    color: rgba(255, 255, 255, 0.72);
+
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+.error-page__status-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+
+    border-radius: 50%;
+
+    background: #5ee27c;
+
+    box-shadow:
+        0 0 0 4px rgba(94, 226, 124, 0.08),
+        0 0 16px rgba(94, 226, 124, 0.8);
+
+    animation: statusPulse 2.4s ease-in-out infinite;
+}
+
+
+/* ==========================================================
+   404 NUMBER
+   ========================================================== */
+
+.error-page__number {
+    position: relative;
+
+    margin-bottom: -4px;
+
+    color: rgba(255, 255, 255, 0.055);
+
+    font-family: "Manrope", sans-serif;
+    font-size: clamp(6rem, 14vw, 11rem);
+    font-weight: 800;
+    line-height: 0.8;
+    letter-spacing: -0.08em;
+
+    user-select: none;
+}
+
+
+/* ==========================================================
+   HERO HEADING
+   ========================================================== */
+
+.error-page h1 {
+    max-width: 700px;
+
+    margin: 0;
+
+    color: #ffffff;
+
+    font-family: "Manrope", sans-serif;
+    font-size: clamp(2.7rem, 5vw, 5.2rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+}
+
+.error-page h1 span {
+    display: block;
+    color: #71e59a;
+}
+
+
+/* ==========================================================
+   DESCRIPTION
+   ========================================================== */
+
+.error-page__description {
+    max-width: 600px;
+
+    margin: 28px 0 0;
+
+    color: rgba(255, 255, 255, 0.68);
+
+    font-size: 1.08rem;
+    line-height: 1.75;
+}
+
+
+/* ==========================================================
+   BUTTON AREA
+   ========================================================== */
+
+.error-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+
+    margin-top: 34px;
+}
+
+.error-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+
+    min-height: 52px;
+    padding: 0 23px;
+
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        background 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease;
+}
+
+.error-btn:hover {
+    transform: translateY(-2px);
+}
+
+.error-btn:focus-visible,
+.error-service-card:focus-visible,
+.error-help__text-link:focus-visible {
+    outline: 3px solid rgba(113, 229, 154, 0.65);
+    outline-offset: 4px;
+}
+
+
+/* Primary */
+
+.error-btn--primary {
+    background: #5fd985;
+    color: #07120f;
+
+    box-shadow:
+        0 12px 30px rgba(50, 210, 112, 0.2);
+}
+
+.error-btn--primary:hover {
+    background: #7ae99b;
+
+    box-shadow:
+        0 16px 35px rgba(50, 210, 112, 0.3);
+}
+
+.error-btn__icon {
+    display: inline-flex;
+    transition: transform 180ms ease;
+}
+
+.error-btn--primary:hover .error-btn__icon {
+    transform: translateX(4px);
+}
+
+
+/* Secondary */
+
+.error-btn--secondary {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.055);
+    color: #ffffff;
+}
+
+.error-btn--secondary:hover {
+    border-color: rgba(113, 229, 154, 0.32);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+
+/* ==========================================================
+   HERO VISUAL
+   ========================================================== */
+
+.error-page__visual {
+    position: relative;
+
+    min-height: 450px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* Glass card */
+
+.error-page__visual-card {
+    position: relative;
+    z-index: 3;
+
+    width: min(320px, 80%);
+    aspect-ratio: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 22px;
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 34px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.11),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    box-shadow:
+        0 35px 80px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    color: rgba(255, 255, 255, 0.65);
+
+    text-align: center;
+
+    animation: errorFloat 5s ease-in-out infinite;
+}
+
+.error-page__visual-card::before {
+    content: "";
+
+    position: absolute;
+    inset: 1px;
+
+    border-radius: 33px;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.06),
+            transparent 45%
+        );
+}
+
+.error-page__visual-card span {
+    position: relative;
+    z-index: 1;
+
+    max-width: 190px;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+
+/* Icon */
+
+.error-page__visual-icon {
+    position: relative;
+    z-index: 1;
+
+    width: 86px;
+    height: 86px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid rgba(113, 229, 154, 0.25);
+    border-radius: 24px;
+
+    background: rgba(95, 217, 133, 0.09);
+
+    color: #71e59a;
+
+    box-shadow:
+        0 0 40px rgba(95, 217, 133, 0.08);
+}
+
+.error-page__visual-icon svg {
+    width: 44px;
+    height: 44px;
+}
+
+
+/* ==========================================================
+   ORBITS
+   ========================================================== */
+
+.cleaning-orbit {
+    position: absolute;
+
+    border: 1px solid rgba(113, 229, 154, 0.12);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.cleaning-orbit--outer {
+    width: 440px;
+    height: 440px;
+
+    animation: orbitRotate 24s linear infinite;
+}
+
+.cleaning-orbit--inner {
+    width: 340px;
+    height: 340px;
+
+    border-color: rgba(255, 255, 255, 0.08);
+
+    animation: orbitRotateReverse 18s linear infinite;
+}
+
+
+/* ==========================================================
+   ORBIT ACCENTS
+   ========================================================== */
+
+.error-page__spark {
+    position: absolute;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #71e59a;
+
+    box-shadow:
+        0 0 18px rgba(113, 229, 154, 0.8);
+
+    pointer-events: none;
+}
+
+.error-page__spark--one {
+    top: 15%;
+    right: 18%;
+}
+
+.error-page__spark--two {
+    bottom: 19%;
+    left: 12%;
+
+    width: 5px;
+    height: 5px;
+}
+
+.error-page__spark--three {
+    top: 28%;
+    left: 14%;
+
+    width: 6px;
+    height: 6px;
+}
+
+
+/* ==========================================================
+   SERVICE DESTINATIONS
+   ========================================================== */
+
+.error-destinations {
+    padding: 110px 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f8faf9 0%,
+            #f4f7f5 100%
+        );
+}
+
+.error-destinations__container {
+    position: relative;
+}
+
+.error-destinations__header {
+    display: grid;
+    grid-template-columns: 1fr 0.65fr;
+
+    align-items: end;
+
+    gap: 50px;
+
+    margin-bottom: 48px;
+}
+
+.section-label {
+    display: inline-block;
+
+    margin-bottom: 12px;
+
+    color: #25844d;
+
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+}
+
+.error-destinations h2,
+.error-help h2 {
+    margin: 0;
+
+    font-family: "Manrope", sans-serif;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+}
+
+.error-destinations h2 {
+    color: #0a1c16;
+}
+
+.error-destinations__header p {
+    margin: 0;
+
+    color: #60716b;
+
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   SERVICE GRID
+   ========================================================== */
+
+.error-service-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+
+/* ==========================================================
+   SERVICE CARD
+   ========================================================== */
+
+.error-service-card {
+    position: relative;
+
+    min-height: 190px;
+
+    display: grid;
+
+    grid-template-columns:
+        55px
+        minmax(0, 1fr)
+        30px;
+
+    gap: 20px;
+
+    align-items: start;
+
+    padding: 30px;
+
+    overflow: hidden;
+
+    border: 1px solid #e0e8e4;
+    border-radius: 20px;
+
+    background: #ffffff;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 2px 0 rgba(13, 42, 29, 0.02);
+
+    transition:
+        transform 220ms ease,
+        border-color 220ms ease,
+        box-shadow 220ms ease;
+}
+
+.error-service-card::before {
+    content: "";
+
+    position: absolute;
+    inset: auto 0 0;
+
+    height: 3px;
+
+    background: #5fd985;
+
+    transform: scaleX(0);
+    transform-origin: left;
+
+    transition: transform 220ms ease;
+}
+
+.error-service-card:hover {
+    transform: translateY(-5px);
+
+    border-color: rgba(95, 217, 133, 0.55);
+
+    box-shadow:
+        0 20px 45px rgba(18, 52, 38, 0.09);
+}
+
+.error-service-card:hover::before {
+    transform: scaleX(1);
+}
+
+
+/* Number */
+
+.error-service-card__number {
+    color: #a5b3ad;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+
+/* Content */
+
+.error-service-card__content {
+    min-width: 0;
+}
+
+.error-service-card__content h3 {
+    margin: 0 0 9px;
+
+    color: #10251e;
+
+    font-family: "Manrope", sans-serif;
+    font-size: 1.15rem;
+    font-weight: 750;
+    line-height: 1.3;
+}
+
+.error-service-card__content p {
+    margin: 0;
+
+    color: #6b7b75;
+
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+
+/* Arrow */
+
+.error-service-card__arrow {
+    align-self: center;
+
+    color: #25844d;
+
+    font-size: 1.35rem;
+
+    transition:
+        transform 180ms ease;
+}
+
+.error-service-card:hover .error-service-card__arrow {
+    transform: translateX(5px);
+}
+
+
+/* ==========================================================
+   HELP CTA
+   ========================================================== */
+
+.error-help {
+    padding: 90px 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #081712 0%,
+            #0b1d18 55%,
+            #102a21 100%
+        );
+
+    color: #ffffff;
+}
+
+.error-help__container {
+    position: relative;
+}
+
+.error-help__inner {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 50px;
+
+    padding: 55px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 26px;
+
+    background:
+        radial-gradient(
+            circle at 90% 20%,
+            rgba(95, 217, 133, 0.13),
+            transparent 35%
+        ),
+        rgba(255, 255, 255, 0.035);
+}
+
+.error-help__inner::after {
+    content: "";
+
+    position: absolute;
+
+    width: 240px;
+    height: 240px;
+
+    right: -100px;
+    bottom: -130px;
+
+    border: 1px solid rgba(113, 229, 154, 0.1);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.error-help h2 {
+    color: #ffffff;
+}
+
+.error-help p {
+    max-width: 580px;
+
+    margin: 18px 0 0;
+
+    color: rgba(255, 255, 255, 0.62);
+
+    line-height: 1.7;
+}
+
+.error-help__actions {
+    position: relative;
+    z-index: 2;
+
+    flex-shrink: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 18px;
+}
+
+
+/* CTA button */
+
+.error-btn--light {
+    background: #ffffff;
+    color: #0b1d18;
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.error-btn--light:hover {
+    background: #71e59a;
+
+    box-shadow:
+        0 16px 35px rgba(95, 217, 133, 0.18);
+}
+
+.error-help__text-link {
+    color: rgba(255, 255, 255, 0.68);
+
+    font-size: 0.88rem;
+    font-weight: 650;
+
+    text-decoration: none;
+
+    transition:
+        color 180ms ease;
+}
+
+.error-help__text-link:hover {
+    color: #71e59a;
+}
+
+
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
+
+@keyframes errorFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
+@keyframes orbitRotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes orbitRotateReverse {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes statusPulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.65;
+        transform: scale(0.82);
+    }
+}
+
+
+/* ==========================================================
+   TABLET
+   ========================================================== */
+
+@media (max-width: 1100px) {
+    .error-page__container {
+        gap: 45px;
+    }
+
+    .error-page__visual-card {
+        width: 290px;
+    }
+
+    .cleaning-orbit--outer {
+        width: 400px;
+        height: 400px;
+    }
+
+    .cleaning-orbit--inner {
+        width: 315px;
+        height: 315px;
+    }
+}
+
+
+/* ==========================================================
+   TABLET / SMALL LAPTOP
+   ========================================================== */
+
+@media (max-width: 900px) {
+    .error-page {
+        min-height: auto;
+    }
+
+    .error-page__container {
+        grid-template-columns: 1fr;
+
+        gap: 30px;
+
+        text-align: center;
+    }
+
+    .error-page__content {
+        margin-inline: auto;
+    }
+
+    .error-page__description {
+        margin-inline: auto;
+    }
+
+    .error-page__actions {
+        justify-content: center;
+    }
+
+    .error-page__visual {
+        min-height: 350px;
+    }
+
+    .error-page__visual-card {
+        width: 250px;
+    }
+
+    .cleaning-orbit--outer {
+        width: 350px;
+        height: 350px;
+    }
+
+    .cleaning-orbit--inner {
+        width: 275px;
+        height: 275px;
+    }
+
+    .error-destinations__header {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .error-help__inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 640px) {
+    .error-page__container,
+    .error-destinations__container,
+    .error-help__container {
+        width: min(100% - 32px, 1180px);
+    }
+
+    .error-page__container {
+        padding-top: 70px;
+        padding-bottom: 65px;
+    }
+
+    .error-page__eyebrow {
+        margin-bottom: 18px;
+    }
+
+    .error-page__number {
+        font-size: 6.5rem;
+    }
+
+    .error-page h1 {
+        font-size: 2.65rem;
+    }
+
+    .error-page__description {
+        font-size: 0.98rem;
+        line-height: 1.7;
+    }
+
+    .error-page__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .error-btn {
+        width: 100%;
+    }
+
+    .error-page__visual {
+        min-height: 290px;
+    }
+
+    .error-page__visual-card {
+        width: 220px;
+
+        border-radius: 28px;
+    }
+
+    .error-page__visual-icon {
+        width: 74px;
+        height: 74px;
+
+        border-radius: 20px;
+    }
+
+    .error-page__visual-icon svg {
+        width: 38px;
+        height: 38px;
+    }
+
+    .cleaning-orbit--outer {
+        width: 285px;
+        height: 285px;
+    }
+
+    .cleaning-orbit--inner {
+        width: 225px;
+        height: 225px;
+    }
+
+    .error-destinations {
+        padding: 75px 0;
+    }
+
+    .error-destinations__header {
+        margin-bottom: 32px;
+    }
+
+    .error-service-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .error-service-card {
+        min-height: 165px;
+
+        padding: 24px;
+
+        grid-template-columns:
+            40px
+            minmax(0, 1fr)
+            24px;
+
+        gap: 12px;
+    }
+
+    .error-service-card__content h3 {
+        font-size: 1.05rem;
+    }
+
+    .error-service-card__content p {
+        font-size: 0.86rem;
+    }
+
+    .error-help {
+        padding: 60px 0;
+    }
+
+    .error-help__inner {
+        padding: 32px 24px;
+    }
+
+    .error-help__actions {
+        width: 100%;
+    }
+
+    .error-help__actions .error-btn {
+        width: 100%;
+    }
+}
+
+
+/* ==========================================================
+   SMALL MOBILE
+   ========================================================== */
+
+@media (max-width: 390px) {
+    .error-page__container,
+    .error-destinations__container,
+    .error-help__container {
+        width: calc(100% - 24px);
+    }
+
+    .error-page__number {
+        font-size: 5.8rem;
+    }
+
+    .error-page h1 {
+        font-size: 2.3rem;
+    }
+
+    .error-page__description {
+        font-size: 0.94rem;
+    }
+
+    .error-service-card {
+        grid-template-columns:
+            minmax(0, 1fr)
+            25px;
+    }
+
+    .error-service-card__number {
+        display: none;
+    }
+
+    .error-help__inner {
+        padding: 28px 20px;
+    }
+}
+
+
+/* ==========================================================
+   ACCESSIBILITY
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .error-page__visual-card,
+    .cleaning-orbit,
+    .error-page__status-dot {
+        animation: none;
+    }
+
+    .error-btn,
+    .error-service-card,
+    .error-service-card::before,
+    .error-service-card__arrow,
+    .error-help__text-link,
+    .error-btn__icon {
+        transition: none;
+    }
+}
+
+
+/* ==========================================================
+   HIGH CONTRAST / PRINT
+   ========================================================== */
+
+@media (forced-colors: active) {
+    .error-btn,
+    .error-service-card,
+    .error-page__visual-card {
+        border: 1px solid CanvasText;
+    }
+}
+
+@media print {
+    .error-page {
+        min-height: auto;
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .error-page__glow,
+    .cleaning-orbit,
+    .error-page__spark {
+        display: none;
+    }
+
+    .error-page h1,
+    .error-page__number,
+    .error-page__description {
+        color: #000000;
+    }
+
+    .error-destinations,
+    .error-help {
+        background: #ffffff;
+    }
+
+    .error-help h2,
+    .error-help p {
+        color: #000000;
+    }
+}
