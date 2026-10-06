@@ -57,6 +57,7 @@ class EmployeeInductionMiddleware:
                     active=True,
                 )
             )
+            induction = employee.induction
 
         except Employee.DoesNotExist:
             # User is authenticated but isn't an active employee.
@@ -65,8 +66,6 @@ class EmployeeInductionMiddleware:
         except EmployeeInduction.DoesNotExist:
             # Employee has no induction record.
             return redirect("employee_induction")
-
-        induction = employee.induction
 
         # If induction is incomplete, redirect to induction.
         if induction.status != "completed":

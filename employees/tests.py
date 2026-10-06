@@ -8,6 +8,8 @@ import io
 import tempfile
 from unittest.mock import patch
 
+from induction.models import EmployeeInduction, InductionProgramme
+
 from .models import Employee
 
 
@@ -22,6 +24,14 @@ class EmployeePasswordChangeTests(TestCase):
 			full_name="Test Employee",
 			phone="0400123456",
 			email="employee@example.com",
+		)
+		programme = InductionProgramme.objects.create(
+			name="Password test induction",
+		)
+		EmployeeInduction.objects.create(
+			employee=self.employee,
+			programme=programme,
+			status="completed",
 		)
 
 	def test_employee_password_change_rejects_wrong_current_password(self):

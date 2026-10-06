@@ -1636,7 +1636,7 @@ def send_admin_quote_email(
     # --------------------------------------------------------
 
     text_message = f"""
-NEW WEBSITE QUOTE REQUEST
+NEW QUICK QUOTE REQUEST
 ========================================
 
 REFERENCE

@@ -7,10 +7,15 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from dashboard.models import CareerApplication
 
 
-@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+@override_settings(
+	EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+	ADMIN_EMAIL="admin@example.com",
+)
 class CareerEmailTests(TestCase):
 	def setUp(self):
 		self.client = Client()
+		mail.get_connection()
+		mail.outbox.clear()
 
 	def test_application_submission_sends_email(self):
 		data = {
@@ -27,9 +32,12 @@ class CareerEmailTests(TestCase):
 		response = self.client.post(reverse("careers"), data={**data}, files={"resume": resume})
 		self.assertEqual(response.status_code, 302)
 
-		# One email should be sent (confirmation)
-		self.assertEqual(len(mail.outbox), 1)
-		self.assertIn("Application Received", mail.outbox[0].subject)
+		self.assertEqual(len(mail.outbox), 2)
+		confirmation, notification = mail.outbox
+		self.assertIn("Application Received", confirmation.subject)
+		self.assertEqual(confirmation.to, ["applicant@example.com"])
+		self.assertIn("New Career Application", notification.subject)
+		self.assertEqual(notification.to, ["admin@example.com"])
 
 		app = CareerApplication.objects.filter(email="applicant@example.com").first()
 		self.assertIsNotNone(app)

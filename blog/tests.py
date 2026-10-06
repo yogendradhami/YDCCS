@@ -1,3 +1,4 @@
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.test import TestCase
 from django.utils import timezone
 
@@ -5,6 +6,25 @@ from blog.models import BlogPost
 
 
 class BlogPageTests(TestCase):
+    def test_blog_list_uses_existing_fallback_image_for_unfeatured_posts(self):
+        BlogPost.objects.create(
+            title="Unfeatured blog post",
+            slug="unfeatured-blog-post",
+            excerpt="A post without an uploaded image.",
+            content="<p>Cleaning advice.</p>",
+            published=True,
+            published_at=timezone.now(),
+        )
+
+        response = self.client.get("/blog/")
+
+        self.assertEqual(response.status_code, 200)
+        fallback_image_url = staticfiles_storage.url(
+            "uploads/blog/office_cleaning.png"
+        )
+        self.assertContains(response, fallback_image_url)
+        self.assertNotContains(response, "/static/images/blog-post-4.jpg")
+
     def test_blog_detail_renders_for_valid_published_slug(self):
         post = BlogPost.objects.create(
             title="Summer Cleaning Tips for Adelaide's Hot Climate",

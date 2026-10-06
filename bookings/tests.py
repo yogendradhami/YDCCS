@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from customers.models import Customer
 from employees.models import Employee
+from induction.models import EmployeeOnboardingProfile
 from leave_management.models import LeaveRequest
 
 from .forms import BookingForm, PublicBookingForm
@@ -55,6 +56,9 @@ class BookingServiceTests(TestCase):
 
 	def test_leave_and_active_conflict_block_but_cancelled_does_not(self):
 		data = self.booking_kwargs(assigned_employee=self.employee, trusted_assignment=True)
+		EmployeeOnboardingProfile.objects.filter(employee=self.employee).update(
+			status="ready"
+		)
 		leave = LeaveRequest.objects.create(
 			employee=self.employee,
 			leave_type="annual",

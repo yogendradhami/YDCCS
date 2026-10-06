@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.test import TestCase, override_settings
 
 from dashboard.models import CompanySettings
+from google_reviews.models import GoogleReview
 from services.models import Service
 
 
@@ -95,10 +97,18 @@ class SmokeTest(TestCase):
         self.assertIn("Sitemap:", body)
 
     def test_testimonials_page_includes_live_google_reviews_section(self):
+        GoogleReview.objects.create(
+            review_id="smoke-test-review",
+            reviewer_name="Test Google Reviewer",
+            rating="5",
+            comment="Excellent cleaning service.",
+        )
+
         resp = self.client.get("/testimonials/")
         self.assertEqual(resp.status_code, 200)
         body = resp.content.decode("utf-8")
         self.assertIn("Recent Google Reviews", body)
+        self.assertIn("Excellent cleaning service.", body)
 
     def test_footer_special_services_section_uses_simple_links(self):
         resp = self.client.get("/")
