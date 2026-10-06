@@ -36,25 +36,27 @@ def get_reminder_center_items(today=None):
 def get_reminder_keys(items):
     reminder_keys = []
 
-    for item in items["overdue_equipment"]:
-        reminder_keys.append(f"equipment:{item.pk}:{item.next_service_date}")
+    for item in items["overdue_equipment"].values_list("pk", "next_service_date"):
+        reminder_keys.append(f"equipment:{item[0]}:{item[1]}")
 
-    for item in items["low_stock_supplies"]:
+    for item in items["low_stock_supplies"].values_list(
+        "pk", "current_stock", "minimum_stock"
+    ):
         reminder_keys.append(
-            f"supply:{item.pk}:{item.current_stock}:{item.minimum_stock}"
+            f"supply:{item[0]}:{item[1]}:{item[2]}"
         )
 
-    for item in items["draft_purchase_orders"]:
-        reminder_keys.append(f"purchase-order:{item.pk}:{item.order_date}")
+    for item in items["draft_purchase_orders"].values_list("pk", "order_date"):
+        reminder_keys.append(f"purchase-order:{item[0]}:{item[1]}")
 
-    for item in items["vehicle_alerts"]:
-        reminder_keys.append(f"vehicle:{item.pk}:{item.service_due_date}")
+    for item in items["vehicle_alerts"].values_list("pk", "service_due_date"):
+        reminder_keys.append(f"vehicle:{item[0]}:{item[1]}")
 
-    for item in items["maintenance_due"]:
-        reminder_keys.append(f"maintenance:{item.pk}:{item.next_service_date}")
+    for item in items["maintenance_due"].values_list("pk", "next_service_date"):
+        reminder_keys.append(f"maintenance:{item[0]}:{item[1]}")
 
-    for item in items["contracts_expiring"]:
-        reminder_keys.append(f"contract:{item.pk}:{item.end_date}:{item.status}")
+    for item in items["contracts_expiring"].values_list("pk", "end_date", "status"):
+        reminder_keys.append(f"contract:{item[0]}:{item[1]}:{item[2]}")
 
     return reminder_keys
 

@@ -1,0 +1,887 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+    Compliance Attention | YD Cleaning
+{% endblock %}
+
+{% block extra_css %}
+    <link
+        rel="stylesheet"
+        href="{% static 'css/dashboard/company-documents/compliance.css' %}"
+    >
+{% endblock %}
+
+{% block content %}
+
+<div class="company-documents-page compliance-page">
+
+    <!-- ==========================================================
+         PAGE HEADER
+    =========================================================== -->
+
+    <header class="compliance-header">
+
+        <div class="compliance-header-copy">
+
+            <div class="compliance-eyebrow">
+                DOCUMENT CENTRE
+            </div>
+
+            <h1>
+                Compliance Attention
+            </h1>
+
+            <p>
+                Review documents that are expired, approaching expiry,
+                or due for compliance review before they become
+                operational issues.
+            </p>
+
+        </div>
+
+        <div class="compliance-header-actions">
+
+            <a
+                href="{% url 'company_documents:list' %}"
+                class="compliance-button compliance-button-secondary"
+            >
+                <span aria-hidden="true">←</span>
+                Document library
+            </a>
+
+            <a
+                href="{% url 'company_documents:upload' %}"
+                class="compliance-button compliance-button-primary"
+            >
+                <span aria-hidden="true">+</span>
+                Upload document
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- ==========================================================
+         ATTENTION HERO
+    =========================================================== -->
+
+    <section
+        class="
+            compliance-hero
+            compliance-hero--{{ attention_level }}
+        "
+        aria-labelledby="compliance-hero-title"
+    >
+
+        <div class="compliance-hero-main">
+
+            <div class="compliance-hero-icon" aria-hidden="true">
+
+                {% if attention_level == "critical" %}
+                    !
+                {% elif attention_level == "warning" %}
+                    !
+                {% elif attention_level == "notice" %}
+                    ↗
+                {% else %}
+                    ✓
+                {% endif %}
+
+            </div>
+
+            <div>
+
+                <div class="compliance-hero-kicker">
+                    {{ attention_label }}
+                </div>
+
+                <h2 id="compliance-hero-title">
+
+                    {{ attention_documents }}
+                    document{% if attention_documents != 1 %}s{% endif %}
+                    currently
+                    {% if attention_documents == 1 %}
+                        needs
+                    {% else %}
+                        need
+                    {% endif %}
+                    attention
+
+                </h2>
+
+                <p>
+                    {{ attention_message }}
+                </p>
+
+            </div>
+
+        </div>
+
+        {% if attention_documents %}
+
+            <div class="compliance-hero-action">
+
+                <span class="compliance-hero-action-label">
+                    Priority
+                </span>
+
+                {% if expired_documents %}
+                    <strong>
+                        Expired documents first
+                    </strong>
+                {% elif review_due_documents %}
+                    <strong>
+                        Review due documents first
+                    </strong>
+                {% else %}
+                    <strong>
+                        Expiring documents first
+                    </strong>
+                {% endif %}
+
+            </div>
+
+        {% else %}
+
+            <div class="compliance-hero-action">
+                <span class="compliance-hero-action-label">
+                    Status
+                </span>
+
+                <strong>
+                    No action required
+                </strong>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================================
+         KPI GRID
+    =========================================================== -->
+
+    <section
+        class="compliance-kpi-grid"
+        aria-label="Compliance summary"
+    >
+
+        <!-- EXPIRED -->
+
+        <a
+            href="#expired"
+            class="
+                compliance-kpi
+                compliance-kpi--danger
+                {% if not expired_documents %}compliance-kpi--clear{% endif %}
+            "
+        >
+
+            <div class="compliance-kpi-top">
+
+                <span class="compliance-kpi-icon">
+                    !
+                </span>
+
+                <span class="compliance-kpi-label">
+                    Highest priority
+                </span>
+
+            </div>
+
+            <strong class="compliance-kpi-value">
+                {{ expired_documents }}
+            </strong>
+
+            <span class="compliance-kpi-title">
+                Expired
+            </span>
+
+            <span class="compliance-kpi-description">
+                Documents requiring immediate action.
+            </span>
+
+        </a>
+
+
+        <!-- REVIEW -->
+
+        <a
+            href="#review"
+            class="
+                compliance-kpi
+                compliance-kpi--warning
+                {% if not review_due_documents %}compliance-kpi--clear{% endif %}
+            "
+        >
+
+            <div class="compliance-kpi-top">
+
+                <span class="compliance-kpi-icon">
+                    ↻
+                </span>
+
+                <span class="compliance-kpi-label">
+                    Requires review
+                </span>
+
+            </div>
+
+            <strong class="compliance-kpi-value">
+                {{ review_due_documents }}
+            </strong>
+
+            <span class="compliance-kpi-title">
+                Review due
+            </span>
+
+            <span class="compliance-kpi-description">
+                Documents whose review date has arrived.
+            </span>
+
+        </a>
+
+
+        <!-- EXPIRING -->
+
+        <a
+            href="#expiring"
+            class="
+                compliance-kpi
+                compliance-kpi--notice
+                {% if not expiring_30_days %}compliance-kpi--clear{% endif %}
+            "
+        >
+
+            <div class="compliance-kpi-top">
+
+                <span class="compliance-kpi-icon">
+                    ◷
+                </span>
+
+                <span class="compliance-kpi-label">
+                    Within 30 days
+                </span>
+
+            </div>
+
+            <strong class="compliance-kpi-value">
+                {{ expiring_30_days }}
+            </strong>
+
+            <span class="compliance-kpi-title">
+                Expiring soon
+            </span>
+
+            <span class="compliance-kpi-description">
+                Documents approaching their expiry date.
+            </span>
+
+        </a>
+
+
+        <!-- NO EXPIRY -->
+
+        <div class="compliance-kpi compliance-kpi--neutral">
+
+            <div class="compliance-kpi-top">
+
+                <span class="compliance-kpi-icon">
+                    ∞
+                </span>
+
+                <span class="compliance-kpi-label">
+                    Informational
+                </span>
+
+            </div>
+
+            <strong class="compliance-kpi-value">
+                {{ no_expiry_documents }}
+            </strong>
+
+            <span class="compliance-kpi-title">
+                No expiry
+            </span>
+
+            <span class="compliance-kpi-description">
+                Active documents without an expiry date.
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         COMPLIANCE QUEUE
+    =========================================================== -->
+
+    <section
+        class="compliance-section"
+        aria-labelledby="compliance-queue-title"
+    >
+
+        <div class="compliance-section-header">
+
+            <div>
+
+                <div class="compliance-section-eyebrow">
+                    COMPLIANCE QUEUE
+                </div>
+
+                <h2 id="compliance-queue-title">
+                    Documents requiring attention
+                </h2>
+
+                <p>
+                    Highest-risk documents appear first.
+                    Secondary warnings are shown where applicable.
+                </p>
+
+            </div>
+
+            <div class="compliance-section-count">
+
+                <strong>
+                    {{ attention_documents }}
+                </strong>
+
+                <span>
+                    active document{% if attention_documents != 1 %}s{% endif %}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        {% if documents %}
+
+            <div class="compliance-table-wrap">
+
+                <table class="compliance-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Document
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Relationship
+                            </th>
+
+                            <th>
+                                Primary issue
+                            </th>
+
+                            <th>
+                                Due date
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for document in documents %}
+
+                            <tr
+                                class="
+                                    compliance-row
+                                    compliance-row--{{ document.health_status }}
+                                "
+                            >
+
+                                <!-- DOCUMENT -->
+
+                                <td
+                                    class="compliance-document-cell"
+                                >
+
+                                    <div class="compliance-document">
+
+                                        <div class="compliance-document-icon">
+                                            DOC
+                                        </div>
+
+                                        <div class="compliance-document-info">
+
+                                            <a
+                                                href="{% url 'company_documents:detail' document.pk %}"
+                                                class="compliance-document-name"
+                                            >
+                                                {{ document.name }}
+                                            </a>
+
+                                            {% if document.original_filename %}
+
+                                                <span class="compliance-document-file">
+                                                    {{ document.original_filename }}
+                                                </span>
+
+                                            {% endif %}
+
+                                            {% if document.is_sensitive %}
+
+                                                <span class="compliance-sensitive">
+                                                    Sensitive
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- CATEGORY -->
+
+                                <td>
+
+                                    <span class="compliance-category">
+                                        {{ document.get_category_display }}
+                                    </span>
+
+                                    {% if document.document_type %}
+
+                                        <span class="compliance-document-type">
+                                            {{ document.document_type }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- RELATIONSHIP -->
+
+                                <td>
+
+                                    <div class="compliance-relationship">
+
+                                        {% if document.related_type == "employee" and document.employee %}
+
+                                            <span class="compliance-relationship-type">
+                                                Employee
+                                            </span>
+
+                                            <strong>
+                                                {{ document.employee.full_name }}
+                                            </strong>
+
+                                        {% elif document.related_type == "customer" and document.customer %}
+
+                                            <span class="compliance-relationship-type">
+                                                Customer
+                                            </span>
+
+                                            <strong>
+                                                {{ document.customer.full_name }}
+                                            </strong>
+
+                                        {% elif document.related_type == "vehicle" and document.vehicle %}
+
+                                            <span class="compliance-relationship-type">
+                                                Vehicle
+                                            </span>
+
+                                            <strong>
+                                                {{ document.vehicle.vehicle_name }}
+                                            </strong>
+
+                                        {% elif document.related_type == "supplier" and document.supplier %}
+
+                                            <span class="compliance-relationship-type">
+                                                Supplier
+                                            </span>
+
+                                            <strong>
+                                                {{ document.supplier.name }}
+                                            </strong>
+
+                                        {% elif document.related_type == "contract" and document.contract %}
+
+                                            <span class="compliance-relationship-type">
+                                                Contract
+                                            </span>
+
+                                            <strong>
+                                                {{ document.contract.service_type }}
+                                            </strong>
+
+                                        {% else %}
+
+                                            <span class="compliance-relationship-type">
+                                                Company
+                                            </span>
+
+                                            <strong>
+                                                Company-level
+                                            </strong>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- PRIMARY ISSUE -->
+
+                                <td>
+
+                                    <div class="compliance-issue">
+
+                                        {% if document.expiry_date and document.expiry_date < today %}
+
+                                            <span class="compliance-issue-badge compliance-issue-badge--expired">
+                                                Expired
+                                            </span>
+
+                                            <span class="compliance-issue-detail">
+                                                Expiry date
+                                            </span>
+
+                                        {% elif document.review_date and document.review_date <= today %}
+
+                                            <span class="compliance-issue-badge compliance-issue-badge--review">
+                                                Review due
+                                            </span>
+
+                                            <span class="compliance-issue-detail">
+                                                Review date
+                                            </span>
+
+                                            {% if document.expiry_date and document.expiry_date <= thirty_days %}
+
+                                                <span class="compliance-secondary-warning">
+                                                    Also expires within 30 days
+                                                </span>
+
+                                            {% endif %}
+
+                                        {% elif document.expiry_date and document.expiry_date <= thirty_days %}
+
+                                            <span class="compliance-issue-badge compliance-issue-badge--expiring">
+                                                Expiring soon
+                                            </span>
+
+                                            <span class="compliance-issue-detail">
+                                                Within 30 days
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- DUE DATE -->
+
+                                <td>
+
+                                    <div class="compliance-date">
+
+                                        {% if document.expiry_date and document.expiry_date < today %}
+
+                                            <span class="compliance-date-label">
+                                                Expired
+                                            </span>
+
+                                            <strong>
+                                                {{ document.expiry_date|date:"d M Y" }}
+                                            </strong>
+
+                                        {% elif document.review_date and document.review_date <= today %}
+
+                                            <span class="compliance-date-label">
+                                                Review date
+                                            </span>
+
+                                            <strong>
+                                                {{ document.review_date|date:"d M Y" }}
+                                            </strong>
+
+                                        {% elif document.expiry_date %}
+
+                                            <span class="compliance-date-label">
+                                                Expiry date
+                                            </span>
+
+                                            <strong>
+                                                {{ document.expiry_date|date:"d M Y" }}
+                                            </strong>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    <div class="compliance-status-stack">
+
+                                        {% if document.health_status == "expired" %}
+
+                                            <span class="compliance-status compliance-status--danger">
+                                                Expired
+                                            </span>
+
+                                        {% elif document.health_status == "review_due" %}
+
+                                            <span class="compliance-status compliance-status--warning">
+                                                Review due
+                                            </span>
+
+                                        {% elif document.health_status == "expiring" %}
+
+                                            <span class="compliance-status compliance-status--notice">
+                                                Expiring soon
+                                            </span>
+
+                                        {% endif %}
+
+                                        {% if document.is_sensitive %}
+
+                                            <span class="compliance-sensitive">
+                                                Sensitive
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="compliance-actions">
+
+                                        <a
+                                            href="{% url 'company_documents:detail' document.pk %}"
+                                            class="compliance-action compliance-action-view"
+                                        >
+                                            View
+                                        </a>
+
+                                        <a
+                                            href="{% url 'company_documents:edit' document.pk %}"
+                                            class="compliance-action compliance-action-resolve"
+                                        >
+                                            Resolve
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ==================================================
+                 PAGINATION
+            =================================================== -->
+
+            {% if is_paginated or paginator.num_pages > 1 %}
+
+                <nav
+                    class="compliance-pagination"
+                    aria-label="Compliance pagination"
+                >
+
+                    {% if page_obj.has_previous %}
+
+                        <a
+                            href="?page={{ page_obj.previous_page_number }}"
+                            class="compliance-page-link"
+                        >
+                            ← Previous
+                        </a>
+
+                    {% else %}
+
+                        <span class="compliance-page-link compliance-page-link--disabled">
+                            ← Previous
+                        </span>
+
+                    {% endif %}
+
+
+                    <div class="compliance-page-numbers">
+
+                        {% for page_number in paginator.page_range %}
+
+                            {% if page_number == page_obj.number %}
+
+                                <span class="compliance-page-number compliance-page-number--active">
+                                    {{ page_number }}
+                                </span>
+
+                            {% elif page_number > page_obj.number|add:"-2" and page_number < page_obj.number|add:"2" %}
+
+                                <a
+                                    href="?page={{ page_number }}"
+                                    class="compliance-page-number"
+                                >
+                                    {{ page_number }}
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    {% if page_obj.has_next %}
+
+                        <a
+                            href="?page={{ page_obj.next_page_number }}"
+                            class="compliance-page-link"
+                        >
+                            Next →
+                        </a>
+
+                    {% else %}
+
+                        <span class="compliance-page-link compliance-page-link--disabled">
+                            Next →
+                        </span>
+
+                    {% endif %}
+
+                </nav>
+
+            {% endif %}
+
+        {% else %}
+
+            <!-- ==================================================
+                 ALL CLEAR
+            =================================================== -->
+
+            <div class="compliance-empty">
+
+                <div class="compliance-empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    Your compliance queue is clear
+                </h3>
+
+                <p>
+                    No active documents are currently expired,
+                    due for review, or expiring within 30 days.
+                </p>
+
+                <a
+                    href="{% url 'company_documents:list' %}"
+                    class="compliance-button compliance-button-secondary"
+                >
+                    Return to document library
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================================
+         NO EXPIRY INFORMATION
+    =========================================================== -->
+
+    <section
+        class="compliance-info-panel"
+        aria-labelledby="no-expiry-title"
+    >
+
+        <div class="compliance-info-icon" aria-hidden="true">
+            i
+        </div>
+
+        <div class="compliance-info-content">
+
+            <div class="compliance-section-eyebrow">
+                INFORMATIONAL
+            </div>
+
+            <h2 id="no-expiry-title">
+                About documents with no expiry date
+            </h2>
+
+            <p>
+
+                <strong>
+                    {{ no_expiry_documents }}
+                </strong>
+
+                active document{% if no_expiry_documents != 1 %}s{% endif %}
+                currently have no expiry date recorded.
+
+                These documents are not treated as compliance failures.
+
+                Policies, templates, records and operational documents
+                may legitimately have no expiry date.
+
+            </p>
+
+        </div>
+
+        <div class="compliance-info-meta">
+
+            <span>
+                Active documents
+            </span>
+
+            <strong>
+                {{ active_document_count }}
+            </strong>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

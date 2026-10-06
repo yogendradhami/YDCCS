@@ -39,8 +39,13 @@
             <a href="/dashboard/careers/">
 
                 <span>Careers</span>
-                
-                
+
+
+            </a>
+
+            <a href="{% url 'company_documents:bulk_import_list' %}" class="dashboard-nav-link">
+                <span class="dashboard-nav-icon">✦ Bulk Document Import</span>
+
             </a>
 
             <a
@@ -104,7 +109,7 @@
                         {% if notification_counts.faq_questions %}
                             <span class="side-badge">{{ notification_counts.faq_questions }}</span>
                         {% endif %}
-                    </a>                    
+                    </a>
 
                     <a href="/dashboard/customer-loyalty/">
                         <span>Customer Loyalty</span>
@@ -492,7 +497,7 @@
                         <span>Service Performance</span>
                     </a>
 
-                    
+
 
                     <a href="/dashboard/ai-quote-estimator/">
                         <span>AI Quote Estimator</span>
@@ -638,7 +643,7 @@
                     </div>
                 </div>
 
-                
+
                 <div class="crm-user-box">
                     <span>Logged in as</span>
                     <strong>{{ request.user.username }}</strong>

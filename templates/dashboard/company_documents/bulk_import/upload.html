@@ -1,0 +1,258 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Upload Documents | YD Commercial Cleaning{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/company-documents/bulk-import.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="bulk-page">
+
+    <div class="bulk-page-header">
+
+        <div>
+
+            <span class="bulk-eyebrow">
+                DOCUMENT INTELLIGENCE
+            </span>
+
+            <h1>Upload Company Documents</h1>
+
+            <p>
+                Upload multiple documents at once. The system will extract
+                content, classify documents, identify relationships and prepare
+                recommendations for review.
+            </p>
+
+        </div>
+
+        <a
+            href="{% url 'company_documents:bulk_import_list' %}"
+            class="bulk-secondary-button"
+        >
+            ← Import History
+        </a>
+
+    </div>
+
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        class="bulk-upload-form"
+    >
+
+        {% csrf_token %}
+
+
+        <section class="bulk-upload-card">
+
+            <div class="bulk-upload-icon">
+                ↑
+            </div>
+
+            <h2>Drop your documents here</h2>
+
+            <p>
+                Or select multiple files from your computer.
+            </p>
+
+
+            <label class="bulk-file-picker">
+
+                <input
+                    type="file"
+                    name="files"
+                    id="bulk-files"
+                    multiple
+                    required
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png,.webp"
+                >
+
+                <span>
+                    Choose Documents
+                </span>
+
+            </label>
+
+
+            <div
+                id="bulk-file-list"
+                class="bulk-selected-files"
+            ></div>
+
+
+            <div class="bulk-upload-rules">
+
+                <div>
+                    <strong>50 MB</strong>
+                    <span>Maximum file size</span>
+                </div>
+
+                <div>
+                    <strong>Multiple</strong>
+                    <span>Documents per batch</span>
+                </div>
+
+                <div>
+                    <strong>Secure</strong>
+                    <span>Staged before approval</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="bulk-process-card">
+
+            <div class="bulk-section-heading">
+
+                <div>
+
+                    <span class="bulk-section-label">
+                        WHAT HAPPENS NEXT
+                    </span>
+
+                    <h2>Intelligent Processing</h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="bulk-process-grid">
+
+                <div class="bulk-process-step">
+
+                    <span>01</span>
+
+                    <strong>
+                        Extract
+                    </strong>
+
+                    <p>
+                        Read text and metadata from supported documents.
+                    </p>
+
+                </div>
+
+
+                <div class="bulk-process-step">
+
+                    <span>02</span>
+
+                    <strong>
+                        Classify
+                    </strong>
+
+                    <p>
+                        Identify category, document type and sensitive content.
+                    </p>
+
+                </div>
+
+
+                <div class="bulk-process-step">
+
+                    <span>03</span>
+
+                    <strong>
+                        Match
+                    </strong>
+
+                    <p>
+                        Match documents to employees, customers, vehicles and other records.
+                    </p>
+
+                </div>
+
+
+                <div class="bulk-process-step">
+
+                    <span>04</span>
+
+                    <strong>
+                        Review
+                    </strong>
+
+                    <p>
+                        You approve the recommendations before permanent import.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="bulk-upload-actions">
+
+            <a
+                href="{% url 'company_documents:bulk_import_list' %}"
+                class="bulk-secondary-button"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="bulk-primary-button"
+            >
+                Upload & Continue →
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const input = document.getElementById("bulk-files");
+    const list = document.getElementById("bulk-file-list");
+
+    if (!input || !list) {
+        return;
+    }
+
+    input.addEventListener("change", function () {
+
+        list.innerHTML = "";
+
+        Array.from(input.files).forEach(function (file) {
+
+            const item = document.createElement("div");
+
+            item.className = "bulk-selected-file";
+
+            const size = file.size / (1024 * 1024);
+
+            item.innerHTML = `
+                <span class="bulk-file-name">
+                    ${file.name}
+                </span>
+                <span class="bulk-file-size">
+                    ${size < 1
+                        ? Math.round(file.size / 1024) + " KB"
+                        : size.toFixed(2) + " MB"}
+                </span>
+            `;
+
+            list.appendChild(item);
+
+        });
+
+    });
+
+});
+</script>
+
+{% endblock %}

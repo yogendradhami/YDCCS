@@ -1,0 +1,735 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+Employee Compliance Matrix
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/employee-compliance-matrix.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-matrix-page">
+
+    <!-- HEADER -->
+    <header class="employee-matrix-header">
+
+        <div class="employee-matrix-header-copy">
+
+            <span class="employee-matrix-eyebrow">
+                DOCUMENT CENTRE
+            </span>
+
+            <h1>
+                Employee Compliance Matrix
+            </h1>
+
+            <p>
+                Monitor compliance requirements across your entire
+                workforce and identify outstanding actions quickly.
+            </p>
+
+        </div>
+
+        <div class="employee-matrix-header-actions">
+
+            <a
+                href="{% url 'company_documents:compliance_overview' %}"
+                class="employee-matrix-btn employee-matrix-btn-secondary"
+            >
+                ← Compliance overview
+            </a>
+
+            <a
+                href="{% url 'company_documents:employee_compliance_matrix_export' %}"
+                class="employee-matrix-btn employee-matrix-btn-primary"
+            >
+                    Renewal centre
+            </a>
+
+
+
+        </div>
+
+    </header>
+
+
+    <!-- KPI CARDS -->
+    <section class="employee-matrix-kpis">
+
+        <article class="employee-matrix-kpi">
+
+            <span>
+                EMPLOYEES
+            </span>
+
+            <strong>
+                {{ matrix_summary.total_employees }}
+            </strong>
+
+            <small>
+                Total workforce
+            </small>
+
+        </article>
+
+
+        <article class="employee-matrix-kpi employee-matrix-kpi-success">
+
+            <span>
+                COMPLIANT
+            </span>
+
+            <strong>
+                {{ matrix_summary.compliant }}
+            </strong>
+
+            <small>
+                No outstanding actions
+            </small>
+
+        </article>
+
+
+        <article class="employee-matrix-kpi employee-matrix-kpi-danger">
+
+            <span>
+                NEEDS ATTENTION
+            </span>
+
+            <strong>
+                {{ matrix_summary.attention }}
+            </strong>
+
+            <small>
+                One or more actions
+            </small>
+
+        </article>
+
+
+        <article class="employee-matrix-kpi employee-matrix-kpi-warning">
+
+            <span>
+                MISSING
+            </span>
+
+            <strong>
+                {{ matrix_summary.missing }}
+            </strong>
+
+            <small>
+                Required documents
+            </small>
+
+        </article>
+
+
+        <article class="employee-matrix-kpi employee-matrix-kpi-danger">
+
+            <span>
+                EXPIRED
+            </span>
+
+            <strong>
+                {{ matrix_summary.expired }}
+            </strong>
+
+            <small>
+                Renewal required
+            </small>
+
+        </article>
+
+
+        <article class="employee-matrix-kpi employee-matrix-kpi-notice">
+
+            <span>
+                REVIEW / EXPIRING
+            </span>
+
+            <strong>
+                {% widthratio matrix_summary.review_due 1 1 %}
+                /
+                {% widthratio matrix_summary.expiring 1 1 %}
+            </strong>
+
+            <small>
+                Review due / within 30 days
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <!-- FILTER BAR -->
+    <section class="employee-matrix-filter-card">
+
+        <form
+            method="get"
+            class="employee-matrix-filters"
+        >
+
+            <div class="employee-matrix-search">
+
+                <label for="employee-matrix-search">
+                    Search employees
+                </label>
+
+                <input
+                    id="employee-matrix-search"
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    placeholder="Name, email or role..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="employee-matrix-filter">
+
+                <label for="employee-matrix-status">
+                    Compliance status
+                </label>
+
+                <select
+                    id="employee-matrix-status"
+                    name="status"
+                >
+
+                    <option
+                        value=""
+                        {% if not status_filter %}selected{% endif %}
+                    >
+                        All employees
+                    </option>
+
+                    <option
+                        value="compliant"
+                        {% if status_filter == "compliant" %}selected{% endif %}
+                    >
+                        Compliant
+                    </option>
+
+                    <option
+                        value="attention"
+                        {% if status_filter == "attention" %}selected{% endif %}
+                    >
+                        Needs attention
+                    </option>
+
+                    <option
+                        value="missing"
+                        {% if status_filter == "missing" %}selected{% endif %}
+                    >
+                        Missing documents
+                    </option>
+
+                    <option
+                        value="expired"
+                        {% if status_filter == "expired" %}selected{% endif %}
+                    >
+                        Expired documents
+                    </option>
+
+                    <option
+                        value="review_due"
+                        {% if status_filter == "review_due" %}selected{% endif %}
+                    >
+                        Review due
+                    </option>
+
+                    <option
+                        value="expiring"
+                        {% if status_filter == "expiring" %}selected{% endif %}
+                    >
+                        Expiring soon
+                    </option>
+
+                    <option
+                        value="no_requirements"
+                        {% if status_filter == "no_requirements" %}selected{% endif %}
+                    >
+                        No applicable requirements
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="employee-matrix-filter-actions">
+
+                <button
+                    type="submit"
+                    class="employee-matrix-btn employee-matrix-btn-primary"
+                >
+                    Apply filters
+                </button>
+
+                {% if search_query or status_filter %}
+
+                    <a
+                        href="{% url 'company_documents:employee_compliance_matrix' %}"
+                        class="employee-matrix-clear"
+                    >
+                        Clear
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- MATRIX -->
+    <section class="employee-matrix-card">
+
+        <div class="employee-matrix-card-header">
+
+            <div>
+
+                <span class="employee-matrix-section-eyebrow">
+                    WORKFORCE COMPLIANCE
+                </span>
+
+                <h2>
+                    Employee compliance status
+                </h2>
+
+                <p>
+                    {{ page_obj.paginator.count }}
+                    employee{{ page_obj.paginator.count|pluralize }}
+                    shown in this result set.
+                </p>
+
+            </div>
+
+            <div class="employee-matrix-result-count">
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages|default:"1" }}
+            </div>
+
+        </div>
+
+
+        {% if employees %}
+
+            <div class="employee-matrix-table-wrapper">
+
+                <table class="employee-matrix-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Employee
+                            </th>
+
+                            <th>
+                                Compliance
+                            </th>
+
+                            <th>
+                                Required
+                            </th>
+
+                            <th>
+                                Missing
+                            </th>
+
+                            <th>
+                                Expired
+                            </th>
+
+                            <th>
+                                Review due
+                            </th>
+
+                            <th>
+                                Expiring
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in employees %}
+
+                            <tr>
+
+                                <!-- EMPLOYEE -->
+                                <td>
+
+                                    <div class="employee-matrix-employee">
+
+                                        <div class="employee-matrix-avatar">
+
+                                            {% if row.employee.image %}
+
+                                                <img
+                                                    src="{{ row.employee.image.url }}"
+                                                    alt="{{ row.employee.full_name }}"
+                                                >
+
+                                            {% else %}
+
+                                                {{ row.employee.full_name|first|upper }}
+
+                                            {% endif %}
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                {{ row.employee.full_name }}
+                                            </strong>
+
+                                            {% if row.employee.role %}
+
+                                                <span>
+                                                    {{ row.employee.role }}
+                                                </span>
+
+                                            {% endif %}
+
+                                            {% if row.employee.email %}
+
+                                                <small>
+                                                    {{ row.employee.email }}
+                                                </small>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- SCORE -->
+                                <td>
+
+                                    {% if row.summary.has_applicable_requirements %}
+
+                                        <div class="employee-matrix-score">
+
+                                            <div class="employee-matrix-score-top">
+
+                                                <strong>
+                                                    {{ row.summary.percentage }}%
+                                                </strong>
+
+                                            </div>
+
+                                            <div class="employee-matrix-progress">
+
+                                                <span
+                                                    style="width: {{ row.summary.percentage }}%;"
+                                                ></span>
+
+                                            </div>
+
+                                            <small>
+                                                {{ row.summary.satisfied }}/{{ row.summary.total }}
+                                                satisfied
+                                            </small>
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <div class="employee-matrix-na">
+
+                                            <strong>
+                                                N/A
+                                            </strong>
+
+                                            <span>
+                                                No requirements
+                                            </span>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- REQUIRED -->
+                                <td>
+
+                                    {% if row.summary.has_applicable_requirements %}
+
+                                        <span class="employee-matrix-number">
+                                            {{ row.summary.total }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="employee-matrix-muted">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- MISSING -->
+                                <td>
+
+                                    {% if row.summary.missing %}
+
+                                        <span class="employee-matrix-count danger">
+                                            {{ row.summary.missing }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="employee-matrix-count success">
+                                            0
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- EXPIRED -->
+                                <td>
+
+                                    {% if row.summary.expired %}
+
+                                        <span class="employee-matrix-count danger">
+                                            {{ row.summary.expired }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="employee-matrix-count success">
+                                            0
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- REVIEW -->
+                                <td>
+
+                                    {% if row.summary.review_due %}
+
+                                        <span class="employee-matrix-count warning">
+                                            {{ row.summary.review_due }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="employee-matrix-count success">
+                                            0
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- EXPIRING -->
+                                <td>
+
+                                    {% if row.summary.expiring %}
+
+                                        <span class="employee-matrix-count notice">
+                                            {{ row.summary.expiring }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="employee-matrix-count success">
+                                            0
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- STATUS -->
+                                <td>
+
+                                    {% if not row.summary.has_applicable_requirements %}
+
+                                        <span class="employee-matrix-status neutral">
+                                            No requirements
+                                        </span>
+
+                                    {% elif row.summary.actionable %}
+
+                                        <span class="employee-matrix-status danger">
+                                            Needs attention
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="employee-matrix-status success">
+                                            Compliant
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ACTION -->
+                                <td>
+
+                                    <a
+                                        href="{% url 'company_documents:employee_compliance' employee_id=row.employee.id %}"
+                                        class="employee-matrix-view"
+                                    >
+                                        View profile
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- PAGINATION -->
+            {% if page_obj.paginator.num_pages > 1 %}
+
+                <nav
+                    class="employee-matrix-pagination"
+                    aria-label="Employee compliance pagination"
+                >
+
+                    <div class="employee-matrix-pagination-summary">
+
+                        Showing
+                        {{ page_obj.start_index }}
+                        –
+                        {{ page_obj.end_index }}
+                        of
+                        {{ page_obj.paginator.count }}
+
+                    </div>
+
+
+                    <div class="employee-matrix-pagination-controls">
+
+                        {% if page_obj.has_previous %}
+
+                            <a
+                                href="?page=1{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if status_filter %}&status={{ status_filter|urlencode }}{% endif %}"
+                            >
+                                First
+                            </a>
+
+                            <a
+                                href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if status_filter %}&status={{ status_filter|urlencode }}{% endif %}"
+                            >
+                                Previous
+                            </a>
+
+                        {% endif %}
+
+
+                        <span class="employee-matrix-pagination-current">
+                            {{ page_obj.number }}
+                        </span>
+
+
+                        {% if page_obj.has_next %}
+
+                            <a
+                                href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if status_filter %}&status={{ status_filter|urlencode }}{% endif %}"
+                            >
+                                Next
+                            </a>
+
+                            <a
+                                href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if status_filter %}&status={{ status_filter|urlencode }}{% endif %}"
+                            >
+                                Last
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </nav>
+
+            {% endif %}
+
+
+        {% else %}
+
+            <div class="employee-matrix-empty">
+
+                <div class="employee-matrix-empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    No employees found
+                </h3>
+
+                <p>
+                    No employees match the current search or compliance
+                    filters.
+                </p>
+
+                {% if search_query or status_filter %}
+
+                    <a
+                        href="{% url 'company_documents:employee_compliance_matrix' %}"
+                        class="employee-matrix-btn employee-matrix-btn-primary"
+                    >
+                        Clear filters
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

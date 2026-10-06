@@ -1,0 +1,336 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Edit Document Intelligence | YD Commercial Cleaning{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/bulk-review-edit.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="bulk-edit-page">
+
+    <div class="bulk-edit-header">
+
+        <div>
+
+            <span class="bulk-eyebrow">
+                DOCUMENT INTELLIGENCE
+            </span>
+
+            <h1>
+                Review Document
+            </h1>
+
+            <p>
+                Correct the detected information before approving this
+                document for permanent import.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="bulk-edit-file">
+
+        <span class="bulk-edit-file-label">
+            Uploaded File
+        </span>
+
+        <div class="bulk-edit-file-name">
+            {{ item.original_filename }}
+        </div>
+
+    </div>
+
+
+    <form
+        method="post"
+        class="bulk-edit-form"
+    >
+
+        {% csrf_token %}
+
+        <div class="bulk-edit-grid">
+
+            <div class="bulk-edit-field bulk-edit-field-full">
+
+                <label for="suggested_name">
+                    Document Name
+                </label>
+
+                <input
+                    id="suggested_name"
+                    type="text"
+                    name="suggested_name"
+                    value="{{ item.suggested_name }}"
+                >
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label for="suggested_category">
+                    Category
+                </label>
+
+                <select
+                    id="suggested_category"
+                    name="suggested_category"
+                >
+
+                    <option value="company" {% if item.suggested_category == "company" %}selected{% endif %}>
+                        Company
+                    </option>
+
+                    <option value="employee" {% if item.suggested_category == "employee" %}selected{% endif %}>
+                        Employee
+                    </option>
+
+                    <option value="customer" {% if item.suggested_category == "customer" %}selected{% endif %}>
+                        Customer
+                    </option>
+
+                    <option value="insurance" {% if item.suggested_category == "insurance" %}selected{% endif %}>
+                        Insurance
+                    </option>
+
+                    <option value="vehicle" {% if item.suggested_category == "vehicle" %}selected{% endif %}>
+                        Vehicle
+                    </option>
+
+                    <option value="contract" {% if item.suggested_category == "contract" %}selected{% endif %}>
+                        Contract
+                    </option>
+
+                    <option value="whs" {% if item.suggested_category == "whs" %}selected{% endif %}>
+                        WHS
+                    </option>
+
+                    <option value="finance" {% if item.suggested_category == "finance" %}selected{% endif %}>
+                        Finance
+                    </option>
+
+                    <option value="licence" {% if item.suggested_category == "licence" %}selected{% endif %}>
+                        Licence
+                    </option>
+
+                    <option value="operations" {% if item.suggested_category == "operations" %}selected{% endif %}>
+                        Operations
+                    </option>
+
+                    <option value="supplier" {% if item.suggested_category == "supplier" %}selected{% endif %}>
+                        Supplier
+                    </option>
+
+                    <option value="property" {% if item.suggested_category == "property" %}selected{% endif %}>
+                        Property
+                    </option>
+
+                    <option value="other" {% if item.suggested_category == "other" %}selected{% endif %}>
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label for="suggested_document_type">
+                    Document Type
+                </label>
+
+                <input
+                    id="suggested_document_type"
+                    type="text"
+                    name="suggested_document_type"
+                    value="{{ item.suggested_document_type }}"
+                >
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label for="suggested_reference">
+                    Document Reference
+                </label>
+
+                <input
+                    id="suggested_reference"
+                    type="text"
+                    name="suggested_reference"
+                    value="{{ item.suggested_reference }}"
+                >
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label for="suggested_related_type">
+                    Related Record Type
+                </label>
+
+                <select
+                    id="suggested_related_type"
+                    name="suggested_related_type"
+                >
+
+                    <option value="">
+                        Not linked
+                    </option>
+
+                    <option value="employee" {% if item.suggested_related_type == "employee" %}selected{% endif %}>
+                        Employee
+                    </option>
+
+                    <option value="customer" {% if item.suggested_related_type == "customer" %}selected{% endif %}>
+                        Customer
+                    </option>
+
+                    <option value="vehicle" {% if item.suggested_related_type == "vehicle" %}selected{% endif %}>
+                        Vehicle
+                    </option>
+
+                    <option value="supplier" {% if item.suggested_related_type == "supplier" %}selected{% endif %}>
+                        Supplier
+                    </option>
+
+                    <option value="contract" {% if item.suggested_related_type == "contract" %}selected{% endif %}>
+                        Contract
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label for="suggested_issue_date">
+                    Issue Date
+                </label>
+
+                <input
+                    id="suggested_issue_date"
+                    type="date"
+                    name="suggested_issue_date"
+                    value="{{ item.suggested_issue_date|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label for="suggested_expiry_date">
+                    Expiry Date
+                </label>
+
+                <input
+                    id="suggested_expiry_date"
+                    type="date"
+                    name="suggested_expiry_date"
+                    value="{{ item.suggested_expiry_date|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label for="suggested_review_date">
+                    Review Date
+                </label>
+
+                <input
+                    id="suggested_review_date"
+                    type="date"
+                    name="suggested_review_date"
+                    value="{{ item.suggested_review_date|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+
+            <div class="bulk-edit-field">
+
+                <label>
+                    Document Security
+                </label>
+
+                <div class="bulk-edit-checkbox">
+
+                    <input
+                        id="suggested_sensitive"
+                        type="checkbox"
+                        name="suggested_sensitive"
+                        {% if item.suggested_sensitive %}checked{% endif %}
+                    >
+
+                    <label for="suggested_sensitive">
+                        Treat this document as sensitive
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="bulk-edit-field bulk-edit-field-full">
+
+                <label for="suggested_description">
+                    Description
+                </label>
+
+                <textarea
+                    id="suggested_description"
+                    name="suggested_description"
+                >{{ item.suggested_description }}</textarea>
+
+                <span class="bulk-edit-help">
+                    Add useful context that will help staff understand
+                    the purpose of this document later.
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="bulk-edit-actions">
+
+            <a
+                href="{% url 'company_documents:bulk_import_review' item.batch_id %}"
+                class="bulk-secondary-button"
+            >
+                Cancel
+            </a>
+
+            <div class="bulk-edit-actions-right">
+
+                <button
+                    type="submit"
+                    class="bulk-primary-button"
+                >
+                    Save Review
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

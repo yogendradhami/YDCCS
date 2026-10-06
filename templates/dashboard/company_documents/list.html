@@ -12,7 +12,6 @@
 >
 {% endblock %}
 
-
 {% block content %}
 
 <div class="cd-list-page">
@@ -35,17 +34,31 @@
 
             <p>
                 Securely manage company, employee, customer,
-                insurance, vehicle, contract and operational documents.
+                insurance, vehicle, contract and operational
+                documents from one central control centre.
             </p>
 
         </div>
 
+        <div class="company-documents-header-actions">
 
-        <div class="cd-page-header-actions">
+            <a
+                href="{% url 'company_documents:compliance_overview' %}"
+                class="company-documents-button company-documents-button-secondary"
+                >
+                Compliance overview
+                </a>
+
+            <a
+                href="{% url 'company_documents:compliance' %}"
+                class="company-documents-button company-documents-button-secondary"
+            >
+                Compliance attention
+            </a>
 
             <a
                 href="{% url 'company_documents:upload' %}"
-                class="cd-button cd-button-primary"
+                class="company-documents-button company-documents-button-primary"
             >
                 + Upload document
             </a>
@@ -53,6 +66,79 @@
         </div>
 
     </div>
+
+
+    <!-- ==================================================
+         HEALTH SUMMARY
+    =================================================== -->
+
+    <section class="cd-health-banner">
+
+        <div class="cd-health-banner-copy">
+
+            <span class="cd-eyebrow">
+                DOCUMENT HEALTH
+            </span>
+
+            <h2>
+                {{ healthy_documents }}
+                healthy document{% if healthy_documents != 1 %}s{% endif %}
+            </h2>
+
+            <p>
+                Keep your compliance library current by resolving
+                expiry dates and review actions before they become
+                operational issues.
+            </p>
+
+        </div>
+
+        <div class="cd-health-summary">
+
+            <a
+                href="?health=expired"
+                class="cd-health-summary-item cd-health-summary-danger"
+            >
+                <strong>
+                    {{ expired_documents }}
+                </strong>
+
+                <span>
+                    Expired
+                </span>
+            </a>
+
+
+            <a
+                href="?health=expiring"
+                class="cd-health-summary-item cd-health-summary-warning"
+            >
+                <strong>
+                    {{ expiring_30_days }}
+                </strong>
+
+                <span>
+                    Expiring in 30 days
+                </span>
+            </a>
+
+
+            <a
+                href="?health=review"
+                class="cd-health-summary-item cd-health-summary-review"
+            >
+                <strong>
+                    {{ review_due_documents }}
+                </strong>
+
+                <span>
+                    Review due
+                </span>
+            </a>
+
+        </div>
+
+    </section>
 
 
     <!-- ==================================================
@@ -128,6 +214,74 @@
 
         </div>
 
+
+        <div class="cd-kpi-card cd-kpi-review">
+
+            <span class="cd-kpi-label">
+                Review due
+            </span>
+
+            <strong>
+                {{ review_due_documents }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                Require review
+            </span>
+
+        </div>
+
+
+        <div class="cd-kpi-card cd-kpi-sensitive">
+
+            <span class="cd-kpi-label">
+                Sensitive
+            </span>
+
+            <strong>
+                {{ sensitive_documents }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                Protected documents
+            </span>
+
+        </div>
+
+
+        <div class="cd-kpi-card">
+
+            <span class="cd-kpi-label">
+                No expiry
+            </span>
+
+            <strong>
+                {{ no_expiry_documents }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                No expiry date recorded
+            </span>
+
+        </div>
+
+
+        <div class="cd-kpi-card cd-kpi-healthy">
+
+            <span class="cd-kpi-label">
+                Healthy
+            </span>
+
+            <strong>
+                {{ healthy_documents }}
+            </strong>
+
+            <span class="cd-kpi-meta">
+                No immediate action
+            </span>
+
+        </div>
+
     </div>
 
 
@@ -153,7 +307,7 @@
                     type="search"
                     name="q"
                     value="{{ query }}"
-                    placeholder="Search documents..."
+                    placeholder="Search documents, references, descriptions..."
                     autocomplete="off"
                 >
 
@@ -228,6 +382,71 @@
 
             <div class="cd-filter-field">
 
+                <label for="document-health">
+                    Health
+                </label>
+
+                <select
+                    id="document-health"
+                    name="health"
+                >
+
+                    <option value="">
+                        All health states
+                    </option>
+
+                    <option
+                        value="healthy"
+                        {% if selected_health == "healthy" %}
+                            selected
+                        {% endif %}
+                    >
+                        Healthy
+                    </option>
+
+                    <option
+                        value="expiring"
+                        {% if selected_health == "expiring" %}
+                            selected
+                        {% endif %}
+                    >
+                        Expiring within 30 days
+                    </option>
+
+                    <option
+                        value="expired"
+                        {% if selected_health == "expired" %}
+                            selected
+                        {% endif %}
+                    >
+                        Expired
+                    </option>
+
+                    <option
+                        value="review"
+                        {% if selected_health == "review" %}
+                            selected
+                        {% endif %}
+                    >
+                        Review due
+                    </option>
+
+                    <option
+                        value="no_expiry"
+                        {% if selected_health == "no_expiry" %}
+                            selected
+                        {% endif %}
+                    >
+                        No expiry date
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="cd-filter-field">
+
                 <label for="document-expiry">
                     Expiry
                 </label>
@@ -277,6 +496,86 @@
                         Next 90 days
                     </option>
 
+                    <option
+                        value="none"
+                        {% if selected_expiry == "none" %}
+                            selected
+                        {% endif %}
+                    >
+                        No expiry
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="cd-filter-field">
+
+                <label for="document-relationship">
+                    Relationship
+                </label>
+
+                <select
+                    id="document-relationship"
+                    name="relationship"
+                >
+
+                    <option value="">
+                        All relationships
+                    </option>
+
+                    {% for value, label in relationships %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if selected_relationship == value %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="cd-filter-field">
+
+                <label for="document-sensitive">
+                    Security
+                </label>
+
+                <select
+                    id="document-sensitive"
+                    name="sensitive"
+                >
+
+                    <option value="">
+                        All documents
+                    </option>
+
+                    <option
+                        value="yes"
+                        {% if selected_sensitive == "yes" %}
+                            selected
+                        {% endif %}
+                    >
+                        Sensitive only
+                    </option>
+
+                    <option
+                        value="no"
+                        {% if selected_sensitive == "no" %}
+                            selected
+                        {% endif %}
+                    >
+                        Non-sensitive
+                    </option>
+
                 </select>
 
             </div>
@@ -288,7 +587,7 @@
                     type="submit"
                     class="cd-button cd-button-primary"
                 >
-                    Apply
+                    Apply filters
                 </button>
 
                 <a
@@ -303,6 +602,86 @@
         </form>
 
     </section>
+
+
+    <!-- ==================================================
+         ACTIVE FILTER SUMMARY
+    =================================================== -->
+
+    {% if query or selected_category or selected_status or selected_expiry or selected_health or selected_relationship or selected_sensitive %}
+
+        <div class="cd-active-filters">
+
+            <span>
+                Filters active
+            </span>
+
+
+            {% if query %}
+
+                <strong>
+                    Search: {{ query }}
+                </strong>
+
+            {% endif %}
+
+
+            {% if selected_category %}
+
+                <strong>
+                    Category: {{ selected_category|title }}
+                </strong>
+
+            {% endif %}
+
+
+            {% if selected_status %}
+
+                <strong>
+                    Status: {{ selected_status|title }}
+                </strong>
+
+            {% endif %}
+
+
+            {% if selected_expiry %}
+
+                <strong>
+                    Expiry: {{ selected_expiry|title }}
+                </strong>
+
+            {% endif %}
+
+
+            {% if selected_health %}
+
+                <strong>
+                    Health: {{ selected_health|title }}
+                </strong>
+
+            {% endif %}
+
+
+            {% if selected_relationship %}
+
+                <strong>
+                    Relationship: {{ selected_relationship|title }}
+                </strong>
+
+            {% endif %}
+
+
+            {% if selected_sensitive %}
+
+                <strong>
+                    Security: {{ selected_sensitive|title }}
+                </strong>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
 
 
     <!-- ==================================================
@@ -326,7 +705,8 @@
             </div>
 
             <span class="cd-table-count">
-                {{ paginator.count }} document{{ paginator.count|pluralize }}
+                {{ paginator.count }}
+                document{{ paginator.count|pluralize }}
             </span>
 
         </div>
@@ -349,7 +729,11 @@
                         </th>
 
                         <th>
-                            Reference
+                            Relationship
+                        </th>
+
+                        <th>
+                            Health
                         </th>
 
                         <th>
@@ -379,6 +763,8 @@
 
                         <tr>
 
+                            <!-- DOCUMENT -->
+
                             <td>
 
                                 <div class="cd-document-cell">
@@ -404,6 +790,8 @@
                             </td>
 
 
+                            <!-- CATEGORY -->
+
                             <td>
 
                                 <span class="cd-category-badge">
@@ -413,24 +801,143 @@
                             </td>
 
 
+                            <!-- RELATIONSHIP -->
+
                             <td>
 
-                                {% if document.document_reference %}
+                                {% if document.related_type == "employee" and document.employee %}
 
-                                    <span>
-                                        {{ document.document_reference }}
-                                    </span>
+                                    <div class="cd-relationship-cell">
+
+                                        <strong>
+                                            {{ document.employee.full_name }}
+                                        </strong>
+
+                                        <span>
+                                            Employee
+                                        </span>
+
+                                    </div>
+
+                                {% elif document.related_type == "customer" and document.customer %}
+
+                                    <div class="cd-relationship-cell">
+
+                                        <strong>
+                                            {{ document.customer.full_name }}
+                                        </strong>
+
+                                        <span>
+                                            Customer
+                                        </span>
+
+                                    </div>
+
+                                {% elif document.related_type == "vehicle" and document.vehicle %}
+
+                                    <div class="cd-relationship-cell">
+
+                                        <strong>
+                                            {{ document.vehicle.vehicle_name }}
+                                        </strong>
+
+                                        <span>
+                                            Vehicle
+                                        </span>
+
+                                    </div>
+
+                                {% elif document.related_type == "supplier" and document.supplier %}
+
+                                    <div class="cd-relationship-cell">
+
+                                        <strong>
+                                            {{ document.supplier.name }}
+                                        </strong>
+
+                                        <span>
+                                            Supplier
+                                        </span>
+
+                                    </div>
+
+                                {% elif document.related_type == "contract" and document.contract %}
+
+                                    <div class="cd-relationship-cell">
+
+                                        <strong>
+                                            Contract #{{ document.contract.pk }}
+                                        </strong>
+
+                                        <span>
+                                            {{ document.contract.service_type|default:"Contract" }}
+                                        </span>
+
+                                    </div>
 
                                 {% else %}
 
-                                    <span class="cd-muted">
-                                        —
+                                    <span class="cd-company-relationship">
+                                        Company
                                     </span>
 
                                 {% endif %}
 
                             </td>
 
+
+                            <!-- HEALTH -->
+
+                            <td>
+
+                                {% if document.health_status == "expired" %}
+
+                                    <span class="cd-health-badge cd-health-danger">
+                                        Expired
+                                    </span>
+
+                                {% elif document.health_status == "expiring" %}
+
+                                    <span class="cd-health-badge cd-health-warning">
+                                        Expiring soon
+                                    </span>
+
+                                {% elif document.health_status == "review_due" %}
+
+                                    <span class="cd-health-badge cd-health-review">
+                                        Review due
+                                    </span>
+
+                                {% elif document.health_status == "healthy" %}
+
+                                    <span class="cd-health-badge cd-health-healthy">
+                                        Healthy
+                                    </span>
+
+                                {% elif document.health_status == "no_expiry" %}
+
+                                    <span class="cd-health-badge cd-health-neutral">
+                                        No expiry
+                                    </span>
+
+                                {% elif document.health_status == "inactive" %}
+
+                                    <span class="cd-health-badge cd-health-neutral">
+                                        Inactive
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="cd-health-badge cd-health-neutral">
+                                        {{ document.health_status_label }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- EXPIRY -->
 
                             <td>
 
@@ -442,10 +949,24 @@
                                             {{ document.expiry_date|date:"d M Y" }}
                                         </strong>
 
-                                        {% if document.calculated_status %}
-                                            <span>
-                                                {{ document.status_label }}
+                                        {% if document.health_status == "expired" %}
+
+                                            <span class="cd-expiry-danger">
+                                                Expired
                                             </span>
+
+                                        {% elif document.health_status == "expiring" %}
+
+                                            <span class="cd-expiry-warning">
+                                                Expiring soon
+                                            </span>
+
+                                        {% else %}
+
+                                            <span>
+                                                Valid
+                                            </span>
+
                                         {% endif %}
 
                                     </div>
@@ -461,14 +982,30 @@
                             </td>
 
 
+                            <!-- STATUS -->
+
                             <td>
 
-                                <span class="cd-status-badge">
-                                    {{ document.status_label }}
-                                </span>
+                                <div class="cd-status-cell">
+
+                                    <span class="cd-status-badge">
+                                        {{ document.status_label }}
+                                    </span>
+
+                                    {% if document.is_sensitive %}
+
+                                        <span class="cd-sensitive-badge">
+                                            Sensitive
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
 
                             </td>
 
+
+                            <!-- UPLOADED -->
 
                             <td>
 
@@ -478,6 +1015,8 @@
 
                             </td>
 
+
+                            <!-- ACTIONS -->
 
                             <td>
 
@@ -528,7 +1067,7 @@
                         <tr>
 
                             <td
-                                colspan="7"
+                                colspan="8"
                                 class="cd-empty-cell"
                             >
 
@@ -543,16 +1082,15 @@
                                     </h3>
 
                                     <p>
-                                        Upload your first company
-                                        document to start building
-                                        your document library.
+                                        No documents match the current
+                                        search and filter combination.
                                     </p>
 
                                     <a
-                                        href="{% url 'company_documents:upload' %}"
-                                        class="cd-button cd-button-primary"
+                                        href="{% url 'company_documents:list' %}"
+                                        class="cd-button cd-button-secondary"
                                     >
-                                        Upload document
+                                        Clear filters
                                     </a>
 
                                 </div>
@@ -581,14 +1119,19 @@
                 <div class="cd-pagination-summary">
 
                     Showing
+
                     <strong>
                         {{ page_obj.start_index }}
                     </strong>
+
                     –
+
                     <strong>
                         {{ page_obj.end_index }}
                     </strong>
+
                     of
+
                     <strong>
                         {{ paginator.count }}
                     </strong>
@@ -601,7 +1144,7 @@
                     {% if page_obj.has_previous %}
 
                         <a
-                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&page={{ page_obj.previous_page_number }}"
+                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&health={{ selected_health|urlencode }}&relationship={{ selected_relationship|urlencode }}&sensitive={{ selected_sensitive|urlencode }}&page={{ page_obj.previous_page_number }}"
                             class="cd-pagination-button"
                         >
                             ← Previous
@@ -611,15 +1154,17 @@
 
 
                     <span class="cd-pagination-current">
+
                         Page {{ page_obj.number }}
                         of {{ paginator.num_pages }}
+
                     </span>
 
 
                     {% if page_obj.has_next %}
 
                         <a
-                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&page={{ page_obj.next_page_number }}"
+                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&health={{ selected_health|urlencode }}&relationship={{ selected_relationship|urlencode }}&sensitive={{ selected_sensitive|urlencode }}&page={{ page_obj.next_page_number }}"
                             class="cd-pagination-button"
                         >
                             Next →

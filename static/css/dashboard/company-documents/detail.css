@@ -257,6 +257,87 @@
 
 
 /* ==========================================================
+   COMPLIANCE STATUS
+   ========================================================== */
+
+.cd-compliance-status-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 18px;
+    padding: 15px;
+    border: 1px solid #eef0f3;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.cd-compliance-status-panel span {
+    display: block;
+    margin-bottom: 7px;
+    color: #9ca3af;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.cd-compliance-status-panel p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.cd-compliance-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.cd-compliance-status-success {
+    color: #047857;
+    background: #ecfdf5;
+}
+
+.cd-compliance-status-danger {
+    color: #991b1b;
+    background: #fef2f2;
+}
+
+.cd-compliance-status-warning {
+    color: #92400e;
+    background: #fffbeb;
+}
+
+.cd-compliance-status-notice {
+    color: #1d4ed8;
+    background: #eff6ff;
+}
+
+.cd-compliance-status-neutral {
+    color: #4b5563;
+    background: #f3f4f6;
+}
+
+.cd-compliance-link {
+    display: inline-flex;
+    margin-top: 8px;
+    color: #111827;
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.cd-compliance-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ==========================================================
    DESCRIPTION
    ========================================================== */
 
@@ -550,4 +631,549 @@
         align-items: flex-start;
         flex-direction: column;
     }
+
+    .cd-compliance-status-panel {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+
+/* ==========================================================
+   VERSION HISTORY
+   ========================================================== */
+
+.cd-version-history-card {
+    overflow: hidden;
+}
+
+
+.cd-version-history-count {
+    display: inline-flex;
+    align-items: center;
+    min-height: 27px;
+    padding: 0 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    color: #6b7280;
+    background: #f9fafb;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* ==========================================================
+   VERSION TIMELINE
+   ========================================================== */
+
+.cd-version-timeline {
+    position: relative;
+}
+
+
+.cd-version-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 15px;
+}
+
+
+.cd-version-timeline-marker {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    box-sizing: border-box;
+    color: #374151;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+
+.cd-version-item-current .cd-version-timeline-marker {
+    color: #047857;
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+}
+
+
+.cd-version-item-previous .cd-version-timeline-marker {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+
+/* vertical line */
+
+.cd-version-item-current::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 34px;
+    bottom: -28px;
+    width: 1px;
+    background: #e5e7eb;
+}
+
+
+.cd-version-content {
+    min-width: 0;
+    padding-bottom: 5px;
+}
+
+
+.cd-version-topline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+
+.cd-version-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #9ca3af;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+}
+
+
+.cd-version-topline h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 850;
+    letter-spacing: -0.02em;
+}
+
+
+/* ==========================================================
+   VERSION BADGES
+   ========================================================== */
+
+.cd-version-current-badge,
+.cd-version-archived-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 0 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    font-size: 9px;
+    font-weight: 850;
+}
+
+
+.cd-version-current-badge {
+    color: #047857;
+    background: #ecfdf5;
+}
+
+
+.cd-version-archived-badge {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+
+/* ==========================================================
+   VERSION FILE
+   ========================================================== */
+
+.cd-version-file {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-top: 15px;
+    padding: 13px;
+    border: 1px solid #eef0f3;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+
+.cd-version-file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #374151;
+    background: #ffffff;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+
+.cd-version-file div {
+    min-width: 0;
+}
+
+
+.cd-version-file strong {
+    display: block;
+    overflow: hidden;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.cd-version-file span:not(.cd-version-file-icon) {
+    display: block;
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 9px;
+}
+
+
+/* ==========================================================
+   VERSION META
+   ========================================================== */
+
+.cd-version-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 10px;
+    border-top: 1px solid #eef0f3;
+    border-left: 1px solid #eef0f3;
+}
+
+
+.cd-version-meta > div {
+    min-width: 0;
+    padding: 10px;
+    border-right: 1px solid #eef0f3;
+    border-bottom: 1px solid #eef0f3;
+}
+
+
+.cd-version-meta span {
+    display: block;
+    margin-bottom: 4px;
+    color: #9ca3af;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+
+.cd-version-meta strong {
+    display: block;
+    overflow: hidden;
+    color: #374151;
+    font-size: 10px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ==========================================================
+   VERSION COMPLIANCE
+   ========================================================== */
+
+.cd-version-compliance {
+    margin-top: 11px;
+}
+
+
+.cd-version-compliance span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 850;
+}
+
+
+.cd-version-status-success {
+    color: #047857;
+    background: #ecfdf5;
+}
+
+
+.cd-version-status-danger {
+    color: #991b1b;
+    background: #fef2f2;
+}
+
+
+.cd-version-status-warning {
+    color: #92400e;
+    background: #fffbeb;
+}
+
+
+.cd-version-status-notice {
+    color: #1d4ed8;
+    background: #eff6ff;
+}
+
+
+.cd-version-status-neutral {
+    color: #4b5563;
+    background: #f3f4f6;
+}
+
+
+/* ==========================================================
+   VERSION ACTIONS
+   ========================================================== */
+
+.cd-version-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 13px;
+}
+
+
+.cd-version-action-primary,
+.cd-version-action-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 11px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 9px;
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+        transform 150ms ease,
+        background-color 150ms ease,
+        border-color 150ms ease;
+}
+
+
+.cd-version-action-primary {
+    color: #ffffff;
+    background: #111827;
+    border: 1px solid #111827;
+}
+
+
+.cd-version-action-primary:hover {
+    color: #ffffff;
+    background: #1f2937;
+    transform: translateY(-1px);
+}
+
+
+.cd-version-action-secondary {
+    color: #374151;
+    background: #ffffff;
+    border: 1px solid #e1e5ea;
+}
+
+
+.cd-version-action-secondary:hover {
+    color: #111827;
+    background: #f9fafb;
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   VERSION CONNECTOR
+   ========================================================== */
+
+.cd-version-connector {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    margin-left: 16px;
+    padding-left: 18px;
+}
+
+
+.cd-version-connector::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #e5e7eb;
+}
+
+
+.cd-version-connector span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 23px;
+    padding: 0 8px;
+    border: 1px solid #eef0f3;
+    border-radius: 999px;
+    color: #9ca3af;
+    background: #ffffff;
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+
+/* ==========================================================
+   HISTORY NOTE
+   ========================================================== */
+
+.cd-version-history-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 11px;
+    padding: 10px;
+    border: 1px solid #eef0f3;
+    border-radius: 9px;
+    background: #fafbfc;
+}
+
+
+.cd-version-history-note-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 19px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    color: #6b7280;
+    background: #e5e7eb;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+
+.cd-version-history-note p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 9px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================================
+   EMPTY HISTORY
+   ========================================================== */
+
+.cd-version-empty {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 49px;
+    padding: 14px;
+    border: 1px dashed #e1e5ea;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+
+.cd-version-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: #6b7280;
+    background: #f3f4f6;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+
+.cd-version-empty strong {
+    display: block;
+    color: #374151;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+.cd-version-empty p {
+    margin: 3px 0 0;
+    color: #9ca3af;
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   VERSION HISTORY RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 800px) {
+
+    .cd-version-topline {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cd-version-meta {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .cd-version-item {
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 11px;
+    }
+
+    .cd-version-timeline-marker {
+        width: 28px;
+        height: 28px;
+        font-size: 10px;
+    }
+
+    .cd-version-item-current::after {
+        left: 13px;
+        top: 28px;
+    }
+
+    .cd-version-connector {
+        margin-left: 13px;
+        padding-left: 15px;
+    }
+
+    .cd-version-empty {
+        margin-left: 39px;
+    }
+
+    .cd-version-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .cd-version-action-primary,
+    .cd-version-action-secondary {
+        width: 100%;
+    }
+
 }

@@ -1,0 +1,275 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Bulk Document Intelligence | YD Commercial Cleaning{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/company-documents/bulk-import.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="bulk-page">
+
+    <div class="bulk-page-header">
+        <div>
+            <span class="bulk-eyebrow">DOCUMENT INTELLIGENCE</span>
+
+            <h1>Bulk Document Import</h1>
+
+            <p>
+                Upload company documents in bulk and let YD Commercial Cleaning
+                analyse, classify, match and prepare them for approval.
+            </p>
+        </div>
+
+        <a
+            href="{% url 'company_documents:bulk_import_upload' %}"
+            class="bulk-primary-button"
+        >
+            <span>＋</span>
+            Upload Documents
+        </a>
+    </div>
+
+
+    <div class="bulk-info-banner">
+
+        <div class="bulk-info-icon">
+            ✦
+        </div>
+
+        <div>
+            <strong>Intelligent document processing</strong>
+
+            <p>
+                Uploaded files remain in a secure staging area until they are
+                reviewed and approved. Nothing is permanently added to the
+                company document library automatically.
+            </p>
+        </div>
+
+    </div>
+
+
+    <section class="bulk-section">
+
+        <div class="bulk-section-heading">
+            <div>
+                <span class="bulk-section-label">IMPORT HISTORY</span>
+
+                <h2>Document Import Batches</h2>
+            </div>
+
+            <span class="bulk-count">
+                {{ page_obj.paginator.count }} batch{{ page_obj.paginator.count|pluralize }}
+            </span>
+        </div>
+
+
+        {% if batches %}
+
+        <div class="bulk-table-shell">
+
+            <div class="bulk-table-scroll">
+
+                <table class="bulk-table">
+
+                    <thead>
+                        <tr>
+                            <th>Batch</th>
+                            <th>Status</th>
+                            <th>Files</th>
+                            <th>Review</th>
+                            <th>Imported</th>
+                            <th>Created</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for batch in batches %}
+
+                        <tr>
+
+                            <td>
+                                <div class="bulk-batch-cell">
+                                    <strong>
+                                        {{ batch.batch_reference }}
+                                    </strong>
+
+                                    {% if batch.uploaded_by %}
+                                        <span>
+                                            {{ batch.uploaded_by.get_full_name|default:batch.uploaded_by.username }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+
+                            <td>
+
+                                <span class="bulk-status bulk-status-{{ batch.status }}">
+                                    {{ batch.get_status_display }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="bulk-number-cell">
+
+                                    <strong>
+                                        {{ batch.total_files }}
+                                    </strong>
+
+                                    {% if batch.failed_count %}
+                                        <small>
+                                            {{ batch.failed_count }} failed
+                                        </small>
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if batch.pending_review_count %}
+
+                                    <span class="bulk-review-count">
+                                        {{ batch.pending_review_count }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="bulk-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    {{ batch.imported_files }}
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="bulk-date">
+                                    {{ batch.created_at|date:"d M Y" }}
+                                </span>
+
+                                <small>
+                                    {{ batch.created_at|date:"H:i" }}
+                                </small>
+
+                            </td>
+
+
+                            <td class="bulk-action-cell">
+
+                                <a
+                                    href="{% url 'company_documents:bulk_import_review' batch.pk %}"
+                                    class="bulk-secondary-button"
+                                >
+                                    Review
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav class="bulk-pagination" aria-label="Bulk import pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    ←
+                </a>
+            {% endif %}
+
+
+            {% for page in page_obj.paginator.page_range %}
+
+                {% if page == page_obj.number %}
+
+                    <span class="active">
+                        {{ page }}
+                    </span>
+
+                {% elif page >= page_obj.number|add:"-2" and page <= page_obj.number|add:"2" %}
+
+                    <a href="?page={{ page }}">
+                        {{ page }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">
+                    →
+                </a>
+            {% endif %}
+
+        </nav>
+
+        {% endif %}
+
+
+        {% else %}
+
+        <div class="bulk-empty-state">
+
+            <div class="bulk-empty-icon">
+                ✦
+            </div>
+
+            <h3>No import batches yet</h3>
+
+            <p>
+                Upload your first group of company documents and the
+                intelligence engine will prepare them for review.
+            </p>
+
+            <a
+                href="{% url 'company_documents:bulk_import_upload' %}"
+                class="bulk-primary-button"
+            >
+                Upload Your First Documents
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

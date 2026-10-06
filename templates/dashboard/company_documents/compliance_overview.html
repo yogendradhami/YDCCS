@@ -1,0 +1,941 @@
+{% extends "dashboard_base.html" %}
+
+{% load static %}
+
+
+{% block title %}
+    Compliance Overview | YD Cleaning
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/compliance-overview.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="compliance-overview-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <header class="compliance-overview-header">
+
+        <div class="compliance-overview-header-content">
+
+            <div class="compliance-overview-eyebrow">
+                DOCUMENT CENTRE
+            </div>
+
+            <h1>
+                Compliance Overview
+            </h1>
+
+            <p>
+                Monitor required business documents across your
+                company, employees, vehicles, customers, suppliers
+                and contracts.
+            </p>
+
+        </div>
+
+
+        <div class="compliance-overview-actions">
+
+            <a
+                href="{% url 'company_documents:compliance_notifications' %}"
+                class="compliance-overview-button secondary"
+            >
+                Notifications
+            </a>
+
+            <a
+                href="{% url 'company_documents:compliance' %}"
+                class="compliance-overview-button secondary"
+            >
+                Attention queue
+            </a>
+
+            <a
+                href="{% url 'company_documents:list' %}"
+                class="compliance-overview-button secondary"
+            >
+                Document library
+            </a>
+
+            <a
+                href="{% url 'company_documents:upload' %}"
+                class="compliance-overview-button primary"
+            >
+                + Upload document
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================================
+         OVERALL SUMMARY
+    ========================================================== -->
+
+    <section class="compliance-overview-summary">
+
+        <div class="compliance-overview-summary-main">
+
+            <div class="compliance-overview-summary-label">
+                OVERALL COMPLIANCE COVERAGE
+            </div>
+
+            <div class="compliance-overview-score">
+
+                {% if summary.has_applicable_requirements %}
+                    {{ summary.percentage }}%
+                {% else %}
+                    N/A
+                {% endif %}
+
+            </div>
+
+            <p>
+
+                {% if summary.has_applicable_requirements %}
+
+                    {{ summary.satisfied }}
+                    of
+                    {{ summary.total }}
+                    required requirements are currently satisfied.
+
+                {% else %}
+
+                    No applicable compliance requirements are
+                    currently configured.
+
+                {% endif %}
+
+            </p>
+
+
+            <div
+                class="
+                    compliance-overview-progress
+                    {% if not summary.has_applicable_requirements %}
+                        compliance-overview-progress--na
+                    {% endif %}
+                "
+            >
+
+                {% if summary.has_applicable_requirements %}
+
+                    <span
+                        style="width: {{ summary.percentage }}%;"
+                    ></span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="compliance-overview-summary-stats">
+
+            <div>
+                <strong>
+                    {{ summary.missing }}
+                </strong>
+
+                <span>
+                    Missing
+                </span>
+            </div>
+
+
+            <div>
+                <strong>
+                    {{ summary.expired }}
+                </strong>
+
+                <span>
+                    Expired
+                </span>
+            </div>
+
+
+            <div>
+                <strong>
+                    {{ summary.review_due }}
+                </strong>
+
+                <span>
+                    Review due
+                </span>
+            </div>
+
+
+            <div>
+                <strong>
+                    {{ summary.expiring }}
+                </strong>
+
+                <span>
+                    Expiring
+                </span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         EXECUTIVE ALERT
+    ========================================================== -->
+
+    {% if summary.has_applicable_requirements %}
+
+        {% if summary.expired or summary.missing or summary.review_due or summary.expiring %}
+
+            <section class="compliance-overview-alert">
+
+                <div class="compliance-overview-alert-icon">
+                    !
+                </div>
+
+                <div class="compliance-overview-alert-content">
+
+                    <strong>
+                        Compliance attention required
+                    </strong>
+
+                    <p>
+
+                        There are currently
+
+                        {% if summary.expired %}
+                            {{ summary.expired }} expired
+                        {% endif %}
+
+                        {% if summary.expired and summary.missing %}
+                            ,
+                        {% endif %}
+
+                        {% if summary.missing %}
+                            {{ summary.missing }} missing
+                        {% endif %}
+
+                        {% if summary.missing and summary.review_due %}
+                            ,
+                        {% endif %}
+
+                        {% if summary.review_due %}
+                            {{ summary.review_due }} requiring review
+                        {% endif %}
+
+                        {% if summary.review_due and summary.expiring %}
+                            ,
+                        {% endif %}
+
+                        {% if summary.expiring %}
+                            {{ summary.expiring }} expiring soon
+                        {% endif %}
+
+                        compliance item{{ summary.expired|add:summary.missing|add:summary.review_due|add:summary.expiring|pluralize }}.
+
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{% url 'company_documents:compliance' %}"
+                    class="compliance-overview-alert-action"
+                >
+                    Review attention →
+                </a>
+
+            </section>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <!-- =========================================================
+         COVERAGE BY AREA
+    ========================================================== -->
+
+    <section class="compliance-overview-section">
+
+        <div class="compliance-overview-section-header">
+
+            <div>
+
+                <span>
+                    COVERAGE BY AREA
+                </span>
+
+                <h2>
+                    Business compliance
+                </h2>
+
+                <p>
+                    Compliance coverage across every configured
+                    business entity type.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="compliance-scope-grid">
+
+            {% for card in scope_cards %}
+
+                <a
+                    href="?scope={{ card.scope }}"
+                    class="compliance-scope-card"
+                >
+
+                    <div class="compliance-scope-top">
+
+                        <div>
+
+                            <span class="compliance-scope-label">
+                                {{ card.label }}
+                            </span>
+
+                            <strong class="compliance-scope-score">
+
+                                {% if card.has_applicable_requirements %}
+                                    {{ card.percentage }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+
+                        <span class="compliance-scope-count">
+
+                            {% if card.has_applicable_requirements %}
+
+                                {{ card.satisfied }}/{{ card.total }}
+
+                            {% else %}
+
+                                No applicable records
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            compliance-scope-progress
+                            {% if not card.has_applicable_requirements %}
+                                compliance-scope-progress--na
+                            {% endif %}
+                        "
+                    >
+
+                        {% if card.has_applicable_requirements %}
+
+                            <span
+                                style="width: {{ card.percentage }}%;"
+                            ></span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="compliance-scope-breakdown">
+
+                        <span class="status-satisfied">
+                            {{ card.satisfied }} satisfied
+                        </span>
+
+
+                        {% if card.missing %}
+
+                            <span class="status-missing">
+                                {{ card.missing }} missing
+                            </span>
+
+                        {% endif %}
+
+
+                        {% if card.expired %}
+
+                            <span class="status-expired">
+                                {{ card.expired }} expired
+                            </span>
+
+                        {% endif %}
+
+
+                        {% if card.review_due %}
+
+                            <span class="status-review">
+                                {{ card.review_due }} review
+                            </span>
+
+                        {% endif %}
+
+
+                        {% if card.expiring %}
+
+                            <span class="status-expiring">
+                                {{ card.expiring }} expiring
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </a>
+
+            {% empty %}
+
+                <div class="compliance-no-records">
+                    No compliance scopes are currently configured.
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         REQUIREMENT DETAIL
+    ========================================================== -->
+
+    <section class="compliance-overview-section">
+
+        <div class="compliance-overview-section-header">
+
+            <div>
+
+                <span>
+                    REQUIREMENT STATUS
+                </span>
+
+                <h2>
+                    Compliance coverage by entity
+                </h2>
+
+                <p>
+                    Review every configured requirement and its
+                    current document status.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% for scope, records in scope_reports.items %}
+
+            <div class="compliance-entity-group">
+
+                <div class="compliance-entity-heading">
+
+                    <div>
+
+                        <span class="compliance-entity-eyebrow">
+                            COMPLIANCE AREA
+                        </span>
+
+                        <h3>
+                            {{ scope|title }}
+                        </h3>
+
+                    </div>
+
+
+                    <span>
+
+                        {{ records|length }}
+                        record{% if records|length != 1 %}s{% endif %}
+
+                    </span>
+
+                </div>
+
+
+                {% if records %}
+
+                    <div class="compliance-entity-list">
+
+                        {% for record in records %}
+
+                            <details
+                                class="compliance-entity-card"
+                            >
+
+                                <summary>
+
+                                    <div class="compliance-entity-summary">
+
+                                        <div class="compliance-entity-name">
+
+                                            {% if record.entity %}
+
+                                                {% if scope == "employee" %}
+
+                                                    <a
+                                                        href="{% url 'company_documents:employee_compliance' employee_id=record.entity.id %}"
+                                                        class="compliance-entity-name-link"
+                                                        onclick="event.stopPropagation();"
+                                                    >
+                                                        {{ record.entity.full_name }}
+                                                    </a>
+
+                                                {% elif scope == "customer" %}
+
+                                                    {{ record.entity.full_name }}
+
+                                                {% elif scope == "vehicle" %}
+
+                                                    {{ record.entity.vehicle_name }}
+
+                                                {% elif scope == "supplier" %}
+
+                                                    {{ record.entity.name }}
+
+                                                {% elif scope == "contract" %}
+
+                                                    {{ record.entity.service_type }}
+
+                                                {% else %}
+
+                                                    {{ record.entity }}
+
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                Company
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="compliance-entity-score">
+
+                                            <strong>
+
+                                                {% if record.summary.has_applicable_requirements %}
+                                                    {{ record.summary.percentage }}%
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+
+                                            </strong>
+
+
+                                            <span>
+
+                                                {% if record.summary.has_applicable_requirements %}
+
+                                                    {{ record.summary.satisfied }}/{{ record.summary.total }}
+
+                                                {% else %}
+
+                                                    No requirements
+
+                                                {% endif %}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </summary>
+
+
+                                <div class="compliance-requirement-list">
+
+                                    {% for result in record.results %}
+
+                                        <div
+                                            class="compliance-requirement-row"
+                                        >
+
+                                            <div
+                                                class="compliance-requirement-information"
+                                            >
+
+                                                <strong>
+                                                    {{ result.requirement.name }}
+                                                </strong>
+
+
+                                                {% if result.requirement.description %}
+
+                                                    <p>
+                                                        {{ result.requirement.description }}
+                                                    </p>
+
+                                                {% endif %}
+
+
+                                                {% if result.requirement.document_type %}
+
+                                                    <span
+                                                        class="compliance-requirement-type"
+                                                    >
+                                                        {{ result.requirement.document_type }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <div class="compliance-requirement-status">
+
+                                                {% if not result.requirement.required %}
+
+                                                    <span class="status-pill optional">
+                                                        Optional
+                                                    </span>
+
+                                                {% elif result.status == "satisfied" %}
+
+                                                    <span class="status-pill satisfied">
+                                                        Satisfied
+                                                    </span>
+
+                                                {% elif result.status == "missing" %}
+
+                                                    <span class="status-pill missing">
+                                                        Missing
+                                                    </span>
+
+                                                {% elif result.status == "expired" %}
+
+                                                    <span class="status-pill expired">
+                                                        Expired
+                                                    </span>
+
+                                                {% elif result.status == "review_due" %}
+
+                                                    <span class="status-pill review">
+                                                        Review due
+                                                    </span>
+
+                                                {% elif result.status == "expiring" %}
+
+                                                    <span class="status-pill expiring">
+                                                        Expiring
+                                                    </span>
+
+                                                {% endif %}
+
+
+                                                <div class="compliance-requirement-actions">
+
+                                                    {% if result.document %}
+
+                                                        <a
+                                                            href="{% url 'company_documents:detail' result.document.pk %}"
+                                                            class="compliance-action-button view"
+                                                        >
+                                                            View
+                                                        </a>
+
+                                                        {% if result.status != "satisfied" or result.status == "expiring" %}
+
+                                                            <a
+                                                                href="{% url 'company_documents:edit' result.document.pk %}"
+                                                                class="compliance-action-button replace"
+                                                            >
+                                                                Replace
+                                                            </a>
+
+                                                        {% endif %}
+
+                                                    {% else %}
+
+                                                        {% if scope == "employee" and record.entity %}
+
+                                                            <a
+                                                                href="{% url 'company_documents:upload' %}?related_type=employee&employee={{ record.entity.id }}&document_type={{ result.requirement.document_type|urlencode }}"
+                                                                class="compliance-action-button upload"
+                                                            >
+                                                                Upload
+                                                            </a>
+
+                                                        {% elif scope == "customer" and record.entity %}
+
+                                                            <a
+                                                                href="{% url 'company_documents:upload' %}?related_type=customer&customer={{ record.entity.id }}&document_type={{ result.requirement.document_type|urlencode }}"
+                                                                class="compliance-action-button upload"
+                                                            >
+                                                                Upload
+                                                            </a>
+
+                                                        {% elif scope == "vehicle" and record.entity %}
+
+                                                            <a
+                                                                href="{% url 'company_documents:upload' %}?related_type=vehicle&vehicle={{ record.entity.id }}&document_type={{ result.requirement.document_type|urlencode }}"
+                                                                class="compliance-action-button upload"
+                                                            >
+                                                                Upload
+                                                            </a>
+
+                                                        {% elif scope == "supplier" and record.entity %}
+
+                                                            <a
+                                                                href="{% url 'company_documents:upload' %}?related_type=supplier&supplier={{ record.entity.id }}&document_type={{ result.requirement.document_type|urlencode }}"
+                                                                class="compliance-action-button upload"
+                                                            >
+                                                                Upload
+                                                            </a>
+
+                                                        {% elif scope == "contract" and record.entity %}
+
+                                                            <a
+                                                                href="{% url 'company_documents:upload' %}?related_type=contract&contract={{ record.entity.id }}&document_type={{ result.requirement.document_type|urlencode }}"
+                                                                class="compliance-action-button upload"
+                                                            >
+                                                                Upload
+                                                            </a>
+
+                                                        {% else %}
+
+                                                            <a
+                                                                href="{% url 'company_documents:upload' %}?document_type={{ result.requirement.document_type|urlencode }}"
+                                                                class="compliance-action-button upload"
+                                                            >
+                                                                Upload
+                                                            </a>
+
+                                                        {% endif %}
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+                                    {% empty %}
+
+                                        <div class="compliance-no-requirements">
+                                            No requirements are configured for this record.
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </details>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="compliance-no-records">
+
+                        <div class="compliance-no-records-icon">
+                            —
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                No records currently require this scope
+                            </strong>
+
+                            <p>
+                                There are no applicable business records
+                                configured for this compliance area.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        {% empty %}
+
+            <div class="compliance-empty-state">
+
+                <div class="compliance-empty-state-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    No compliance requirements configured
+                </h3>
+
+                <p>
+                    Add compliance requirements to begin monitoring
+                    company documents.
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+
+    <!-- =========================================================
+         QUICK ACTIONS
+    ========================================================== -->
+
+    <section class="compliance-overview-quick-actions">
+
+        <div>
+
+            <span>
+                DOCUMENT CENTRE
+            </span>
+
+            <h2>
+                Manage compliance documents
+            </h2>
+
+            <p>
+                Upload, review and maintain the documents that support
+                your business compliance requirements.
+            </p>
+
+        </div>
+
+
+        <div class="compliance-overview-quick-action-grid">
+
+            <a
+                href="{% url 'company_documents:upload' %}"
+                class="compliance-quick-action"
+            >
+
+                <span class="compliance-quick-action-icon">
+                    +
+                </span>
+
+                <div>
+
+                    <strong>
+                        Upload document
+                    </strong>
+
+                    <small>
+                        Add a new compliance document
+                    </small>
+
+                </div>
+
+            </a>
+
+
+            <a
+                href="{% url 'company_documents:list' %}"
+                class="compliance-quick-action"
+            >
+
+                <span class="compliance-quick-action-icon">
+                    ▣
+                </span>
+
+                <div>
+
+                    <strong>
+                        Document library
+                    </strong>
+
+                    <small>
+                        Browse the complete document centre
+                    </small>
+
+                </div>
+
+            </a>
+
+
+            <a
+                href="{% url 'company_documents:compliance' %}"
+                class="compliance-quick-action"
+            >
+
+                <span class="compliance-quick-action-icon">
+                    !
+                </span>
+
+                <div>
+
+                    <strong>
+                        Attention queue
+                    </strong>
+
+                    <small>
+                        Review documents requiring action
+                    </small>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         INFORMATION
+    ========================================================== -->
+
+    <section class="compliance-overview-info">
+
+        <div class="compliance-overview-info-icon">
+            i
+        </div>
+
+        <div>
+
+            <strong>
+                How compliance matching works
+            </strong>
+
+            <p>
+                Requirements are matched against active documents using
+                their configured category, document type and existing
+                business relationships. Missing documents are only
+                reported where a requirement has been explicitly
+                configured.
+            </p>
+
+        </div>
+
+    </section>
+
+
+</div>
+
+{% endblock %}

@@ -704,3 +704,353 @@
         justify-content: space-between;
     }
 }
+
+
+/* ==========================================================
+   DOCUMENT HEALTH BANNER
+   ========================================================== */
+
+.cd-health-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 20px;
+    padding: 22px 24px;
+    border: 1px solid #e6e9ee;
+    border-radius: 18px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f8fafc 100%
+        );
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.045);
+}
+
+.cd-health-banner-copy {
+    min-width: 0;
+}
+
+.cd-health-banner-copy h2 {
+    margin: 0;
+    color: #111827;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+
+.cd-health-banner-copy p {
+    max-width: 650px;
+    margin: 7px 0 0;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.cd-health-summary {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+}
+
+.cd-health-summary-item {
+    min-width: 105px;
+    padding: 11px 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+    background: #ffffff;
+    text-decoration: none;
+    transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.cd-health-summary-item:hover {
+    transform: translateY(-1px);
+    border-color: #d1d5db;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07);
+}
+
+.cd-health-summary-item strong {
+    display: block;
+    color: #111827;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.cd-health-summary-item span {
+    display: block;
+    margin-top: 5px;
+    color: #6b7280;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.cd-health-summary-danger {
+    border-color: #fecaca;
+}
+
+.cd-health-summary-danger strong {
+    color: #b91c1c;
+}
+
+.cd-health-summary-warning {
+    border-color: #fde68a;
+}
+
+.cd-health-summary-warning strong {
+    color: #a16207;
+}
+
+.cd-health-summary-review {
+    border-color: #bfdbfe;
+}
+
+.cd-health-summary-review strong {
+    color: #1d4ed8;
+}
+
+
+/* ==========================================================
+   EXTENDED KPI GRID
+   ========================================================== */
+
+.cd-kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.cd-kpi-review {
+    border-color: #dbeafe;
+}
+
+.cd-kpi-sensitive {
+    border-color: #e9d5ff;
+}
+
+.cd-kpi-healthy {
+    border-color: #bbf7d0;
+}
+
+
+/* ==========================================================
+   ACTIVE FILTERS
+   ========================================================== */
+
+.cd-active-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: -8px 0 18px;
+}
+
+.cd-active-filters > span {
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cd-active-filters strong {
+    display: inline-flex;
+    align-items: center;
+    min-height: 27px;
+    padding: 0 9px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    color: #374151;
+    background: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   RELATIONSHIP CELL
+   ========================================================== */
+
+.cd-relationship-cell {
+    min-width: 130px;
+}
+
+.cd-relationship-cell strong {
+    display: block;
+    overflow: hidden;
+    max-width: 180px;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cd-relationship-cell span {
+    display: block;
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.cd-company-relationship {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 0 9px;
+    border: 1px solid #dbeafe;
+    border-radius: 999px;
+    color: #1d4ed8;
+    background: #eff6ff;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* ==========================================================
+   HEALTH BADGES
+   ========================================================== */
+
+.cd-health-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 0 9px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.cd-health-healthy {
+    color: #166534;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.cd-health-warning {
+    color: #a16207;
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.cd-health-danger {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.cd-health-review {
+    color: #1d4ed8;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.cd-health-neutral {
+    color: #64748b;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+
+/* ==========================================================
+   STATUS / SECURITY
+   ========================================================== */
+
+.cd-status-cell {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.cd-sensitive-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 21px;
+    padding: 0 7px;
+    border: 1px solid #e9d5ff;
+    border-radius: 999px;
+    color: #7e22ce;
+    background: #faf5ff;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+
+/* ==========================================================
+   TABLE WIDTH
+   ========================================================== */
+
+.cd-table {
+    min-width: 1320px;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 1250px) {
+
+    .cd-health-banner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cd-health-summary {
+        width: 100%;
+    }
+
+    .cd-health-summary-item {
+        flex: 1;
+    }
+
+    .cd-kpi-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 1000px) {
+
+    .cd-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 640px) {
+
+    .cd-health-banner {
+        padding: 18px;
+    }
+
+    .cd-health-summary {
+        display: grid;
+        width: 100%;
+        grid-template-columns: 1fr;
+    }
+
+    .cd-health-summary-item {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .cd-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-active-filters {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}

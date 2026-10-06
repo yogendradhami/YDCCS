@@ -1,0 +1,408 @@
+{% extends "dashboard_base.html" %}
+
+{% load static %}
+
+{% block title %}
+Compliance Notifications | YD Cleaning
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/compliance-notifications.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="compliance-notifications-page">
+
+    <header class="compliance-notifications-header">
+
+        <div>
+            <span class="compliance-notifications-eyebrow">
+                DOCUMENT CENTRE
+            </span>
+
+            <h1>
+                Compliance Notifications
+            </h1>
+
+            <p>
+                Live alerts for expired, review-due and upcoming document
+                renewals across your business.
+            </p>
+        </div>
+
+        <div class="compliance-notifications-actions">
+
+            <a
+                href="{% url 'company_documents:compliance_overview' %}"
+                class="cn-button secondary"
+            >
+                Compliance overview
+            </a>
+
+            <a
+                href="{% url 'company_documents:compliance' %}"
+                class="cn-button primary"
+            >
+                Attention queue
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- SUMMARY -->
+
+    <section class="cn-summary-grid">
+
+        <div class="cn-summary-card total">
+            <span>Total alerts</span>
+            <strong>{{ summary.total }}</strong>
+            <small>Current compliance alerts</small>
+        </div>
+
+        <div class="cn-summary-card critical">
+            <span>Critical</span>
+            <strong>{{ summary.critical }}</strong>
+            <small>Immediate attention</small>
+        </div>
+
+        <div class="cn-summary-card warning">
+            <span>Warning</span>
+            <strong>{{ summary.warning }}</strong>
+            <small>Action recommended</small>
+        </div>
+
+        <div class="cn-summary-card notice">
+            <span>Upcoming</span>
+            <strong>{{ summary.notice }}</strong>
+            <small>Plan ahead</small>
+        </div>
+
+    </section>
+
+
+    <!-- FILTERS -->
+
+    <section class="cn-filter-panel">
+
+        <form method="get">
+
+            <div class="cn-search">
+
+                <label for="compliance-search">
+                    Search
+                </label>
+
+                <input
+                    id="compliance-search"
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    placeholder="Search document or related record..."
+                >
+
+            </div>
+
+
+            <div class="cn-filter">
+
+                <label for="severity">
+                    Severity
+                </label>
+
+                <select
+                    id="severity"
+                    name="severity"
+                >
+                    <option value="">All severities</option>
+
+                    <option
+                        value="critical"
+                        {% if active_severity == "critical" %}selected{% endif %}
+                    >
+                        Critical
+                    </option>
+
+                    <option
+                        value="warning"
+                        {% if active_severity == "warning" %}selected{% endif %}
+                    >
+                        Warning
+                    </option>
+
+                    <option
+                        value="notice"
+                        {% if active_severity == "notice" %}selected{% endif %}
+                    >
+                        Upcoming
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="cn-filter">
+
+                <label for="alert-type">
+                    Alert type
+                </label>
+
+                <select
+                    id="alert-type"
+                    name="type"
+                >
+
+                    <option value="">
+                        All alerts
+                    </option>
+
+                    <option
+                        value="expired"
+                        {% if active_type == "expired" %}selected{% endif %}
+                    >
+                        Expired
+                    </option>
+
+                    <option
+                        value="review_due"
+                        {% if active_type == "review_due" %}selected{% endif %}
+                    >
+                        Review due
+                    </option>
+
+                    <option
+                        value="7_days"
+                        {% if active_type == "7_days" %}selected{% endif %}
+                    >
+                        7 days
+                    </option>
+
+                    <option
+                        value="14_days"
+                        {% if active_type == "14_days" %}selected{% endif %}
+                    >
+                        14 days
+                    </option>
+
+                    <option
+                        value="30_days"
+                        {% if active_type == "30_days" %}selected{% endif %}
+                    >
+                        30 days
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="cn-filter-actions">
+
+                <button
+                    type="submit"
+                    class="cn-button primary"
+                >
+                    Apply filters
+                </button>
+
+                <a
+                    href="{% url 'company_documents:compliance_notifications' %}"
+                    class="cn-button secondary"
+                >
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- ALERT LIST -->
+
+    <section class="cn-alert-section">
+
+        <div class="cn-section-heading">
+
+            <div>
+                <span>LIVE COMPLIANCE ALERTS</span>
+
+                <h2>
+                    Action required
+                </h2>
+            </div>
+
+            <strong>
+                {{ alerts|length }}
+            </strong>
+
+        </div>
+
+
+        {% if alerts %}
+
+            <div class="cn-alert-list">
+
+                {% for alert in alerts %}
+
+                    <article
+                        class="cn-alert-card severity-{{ alert.severity }}"
+                    >
+
+                        <div class="cn-alert-indicator">
+                            {% if alert.severity == "critical" %}
+                                !
+                            {% elif alert.severity == "warning" %}
+                                !
+                            {% else %}
+                                i
+                            {% endif %}
+                        </div>
+
+
+                        <div class="cn-alert-content">
+
+                            <div class="cn-alert-top">
+
+                                <div>
+
+                                    <span class="cn-alert-type">
+                                        {{ alert.title }}
+                                    </span>
+
+                                    <h3>
+                                        {{ alert.document.name }}
+                                    </h3>
+
+                                </div>
+
+                                <span class="cn-severity-pill">
+                                    {{ alert.severity|title }}
+                                </span>
+
+                            </div>
+
+
+                            <p>
+                                {{ alert.message }}
+                            </p>
+
+
+                            <div class="cn-alert-meta">
+
+                                <span>
+                                    Related to:
+                                    <strong>
+                                        {{ alert.related_name }}
+                                    </strong>
+                                </span>
+
+                                {% if alert.days is not None %}
+
+                                    <span>
+
+                                        {% if alert.days < 0 %}
+
+                                            {{ alert.days|cut:"-" }} days overdue
+
+                                        {% elif alert.days == 0 %}
+
+                                            Due today
+
+                                        {% else %}
+
+                                            {{ alert.days }} days remaining
+
+                                        {% endif %}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cn-alert-actions">
+
+                            <a
+                                href="{% url 'company_documents:detail' alert.document.pk %}"
+                                class="cn-action secondary"
+                            >
+                                View
+                            </a>
+
+                            <a
+                                href="{% url 'company_documents:edit' alert.document.pk %}"
+                                class="cn-action primary"
+                            >
+                                {{ alert.action_label }}
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="cn-empty-state">
+
+                <div class="cn-empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    You're all caught up
+                </h3>
+
+                <p>
+                    No compliance notifications match your current filters.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- EXPLANATION -->
+
+    <section class="cn-info">
+
+        <div class="cn-info-icon">
+            i
+        </div>
+
+        <div>
+
+            <strong>
+                Live notification engine
+            </strong>
+
+            <p>
+                These alerts are calculated from the current active document
+                records. Replacing or updating a document immediately changes
+                its compliance status without creating duplicate notification
+                records.
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

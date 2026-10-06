@@ -2482,24 +2482,28 @@ def reminder_center(request):
     overdue_invoices = (
         Invoice.objects.exclude(status="paid")
         .filter(due_date__lt=today)
+        .select_related("booking__customer")
         .order_by("due_date")
     )
 
     jobs_tomorrow = (
         Booking.objects.filter(booking_date=tomorrow)
         .exclude(status="cancelled")
+        .select_related("customer", "assigned_employee")
         .order_by("booking_time")
     )
 
     upcoming_jobs = (
         Booking.objects.filter(booking_date__gte=today, booking_date__lte=week_end)
         .exclude(status="cancelled")
+        .select_related("customer", "assigned_employee")
         .order_by("booking_date", "booking_time")
     )
 
     unassigned_jobs = (
         Booking.objects.filter(assigned_employee__isnull=True, booking_date__gte=today)
         .exclude(status="cancelled")
+        .select_related("customer")
         .order_by("booking_date", "booking_time")
     )
 
@@ -6932,4 +6936,3 @@ def _build_dashboard_gallery_groups(gallery_items):
         )
 
     return gallery_groups
-

@@ -1,0 +1,187 @@
+/* ==========================================================
+   BULK DOCUMENT REVIEW — EDIT
+   ========================================================== */
+
+.bulk-edit-page {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.bulk-edit-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.bulk-edit-header h1 {
+    margin: 5px 0 8px;
+    font-size: 30px;
+    letter-spacing: -.035em;
+}
+
+.bulk-edit-header p {
+    max-width: 650px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: .58;
+}
+
+.bulk-edit-file {
+    padding: 18px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 14px;
+    background: #fff;
+}
+
+.bulk-edit-file-label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    opacity: .45;
+}
+
+.bulk-edit-file-name {
+    font-size: 13px;
+    font-weight: 750;
+    word-break: break-word;
+}
+
+.bulk-edit-form {
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 16px;
+    background: #fff;
+}
+
+.bulk-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.bulk-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.bulk-edit-field-full {
+    grid-column: 1 / -1;
+}
+
+.bulk-edit-field label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    opacity: .55;
+}
+
+.bulk-edit-field input,
+.bulk-edit-field select,
+.bulk-edit-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid rgba(0, 0, 0, .12);
+    border-radius: 9px;
+    background: #fff;
+    color: inherit;
+    font: inherit;
+    font-size: 12px;
+    outline: none;
+}
+
+.bulk-edit-field textarea {
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.bulk-edit-field input:focus,
+.bulk-edit-field select:focus,
+.bulk-edit-field textarea:focus {
+    border-color: rgba(0, 0, 0, .4);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, .04);
+}
+
+.bulk-edit-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px;
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 9px;
+    background: rgba(0, 0, 0, .02);
+}
+
+.bulk-edit-checkbox input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+
+.bulk-edit-checkbox label {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 750;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: .8;
+}
+
+.bulk-edit-help {
+    margin-top: 3px;
+    font-size: 10px;
+    line-height: 1.5;
+    opacity: .45;
+}
+
+.bulk-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 25px;
+    margin-top: 25px;
+    border-top: 1px solid rgba(0, 0, 0, .07);
+}
+
+.bulk-edit-actions-right {
+    display: flex;
+    gap: 8px;
+}
+
+@media (max-width: 700px) {
+
+    .bulk-edit-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .bulk-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bulk-edit-field-full {
+        grid-column: auto;
+    }
+
+    .bulk-edit-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .bulk-edit-actions-right {
+        width: 100%;
+        flex-direction: column;
+    }
+
+}

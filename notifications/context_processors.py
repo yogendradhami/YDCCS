@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.core.cache import cache
 from django.db.models import Count, F
 from django.utils import timezone
 
@@ -42,6 +43,15 @@ def notification_context(request):
         }
 
     today = timezone.now().date()
+    cache_key = f"notification-counts:{request.user.pk}:{today.isoformat()}"
+    cached_counts = cache.get(cache_key)
+    if cached_counts is not None:
+        return {
+            "global_notifications": list(notifications),
+            "global_unread_notifications": unread_count,
+            "notification_counts": cached_counts,
+        }
+
     unread_by_type = {
         entry["notification_type"]: entry["total"]
         for entry in request.user.notifications.filter(is_read=False)
@@ -145,6 +155,8 @@ def notification_context(request):
     )
     for key in sidebar_count_keys:
         notification_counts.setdefault(key, 0)
+
+    cache.set(cache_key, notification_counts, 60)
 
     return {
         "global_notifications": list(notifications),

@@ -1,0 +1,1296 @@
+/* ==========================================================
+   YD COMMERCIAL CLEANING
+   COMPANY DOCUMENTS — BULK REVIEW WORKSPACE
+   Premium dashboard interface
+   ========================================================== */
+
+
+/* ==========================================================
+   PAGE
+   ========================================================== */
+
+.bulk-page {
+    width: 100%;
+    max-width: 1580px;
+    margin: 0 auto;
+    padding: 8px 4px 50px;
+    color: #111827;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.bulk-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 26px;
+}
+
+.bulk-page-header > div:first-child {
+    min-width: 0;
+}
+
+.bulk-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    color: #6b7280;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.bulk-eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #111827;
+}
+
+.bulk-page-header h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 780;
+    letter-spacing: -.045em;
+    line-height: 1.05;
+}
+
+.bulk-page-header p {
+    max-width: 680px;
+    margin: 11px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.bulk-header-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 9px;
+}
+
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+
+.bulk-primary-button,
+.bulk-secondary-button,
+.bulk-edit-button,
+.bulk-approve-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .015em;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        background .18s ease,
+        border-color .18s ease;
+}
+
+.bulk-primary-button {
+    padding: 0 16px;
+    border: 1px solid #111827;
+    background: #111827;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(15, 23, 42, .12);
+}
+
+.bulk-primary-button:hover {
+    transform: translateY(-1px);
+    background: #020617;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .17);
+}
+
+.bulk-secondary-button {
+    padding: 0 14px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #334155;
+}
+
+.bulk-secondary-button:hover {
+    transform: translateY(-1px);
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.bulk-primary-button:disabled,
+.bulk-secondary-button:disabled {
+    cursor: not-allowed;
+    opacity: .4;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* ==========================================================
+   BATCH STATUS HERO
+   ========================================================== */
+
+.bulk-review-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 22px 24px 20px;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 17px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f8fafc 100%
+        );
+    box-shadow:
+        0 8px 25px rgba(15, 23, 42, .035);
+}
+
+.bulk-review-hero::after {
+    content: "";
+    position: absolute;
+    top: -80px;
+    right: -50px;
+    width: 220px;
+    height: 220px;
+    border: 1px solid rgba(15, 23, 42, .035);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.bulk-review-status {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 17px;
+}
+
+.bulk-status-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.bulk-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 27px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+}
+
+.bulk-status-uploaded {
+    border-color: #dbeafe;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.bulk-status-analysing {
+    border-color: #e0e7ff;
+    background: #eef2ff;
+    color: #4338ca;
+}
+
+.bulk-status-review {
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #a16207;
+}
+
+.bulk-status-importing {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.bulk-status-completed {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.bulk-status-partial {
+    border-color: #fed7aa;
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.bulk-status-failed {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.bulk-status-cancelled {
+    border-color: #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.bulk-progress-text {
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.bulk-progress-track {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e9eef4;
+}
+
+.bulk-progress-bar {
+    height: 100%;
+    min-width: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        #111827,
+        #475569
+    );
+    box-shadow: 0 0 12px rgba(15, 23, 42, .16);
+    transition: width .4s ease;
+}
+
+
+/* ==========================================================
+   KPI GRID
+   ========================================================== */
+
+.bulk-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.bulk-kpi-card {
+    position: relative;
+    min-height: 103px;
+    padding: 17px 18px;
+    overflow: hidden;
+    border: 1px solid #e5eaf0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, .025);
+}
+
+.bulk-kpi-card::after {
+    content: "";
+    position: absolute;
+    right: -24px;
+    bottom: -35px;
+    width: 80px;
+    height: 80px;
+    border: 1px solid rgba(15, 23, 42, .035);
+    border-radius: 50%;
+}
+
+.bulk-kpi-card span {
+    display: block;
+    margin-bottom: 14px;
+    color: #94a3b8;
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: .105em;
+    text-transform: uppercase;
+}
+
+.bulk-kpi-card strong {
+    position: relative;
+    z-index: 1;
+    display: block;
+    color: #0f172a;
+    font-size: 27px;
+    font-weight: 780;
+    letter-spacing: -.04em;
+    line-height: 1;
+}
+
+.bulk-kpi-warning {
+    border-color: #f6e8bf;
+    background: linear-gradient(
+        135deg,
+        #fffdf7,
+        #fffaf0
+    );
+}
+
+.bulk-kpi-warning strong {
+    color: #a16207;
+}
+
+
+/* ==========================================================
+   TOOLBAR
+   ========================================================== */
+
+.bulk-review-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    padding: 15px 17px 15px 19px;
+    margin-bottom: 18px;
+    border: 1px solid #e5eaf0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, .025);
+}
+
+.bulk-review-toolbar > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.bulk-review-toolbar strong {
+    color: #1e293b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.bulk-review-toolbar span {
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.bulk-toolbar-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 7px;
+}
+
+.bulk-toolbar-actions form {
+    margin: 0;
+}
+
+
+/* ==========================================================
+   SECTION HEADING
+   ========================================================== */
+
+.bulk-review-section {
+    min-width: 0;
+}
+
+.bulk-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.bulk-section-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #94a3b8;
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.bulk-section-heading h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 780;
+    letter-spacing: -.025em;
+}
+
+.bulk-count {
+    padding: 6px 9px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 750;
+}
+
+
+/* ==========================================================
+   TABLE CONTAINER
+   ========================================================== */
+
+.bulk-review-table-shell {
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow:
+        0 8px 25px rgba(15, 23, 42, .035);
+}
+
+.bulk-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.bulk-table-scroll::-webkit-scrollbar {
+    height: 7px;
+}
+
+.bulk-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.bulk-table-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #cbd5e1;
+}
+
+
+/* ==========================================================
+   TABLE
+   ========================================================== */
+
+.bulk-review-table {
+    width: 100%;
+    min-width: 1240px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.bulk-review-table th {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e8edf2;
+    background: #fafbfc;
+    color: #94a3b8;
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: .1em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.bulk-review-table th:first-child {
+    padding-left: 19px;
+}
+
+.bulk-review-table th:last-child {
+    padding-right: 19px;
+}
+
+.bulk-review-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #f0f2f5;
+    color: #334155;
+    font-size: 11px;
+    vertical-align: middle;
+}
+
+.bulk-review-table td:first-child {
+    padding-left: 19px;
+}
+
+.bulk-review-table td:last-child {
+    padding-right: 19px;
+}
+
+.bulk-review-table tbody tr {
+    transition: background .15s ease;
+}
+
+.bulk-review-table tbody tr:hover {
+    background: #fbfcfd;
+}
+
+.bulk-review-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* ==========================================================
+   DOCUMENT CELL
+   ========================================================== */
+
+.bulk-document-cell {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 235px;
+}
+
+.bulk-document-icon {
+    display: flex;
+    flex: 0 0 39px;
+    align-items: center;
+    justify-content: center;
+    width: 39px;
+    height: 39px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background:
+        linear-gradient(
+            145deg,
+            #f8fafc,
+            #eef2f7
+        );
+    color: #64748b;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .04em;
+}
+
+.bulk-document-cell > div:last-child {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 4px;
+}
+
+.bulk-document-cell strong {
+    display: block;
+    max-width: 250px;
+    overflow: hidden;
+    color: #1e293b;
+    font-size: 11px;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bulk-document-cell span {
+    color: #94a3b8;
+    font-size: 9px;
+}
+
+
+/* ==========================================================
+   CLASSIFICATION
+   ========================================================== */
+
+.bulk-classification-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 175px;
+    gap: 4px;
+}
+
+.bulk-classification-cell strong {
+    max-width: 205px;
+    overflow: hidden;
+    color: #1e293b;
+    font-size: 11px;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bulk-classification-cell span {
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.bulk-classification-cell small {
+    width: fit-content;
+    padding: 3px 6px;
+    border-radius: 5px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+
+/* ==========================================================
+   RELATIONSHIP
+   ========================================================== */
+
+.bulk-relation-chip {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 25px;
+    padding: 0 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 9px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.bulk-muted {
+    color: #a8b1bd;
+    font-size: 9px;
+}
+
+
+/* ==========================================================
+   CONFIDENCE
+   ========================================================== */
+
+.bulk-confidence {
+    width: 115px;
+}
+
+.bulk-confidence-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.bulk-confidence-top strong {
+    color: #1e293b;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.bulk-confidence-top span {
+    color: #94a3b8;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.bulk-confidence-track {
+    width: 100%;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #edf1f5;
+}
+
+.bulk-confidence-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: #334155;
+    transition: width .3s ease;
+}
+
+
+/* ==========================================================
+   DATES
+   ========================================================== */
+
+.bulk-date-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 105px;
+    gap: 4px;
+    color: #64748b;
+    font-size: 9px;
+}
+
+.bulk-expiry-date {
+    color: #475569;
+    font-weight: 750;
+}
+
+
+/* ==========================================================
+   STATUS
+   ========================================================== */
+
+.bulk-item-status-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.bulk-item-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 23px;
+    padding: 0 7px;
+    border-radius: 6px;
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.bulk-item-status-ready {
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.bulk-item-status-review {
+    border: 1px solid #fde68a;
+    background: #fffbeb;
+    color: #a16207;
+}
+
+.bulk-item-status-approved {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.bulk-item-status-imported {
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.bulk-item-status-duplicate {
+    border: 1px solid #ddd6fe;
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+.bulk-item-status-failed {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.bulk-sensitive-badge,
+.bulk-duplicate-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 19px;
+    padding: 0 6px;
+    border-radius: 5px;
+    font-size: 7px;
+    font-weight: 850;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.bulk-sensitive-badge {
+    background: #fff1f2;
+    color: #be123c;
+}
+
+.bulk-duplicate-badge {
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+
+/* ==========================================================
+   ROW ACTIONS
+   ========================================================== */
+
+.bulk-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bulk-row-actions form {
+    margin: 0;
+}
+
+.bulk-edit-button {
+    min-height: 31px;
+    padding: 0 9px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+}
+
+.bulk-edit-button:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.bulk-approve-button {
+    min-height: 31px;
+    padding: 0 10px;
+    border: 1px solid #111827;
+    background: #111827;
+    color: #fff;
+}
+
+.bulk-approve-button:hover {
+    transform: translateY(-1px);
+    background: #020617;
+    box-shadow: 0 5px 12px rgba(15, 23, 42, .13);
+}
+
+.bulk-approved-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    color: #15803d;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+
+/* ==========================================================
+   PAGINATION
+   ========================================================== */
+
+.bulk-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 17px;
+}
+
+.bulk-pagination a,
+.bulk-pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 31px;
+    height: 31px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.bulk-pagination a:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.bulk-pagination span.active {
+    border-color: #111827;
+    background: #111827;
+    color: #fff;
+}
+
+
+/* ==========================================================
+   EMPTY STATE
+   ========================================================== */
+
+.bulk-empty-state {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 70px 25px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    text-align: center;
+}
+
+.bulk-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 15px;
+    border-radius: 14px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 18px;
+}
+
+.bulk-empty-state h3 {
+    margin: 0 0 6px;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.bulk-empty-state p {
+    max-width: 450px;
+    margin: 0;
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================================
+   RESPONSIVE — TABLET
+   ========================================================== */
+
+@media (max-width: 1200px) {
+
+    .bulk-kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE — MOBILE
+   ========================================================== */
+
+@media (max-width: 760px) {
+
+    .bulk-page {
+        padding: 4px 0 35px;
+    }
+
+    .bulk-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .bulk-page-header h1 {
+        font-size: 28px;
+    }
+
+    .bulk-header-actions {
+        width: 100%;
+    }
+
+    .bulk-header-actions a {
+        flex: 1;
+    }
+
+    .bulk-review-hero {
+        padding: 18px;
+    }
+
+    .bulk-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .bulk-review-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .bulk-toolbar-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .bulk-toolbar-actions form,
+    .bulk-toolbar-actions button {
+        width: 100%;
+    }
+
+    .bulk-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE — SMALL MOBILE
+   ========================================================== */
+
+@media (max-width: 430px) {
+
+    .bulk-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+    }
+
+    .bulk-kpi-card {
+        min-height: 91px;
+        padding: 14px;
+    }
+
+    .bulk-kpi-card strong {
+        font-size: 23px;
+    }
+
+    .bulk-kpi-card span {
+        margin-bottom: 11px;
+        font-size: 7px;
+    }
+
+    .bulk-header-actions {
+        flex-direction: column;
+    }
+
+    .bulk-header-actions a {
+        width: 100%;
+    }
+
+}
+
+/* ==========================================================
+   INTELLIGENCE REVIEW — FIELD HIERARCHY
+   ========================================================== */
+
+.bulk-document-cell,
+.bulk-classification-cell,
+.bulk-relationship-cell,
+.bulk-confidence-cell,
+.bulk-dates-cell {
+    vertical-align: top;
+}
+
+.bulk-document-name {
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.bulk-document-size {
+    margin-top: 4px;
+    font-size: 0.78rem;
+    opacity: 0.65;
+}
+
+.bulk-primary-value {
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.bulk-secondary-value {
+    margin-top: 4px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.72;
+}
+
+.bulk-reference {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    letter-spacing: 0.02em;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.bulk-muted {
+    opacity: 0.55;
+}
+
+.bulk-confidence-score {
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.bulk-confidence-label {
+    margin-top: 3px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    opacity: 0.72;
+}
+
+.bulk-date-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.bulk-date-row:last-child {
+    margin-bottom: 0;
+}
+
+.bulk-date-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.58;
+}
+
+/* ==========================================================
+   RELATIONSHIP INTELLIGENCE
+   ========================================================== */
+
+.bulk-intelligence-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin: 0 0 24px;
+    padding: 18px 20px;
+    border: 1px solid rgba(37, 99, 235, 0.14);
+    border-radius: 16px;
+    background: rgba(37, 99, 235, 0.045);
+}
+
+.bulk-intelligence-note-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(37, 99, 235, 0.1);
+    font-size: 16px;
+}
+
+.bulk-intelligence-note strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.bulk-intelligence-note p {
+    margin: 0;
+    max-width: 900px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================================
+   RELATIONSHIP INTELLIGENCE CELL
+   ========================================================== */
+
+.bulk-relationship-intelligence {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 185px;
+}
+
+.bulk-relationship-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bulk-relationship-label {
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.bulk-relation-chip,
+.bulk-relation-match,
+.bulk-no-match,
+.bulk-final-relation {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    padding: 4px 8px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.bulk-relation-chip {
+    color: #334155;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+
+.bulk-relation-match {
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.bulk-no-match {
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+}
+
+.bulk-final-relation {
+    font-weight: 750;
+}
+
+.bulk-final-relation-linked {
+    color: #0369a1;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+}
+
+.bulk-final-relation-company {
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 900px) {
+
+    .bulk-intelligence-note {
+        padding: 15px;
+    }
+
+    .bulk-relationship-intelligence {
+        min-width: 160px;
+    }
+
+}
+
+
+@media (max-width: 640px) {
+
+    .bulk-intelligence-note {
+        gap: 10px;
+    }
+
+    .bulk-intelligence-note-icon {
+        flex-basis: 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .bulk-relationship-intelligence {
+        min-width: 145px;
+    }
+
+    .bulk-relationship-label {
+        font-size: 9px;
+    }
+
+    .bulk-relation-chip,
+    .bulk-relation-match,
+    .bulk-no-match,
+    .bulk-final-relation {
+        font-size: 10px;
+    }
+
+}

@@ -52,6 +52,12 @@
                     </span>
                 {% endif %}
 
+                {% if document.health_status_label %}
+                    <span>
+                        {{ document.health_status_label }}
+                    </span>
+                {% endif %}
+
             </div>
 
         </div>
@@ -90,12 +96,13 @@
 
 
     <!-- ==================================================
-         STATUS
+         MAIN GRID
     =================================================== -->
 
     <div class="cd-detail-grid">
 
         <main class="cd-detail-main">
+
 
             <!-- ==================================================
                  DOCUMENT SUMMARY
@@ -106,6 +113,7 @@
                 <div class="cd-card-heading">
 
                     <div>
+
                         <span class="cd-card-eyebrow">
                             DOCUMENT
                         </span>
@@ -113,6 +121,7 @@
                         <h2>
                             Document information
                         </h2>
+
                     </div>
 
                 </div>
@@ -121,74 +130,118 @@
                 <div class="cd-info-grid">
 
                     <div class="cd-info-item">
-                        <span>Name</span>
+
+                        <span>
+                            Name
+                        </span>
+
                         <strong>
                             {{ document.name }}
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Category</span>
+
+                        <span>
+                            Category
+                        </span>
+
                         <strong>
                             {{ document.get_category_display }}
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Document type</span>
+
+                        <span>
+                            Document type
+                        </span>
+
                         <strong>
                             {{ document.document_type|default:"—" }}
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Reference</span>
+
+                        <span>
+                            Reference
+                        </span>
+
                         <strong>
                             {{ document.document_reference|default:"—" }}
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Original filename</span>
+
+                        <span>
+                            Original filename
+                        </span>
+
                         <strong>
                             {{ document.original_filename|default:"—" }}
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>File size</span>
+
+                        <span>
+                            File size
+                        </span>
+
                         <strong>
+
                             {% if document.file_size %}
                                 {{ document.file_size|filesizeformat }}
                             {% else %}
                                 —
                             {% endif %}
+
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Uploaded</span>
+
+                        <span>
+                            Uploaded
+                        </span>
+
                         <strong>
                             {{ document.uploaded_at|date:"d M Y, H:i" }}
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Uploaded by</span>
+
+                        <span>
+                            Uploaded by
+                        </span>
+
                         <strong>
+
                             {% if document.uploaded_by %}
                                 {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}
                             {% else %}
                                 —
                             {% endif %}
+
                         </strong>
+
                     </div>
 
                 </div>
@@ -222,6 +275,7 @@
                 <div class="cd-card-heading">
 
                     <div>
+
                         <span class="cd-card-eyebrow">
                             COMPLIANCE
                         </span>
@@ -229,6 +283,7 @@
                         <h2>
                             Important dates
                         </h2>
+
                     </div>
 
                 </div>
@@ -237,39 +292,532 @@
                 <div class="cd-info-grid cd-info-grid-3">
 
                     <div class="cd-info-item">
-                        <span>Issue date</span>
+
+                        <span>
+                            Issue date
+                        </span>
+
                         <strong>
+
                             {% if document.issue_date %}
                                 {{ document.issue_date|date:"d M Y" }}
                             {% else %}
                                 —
                             {% endif %}
+
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Expiry date</span>
+
+                        <span>
+                            Expiry date
+                        </span>
+
                         <strong>
+
                             {% if document.expiry_date %}
                                 {{ document.expiry_date|date:"d M Y" }}
                             {% else %}
                                 —
                             {% endif %}
+
                         </strong>
+
                     </div>
 
 
                     <div class="cd-info-item">
-                        <span>Review date</span>
+
+                        <span>
+                            Review date
+                        </span>
+
                         <strong>
+
                             {% if document.review_date %}
                                 {{ document.review_date|date:"d M Y" }}
                             {% else %}
                                 —
                             {% endif %}
+
                         </strong>
+
                     </div>
+
+                </div>
+
+
+                <div class="cd-compliance-status-panel">
+
+                    <div>
+
+                        <span>
+                            Compliance status
+                        </span>
+
+
+                        {% if compliance_resolution.status == "satisfied" %}
+
+                            <strong class="cd-compliance-status cd-compliance-status-success">
+                                Satisfied
+                            </strong>
+
+                        {% elif compliance_resolution.status == "missing" %}
+
+                            <strong class="cd-compliance-status cd-compliance-status-danger">
+                                Missing
+                            </strong>
+
+                        {% elif compliance_resolution.status == "expired" %}
+
+                            <strong class="cd-compliance-status cd-compliance-status-danger">
+                                Expired
+                            </strong>
+
+                        {% elif compliance_resolution.status == "review_due" %}
+
+                            <strong class="cd-compliance-status cd-compliance-status-warning">
+                                Review due
+                            </strong>
+
+                        {% elif compliance_resolution.status == "expiring" %}
+
+                            <strong class="cd-compliance-status cd-compliance-status-notice">
+                                Expiring soon
+                            </strong>
+
+                        {% else %}
+
+                            <strong class="cd-compliance-status cd-compliance-status-neutral">
+                                Not applicable
+                            </strong>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div>
+
+                        {% if compliance_results %}
+
+                            <p>
+                                This document is evaluated against
+                                {{ compliance_results|length }}
+                                requirement{{ compliance_results|length|pluralize }}.
+                            </p>
+
+                        {% else %}
+
+                            <p>
+                                No active compliance requirement currently
+                                matches this document.
+                            </p>
+
+                        {% endif %}
+
+
+                        {% if document.employee %}
+
+                            <a
+                                href="{% url 'company_documents:employee_compliance' employee_id=document.employee.id %}"
+                                class="cd-compliance-link"
+                            >
+                                View employee compliance profile
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================================
+                 VERSION HISTORY
+            =================================================== -->
+
+            <section class="cd-detail-card cd-version-history-card">
+
+                <div class="cd-card-heading">
+
+                    <div>
+
+                        <span class="cd-card-eyebrow">
+                            VERSION HISTORY
+                        </span>
+
+                        <h2>
+                            Document versions
+                        </h2>
+
+                    </div>
+
+                    <span class="cd-version-history-count">
+
+                        {{ document.version|default:"1" }}
+                        version{{ document.version|default:"1"|pluralize }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="cd-version-timeline">
+
+
+                    <!-- ==================================================
+                         CURRENT VERSION
+                    =================================================== -->
+
+                    <div class="cd-version-item cd-version-item-current">
+
+                        <div class="cd-version-timeline-marker">
+                            <span>✓</span>
+                        </div>
+
+
+                        <div class="cd-version-content">
+
+                            <div class="cd-version-topline">
+
+                                <div>
+
+                                    <span class="cd-version-label">
+                                        CURRENT VERSION
+                                    </span>
+
+                                    <h3>
+                                        Version {{ document.version|default:"1" }}
+                                    </h3>
+
+                                </div>
+
+
+                                <span class="cd-version-current-badge">
+                                    Active
+                                </span>
+
+                            </div>
+
+
+                            <div class="cd-version-file">
+
+                                <span class="cd-version-file-icon">
+                                    DOC
+                                </span>
+
+                                <div>
+
+                                    <strong>
+                                        {{ document.original_filename|default:document.name }}
+                                    </strong>
+
+                                    <span>
+                                        Uploaded
+                                        {{ document.uploaded_at|date:"d M Y, H:i" }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="cd-version-meta">
+
+                                <div>
+
+                                    <span>
+                                        Version
+                                    </span>
+
+                                    <strong>
+                                        v{{ document.version|default:"1" }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Status
+                                    </span>
+
+                                    <strong>
+                                        {{ document.get_status_display }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span>
+                                        Health
+                                    </span>
+
+                                    <strong>
+                                        {{ document.health_status_label }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            {% if compliance_resolution %}
+
+                                <div class="cd-version-compliance">
+
+                                    {% if compliance_resolution.status == "satisfied" %}
+
+                                        <span class="cd-version-status-success">
+                                            ✓ Compliance satisfied
+                                        </span>
+
+                                    {% elif compliance_resolution.status == "expired" %}
+
+                                        <span class="cd-version-status-danger">
+                                            ✕ Compliance expired
+                                        </span>
+
+                                    {% elif compliance_resolution.status == "review_due" %}
+
+                                        <span class="cd-version-status-warning">
+                                            ! Review required
+                                        </span>
+
+                                    {% elif compliance_resolution.status == "expiring" %}
+
+                                        <span class="cd-version-status-notice">
+                                            ! Expiring soon
+                                        </span>
+
+                                    {% elif compliance_resolution.status == "missing" %}
+
+                                        <span class="cd-version-status-danger">
+                                            ✕ Compliance missing
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="cd-version-status-neutral">
+                                            Compliance not applicable
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="cd-version-actions">
+
+                                <a
+                                    href="{% url 'company_documents:download' document.pk %}"
+                                    class="cd-version-action-primary"
+                                >
+                                    ↓ Download current
+                                </a>
+
+                                <a
+                                    href="{% url 'company_documents:edit' document.pk %}"
+                                    class="cd-version-action-secondary"
+                                >
+                                    Replace file
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         PREVIOUS VERSION
+                    =================================================== -->
+
+                    {% if document.previous_version %}
+
+                        <div class="cd-version-connector">
+
+                            <span>
+                                Previous version
+                            </span>
+
+                        </div>
+
+
+                        <div class="cd-version-item cd-version-item-previous">
+
+                            <div class="cd-version-timeline-marker">
+                                <span>↳</span>
+                            </div>
+
+
+                            <div class="cd-version-content">
+
+                                <div class="cd-version-topline">
+
+                                    <div>
+
+                                        <span class="cd-version-label">
+                                            SUPERSEDED VERSION
+                                        </span>
+
+                                        <h3>
+                                            Version
+                                            {{ document.previous_version.version|default:"1" }}
+                                        </h3>
+
+                                    </div>
+
+
+                                    <span class="cd-version-archived-badge">
+                                        Archived
+                                    </span>
+
+                                </div>
+
+
+                                <div class="cd-version-file">
+
+                                    <span class="cd-version-file-icon">
+                                        DOC
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            {{ document.previous_version.original_filename|default:document.previous_version.name }}
+                                        </strong>
+
+                                        <span>
+                                            Uploaded
+                                            {{ document.previous_version.uploaded_at|date:"d M Y, H:i" }}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="cd-version-meta">
+
+                                    <div>
+
+                                        <span>
+                                            Version
+                                        </span>
+
+                                        <strong>
+                                            v{{ document.previous_version.version|default:"1" }}
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <span>
+                                            Status
+                                        </span>
+
+                                        <strong>
+                                            {{ document.previous_version.get_status_display }}
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <span>
+                                            Expiry
+                                        </span>
+
+                                        <strong>
+
+                                            {% if document.previous_version.expiry_date %}
+
+                                                {{ document.previous_version.expiry_date|date:"d M Y" }}
+
+                                            {% else %}
+
+                                                No expiry
+
+                                            {% endif %}
+
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="cd-version-history-note">
+
+                                    <span class="cd-version-history-note-icon">
+                                        i
+                                    </span>
+
+                                    <p>
+                                        This version was superseded when
+                                        version {{ document.version|default:"1" }}
+                                        became active.
+                                    </p>
+
+                                </div>
+
+
+                                <div class="cd-version-actions">
+
+                                    <a
+                                        href="{% url 'company_documents:download' document.previous_version.pk %}"
+                                        class="cd-version-action-secondary"
+                                    >
+                                        ↓ Download previous
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="cd-version-empty">
+
+                            <div class="cd-version-empty-icon">
+                                1
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Original document
+                                </strong>
+
+                                <p>
+                                    This is the first version of this
+                                    document. A history entry will appear
+                                    here when the file is replaced.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
 
                 </div>
 
@@ -285,6 +833,7 @@
                 <div class="cd-card-heading">
 
                     <div>
+
                         <span class="cd-card-eyebrow">
                             RELATIONSHIP
                         </span>
@@ -292,6 +841,7 @@
                         <h2>
                             Related record
                         </h2>
+
                     </div>
 
                 </div>
@@ -335,6 +885,7 @@
                 <div class="cd-card-heading">
 
                     <div>
+
                         <span class="cd-card-eyebrow">
                             SECURITY
                         </span>
@@ -342,6 +893,7 @@
                         <h2>
                             Activity history
                         </h2>
+
                     </div>
 
                 </div>
@@ -359,6 +911,7 @@
                                     ●
                                 </div>
 
+
                                 <div class="cd-audit-content">
 
                                     <strong>
@@ -366,15 +919,21 @@
                                     </strong>
 
                                     <span>
+
                                         {% if audit.user %}
+
                                             {{ audit.user.get_full_name|default:audit.user.username }}
+
                                         {% else %}
+
                                             System
+
                                         {% endif %}
 
                                         ·
 
                                         {{ audit.created_at|date:"d M Y, H:i" }}
+
                                     </span>
 
                                 </div>
@@ -404,7 +963,10 @@
 
         <aside class="cd-detail-sidebar">
 
-            <!-- SECURITY -->
+
+            <!-- ==================================================
+                 SECURITY
+            =================================================== -->
 
             <section class="cd-sidebar-card">
 
@@ -415,6 +977,7 @@
                 <h3>
                     Access control
                 </h3>
+
 
                 {% if document.is_sensitive %}
 
@@ -443,7 +1006,9 @@
             </section>
 
 
-            <!-- VERSION -->
+            <!-- ==================================================
+                 VERSION
+            =================================================== -->
 
             <section class="cd-sidebar-card">
 
@@ -467,7 +1032,9 @@
             </section>
 
 
-            <!-- DANGER ZONE -->
+            <!-- ==================================================
+                 DANGER ZONE
+            =================================================== -->
 
             <section class="cd-sidebar-card cd-danger-card">
 
@@ -478,6 +1045,7 @@
                 <h3>
                     Document lifecycle
                 </h3>
+
 
                 {% if document.status != "archived" %}
 

@@ -1,0 +1,912 @@
+{% extends "dashboard_base.html" %}
+
+{% load static %}
+
+
+{% block title %}
+    Review Import Batch | YD Commercial Cleaning
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/bulk-review.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="bulk-page">
+
+    <!-- ==========================================================
+         HEADER
+         ========================================================== -->
+
+    <div class="bulk-page-header">
+
+        <div>
+
+            <span class="bulk-eyebrow">
+                DOCUMENT INTELLIGENCE
+            </span>
+
+            <h1>
+                {{ batch.batch_reference }}
+            </h1>
+
+            <p>
+                Review the intelligence results before documents are
+                permanently added to the Company Document Centre.
+            </p>
+
+        </div>
+
+
+        <div class="bulk-header-actions">
+
+            <a
+                href="{% url 'company_documents:bulk_import_list' %}"
+                class="bulk-secondary-button"
+            >
+                ← Batches
+            </a>
+
+            <a
+                href="{% url 'company_documents:bulk_import_upload' %}"
+                class="bulk-primary-button"
+            >
+                ＋ New Batch
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================================
+         BATCH STATUS
+         ========================================================== -->
+
+    <section class="bulk-review-hero">
+
+        <div class="bulk-review-status">
+
+            <div>
+
+                <span class="bulk-eyebrow">
+                    BATCH STATUS
+                </span>
+
+                <div class="bulk-status-row">
+
+                    <span class="bulk-status bulk-status-{{ batch.status }}">
+                        {{ batch.get_status_display }}
+                    </span>
+
+                    <span class="bulk-progress-text">
+                        {{ batch.progress_percentage }}% analysed
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="bulk-progress-track">
+
+            <div
+                class="bulk-progress-bar"
+                style="width: {{ batch.progress_percentage }}%;"
+            ></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         KPI CARDS
+         ========================================================== -->
+
+    <section class="bulk-kpi-grid">
+
+        <div class="bulk-kpi-card">
+
+            <span>
+                Total Files
+            </span>
+
+            <strong>
+                {{ batch.total_files }}
+            </strong>
+
+        </div>
+
+
+        <div class="bulk-kpi-card">
+
+            <span>
+                Processed
+            </span>
+
+            <strong>
+                {{ batch.processed_files }}
+            </strong>
+
+        </div>
+
+
+        <div class="bulk-kpi-card">
+
+            <span>
+                Ready
+            </span>
+
+            <strong>
+                {{ ready_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="bulk-kpi-card bulk-kpi-warning">
+
+            <span>
+                Review Required
+            </span>
+
+            <strong>
+                {{ review_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="bulk-kpi-card">
+
+            <span>
+                Duplicates
+            </span>
+
+            <strong>
+                {{ duplicate_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="bulk-kpi-card">
+
+            <span>
+                Imported
+            </span>
+
+            <strong>
+                {{ batch.imported_files }}
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         ACTION BAR
+         ========================================================== -->
+
+    <section class="bulk-review-toolbar">
+
+        <div>
+
+            <strong>
+                Review documents
+            </strong>
+
+            <span>
+                Approve only documents you are confident should enter
+                the permanent document library.
+            </span>
+
+        </div>
+
+
+        <div class="bulk-toolbar-actions">
+
+            {% if batch.status == "uploaded" or batch.status == "review" %}
+
+                <form
+                    method="post"
+                    action="{% url 'company_documents:bulk_import_analyse' batch.pk %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="bulk-secondary-button"
+                    >
+                        ✦ Analyse Batch
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+
+            <form
+                method="post"
+                action="{% url 'company_documents:bulk_import_import' batch.pk %}"
+            >
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="bulk-primary-button"
+                    {% if not approved_count %}disabled{% endif %}
+                >
+                    Import Approved
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         INTELLIGENCE EXPLANATION
+         ========================================================== -->
+
+    <section class="bulk-intelligence-note">
+
+        <div class="bulk-intelligence-note-icon">
+            ✦
+        </div>
+
+        <div>
+
+            <strong>
+                How relationship intelligence works
+            </strong>
+
+            <p>
+                Classification identifies what a document is.
+                A relationship is only assigned when a specific
+                employee, customer, vehicle, supplier or contract
+                has actually been matched. Otherwise the document
+                is safely stored at company level.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         DOCUMENT TABLE
+         ========================================================== -->
+
+    <section class="bulk-review-section">
+
+        <div class="bulk-section-heading">
+
+            <div>
+
+                <span class="bulk-section-label">
+                    DOCUMENTS
+                </span>
+
+                <h2>
+                    Intelligence Review
+                </h2>
+
+            </div>
+
+
+            <span class="bulk-count">
+
+                {{ page_obj.paginator.count }}
+
+                document{% if page_obj.paginator.count != 1 %}s{% endif %}
+
+            </span>
+
+        </div>
+
+
+        {% if items %}
+
+        <div class="bulk-review-table-shell">
+
+            <div class="bulk-table-scroll">
+
+                <table class="bulk-review-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Document
+                            </th>
+
+                            <th>
+                                Classification
+                            </th>
+
+                            <th>
+                                Relationship Intelligence
+                            </th>
+
+                            <th>
+                                Confidence
+                            </th>
+
+                            <th>
+                                Dates
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for item in items %}
+
+                        <tr>
+
+                            <!-- ==================================================
+                                 DOCUMENT
+                                 ================================================== -->
+
+                            <td>
+
+                                <div class="bulk-document-cell">
+
+                                    <div class="bulk-document-icon">
+                                        DOC
+                                    </div>
+
+
+                                    <div class="bulk-document-info">
+
+                                        <strong class="bulk-document-name">
+                                            {{ item.original_filename|cut:"/tmp/" }}
+                                        </strong>
+
+                                        <span class="bulk-document-size">
+                                            {{ item.file_size|filesizeformat }}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ==================================================
+                                 CLASSIFICATION
+                                 ================================================== -->
+
+                            <td>
+
+                                <div class="bulk-classification-cell">
+
+                                    <div class="bulk-primary-value">
+                                        {{ item.suggested_document_type|default:"Unclassified" }}
+                                    </div>
+
+
+                                    <div class="bulk-secondary-value">
+                                        {{ item.suggested_category|default:"Other"|title }}
+                                    </div>
+
+
+                                    {% if item.suggested_reference %}
+
+                                        <div class="bulk-reference">
+                                            {{ item.suggested_reference }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ==================================================
+                                 RELATIONSHIP INTELLIGENCE
+                                 ================================================== -->
+
+                            <td>
+
+                                <div class="bulk-relationship-intelligence">
+
+                                    <!-- Suggested relationship -->
+
+                                    <div class="bulk-relationship-block">
+
+                                        <span class="bulk-relationship-label">
+                                            Suggested relationship
+                                        </span>
+
+                                        {% if item.suggested_related_type %}
+
+                                            <span class="bulk-relation-chip">
+                                                {{ item.suggested_related_type|title }}
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="bulk-muted">
+                                                None
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- Matched record -->
+
+                                    <div class="bulk-relationship-block">
+
+                                        <span class="bulk-relationship-label">
+                                            Matched record
+                                        </span>
+
+
+                                        {% if item.suggested_employee_id %}
+
+                                            <span class="bulk-relation-match">
+                                                Employee #{{ item.suggested_employee_id }}
+                                            </span>
+
+                                        {% elif item.suggested_customer_id %}
+
+                                            <span class="bulk-relation-match">
+                                                Customer #{{ item.suggested_customer_id }}
+                                            </span>
+
+                                        {% elif item.suggested_vehicle_id %}
+
+                                            <span class="bulk-relation-match">
+                                                Vehicle #{{ item.suggested_vehicle_id }}
+                                            </span>
+
+                                        {% elif item.suggested_supplier_id %}
+
+                                            <span class="bulk-relation-match">
+                                                Supplier #{{ item.suggested_supplier_id }}
+                                            </span>
+
+                                        {% elif item.suggested_contract_id %}
+
+                                            <span class="bulk-relation-match">
+                                                Contract #{{ item.suggested_contract_id }}
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="bulk-no-match">
+                                                No specific record
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- Final relationship -->
+
+                                    <div class="bulk-relationship-block">
+
+                                        <span class="bulk-relationship-label">
+                                            Final relationship
+                                        </span>
+
+
+                                        {% if item.suggested_employee_id %}
+
+                                            <span class="bulk-final-relation bulk-final-relation-linked">
+                                                Employee
+                                            </span>
+
+                                        {% elif item.suggested_customer_id %}
+
+                                            <span class="bulk-final-relation bulk-final-relation-linked">
+                                                Customer
+                                            </span>
+
+                                        {% elif item.suggested_vehicle_id %}
+
+                                            <span class="bulk-final-relation bulk-final-relation-linked">
+                                                Vehicle
+                                            </span>
+
+                                        {% elif item.suggested_supplier_id %}
+
+                                            <span class="bulk-final-relation bulk-final-relation-linked">
+                                                Supplier
+                                            </span>
+
+                                        {% elif item.suggested_contract_id %}
+
+                                            <span class="bulk-final-relation bulk-final-relation-linked">
+                                                Contract
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="bulk-final-relation bulk-final-relation-company">
+                                                Company-level
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ==================================================
+                                 CONFIDENCE
+                                 ================================================== -->
+
+                            <td>
+
+                                <div class="bulk-confidence">
+
+                                    <div class="bulk-confidence-top">
+
+                                        <strong>
+                                            {{ item.confidence_score }}%
+                                        </strong>
+
+                                        <span>
+                                            {{ item.confidence_label }}
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="bulk-confidence-track">
+
+                                        <div
+                                            class="bulk-confidence-fill"
+                                            style="width: {{ item.confidence_score }}%;"
+                                        ></div>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ==================================================
+                                 DATES
+                                 ================================================== -->
+
+                            <td>
+
+                                <div class="bulk-date-cell">
+
+                                    {% if item.suggested_issue_date %}
+
+                                        <div class="bulk-date-row">
+
+                                            <span class="bulk-date-label">
+                                                Issue
+                                            </span>
+
+                                            <strong>
+                                                {{ item.suggested_issue_date|date:"d M Y" }}
+                                            </strong>
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    {% if item.suggested_review_date %}
+
+                                        <div class="bulk-date-row">
+
+                                            <span class="bulk-date-label">
+                                                Review
+                                            </span>
+
+                                            <strong>
+                                                {{ item.suggested_review_date|date:"d M Y" }}
+                                            </strong>
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    {% if item.suggested_expiry_date %}
+
+                                        <div class="bulk-date-row bulk-expiry-date">
+
+                                            <span class="bulk-date-label">
+                                                Expiry
+                                            </span>
+
+                                            <strong>
+                                                {{ item.suggested_expiry_date|date:"d M Y" }}
+                                            </strong>
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    {% if not item.suggested_issue_date and not item.suggested_review_date and not item.suggested_expiry_date %}
+
+                                        <span class="bulk-muted">
+                                            No dates
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ==================================================
+                                 STATUS
+                                 ================================================== -->
+
+                            <td>
+
+                                <div class="bulk-item-status-cell">
+
+                                    <span class="bulk-item-status bulk-item-status-{{ item.status }}">
+                                        {{ item.get_status_display }}
+                                    </span>
+
+
+                                    {% if item.suggested_sensitive %}
+
+                                        <span class="bulk-sensitive-badge">
+                                            Sensitive
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if item.duplicate_document %}
+
+                                        <span class="bulk-duplicate-badge">
+                                            Duplicate
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ==================================================
+                                 ACTION
+                                 ================================================== -->
+
+                            <td>
+
+                                {% if item.status == "ready" or item.status == "review" %}
+
+                                    <div class="bulk-row-actions">
+
+                                        <a
+                                            href="{% url 'company_documents:bulk_import_item_edit' item.pk %}"
+                                            class="bulk-edit-button"
+                                        >
+                                            Edit
+                                        </a>
+
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'company_documents:bulk_import_approve' item.pk %}"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="bulk-approve-button"
+                                            >
+                                                Approve
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+
+                                {% elif item.status == "approved" %}
+
+                                    <span class="bulk-approved-label">
+                                        ✓ Approved
+                                    </span>
+
+
+                                {% elif item.status == "imported" %}
+
+                                    <span class="bulk-approved-label">
+                                        ✓ Imported
+                                    </span>
+
+
+                                {% elif item.status == "duplicate" %}
+
+                                    <span class="bulk-muted">
+                                        Duplicate
+                                    </span>
+
+
+                                {% elif item.status == "failed" %}
+
+                                    <div class="bulk-row-actions bulk-row-actions-stack">
+
+                                        <span class="bulk-status-badge bulk-status-failed">
+                                            ✕ Failed
+                                        </span>
+
+
+                                        {% if item.error_message %}
+
+                                            <div class="bulk-error-message">
+                                                {{ item.error_message }}
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <a
+                                            href="{% url 'company_documents:bulk_import_item_edit' item.pk %}"
+                                            class="bulk-edit-button"
+                                        >
+                                            Review &amp; Retry
+                                        </a>
+
+                                    </div>
+
+
+                                {% else %}
+
+                                    <span class="bulk-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==========================================================
+             PAGINATION
+             ========================================================== -->
+
+        {% if page_obj.paginator.num_pages > 1 %}
+
+            <div class="bulk-pagination">
+
+                {% if page_obj.has_previous %}
+
+                    <a
+                        href="?page={{ page_obj.previous_page_number }}"
+                        class="bulk-pagination-button"
+                    >
+                        ← Previous
+                    </a>
+
+                {% endif %}
+
+
+                <div class="bulk-pagination-pages">
+
+                    {% for page_number in page_obj.paginator.page_range %}
+
+                        {% if page_number == page_obj.number %}
+
+                            <span class="bulk-pagination-current">
+                                {{ page_number }}
+                            </span>
+
+                        {% else %}
+
+                            <a
+                                href="?page={{ page_number }}"
+                                class="bulk-pagination-number"
+                            >
+                                {{ page_number }}
+                            </a>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+
+                {% if page_obj.has_next %}
+
+                    <a
+                        href="?page={{ page_obj.next_page_number }}"
+                        class="bulk-pagination-button"
+                    >
+                        Next →
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+
+        {% else %}
+
+            <div class="bulk-empty-state">
+
+                <div class="bulk-empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    No documents require review
+                </h3>
+
+                <p>
+                    This import batch has no documents currently
+                    waiting for intelligence review.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

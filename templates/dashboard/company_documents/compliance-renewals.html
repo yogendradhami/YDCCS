@@ -1,0 +1,574 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+Compliance Renewal Centre
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/compliance-renewals.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="renewal-centre-page">
+
+    <header class="renewal-centre-header">
+
+        <div>
+
+            <span class="renewal-centre-eyebrow">
+                DOCUMENT CENTRE
+            </span>
+
+            <h1>
+                Compliance Renewal Centre
+            </h1>
+
+            <p>
+                Manage expired, review-due and upcoming document renewals
+                from one operational queue.
+            </p>
+
+        </div>
+
+        <div class="renewal-centre-header-actions">
+
+            <a
+                href="{% url 'company_documents:compliance_overview' %}"
+                class="renewal-btn renewal-btn-secondary"
+            >
+                ← Compliance overview
+            </a>
+
+            <a
+                href="{% url 'company_documents:employee_compliance_matrix' %}"
+                class="renewal-btn renewal-btn-secondary"
+            >
+                Employee matrix
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- KPI -->
+    <section class="renewal-kpis">
+
+        <article class="renewal-kpi">
+
+            <span>
+                NEEDS ACTION
+            </span>
+
+            <strong>
+                {{ total_attention }}
+            </strong>
+
+            <small>
+                Documents in renewal queue
+            </small>
+
+        </article>
+
+
+        <article class="renewal-kpi renewal-kpi-danger">
+
+            <span>
+                EXPIRED
+            </span>
+
+            <strong>
+                {{ expired_count }}
+            </strong>
+
+            <small>
+                Renewal required
+            </small>
+
+        </article>
+
+
+        <article class="renewal-kpi renewal-kpi-warning">
+
+            <span>
+                REVIEW DUE
+            </span>
+
+            <strong>
+                {{ review_due_count }}
+            </strong>
+
+            <small>
+                Review required
+            </small>
+
+        </article>
+
+
+        <article class="renewal-kpi renewal-kpi-notice">
+
+            <span>
+                EXPIRING SOON
+            </span>
+
+            <strong>
+                {{ expiring_count }}
+            </strong>
+
+            <small>
+                Within 30 days
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <!-- FILTERS -->
+    <section class="renewal-filter-card">
+
+        <form
+            method="get"
+            class="renewal-filters"
+        >
+
+            <div>
+
+                <label for="renewal-search">
+                    Search
+                </label>
+
+                <input
+                    id="renewal-search"
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    placeholder="Document, employee, customer, vehicle..."
+                >
+
+            </div>
+
+
+            <div>
+
+                <label for="renewal-category">
+                    Category
+                </label>
+
+                <select
+                    id="renewal-category"
+                    name="category"
+                >
+
+                    <option value="">
+                        All categories
+                    </option>
+
+                    {% for value, label in category_choices %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if category_filter == value %}selected{% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="renewal-filter-actions">
+
+                <button
+                    type="submit"
+                    class="renewal-btn renewal-btn-primary"
+                >
+                    Apply filters
+                </button>
+
+                {% if search_query or category_filter %}
+
+                    <a
+                        href="{% url 'company_documents:compliance_renewals' %}"
+                        class="renewal-clear"
+                    >
+                        Clear
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- TABLE -->
+    <section class="renewal-table-card">
+
+        <div class="renewal-table-header">
+
+            <div>
+
+                <span class="renewal-section-eyebrow">
+                    RENEWAL QUEUE
+                </span>
+
+                <h2>
+                    Documents requiring attention
+                </h2>
+
+                <p>
+                    {{ page_obj.paginator.count }}
+                    document{{ page_obj.paginator.count|pluralize }}
+                    currently require action.
+                </p>
+
+            </div>
+
+            <div class="renewal-page-indicator">
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages|default:"1" }}
+            </div>
+
+        </div>
+
+
+        {% if documents %}
+
+            <div class="renewal-table-wrapper">
+
+                <table class="renewal-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Document</th>
+                            <th>Related to</th>
+                            <th>Priority</th>
+                            <th>Expiry</th>
+                            <th>Review</th>
+                            <th>Version</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for document in documents %}
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="renewal-document">
+
+                                        <strong>
+                                            {{ document.name }}
+                                        </strong>
+
+                                        {% if document.document_type %}
+
+                                            <span>
+                                                {{ document.document_type }}
+                                            </span>
+
+                                        {% endif %}
+
+                                        <small>
+                                            {{ document.get_category_display }}
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if document.employee %}
+
+                                        <div class="renewal-related">
+
+                                            <strong>
+                                                {{ document.employee.full_name }}
+                                            </strong>
+
+                                            <span>
+                                                Employee
+                                            </span>
+
+                                        </div>
+
+                                    {% elif document.customer %}
+
+                                        <div class="renewal-related">
+
+                                            <strong>
+                                                {{ document.customer.full_name }}
+                                            </strong>
+
+                                            <span>
+                                                Customer
+                                            </span>
+
+                                        </div>
+
+                                    {% elif document.vehicle %}
+
+                                        <div class="renewal-related">
+
+                                            <strong>
+                                                {{ document.vehicle.vehicle_name }}
+                                            </strong>
+
+                                            <span>
+                                                Vehicle
+                                            </span>
+
+                                        </div>
+
+                                    {% elif document.supplier %}
+
+                                        <div class="renewal-related">
+
+                                            <strong>
+                                                {{ document.supplier.name }}
+                                            </strong>
+
+                                            <span>
+                                                Supplier
+                                            </span>
+
+                                        </div>
+
+                                    {% elif document.contract %}
+
+                                        <div class="renewal-related">
+
+                                            <strong>
+                                                {{ document.contract.service_type }}
+                                            </strong>
+
+                                            <span>
+                                                Contract
+                                            </span>
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <div class="renewal-related">
+
+                                            <strong>
+                                                Company
+                                            </strong>
+
+                                            <span>
+                                                Company document
+                                            </span>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if document.expiry_date and document.expiry_date < today %}
+
+                                        <span class="renewal-status danger">
+                                            Expired
+                                        </span>
+
+                                    {% elif document.review_date and document.review_date <= today %}
+
+                                        <span class="renewal-status warning">
+                                            Review due
+                                        </span>
+
+                                    {% elif document.expiry_date %}
+
+                                        <span class="renewal-status notice">
+                                            Expiring soon
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="renewal-status neutral">
+                                            Attention
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if document.expiry_date %}
+
+                                        <strong>
+                                            {{ document.expiry_date|date:"d M Y" }}
+                                        </strong>
+
+                                    {% else %}
+
+                                        <span class="renewal-muted">
+                                            No expiry
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if document.review_date %}
+
+                                        {{ document.review_date|date:"d M Y" }}
+
+                                    {% else %}
+
+                                        <span class="renewal-muted">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="renewal-version">
+                                        v{{ document.version }}
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="renewal-actions">
+
+                                        <a
+                                            href="{% url 'company_documents:detail' document.pk %}"
+                                            class="renewal-action renewal-action-secondary"
+                                        >
+                                            View
+                                        </a>
+
+                                        <a
+                                            href="{% url 'company_documents:edit' document.pk %}"
+                                            class="renewal-action renewal-action-primary"
+                                        >
+                                            Renew / Replace
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- PAGINATION -->
+            {% if page_obj.paginator.num_pages > 1 %}
+
+                <nav
+                    class="renewal-pagination"
+                    aria-label="Compliance renewal pagination"
+                >
+
+                    <span>
+                        Showing
+                        {{ page_obj.start_index }}
+                        –
+                        {{ page_obj.end_index }}
+                        of
+                        {{ page_obj.paginator.count }}
+                    </span>
+
+                    <div>
+
+                        {% if page_obj.has_previous %}
+
+                            <a
+                                href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if category_filter %}&category={{ category_filter|urlencode }}{% endif %}"
+                            >
+                                Previous
+                            </a>
+
+                        {% endif %}
+
+
+                        <strong>
+                            {{ page_obj.number }}
+                        </strong>
+
+
+                        {% if page_obj.has_next %}
+
+                            <a
+                                href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if category_filter %}&category={{ category_filter|urlencode }}{% endif %}"
+                            >
+                                Next
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </nav>
+
+            {% endif %}
+
+
+        {% else %}
+
+            <div class="renewal-empty">
+
+                <div class="renewal-empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    No renewal actions required
+                </h3>
+
+                <p>
+                    There are currently no expired, review-due or
+                    soon-to-expire documents matching your filters.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,748 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+Employee Compliance | {{ employee.full_name }}
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard/company-documents/employee-compliance.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-compliance-page">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+
+    <header class="employee-compliance-header">
+
+        <div class="employee-compliance-header-copy">
+
+            <div class="employee-compliance-eyebrow">
+                DOCUMENT CENTRE
+            </div>
+
+            <h1>
+                Employee Compliance
+            </h1>
+
+            <p>
+                Review required documents, compliance status and
+                outstanding actions for this employee.
+            </p>
+
+        </div>
+
+        <div class="employee-compliance-header-actions">
+
+            <a
+                href="{% url 'company_documents:compliance_overview' %}"
+                class="employee-compliance-btn employee-compliance-btn-secondary"
+            >
+                ← Compliance overview
+            </a>
+
+            <a
+                href="{% url 'company_documents:upload' %}?related_type=employee&employee={{ employee.id }}"
+                class="employee-compliance-btn employee-compliance-btn-primary"
+            >
+                + Upload document
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================================
+         EMPLOYEE IDENTITY CARD
+    ========================================================== -->
+
+    <section class="employee-profile-card">
+
+        <div class="employee-profile-main">
+
+            <div class="employee-avatar">
+                {% if employee.image %}
+                    <img
+                        src="{{ employee.image.url }}"
+                        alt="{{ employee.full_name }}"
+                    >
+                {% else %}
+                    {{ employee.full_name|first|upper }}
+                {% endif %}
+            </div>
+
+            <div class="employee-profile-copy">
+
+                <div class="employee-profile-label">
+                    EMPLOYEE
+                </div>
+
+                <h2>
+                    {{ employee.full_name }}
+                </h2>
+
+                {% if employee.role %}
+                    <p class="employee-profile-role">
+                        {{ employee.role }}
+                    </p>
+                {% endif %}
+
+                <div class="employee-profile-meta">
+
+                    {% if employee.email %}
+                        <span>
+                            {{ employee.email }}
+                        </span>
+                    {% endif %}
+
+                    {% if employee.phone %}
+                        <span>
+                            {{ employee.phone }}
+                        </span>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="employee-profile-score">
+
+            <span class="employee-score-label">
+                COMPLIANCE
+            </span>
+
+            {% if summary.has_applicable_requirements %}
+                <strong>
+                    {{ summary.percentage }}%
+                </strong>
+
+                <span>
+                    {{ summary.satisfied }}
+                    /
+                    {{ summary.total }}
+                    required
+                </span>
+            {% else %}
+                <strong>N/A</strong>
+                <span>No applicable requirements</span>
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         KPI SUMMARY
+    ========================================================== -->
+
+    <section class="employee-compliance-kpis">
+
+        <div class="employee-kpi employee-kpi-success">
+
+            <span class="employee-kpi-label">
+                SATISFIED
+            </span>
+
+            <strong>
+                {{ summary.satisfied }}
+            </strong>
+
+            <span>
+                Requirements met
+            </span>
+
+        </div>
+
+
+        <div class="employee-kpi employee-kpi-danger">
+
+            <span class="employee-kpi-label">
+                MISSING
+            </span>
+
+            <strong>
+                {{ summary.missing }}
+            </strong>
+
+            <span>
+                Action required
+            </span>
+
+        </div>
+
+
+        <div class="employee-kpi employee-kpi-danger">
+
+            <span class="employee-kpi-label">
+                EXPIRED
+            </span>
+
+            <strong>
+                {{ summary.expired }}
+            </strong>
+
+            <span>
+                Renewal required
+            </span>
+
+        </div>
+
+
+        <div class="employee-kpi employee-kpi-warning">
+
+            <span class="employee-kpi-label">
+                REVIEW DUE
+            </span>
+
+            <strong>
+                {{ summary.review_due }}
+            </strong>
+
+            <span>
+                Review required
+            </span>
+
+        </div>
+
+
+        <div class="employee-kpi employee-kpi-notice">
+
+            <span class="employee-kpi-label">
+                EXPIRING
+            </span>
+
+            <strong>
+                {{ summary.expiring }}
+            </strong>
+
+            <span>
+                Within 30 days
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ACTION BANNER
+    ========================================================== -->
+
+    {% if summary.actionable %}
+
+        <section class="employee-compliance-alert employee-compliance-alert-warning">
+
+            <div class="employee-alert-icon">
+                !
+            </div>
+
+            <div class="employee-alert-content">
+
+                <strong>
+                    {{ summary.actionable }}
+                    compliance action{{ summary.actionable|pluralize }}
+                    required
+                </strong>
+
+                <p>
+                    Review the outstanding requirements below and upload
+                    the appropriate employee-specific documents.
+                </p>
+
+            </div>
+
+        </section>
+
+    {% else %}
+
+        <section class="employee-compliance-alert employee-compliance-alert-success">
+
+            <div class="employee-alert-icon">
+                ✓
+            </div>
+
+            <div class="employee-alert-content">
+
+                <strong>
+                    Employee compliance is up to date
+                </strong>
+
+                <p>
+                    No required employee compliance actions are currently
+                    outstanding.
+                </p>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- =========================================================
+         REQUIREMENTS
+    ========================================================== -->
+
+    <section class="employee-compliance-section">
+
+        <div class="employee-section-heading">
+
+            <div>
+                <span class="employee-section-eyebrow">
+                    REQUIREMENTS
+                </span>
+
+                <h2>
+                    Employee compliance requirements
+                </h2>
+
+                <p>
+                    These requirements are evaluated specifically against
+                    documents linked to {{ employee.full_name }}.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="employee-requirements-list">
+
+            {% for result in results %}
+
+                <article class="employee-requirement-card">
+
+                    <div class="employee-requirement-status">
+
+                        {% if result.status == "satisfied" %}
+
+                            <span class="employee-status-icon employee-status-icon-success">
+                                ✓
+                            </span>
+
+                        {% elif result.status == "missing" %}
+
+                            <span class="employee-status-icon employee-status-icon-danger">
+                                !
+                            </span>
+
+                        {% elif result.status == "expired" %}
+
+                            <span class="employee-status-icon employee-status-icon-danger">
+                                !
+                            </span>
+
+                        {% elif result.status == "review_due" %}
+
+                            <span class="employee-status-icon employee-status-icon-warning">
+                                !
+                            </span>
+
+                        {% elif result.status == "expiring" %}
+
+                            <span class="employee-status-icon employee-status-icon-notice">
+                                !
+                            </span>
+
+                        {% else %}
+
+                            <span class="employee-status-icon">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="employee-requirement-content">
+
+                        <div class="employee-requirement-title-row">
+
+                            <h3>
+                                {{ result.requirement.name }}
+                            </h3>
+
+                            {% if not result.requirement.required %}
+                                <span class="employee-status-pill optional">
+                                    Optional
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                        {% if result.requirement.description %}
+                            <p>
+                                {{ result.requirement.description }}
+                            </p>
+                        {% endif %}
+
+
+                        {% if result.document %}
+
+                            <div class="employee-linked-document">
+
+                                <div class="employee-linked-document-copy">
+
+                                    <span>
+                                        CURRENT DOCUMENT
+                                    </span>
+
+                                    <strong>
+                                        {{ result.document.name }}
+                                    </strong>
+
+                                    {% if result.document.expiry_date %}
+                                        <small>
+                                            Expires
+                                            {{ result.document.expiry_date|date:"d M Y" }}
+                                        </small>
+                                    {% else %}
+                                        <small>
+                                            No expiry date
+                                        </small>
+                                    {% endif %}
+
+                                </div>
+
+                                <a
+                                    href="{% url 'company_documents:detail' result.document.pk %}"
+                                    class="employee-document-action"
+                                >
+                                    View
+                                </a>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="employee-requirement-result">
+
+                        {% if result.status == "satisfied" %}
+
+                            <span class="employee-result-pill success">
+                                Satisfied
+                            </span>
+
+                        {% elif result.status == "missing" %}
+
+                            <span class="employee-result-pill danger">
+                                Missing
+                            </span>
+
+                            <a
+                                href="{% url 'company_documents:upload' %}?related_type=employee&employee={{ employee.id }}&document_type={{ result.requirement.document_type|urlencode }}"
+                                class="employee-result-action"
+                            >
+                                Upload
+                            </a>
+
+                        {% elif result.status == "expired" %}
+
+                            <span class="employee-result-pill danger">
+                                Expired
+                            </span>
+
+                            {% if result.document %}
+                                <a
+                                    href="{% url 'company_documents:edit' result.document.pk %}"
+                                    class="employee-result-action"
+                                >
+                                    Replace
+                                </a>
+                            {% endif %}
+
+                        {% elif result.status == "review_due" %}
+
+                            <span class="employee-result-pill warning">
+                                Review due
+                            </span>
+
+                            {% if result.document %}
+                                <a
+                                    href="{% url 'company_documents:detail' result.document.pk %}"
+                                    class="employee-result-action"
+                                >
+                                    Review
+                                </a>
+                            {% endif %}
+
+                        {% elif result.status == "expiring" %}
+
+                            <span class="employee-result-pill notice">
+                                Expiring soon
+                            </span>
+
+                            {% if result.document %}
+                                <a
+                                    href="{% url 'company_documents:detail' result.document.pk %}"
+                                    class="employee-result-action"
+                                >
+                                    Review
+                                </a>
+                            {% endif %}
+
+                        {% elif result.status == "not_applicable" %}
+
+                            <span class="employee-result-pill neutral">
+                                N/A
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+            {% empty %}
+
+                <div class="employee-empty-state">
+
+                    <strong>
+                        No employee compliance requirements configured.
+                    </strong>
+
+                    <p>
+                        Add employee requirements to begin tracking
+                        compliance for this employee.
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         DOCUMENTS ON FILE
+    ========================================================== -->
+
+    <section class="employee-compliance-section">
+
+        <div class="employee-section-heading">
+
+            <div>
+                <span class="employee-section-eyebrow">
+                    DOCUMENT LIBRARY
+                </span>
+
+                <h2>
+                    Documents on file
+                </h2>
+
+                <p>
+                    Documents currently linked directly to
+                    {{ employee.full_name }}.
+                </p>
+            </div>
+
+            <a
+                href="{% url 'company_documents:upload' %}?related_type=employee&employee={{ employee.id }}"
+                class="employee-compliance-btn employee-compliance-btn-primary"
+            >
+                + Add document
+            </a>
+
+        </div>
+
+
+        {% if documents %}
+
+            <div class="employee-documents-table-wrapper">
+
+                <table class="employee-documents-table">
+
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Type</th>
+                            <th>Health</th>
+                            <th>Expiry</th>
+                            <th>Updated</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for document in documents %}
+
+                            <tr>
+
+                                <td>
+                                    <div class="employee-table-document">
+
+                                        <strong>
+                                            {{ document.name }}
+                                        </strong>
+
+                                        {% if document.original_filename %}
+                                            <span>
+                                                {{ document.original_filename }}
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {{ document.document_type|default:"—" }}
+                                </td>
+
+                                <td>
+
+                                    {% if document.health_status == "healthy" %}
+
+                                        <span class="employee-table-status success">
+                                            Healthy
+                                        </span>
+
+                                    {% elif document.health_status == "expiring" %}
+
+                                        <span class="employee-table-status notice">
+                                            Expiring soon
+                                        </span>
+
+                                    {% elif document.health_status == "expired" %}
+
+                                        <span class="employee-table-status danger">
+                                            Expired
+                                        </span>
+
+                                    {% elif document.health_status == "review_due" %}
+
+                                        <span class="employee-table-status warning">
+                                            Review due
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="employee-table-status neutral">
+                                            {{ document.health_status_label }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {% if document.expiry_date %}
+                                        {{ document.expiry_date|date:"d M Y" }}
+                                    {% else %}
+                                        No expiry
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ document.updated_at|date:"d M Y" }}
+                                </td>
+
+                                <td>
+
+                                    <div class="employee-table-actions">
+
+                                        <a
+                                            href="{% url 'company_documents:detail' document.pk %}"
+                                        >
+                                            View
+                                        </a>
+
+                                        <a
+                                            href="{% url 'company_documents:download' document.pk %}"
+                                        >
+                                            Download
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="employee-empty-documents">
+
+                <div class="employee-empty-icon">
+                    📄
+                </div>
+
+                <h3>
+                    No employee-specific documents
+                </h3>
+
+                <p>
+                    Upload an actual employee document and link it to
+                    {{ employee.full_name }} to satisfy the configured
+                    compliance requirements.
+                </p>
+
+                <a
+                    href="{% url 'company_documents:upload' %}?related_type=employee&employee={{ employee.id }}"
+                    class="employee-compliance-btn employee-compliance-btn-primary"
+                >
+                    Upload first document
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================================
+         INFORMATION
+    ========================================================== -->
+
+    <section class="employee-compliance-information">
+
+        <div class="employee-information-icon">
+            i
+        </div>
+
+        <div>
+
+            <strong>
+                Employee-specific matching
+            </strong>
+
+            <p>
+                Only active documents explicitly linked to
+                {{ employee.full_name }} can satisfy this employee's
+                requirements. Company-level templates and documents
+                do not automatically satisfy individual employee
+                compliance requirements.
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
