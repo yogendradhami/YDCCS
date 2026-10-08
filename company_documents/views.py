@@ -3,7 +3,7 @@ from io import BytesIO
 import cloudinary
 import requests
 from cloudinary.utils import cloudinary_url
-from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import Q, Case, Count, When, Value, IntegerField
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -20,6 +20,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+from urllib.parse import urlencode
 
 from .forms import CompanyDocumentForm
 from .models import (
@@ -44,6 +45,7 @@ from .services.bulk_import import (
     analyse_batch,
     refresh_batch_statistics,
     import_approved_batch,
+    delete_staged_raw_document,
 )
 
 from company_documents.services.compliance_requirements import (
@@ -310,7 +312,21 @@ def document_list(request):
     - Sensitive-document filtering
     - Health KPIs
     - Pagination
+    - Dynamic document folders
+
+    Folder behaviour:
+
+    - Uses the existing CompanyDocument category choices.
+    - Automatically discovers categories currently used by documents.
+    - Automatically creates a folder card when a category contains
+      at least one document.
+    - Supports future/new categories without requiring a database
+      folder model or migration.
     """
+
+    # ==========================================================
+    # PERMISSION
+    # ==========================================================
 
     if not can_manage_documents(request.user):
         return render(
@@ -325,9 +341,185 @@ def document_list(request):
 
     today = timezone.localdate()
 
-    thirty_days = today + timezone.timedelta(days=30)
-    sixty_days = today + timezone.timedelta(days=60)
-    ninety_days = today + timezone.timedelta(days=90)
+    thirty_days = today + timezone.timedelta(
+        days=30
+    )
+
+    sixty_days = today + timezone.timedelta(
+        days=60
+    )
+
+    ninety_days = today + timezone.timedelta(
+        days=90
+    )
+
+    # ==========================================================
+    # CATEGORY DISPLAY METADATA
+    # ==========================================================
+
+    category_meta = {
+        "company": {
+            "title": "Company & Business",
+            "description": (
+                "Core company records, policies and business documents."
+            ),
+            "short": "Company records",
+            "icon": "CO",
+        },
+
+        "insurance": {
+            "title": "Insurance",
+            "description": (
+                "Insurance policies, certificates and renewal records."
+            ),
+            "short": "Insurance records",
+            "icon": "IN",
+        },
+
+        "employee": {
+            "title": "Employees",
+            "description": (
+                "Employee, HR, employment and personnel documents."
+            ),
+            "short": "Employee records",
+            "icon": "EM",
+        },
+
+        "whs": {
+            "title": "WHS & Safety",
+            "description": (
+                "Work health, safety, risk, incident and compliance records."
+            ),
+            "short": "Safety records",
+            "icon": "WS",
+        },
+
+        "operations": {
+            "title": "Operations",
+            "description": (
+                "Cleaning procedures, checklists, schedules and operational records."
+            ),
+            "short": "Operations records",
+            "icon": "OP",
+        },
+
+        "customer": {
+            "title": "Customers",
+            "description": (
+                "Customer, client and service-related documents."
+            ),
+            "short": "Customer records",
+            "icon": "CU",
+        },
+
+        "contract": {
+            "title": "Contracts",
+            "description": (
+                "Contracts, agreements, terms and related legal records."
+            ),
+            "short": "Contracts",
+            "icon": "CT",
+        },
+
+        "supplier": {
+            "title": "Suppliers",
+            "description": (
+                "Supplier, vendor and procurement documents."
+            ),
+            "short": "Supplier records",
+            "icon": "SU",
+        },
+
+        "finance": {
+            "title": "Finance",
+            "description": (
+                "Financial, accounting, tax, invoice and payment records."
+            ),
+            "short": "Financial records",
+            "icon": "FI",
+        },
+
+        "training": {
+            "title": "Training",
+            "description": (
+                "Training, competency, qualification and induction records."
+            ),
+            "short": "Training records",
+            "icon": "TR",
+        },
+
+        "marketing": {
+            "title": "Marketing",
+            "description": (
+                "Marketing, advertising, brand and promotional documents."
+            ),
+            "short": "Marketing records",
+            "icon": "MK",
+        },
+
+        "business_continuity": {
+            "title": "Business Continuity",
+            "description": (
+                "Business continuity, disaster recovery and resilience records."
+            ),
+            "short": "Continuity records",
+            "icon": "BC",
+        },
+
+        "quality": {
+            "title": "Quality",
+            "description": (
+                "Quality assurance, audits, inspections and improvement records."
+            ),
+            "short": "Quality records",
+            "icon": "QU",
+        },
+
+        "privacy": {
+            "title": "Privacy",
+            "description": (
+                "Privacy, data protection and information management records."
+            ),
+            "short": "Privacy records",
+            "icon": "PR",
+        },
+
+        "vehicle": {
+            "title": "Vehicles & Fleet",
+            "description": (
+                "Vehicle, fleet, inspection and registration documents."
+            ),
+            "short": "Fleet records",
+            "icon": "VE",
+        },
+
+        "licence": {
+            "title": "Licences & Registrations",
+            "description": (
+                "Licences, registrations, permits and authorisations."
+            ),
+            "short": "Licensing records",
+            "icon": "LI",
+        },
+
+        "property": {
+            "title": "Property & Premises",
+            "description": (
+                "Property, premises, site and facility documents."
+            ),
+            "short": "Property records",
+            "icon": "PR",
+        },
+
+        "other": {
+            "title": "Other / Needs Review",
+            "description": (
+                "Documents that require review or do not fit another category."
+            ),
+            "short": "Needs review",
+            "icon": "OR",
+        },
+    }
 
     # ==========================================================
     # BASE QUERYSET
@@ -365,7 +557,7 @@ def document_list(request):
         )
 
     # ==========================================================
-    # CATEGORY
+    # CATEGORY FILTER
     # ==========================================================
 
     category = request.GET.get(
@@ -379,7 +571,7 @@ def document_list(request):
         )
 
     # ==========================================================
-    # STATUS
+    # STATUS FILTER
     # ==========================================================
 
     status = request.GET.get(
@@ -388,12 +580,20 @@ def document_list(request):
     ).strip()
 
     if status:
-        documents = documents.filter(
-            status=status
-        )
+        valid_statuses = {
+            value
+            for value, label in CompanyDocument.Status.choices
+        }
+
+        if status in valid_statuses:
+            documents = documents.filter(
+                status=status
+            )
+        else:
+            status = ""
 
     # ==========================================================
-    # RELATIONSHIP
+    # RELATIONSHIP FILTER
     # ==========================================================
 
     relationship = request.GET.get(
@@ -414,7 +614,7 @@ def document_list(request):
         relationship = ""
 
     # ==========================================================
-    # SENSITIVE
+    # SENSITIVE FILTER
     # ==========================================================
 
     sensitive = request.GET.get(
@@ -479,14 +679,6 @@ def document_list(request):
 
     # ==========================================================
     # HEALTH FILTER
-    #
-    # Health states:
-    #
-    # expired
-    # expiring
-    # review
-    # healthy
-    # no_expiry
     # ==========================================================
 
     health = request.GET.get(
@@ -525,15 +717,11 @@ def document_list(request):
 
     elif health == "healthy":
 
-        # Healthy means:
-        # - Active
-        # - Has an expiry date
-        # - Expiry is more than 30 days away
-        # - No review is currently due
-
         documents = documents.filter(
             status=CompanyDocument.Status.ACTIVE,
-            expiry_date__gt=thirty_days,
+        ).filter(
+            Q(expiry_date__isnull=True)
+            | Q(expiry_date__gt=thirty_days)
         ).filter(
             Q(review_date__isnull=True)
             | Q(review_date__gt=today)
@@ -577,12 +765,11 @@ def document_list(request):
 
     # ==========================================================
     # GLOBAL KPI DATA
-    #
-    # These are calculated from the COMPLETE document library,
-    # not the filtered queryset.
     # ==========================================================
 
-    all_documents = CompanyDocument.objects.all()
+    all_documents = (
+        CompanyDocument.objects.all()
+    )
 
     active_documents = all_documents.filter(
         status=CompanyDocument.Status.ACTIVE
@@ -631,17 +818,6 @@ def document_list(request):
         expiry_date__isnull=True
     ).count()
 
-    # ----------------------------------------------------------
-    # HEALTHY
-    #
-    # A healthy document must:
-    #
-    # 1. Be active
-    # 2. Have an expiry date
-    # 3. Expire more than 30 days from today
-    # 4. Not currently require review
-    # ----------------------------------------------------------
-
     healthy_documents = active_documents.filter(
         expiry_date__gt=thirty_days,
     ).filter(
@@ -660,6 +836,270 @@ def document_list(request):
     relationships = CompanyDocument.RelatedType.choices
 
     # ==========================================================
+    # DYNAMIC CATEGORY / FOLDER CENTRE
+    # ==========================================================
+
+    # Start with categories defined by the model.
+    known_categories = list(
+        CompanyDocument.Category.choices
+    )
+
+    known_category_values = {
+        value
+        for value, label in known_categories
+    }
+
+    # Discover categories actually stored in the database.
+    #
+    # This means that if the classifier/import system later
+    # introduces a new category, the document centre can
+    # automatically display it without requiring a folder
+    # model or manual folder creation.
+    database_categories = (
+        CompanyDocument.objects
+        .exclude(
+            category__isnull=True
+        )
+        .exclude(
+            category=""
+        )
+        .values_list(
+            "category",
+            flat=True,
+        )
+        .distinct()
+    )
+
+    # Preserve the model's normal category order and append
+    # any categories found in the database that are not
+    # currently defined in the model choices.
+    category_values = list(
+        dict.fromkeys(
+            [
+                value
+                for value, label in known_categories
+            ]
+            + list(database_categories)
+        )
+    )
+
+    # ----------------------------------------------------------
+    # CATEGORY COUNTS
+    # ----------------------------------------------------------
+
+    category_counts = {
+        row["category"]: row["total"]
+        for row in (
+            CompanyDocument.objects
+            .values("category")
+            .annotate(
+                total=Count("id")
+            )
+        )
+    }
+
+    # ----------------------------------------------------------
+    # EXPIRED CATEGORY COUNTS
+    # ----------------------------------------------------------
+
+    category_expired_counts = {
+        row["category"]: row["total"]
+        for row in (
+            CompanyDocument.objects
+            .filter(
+                status=CompanyDocument.Status.ACTIVE,
+                expiry_date__lt=today,
+            )
+            .values("category")
+            .annotate(
+                total=Count("id")
+            )
+        )
+    }
+
+    # ----------------------------------------------------------
+    # EXPIRING CATEGORY COUNTS
+    # ----------------------------------------------------------
+
+    category_expiring_counts = {
+        row["category"]: row["total"]
+        for row in (
+            CompanyDocument.objects
+            .filter(
+                status=CompanyDocument.Status.ACTIVE,
+                expiry_date__gte=today,
+                expiry_date__lte=thirty_days,
+            )
+            .values("category")
+            .annotate(
+                total=Count("id")
+            )
+        )
+    }
+
+    # ==========================================================
+    # AUTOMATIC CATEGORY DISPLAY HELPERS
+    # ==========================================================
+
+    known_labels = dict(
+        known_categories
+    )
+
+    def category_display_name(value):
+        """
+        Convert an internal category value into a friendly
+        folder name.
+
+        Known categories use their model label.
+
+        Unknown categories are automatically converted from
+        values such as:
+
+            risk_management
+
+        into:
+
+            Risk Management
+        """
+
+        if value in category_meta:
+            return category_meta[value]["title"]
+
+        if value in known_labels:
+            return known_labels[value]
+
+        return (
+            value
+            .replace("_", " ")
+            .replace("-", " ")
+            .strip()
+            .title()
+        )
+
+    def category_icon(value):
+        """
+        Return a compact folder icon code for known
+        categories and a safe default for new categories.
+        """
+
+        icon_map = {
+            "company": "CO",
+            "insurance": "IN",
+            "employee": "EM",
+            "whs": "WS",
+            "operations": "OP",
+            "customer": "CU",
+            "contract": "CT",
+            "supplier": "SU",
+            "finance": "FI",
+            "training": "TR",
+            "marketing": "MK",
+            "business_continuity": "BC",
+            "quality": "QU",
+            "privacy": "PR",
+            "vehicle": "VE",
+            "licence": "LI",
+            "property": "PP",
+            "other": "OR",
+        }
+
+        return icon_map.get(
+            value,
+            "DO",
+        )
+
+    # ==========================================================
+    # BUILD FOLDER CARDS
+    # ==========================================================
+
+    category_cards = []
+
+    for value in category_values:
+
+        label = category_display_name(
+            value
+        )
+
+        meta = category_meta.get(
+            value,
+            {
+                "title": label,
+                "description": (
+                    f"Documents filed under {label}."
+                ),
+                "short": "Document records",
+                "icon": category_icon(
+                    value
+                ),
+            },
+        )
+
+        count = category_counts.get(
+            value,
+            0,
+        )
+
+        # Do not display empty folders.
+        #
+        # The folder automatically appears when the first
+        # document is assigned to this category.
+        if count <= 0:
+            continue
+
+        category_cards.append(
+            {
+                "value": value,
+
+                "label": meta["title"],
+
+                "description": meta[
+                    "description"
+                ],
+
+                "short": meta[
+                    "short"
+                ],
+
+                "icon": meta[
+                    "icon"
+                ],
+
+                "count": count,
+
+                "expired": category_expired_counts.get(
+                    value,
+                    0,
+                ),
+
+                "expiring": category_expiring_counts.get(
+                    value,
+                    0,
+                ),
+            }
+        )
+
+    # ==========================================================
+    # SORTING
+    # ==========================================================
+
+    # Keep the model/category order rather than sorting
+    # alphabetically. This creates a predictable document
+    # centre layout.
+    category_order = {
+        value: index
+        for index, value in enumerate(
+            category_values
+        )
+    }
+
+    category_cards.sort(
+        key=lambda card: category_order.get(
+            card["value"],
+            9999,
+        )
+    )
+
+    # ==========================================================
     # CONTEXT
     # ==========================================================
 
@@ -669,7 +1109,9 @@ def document_list(request):
         # ------------------------------------------------------
 
         "documents": page_obj,
+
         "page_obj": page_obj,
+
         "paginator": paginator,
 
         # ------------------------------------------------------
@@ -677,11 +1119,17 @@ def document_list(request):
         # ------------------------------------------------------
 
         "query": query,
+
         "selected_category": category,
+
         "selected_status": status,
+
         "selected_expiry": expiry,
+
         "selected_health": health,
+
         "selected_relationship": relationship,
+
         "selected_sensitive": sensitive,
 
         # ------------------------------------------------------
@@ -689,15 +1137,25 @@ def document_list(request):
         # ------------------------------------------------------
 
         "categories": categories,
+
         "statuses": statuses,
+
         "relationships": relationships,
+
+        # ------------------------------------------------------
+        # Dynamic folder centre
+        # ------------------------------------------------------
+
+        "category_cards": category_cards,
 
         # ------------------------------------------------------
         # Core KPIs
         # ------------------------------------------------------
 
         "total_documents": total_documents,
+
         "active_documents": active_count,
+
         "archived_documents": archived_documents,
 
         # ------------------------------------------------------
@@ -705,21 +1163,31 @@ def document_list(request):
         # ------------------------------------------------------
 
         "expired_documents": expired_documents,
+
         "expiring_30_days": expiring_30_days,
+
         "expiring_60_days": expiring_60_days,
+
         "expiring_90_days": expiring_90_days,
+
         "review_due_documents": review_due_documents,
+
         "sensitive_documents": sensitive_documents,
+
         "no_expiry_documents": no_expiry_documents,
+
         "healthy_documents": healthy_documents,
 
         # ------------------------------------------------------
-        # Date values used by the template
+        # Dates
         # ------------------------------------------------------
 
         "today": today,
+
         "thirty_days": thirty_days,
+
         "sixty_days": sixty_days,
+
         "ninety_days": ninety_days,
     }
 
@@ -728,6 +1196,7 @@ def document_list(request):
         "dashboard/company_documents/list.html",
         context,
     )
+
 
 
 @login_required
@@ -1508,22 +1977,92 @@ def bulk_import_list(request):
     if not can_manage_documents(request.user):
         raise PermissionDenied
 
+    query = request.GET.get("q", "").strip()
+    requested_status = request.GET.get("status", "").strip()
+    date_from = request.GET.get("date_from", "").strip()
+    date_to = request.GET.get("date_to", "").strip()
+    valid_statuses = {
+        value
+        for value, _label in BulkImportBatch.Status.choices
+    }
+    status = (
+        requested_status
+        if requested_status in valid_statuses
+        else ""
+    )
+
+    parsed_date_from = None
+    if date_from:
+        try:
+            parsed_date_from = date.fromisoformat(date_from)
+        except ValueError:
+            pass
+
+    parsed_date_to = None
+    if date_to:
+        try:
+            parsed_date_to = date.fromisoformat(date_to)
+        except ValueError:
+            pass
+
     batches = (
         BulkImportBatch.objects
         .select_related("uploaded_by")
         .prefetch_related("items")
-        .order_by("-created_at")
     )
 
+    if query:
+        batches = batches.filter(
+            Q(batch_reference__icontains=query)
+            | Q(uploaded_by__username__icontains=query)
+            | Q(uploaded_by__first_name__icontains=query)
+            | Q(uploaded_by__last_name__icontains=query)
+        )
+
+    if status:
+        batches = batches.filter(status=status)
+
+    if parsed_date_from:
+        batches = batches.filter(
+            created_at__date__gte=parsed_date_from
+        )
+
+    if parsed_date_to:
+        batches = batches.filter(
+            created_at__date__lte=parsed_date_to
+        )
+
+    batches = batches.order_by("-created_at")
     paginator = Paginator(batches, 15)
 
     page_number = request.GET.get("page")
 
     page_obj = paginator.get_page(page_number)
 
+    pagination_filters = {}
+    if query:
+        pagination_filters["q"] = query
+    if status:
+        pagination_filters["status"] = status
+    if parsed_date_from:
+        pagination_filters["date_from"] = parsed_date_from.isoformat()
+    if parsed_date_to:
+        pagination_filters["date_to"] = parsed_date_to.isoformat()
+
     context = {
         "page_obj": page_obj,
         "batches": page_obj.object_list,
+        "search_query": query,
+        "selected_status": status,
+        "selected_status_label": dict(
+            BulkImportBatch.Status.choices
+        ).get(status, ""),
+        "date_from": date_from,
+        "date_to": date_to,
+        "parsed_date_from": parsed_date_from,
+        "parsed_date_to": parsed_date_to,
+        "statuses": BulkImportBatch.Status.choices,
+        "pagination_query": urlencode(pagination_filters),
     }
 
     return render(
@@ -1531,6 +2070,37 @@ def bulk_import_list(request):
         "dashboard/company_documents/bulk_import/list.html",
         context,
     )
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_import_delete(request, pk):
+    if not can_manage_documents(request.user):
+        raise PermissionDenied
+
+    batch = get_object_or_404(BulkImportBatch, pk=pk)
+
+    if batch.status in {
+        BulkImportBatch.Status.ANALYSING,
+        BulkImportBatch.Status.IMPORTING,
+    }:
+        messages.warning(
+            request,
+            "This import batch cannot be deleted while it is being processed.",
+        )
+        return redirect("company_documents:bulk_import_list")
+
+    items = list(batch.items.all())
+    for item in items:
+        delete_staged_raw_document(item)
+
+    batch_reference = batch.batch_reference
+    batch.delete()
+    messages.success(
+        request,
+        f'Import batch "{batch_reference}" was deleted.',
+    )
+    return redirect("company_documents:bulk_import_list")
 
 # ==========================================================
 # UPLOAD

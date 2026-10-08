@@ -139,6 +139,12 @@ urlpatterns = [
     ),
 
     path(
+        "bulk-import/<int:pk>/delete/",
+        views.bulk_import_delete,
+        name="bulk_import_delete",
+    ),
+
+    path(
         "bulk-import/upload/",
         views.bulk_import_upload,
         name="bulk_import_upload",

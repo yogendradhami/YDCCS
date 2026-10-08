@@ -14,13 +14,13 @@
 
 {% block content %}
 
-<div class="cd-list-page">
+<div class="cd-list-page" id="company-documents-page">
 
-    <!-- ==================================================
-         HEADER
-    =================================================== -->
+    <!-- ======================================================
+         PAGE HEADER
+    ======================================================= -->
 
-    <div class="cd-page-header">
+    <header class="cd-page-header">
 
         <div class="cd-page-header-copy">
 
@@ -28,49 +28,91 @@
                 DOCUMENT CENTRE
             </div>
 
-            <h1>
+            <h1 id="cd-page-title">
                 Company Documents
             </h1>
 
-            <p>
-                Securely manage company, employee, customer,
-                insurance, vehicle, contract and operational
-                documents from one central control centre.
+            <p id="cd-page-description">
+                Securely manage company, employee, compliance
+                and operational documents from one central library.
             </p>
 
         </div>
 
-        <div class="company-documents-header-actions">
+        <div class="cd-page-header-actions">
 
             <a
                 href="{% url 'company_documents:compliance_overview' %}"
-                class="company-documents-button company-documents-button-secondary"
-                >
+                class="cd-button cd-button-secondary"
+            >
                 Compliance overview
             </a>
 
             <a
                 href="{% url 'company_documents:compliance' %}"
-                class="company-documents-button company-documents-button-secondary"
+                class="cd-button cd-button-secondary"
             >
                 Compliance attention
             </a>
 
             <a
+                href="{% url 'company_documents:bulk_import_upload' %}"
+                class="cd-button cd-button-secondary"
+            >
+                Bulk import
+            </a>
+
+            <a
                 href="{% url 'company_documents:upload' %}"
-                class="company-documents-button company-documents-button-primary"
+                class="cd-button cd-button-primary"
             >
                 + Upload document
             </a>
 
         </div>
 
+    </header>
+
+
+    <!-- ======================================================
+         VIEW MODE BAR
+    ======================================================= -->
+
+    <div
+        class="cd-view-mode-bar"
+        id="cd-view-mode-bar"
+        hidden
+    >
+
+        <div class="cd-view-mode-copy">
+
+            <span class="cd-eyebrow">
+                DOCUMENT LIBRARY
+            </span>
+
+            <strong>
+                All documents
+            </strong>
+
+            <span>
+                Browse the complete document collection.
+            </span>
+
+        </div>
+
+        <a
+            href="{% url 'company_documents:list' %}"
+            class="cd-button cd-button-secondary"
+        >
+            ← Back to folders
+        </a>
+
     </div>
 
 
-    <!-- ==================================================
+    <!-- ======================================================
          HEALTH SUMMARY
-    =================================================== -->
+    ======================================================= -->
 
     <section class="cd-health-banner">
 
@@ -86,7 +128,7 @@
             </h2>
 
             <p>
-                Keep your compliance library current by resolving
+                Keep your document library current by resolving
                 expiry dates and review actions before they become
                 operational issues.
             </p>
@@ -108,7 +150,6 @@
                 </span>
             </a>
 
-
             <a
                 href="?health=expiring"
                 class="cd-health-summary-item cd-health-summary-warning"
@@ -121,7 +162,6 @@
                     Expiring in 30 days
                 </span>
             </a>
-
 
             <a
                 href="?health=review"
@@ -141,9 +181,9 @@
     </section>
 
 
-    <!-- ==================================================
-         KPI CARDS
-    =================================================== -->
+    <!-- ======================================================
+         KPI GRID
+    ======================================================= -->
 
     <div class="cd-kpi-grid">
 
@@ -285,15 +325,160 @@
     </div>
 
 
-    <!-- ==================================================
-         FILTER BAR
-    =================================================== -->
+    <!-- ======================================================
+         DOCUMENT FOLDERS
+    ======================================================= -->
+
+    <section
+        class="cd-folder-section"
+        id="document-folders"
+    >
+
+        <div class="cd-section-heading">
+
+            <div>
+
+                <span class="cd-eyebrow">
+                    DOCUMENT LIBRARY
+                </span>
+
+                <h2>
+                    Browse by category
+                </h2>
+
+                <p>
+                    Your documents are automatically organised into
+                    business categories so the library stays easy to navigate.
+                </p>
+
+            </div>
+
+            <a
+                href="{% url 'company_documents:list' %}?view=all#document-library"
+                class="cd-section-link"
+                id="cd-view-all-link"
+            >
+                View all documents →
+            </a>
+
+        </div>
+
+
+        <div class="cd-folder-grid">
+
+            {% for folder in category_cards %}
+
+                <a
+                    href="?category={{ folder.value|urlencode }}"
+                    class="cd-folder-card{% if selected_category == folder.value %} cd-folder-card-active{% endif %}"
+                >
+
+                    <div class="cd-folder-top">
+
+                        <div class="cd-folder-icon">
+                            {{ folder.icon }}
+                        </div>
+
+                        <span class="cd-folder-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <div class="cd-folder-content">
+
+                        <h3>
+                            {{ folder.label }}
+                        </h3>
+
+                        <p>
+                            {{ folder.description }}
+                        </p>
+
+                    </div>
+
+
+                    <div class="cd-folder-footer">
+
+                        <span class="cd-folder-count">
+                            {{ folder.count }}
+                            document{% if folder.count != 1 %}s{% endif %}
+                        </span>
+
+
+                        {% if folder.expiring %}
+
+                            <span class="cd-folder-warning">
+                                {{ folder.expiring }} expiring
+                            </span>
+
+                        {% elif folder.expired %}
+
+                            <span class="cd-folder-danger">
+                                {{ folder.expired }} expired
+                            </span>
+
+                        {% else %}
+
+                            <span class="cd-folder-status">
+                                {{ folder.short }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </a>
+
+            {% empty %}
+
+                <div class="cd-folder-empty">
+
+                    <strong>
+                        No document categories available
+                    </strong>
+
+                    <p>
+                        Upload or import documents to populate your document library.
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         FILTERS
+    ======================================================= -->
 
     <section class="cd-filter-card">
+
+        <div class="cd-section-heading cd-filter-heading">
+
+            <div>
+
+                <span class="cd-eyebrow">
+                    SEARCH & FILTER
+                </span>
+
+                <h2>
+                    Find a document
+                </h2>
+
+            </div>
+
+        </div>
+
 
         <form
             method="get"
             class="cd-filter-form"
+            id="cd-filter-form"
         >
 
             <div class="cd-search-field">
@@ -604,9 +789,9 @@
     </section>
 
 
-    <!-- ==================================================
-         ACTIVE FILTER SUMMARY
-    =================================================== -->
+    <!-- ======================================================
+         ACTIVE FILTERS
+    ======================================================= -->
 
     {% if query or selected_category or selected_status or selected_expiry or selected_health or selected_relationship or selected_sensitive %}
 
@@ -684,30 +869,44 @@
     {% endif %}
 
 
-    <!-- ==================================================
-         TABLE
-    =================================================== -->
+    <!-- ======================================================
+         DOCUMENT TABLE
+    ======================================================= -->
 
-    <section class="cd-table-card">
+    <section
+        class="cd-table-card cd-document-library"
+        id="document-library"
+    >
 
         <div class="cd-table-header">
 
             <div>
 
-                <span class="cd-eyebrow">
-                    DOCUMENT LIBRARY
+                <span
+                    class="cd-eyebrow"
+                    id="cd-table-eyebrow"
+                >
+                    ALL DOCUMENTS
                 </span>
 
-                <h2>
+                <h2 id="cd-table-title">
                     Stored documents
                 </h2>
 
             </div>
 
-            <span class="cd-table-count">
-                {{ paginator.count }}
-                document{{ paginator.count|pluralize }}
-            </span>
+
+            <div class="cd-table-header-right">
+
+                <span class="cd-table-count">
+
+                    {{ paginator.count }}
+
+                    document{{ paginator.count|pluralize }}
+
+                </span>
+
+            </div>
 
         </div>
 
@@ -763,7 +962,9 @@
 
                         <tr>
 
-                            <!-- DOCUMENT -->
+                            <!-- ==================================
+                                 DOCUMENT
+                            =================================== -->
 
                             <td>
 
@@ -790,7 +991,9 @@
                             </td>
 
 
-                            <!-- CATEGORY -->
+                            <!-- ==================================
+                                 CATEGORY
+                            =================================== -->
 
                             <td>
 
@@ -801,7 +1004,9 @@
                             </td>
 
 
-                            <!-- RELATIONSHIP -->
+                            <!-- ==================================
+                                 RELATIONSHIP
+                            =================================== -->
 
                             <td>
 
@@ -886,7 +1091,9 @@
                             </td>
 
 
-                            <!-- HEALTH -->
+                            <!-- ==================================
+                                 HEALTH
+                            =================================== -->
 
                             <td>
 
@@ -937,7 +1144,9 @@
                             </td>
 
 
-                            <!-- EXPIRY -->
+                            <!-- ==================================
+                                 EXPIRY
+                            =================================== -->
 
                             <td>
 
@@ -948,6 +1157,7 @@
                                         <strong>
                                             {{ document.expiry_date|date:"d M Y" }}
                                         </strong>
+
 
                                         {% if document.health_status == "expired" %}
 
@@ -982,7 +1192,9 @@
                             </td>
 
 
-                            <!-- STATUS -->
+                            <!-- ==================================
+                                 STATUS
+                            =================================== -->
 
                             <td>
 
@@ -991,6 +1203,7 @@
                                     <span class="cd-status-badge">
                                         {{ document.status_label }}
                                     </span>
+
 
                                     {% if document.is_sensitive %}
 
@@ -1005,7 +1218,9 @@
                             </td>
 
 
-                            <!-- UPLOADED -->
+                            <!-- ==================================
+                                 UPLOADED
+                            =================================== -->
 
                             <td>
 
@@ -1016,7 +1231,9 @@
                             </td>
 
 
-                            <!-- ACTIONS -->
+                            <!-- ==================================
+                                 ACTIONS
+                            =================================== -->
 
                             <td>
 
@@ -1061,6 +1278,7 @@
                             </td>
 
                         </tr>
+
 
                     {% empty %}
 
@@ -1144,7 +1362,7 @@
                     {% if page_obj.has_previous %}
 
                         <a
-                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&health={{ selected_health|urlencode }}&relationship={{ selected_relationship|urlencode }}&sensitive={{ selected_sensitive|urlencode }}&page={{ page_obj.previous_page_number }}"
+                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&health={{ selected_health|urlencode }}&relationship={{ selected_relationship|urlencode }}&sensitive={{ selected_sensitive|urlencode }}{% if request.GET.view == 'all' %}&view=all{% endif %}&page={{ page_obj.previous_page_number }}#document-library"
                             class="cd-pagination-button"
                         >
                             ← Previous
@@ -1156,6 +1374,7 @@
                     <span class="cd-pagination-current">
 
                         Page {{ page_obj.number }}
+
                         of {{ paginator.num_pages }}
 
                     </span>
@@ -1164,7 +1383,7 @@
                     {% if page_obj.has_next %}
 
                         <a
-                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&health={{ selected_health|urlencode }}&relationship={{ selected_relationship|urlencode }}&sensitive={{ selected_sensitive|urlencode }}&page={{ page_obj.next_page_number }}"
+                            href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&status={{ selected_status|urlencode }}&expiry={{ selected_expiry|urlencode }}&health={{ selected_health|urlencode }}&relationship={{ selected_relationship|urlencode }}&sensitive={{ selected_sensitive|urlencode }}{% if request.GET.view == 'all' %}&view=all{% endif %}&page={{ page_obj.next_page_number }}#document-library"
                             class="cd-pagination-button"
                         >
                             Next →
@@ -1188,5 +1407,216 @@
 {% block extra_js %}
 
 <script src="{% static 'js/dashboard/company-documents.js' %}"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const page = document.getElementById("company-documents-page");
+
+    if (!page) {
+        return;
+    }
+
+
+    /*
+     * ==========================================================
+     * DOCUMENT VIEW MODE
+     * ==========================================================
+     *
+     * Normal:
+     * /dashboard/company-documents/
+     *
+     * All documents:
+     * /dashboard/company-documents/?view=all
+     *
+     * This keeps the existing Django URL and backend intact.
+     * No URL configuration or database change is required.
+     */
+
+    const params = new URLSearchParams(window.location.search);
+
+    const isAllDocumentsView =
+        params.get("view") === "all";
+
+
+    const folderSection =
+        document.getElementById("document-folders");
+
+    const viewModeBar =
+        document.getElementById("cd-view-mode-bar");
+
+    const pageTitle =
+        document.getElementById("cd-page-title");
+
+    const pageDescription =
+        document.getElementById("cd-page-description");
+
+    const tableEyebrow =
+        document.getElementById("cd-table-eyebrow");
+
+    const tableTitle =
+        document.getElementById("cd-table-title");
+
+    const documentLibrary =
+        document.getElementById("document-library");
+
+
+    /*
+     * ==========================================================
+     * ALL DOCUMENTS MODE
+     * ==========================================================
+     */
+
+    if (isAllDocumentsView) {
+
+        page.classList.add("cd-all-documents-view");
+
+
+        if (folderSection) {
+            folderSection.hidden = true;
+        }
+
+
+        if (viewModeBar) {
+            viewModeBar.hidden = false;
+        }
+
+
+        if (pageTitle) {
+            pageTitle.textContent = "All Documents";
+        }
+
+
+        if (pageDescription) {
+
+            pageDescription.textContent =
+                "Browse, search and manage every document stored in the company library.";
+        }
+
+
+        if (tableEyebrow) {
+            tableEyebrow.textContent = "ALL DOCUMENTS";
+        }
+
+
+        if (tableTitle) {
+            tableTitle.textContent = "Complete document library";
+        }
+
+
+        /*
+         * Scroll to the document library after the page
+         * has rendered, but only when the URL contains
+         * the document-library hash.
+         */
+
+        if (window.location.hash === "#document-library") {
+
+            window.requestAnimationFrame(function () {
+
+                const offset = 24;
+
+                const top =
+                    documentLibrary.getBoundingClientRect().top +
+                    window.scrollY -
+                    offset;
+
+                window.scrollTo({
+                    top: top,
+                    behavior: "smooth"
+                });
+
+            });
+
+        }
+
+    } else {
+
+        /*
+         * ======================================================
+         * NORMAL FOLDER MODE
+         * ======================================================
+         */
+
+        page.classList.remove("cd-all-documents-view");
+
+
+        if (folderSection) {
+            folderSection.hidden = false;
+        }
+
+
+        if (viewModeBar) {
+            viewModeBar.hidden = true;
+        }
+
+
+        if (pageTitle) {
+            pageTitle.textContent = "Company Documents";
+        }
+
+
+        if (pageDescription) {
+
+            pageDescription.textContent =
+                "Securely manage company, employee, compliance and operational documents from one central library.";
+        }
+
+
+        if (tableEyebrow) {
+            tableEyebrow.textContent = "ALL DOCUMENTS";
+        }
+
+
+        if (tableTitle) {
+            tableTitle.textContent = "Stored documents";
+        }
+
+    }
+
+
+    /*
+     * ==========================================================
+     * FILTER FORM
+     * ==========================================================
+     *
+     * When the user is inside All Documents mode, preserve
+     * view=all when applying filters.
+     */
+
+    const filterForm =
+        document.getElementById("cd-filter-form");
+
+
+    if (filterForm && isAllDocumentsView) {
+
+        filterForm.addEventListener("submit", function () {
+
+            let viewInput =
+                filterForm.querySelector('input[name="view"]');
+
+
+            if (!viewInput) {
+
+                viewInput =
+                    document.createElement("input");
+
+                viewInput.type = "hidden";
+                viewInput.name = "view";
+
+                filterForm.appendChild(viewInput);
+
+            }
+
+
+            viewInput.value = "all";
+
+        });
+
+    }
+
+});
+</script>
 
 {% endblock %}

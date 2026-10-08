@@ -66,6 +66,82 @@
             </span>
         </div>
 
+        <section class="bulk-history-filter-card" aria-label="Filter import history">
+            <form method="get" class="bulk-history-filter-form">
+                <div class="bulk-history-search">
+                    <label for="bulk-history-q">Search</label>
+                    <input
+                        id="bulk-history-q"
+                        type="search"
+                        name="q"
+                        value="{{ search_query }}"
+                        placeholder="Search batch reference or uploader..."
+                    >
+                </div>
+
+                <div class="bulk-history-filter-field">
+                    <label for="bulk-history-status">Status</label>
+                    <select id="bulk-history-status" name="status">
+                        <option value="">All statuses</option>
+                        {% for value, label in statuses %}
+                            <option value="{{ value }}"{% if selected_status == value %} selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="bulk-history-filter-field">
+                    <label for="bulk-history-date-from">Date from</label>
+                    <input
+                        id="bulk-history-date-from"
+                        type="date"
+                        name="date_from"
+                        value="{{ date_from }}"
+                    >
+                </div>
+
+                <div class="bulk-history-filter-field">
+                    <label for="bulk-history-date-to">Date to</label>
+                    <input
+                        id="bulk-history-date-to"
+                        type="date"
+                        name="date_to"
+                        value="{{ date_to }}"
+                    >
+                </div>
+
+                <div class="bulk-history-filter-actions">
+                    <button type="submit" class="bulk-filter-apply-button">
+                        Apply filters
+                    </button>
+                    <a
+                        href="{% url 'company_documents:bulk_import_list' %}"
+                        class="bulk-filter-reset-button"
+                    >
+                        Reset
+                    </a>
+                </div>
+            </form>
+
+            {% if search_query or selected_status or parsed_date_from or parsed_date_to %}
+                <div class="bulk-active-filters">
+                    <strong>Filters active</strong>
+                    {% if search_query %}
+                        <span>Search: {{ search_query }}</span>
+                    {% endif %}
+                    {% if selected_status %}
+                        <span>Status: {{ selected_status_label }}</span>
+                    {% endif %}
+                    {% if parsed_date_from %}
+                        <span>From: {{ parsed_date_from|date:"d M Y" }}</span>
+                    {% endif %}
+                    {% if parsed_date_to %}
+                        <span>To: {{ parsed_date_to|date:"d M Y" }}</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
 
         {% if batches %}
 
@@ -83,7 +159,7 @@
                             <th>Review</th>
                             <th>Imported</th>
                             <th>Created</th>
-                            <th></th>
+                            <th>Action</th>
                         </tr>
                     </thead>
 
@@ -178,14 +254,29 @@
 
 
                             <td class="bulk-action-cell">
+                                <div class="bulk-row-actions">
+                                    <a
+                                        href="{% url 'company_documents:bulk_import_review' batch.pk %}"
+                                        class="bulk-secondary-button"
+                                    >
+                                        Review
+                                    </a>
 
-                                <a
-                                    href="{% url 'company_documents:bulk_import_review' batch.pk %}"
-                                    class="bulk-secondary-button"
-                                >
-                                    Review
-                                </a>
-
+                                    <form
+                                        method="post"
+                                        action="{% url 'company_documents:bulk_import_delete' batch.pk %}"
+                                        class="bulk-delete-form"
+                                        onsubmit="return confirm('Delete this import batch from Import History? Temporary staged files will also be removed. Permanent Company Documents will not be deleted.');"
+                                    >
+                                        {% csrf_token %}
+                                        <button
+                                            type="submit"
+                                            class="bulk-delete-button"
+                                        >
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
 
                         </tr>
@@ -206,7 +297,7 @@
         <nav class="bulk-pagination" aria-label="Bulk import pagination">
 
             {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}">
+                <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">
                     ←
                 </a>
             {% endif %}
@@ -222,7 +313,7 @@
 
                 {% elif page >= page_obj.number|add:"-2" and page <= page_obj.number|add:"2" %}
 
-                    <a href="?page={{ page }}">
+                    <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page }}">
                         {{ page }}
                     </a>
 
@@ -232,7 +323,7 @@
 
 
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">
+                <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">
                     →
                 </a>
             {% endif %}
