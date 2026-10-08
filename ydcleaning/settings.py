@@ -607,6 +607,11 @@ ADMIN_EMAIL = env.str(
     default="",
 )
 
+RESEND_API_KEY = env.str(
+    "RESEND_API_KEY",
+    default="",
+)
+
 if IS_PRODUCTION and not ADMIN_EMAIL:
     raise RuntimeError(
         "ADMIN_EMAIL must be configured when IS_PRODUCTION=True."
@@ -654,12 +659,6 @@ GOOGLE_EMPLOYEE_REDIRECT_URI = env.str(
 # ==========================================================
 # RESEND
 # ==========================================================
-
-RESEND_API_KEY = env.str(
-    "RESEND_API_KEY",
-    default="",
-)
-
 
 # ==========================================================
 # TWILIO
