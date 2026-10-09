@@ -188,6 +188,7 @@ INSTALLED_APPS = [
     "corporate",
     # Third-party apps
     "company_documents",
+    "cleaning_game",
 
 ]
 

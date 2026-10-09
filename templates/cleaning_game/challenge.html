@@ -1,0 +1,696 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}
+Cleaning Challenge | YD Commercial Cleaning
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/cleaning-game/challenge.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<main
+    class="cleaning-game"
+    id="cleaningGame"
+    data-quote-url="{{ quote_url }}"
+>
+
+    <!-- =====================================================
+         INTRO
+    ====================================================== -->
+
+    <section
+        class="game-screen game-intro"
+        id="introScreen"
+        aria-labelledby="gameTitle"
+    >
+
+        <div class="game-shell">
+
+            <div class="game-intro-grid">
+
+                <div class="game-intro-copy">
+
+                    <div class="game-eyebrow">
+                        <span
+                            class="game-eyebrow-dot"
+                            aria-hidden="true"
+                        ></span>
+
+                        YD CLEANING CHALLENGE
+                    </div>
+
+
+                    <h1 id="gameTitle">
+                        Take the site.
+                        <span>Run the shift.</span>
+                    </h1>
+
+
+                    <p class="game-intro-description">
+                        Step into a commercial cleaning shift. Work
+                        through a site handover, occupied offices,
+                        washroom controls, chemical safety and the
+                        final inspection. Your decisions shape the
+                        quality of the handover.
+                    </p>
+
+
+                    <div class="game-intro-actions">
+
+                        <button
+                            type="button"
+                            class="game-button game-button-primary"
+                            id="startGameButton"
+                        >
+                            <span>
+                                Start Challenge
+                            </span>
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path d="M5 12h13"></path>
+                                <path d="m13 6 6 6-6 6"></path>
+                            </svg>
+                        </button>
+
+                        <p class="game-status-message" id="gameError" role="status" hidden></p>
+
+
+                        <div class="game-meta">
+
+                            <span>
+                                <strong>
+                                    {{ game_question_count }}
+                                </strong>
+                                shift stages
+                            </span>
+
+                            <span
+                                class="game-meta-divider"
+                                aria-hidden="true"
+                            ></span>
+
+                            <span>
+                                <strong>75</strong>
+                                shift score
+                            </span>
+
+                            <span
+                                class="game-meta-divider"
+                                aria-hidden="true"
+                            ></span>
+
+                            <span>
+                                No login required
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="game-intro-visual">
+
+                    <div
+                        class="challenge-orbit challenge-orbit-one"
+                        aria-hidden="true"
+                    ></div>
+
+                    <div
+                        class="challenge-orbit challenge-orbit-two"
+                        aria-hidden="true"
+                    ></div>
+
+
+                    <div class="challenge-visual-card">
+
+                        <div class="visual-card-top">
+
+                            <span class="visual-status">
+                                <span aria-hidden="true"></span>
+                                READY
+                            </span>
+
+                            <span class="visual-number">
+                                01
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="visual-cleaning-icon"
+                            aria-hidden="true"
+                        >
+
+                            <svg
+                                viewBox="0 0 64 64"
+                            >
+                                <path d="M17 9h30"></path>
+                                <path d="M22 9v11"></path>
+                                <path d="M42 9v11"></path>
+                                <path d="M18 20h28"></path>
+                                <path d="M22 20v27"></path>
+                                <path d="M42 20v27"></path>
+                                <path d="M22 47h20"></path>
+                                <path d="M18 47h28"></path>
+                                <path d="M27 27h10"></path>
+                                <path d="M27 34h10"></path>
+                            </svg>
+
+                        </div>
+
+
+                        <div class="visual-card-content">
+
+                            <span>
+                                KNOWLEDGE CHECK
+                            </span>
+
+                            <strong>
+                                Cleaning matters.
+                            </strong>
+
+                            <p>
+                                Let's see what you know.
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            class="visual-card-progress"
+                            aria-hidden="true"
+                        >
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         GAME
+    ====================================================== -->
+
+    <section
+        class="game-screen game-play"
+        id="gameScreen"
+        aria-labelledby="questionHeading"
+        hidden
+    >
+
+        <div class="game-shell">
+
+            <header class="game-header">
+
+                <div class="game-header-left">
+
+                    <div class="game-header-brand">
+                        CLEANING CHALLENGE
+                    </div>
+
+                    <div
+                        class="game-progress-label"
+                        id="questionProgress"
+                        aria-live="polite"
+                    >
+                        Stage 1 of {{ game_question_count }}
+                    </div>
+
+                </div>
+
+
+                <div class="game-score-box">
+
+                    <span class="game-score-label">
+                        SCORE
+                    </span>
+
+                    <strong
+                        id="scoreValue"
+                        aria-live="polite"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+            </header>
+
+
+            <div
+                class="game-progress"
+                aria-hidden="true"
+            >
+
+                <div class="game-progress-track">
+
+                    <div
+                        class="game-progress-fill"
+                        id="progressFill"
+                    ></div>
+
+                </div>
+
+
+                <div
+                    class="game-progress-dots"
+                    id="progressDots"
+                ></div>
+
+            </div>
+
+            <aside class="scenario-briefing" aria-labelledby="scenarioBriefingTitle">
+                <div class="scenario-briefing-icon" aria-hidden="true">SITE</div>
+                <div class="scenario-briefing-copy">
+                    <div class="scenario-briefing-heading">
+                        <strong id="scenarioBriefingTitle">MORNING SITE BRIEF</strong>
+                        <span>OCCUPIED COMMERCIAL OFFICE</span>
+                    </div>
+                    <p id="scenarioText"></p>
+                </div>
+            </aside>
+
+
+            <div class="question-layout">
+
+                <div class="question-number">
+
+                    <span id="questionNumber">
+                        01
+                    </span>
+
+                </div>
+
+
+                <div class="question-content">
+
+                    <div
+                        class="question-kicker"
+                        id="questionKicker"
+                    >
+                        SHIFT DECISION
+                    </div>
+
+
+                    <h2
+                        id="questionHeading"
+                        tabindex="-1"
+                    >
+                        Loading question...
+                    </h2>
+
+
+                    <div
+                        class="answer-grid"
+                        id="answerGrid"
+                        role="group"
+                        aria-label="Answer choices"
+                    ></div>
+
+
+                    <div
+                        class="answer-feedback"
+                        id="answerFeedback"
+                        hidden
+                        aria-live="polite"
+                    >
+
+                        <div
+                            class="feedback-icon"
+                            id="feedbackIcon"
+                            aria-hidden="true"
+                        >
+                            <svg
+                                class="feedback-icon-svg"
+                                viewBox="0 0 24 24"
+                            >
+                                <path d="m5 12 4 4L19 6"></path>
+                            </svg>
+                        </div>
+
+
+                        <div class="feedback-copy">
+
+                            <strong id="feedbackTitle">
+                                Correct
+                            </strong>
+
+                            <p
+                                id="feedbackExplanation"
+                            ></p>
+
+                            <div
+                                class="feedback-tip"
+                                id="feedbackTip"
+                                hidden
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="question-actions"
+                        id="questionActions"
+                        hidden
+                    >
+
+                        <button
+                            type="button"
+                            class="game-button game-button-primary"
+                            id="nextQuestionButton"
+                        >
+
+                            <span>
+                                Next Question
+                            </span>
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path d="M5 12h13"></path>
+                                <path d="m13 6 6 6-6 6"></path>
+                            </svg>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         RESULT
+    ====================================================== -->
+
+    <section
+        class="game-screen game-result"
+        id="resultScreen"
+        aria-labelledby="resultTitle"
+        hidden
+    >
+
+        <div class="game-shell">
+
+            <div class="result-container">
+
+                <div
+                    class="result-kicker"
+                    id="resultEyebrow"
+                >
+                    CHALLENGE COMPLETE
+                </div>
+
+
+                <h2 id="resultTitle" tabindex="-1">
+                    Your shift report
+                </h2>
+
+
+                <p class="result-subtitle">
+                    Here is how your site decisions shaped the handover.
+                </p>
+
+                <p class="game-status-message" id="verificationNotice" role="status" hidden></p>
+
+
+                <div class="result-score">
+
+                    <div class="result-score-ring">
+
+                        <svg
+                            viewBox="0 0 160 160"
+                            aria-hidden="true"
+                        >
+
+                            <circle
+                                class="score-ring-background"
+                                cx="80"
+                                cy="80"
+                                r="68"
+                            ></circle>
+
+                            <circle
+                                class="score-ring-progress"
+                                id="scoreRing"
+                                cx="80"
+                                cy="80"
+                                r="68"
+                            ></circle>
+
+                        </svg>
+
+
+                        <div class="score-ring-content">
+
+                            <span id="finalScore">
+                                0
+                            </span>
+
+                            <small>
+                                / 75
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="performance-badge"
+                    id="performanceBadge"
+                >
+                    Coaching Recommended
+                </div>
+
+
+                <div class="result-stats">
+
+                    <div class="result-stat">
+
+                        <span class="result-stat-label">
+                            Accuracy
+                        </span>
+
+                        <strong id="accuracyValue">
+                            0%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="result-stat">
+
+                        <span class="result-stat-label">
+                            Correct
+                        </span>
+
+                        <strong id="correctValue">
+                            0 / 5
+                        </strong>
+
+                    </div>
+
+
+                    <div
+                        class="result-stat result-stat-bonus"
+                        id="bonusStat"
+                        hidden
+                    >
+
+                        <span class="result-stat-label">
+                            Perfect round
+                        </span>
+
+                        <strong>
+                            +25
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PERSONAL PROFILE -->
+
+                <div class="result-profile">
+
+                    <div class="result-profile-label">
+                        SHIFT PERFORMANCE
+                    </div>
+
+                    <h3 id="profileHeadline">
+                        Your shift performance will appear here.
+                    </h3>
+
+                    <p id="resultMessage">
+                        Your result will appear here.
+                    </p>
+
+                </div>
+
+
+                <!-- PRACTICAL TIP -->
+
+                <div class="result-tip">
+
+                    <div class="result-tip-icon">
+                        💡
+                    </div>
+
+                    <div>
+
+                        <span>
+                            NEXT SHIFT TIP
+                        </span>
+
+                        <p id="resultTip">
+                            Keep a consistent cleaning routine
+                            and pay attention to overlooked areas.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CTA -->
+
+                <div class="result-cta">
+
+                    <div>
+
+                        <span>
+                            NEED A CLEANING TEAM?
+                        </span>
+
+                        <strong id="resultCta">
+                            Let our team put that standard
+                            into practice.
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="result-actions">
+
+                    <button
+                        type="button"
+                        class="game-button game-button-primary"
+                        id="playAgainButton"
+                    >
+
+                        <span>
+                            Play Again
+                        </span>
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M20 11a8 8 0 1 0 2 5"
+                            ></path>
+
+                            <path
+                                d="M20 5v6h-6"
+                            ></path>
+                        </svg>
+
+                    </button>
+
+
+                    <a
+                        href="{{ quote_url }}"
+                        class="game-button game-button-secondary"
+                        id="quoteButton"
+                    >
+
+                        <span>
+                            Get a Cleaning Quote
+                        </span>
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path d="M5 12h13"></path>
+                            <path d="m13 6 6 6-6 6"></path>
+                        </svg>
+
+                    </a>
+
+                </div>
+
+
+                <p class="result-footnote">
+                    No account or personal information is
+                    required to play.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+    window.CLEANING_GAME_QUESTIONS =
+        JSON.parse(
+            '{{ game_questions_json|escapejs }}'
+        );
+</script>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script
+    src="{% static 'js/cleaning-game/challenge.js' %}"
+    defer
+></script>
+
+{% endblock %}

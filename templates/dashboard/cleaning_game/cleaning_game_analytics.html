@@ -1,0 +1,319 @@
+
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Cleaning Challenge Analytics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="{% static 'css/dashboard/cleaning_game/cleaning-game-analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cga-page">
+
+    <header class="cga-header">
+        <div>
+            <span class="cga-eyebrow">MARKETING & ENGAGEMENT</span>
+            <h1>Cleaning Challenge Analytics</h1>
+            <p>Track site decisions, verified shift outcomes and quote interest.</p>
+        </div>
+
+        <a href="{% url 'cleaning_game:challenge' %}" class="cga-primary-btn">
+            View Challenge <span aria-hidden="true">↗</span>
+        </a>
+    </header>
+
+    <section class="cga-summary">
+        <div class="cga-summary-copy">
+            <span class="cga-summary-label">GAME PERFORMANCE</span>
+            <h2>See how each shift performs.</h2>
+            <p>
+            Review anonymised activity from the last 30 days. Scores and
+            decision accuracy come from answers checked by the server.
+            </p>
+        </div>
+        <div class="cga-summary-icon" aria-hidden="true">↗</div>
+    </section>
+
+    <section class="cga-section">
+        <div class="cga-section-heading">
+            <div>
+                <h2>Performance overview</h2>
+                <p>Challenge page loads and verified activity · last 30 days</p>
+            </div>
+        </div>
+
+        <div class="cga-metrics">
+            <article class="cga-metric">
+                <div class="cga-metric-top">
+                    <span class="cga-metric-label">Page loads</span>
+                    <span class="cga-metric-icon">◉</span>
+                </div>
+                <strong>{{ total_views|default:0 }}</strong>
+                <span class="cga-metric-note">Challenge page requests</span>
+            </article>
+
+            <article class="cga-metric">
+                <div class="cga-metric-top">
+                    <span class="cga-metric-label">Shifts started</span>
+                    <span class="cga-metric-icon">▶</span>
+                </div>
+                <strong>{{ total_starts|default:0 }}</strong>
+                <span class="cga-metric-note">Distinct tracked rounds</span>
+            </article>
+
+            <article class="cga-metric">
+                <div class="cga-metric-top">
+                    <span class="cga-metric-label">Shifts completed</span>
+                    <span class="cga-metric-icon">✓</span>
+                </div>
+                <strong>{{ total_completions|default:0 }}</strong>
+                <span class="cga-metric-note">Server-verified results</span>
+            </article>
+
+            <article class="cga-metric">
+                <div class="cga-metric-top">
+                    <span class="cga-metric-label">Quote clicks</span>
+                    <span class="cga-metric-icon">↗</span>
+                </div>
+                <strong>{{ quote_clicks|default:0 }}</strong>
+                <span class="cga-metric-note">Distinct completed rounds</span>
+            </article>
+        </div>
+    </section>
+
+    <section class="cga-section">
+        <div class="cga-section-heading">
+            <div>
+                <h2>Shift funnel</h2>
+                <p>Rates use tracked page visits and rounds from this period.</p>
+            </div>
+        </div>
+
+        <div class="cga-funnel">
+            <div class="cga-funnel-step">
+                <div class="cga-funnel-info">
+                    <span>01</span>
+                    <strong>Page loads</strong>
+                    <b>{{ total_views|default:0 }}</b>
+                </div>
+                <div class="cga-funnel-track">
+                    <div class="cga-funnel-fill"
+                         style="width: {% if total_views %}100{% else %}0{% endif %}%"></div>
+                </div>
+                <small>Challenge page requests</small>
+            </div>
+
+            <div class="cga-funnel-step">
+                <div class="cga-funnel-info">
+                    <span>02</span>
+                    <strong>Started shifts</strong>
+                    <b>{{ total_starts|default:0 }}</b>
+                </div>
+                <div class="cga-funnel-track">
+                    <div class="cga-funnel-fill"
+                         style="width: {{ start_rate|default:0 }}%"></div>
+                </div>
+                <small>{{ start_rate|default:0 }}% of page loads started at least one shift</small>
+            </div>
+
+            <div class="cga-funnel-step">
+                <div class="cga-funnel-info">
+                    <span>03</span>
+                    <strong>Verified completions</strong>
+                    <b>{{ total_completions|default:0 }}</b>
+                </div>
+                <div class="cga-funnel-track">
+                    <div class="cga-funnel-fill"
+                         style="width: {{ completion_rate|default:0 }}%"></div>
+                </div>
+                <small>{{ completion_rate|default:0 }}% of tracked rounds completed</small>
+            </div>
+
+            <div class="cga-funnel-step">
+                <div class="cga-funnel-info">
+                    <span>04</span>
+                    <strong>Quote interest</strong>
+                    <b>{{ quote_clicks|default:0 }}</b>
+                </div>
+                <div class="cga-funnel-track">
+                    <div class="cga-funnel-fill cga-funnel-fill-accent"
+                         style="width: {{ quote_conversion_rate|default:0 }}%"></div>
+                </div>
+                <small>{{ quote_conversion_rate|default:0 }}% of completed rounds clicked for a quote</small>
+            </div>
+        </div>
+
+        <p class="cga-footnote">
+            Page loads count requests, not unique people. A quote click records
+            intent only; it is not a confirmed enquiry, booking or sale. Older
+            events without round identifiers are excluded from round-based rates.
+        </p>
+    </section>
+
+    <section class="cga-insights-grid">
+        <article class="cga-panel">
+            <div class="cga-panel-heading">
+                <div>
+                    <h2>Shift performance</h2>
+                    <p>Results verified from completed rounds</p>
+                </div>
+                <span class="cga-panel-icon">◎</span>
+            </div>
+
+            <div class="cga-score-highlight">
+                <span>Average shift score</span>
+                <strong>
+                    {% if total_completions %}
+                        {{ average_score }}<small> / 75</small>
+                    {% else %}
+                        —<small> / 75</small>
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="cga-score-row">
+                <span>Outstanding (maximum score)</span>
+                <strong>{{ perfect_rounds|default:0 }}</strong>
+            </div>
+
+            <div class="cga-score-row">
+                <span>Average accuracy</span>
+                <strong>
+                    {% if total_completions %}
+                        {{ average_accuracy }}%
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="cga-score-row">
+                <span>Decisions in completed shifts</span>
+                <strong>{{ total_questions_answered|default:0 }}</strong>
+            </div>
+        </article>
+
+        <article class="cga-panel">
+            <div class="cga-panel-heading">
+                <div>
+                    <h2>Decision accuracy by stage</h2>
+                    <p>Correct actions among completed, server-checked shifts</p>
+                </div>
+                <span class="cga-panel-icon">▤</span>
+            </div>
+
+            {% if question_stats %}
+                <div class="cga-question-list">
+                    {% for item in question_stats %}
+                        <div class="cga-question-row">
+                            <div class="cga-question-row-top">
+                                <span>{{ item.stage_name }}</span>
+                                <strong>{{ item.correct_count }} / {{ item.answer_count }} correct · {{ item.percentage }}%</strong>
+                            </div>
+                            <div class="cga-question-track">
+                                <div class="cga-question-fill"
+                                     style="width: {{ item.percentage|default:0 }}%"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="cga-empty-state">
+                    <span class="cga-empty-icon">▤</span>
+                    <strong>No question data yet</strong>
+                    <p>Stage accuracy appears after a shift has been completed and verified.</p>
+                </div>
+            {% endif %}
+        </article>
+    </section>
+
+    <section class="cga-section">
+        <div class="cga-section-heading">
+            <div>
+                <h2>Recent shift activity</h2>
+                <p>Latest starts, verified results and quote clicks.</p>
+            </div>
+        </div>
+
+        <div class="cga-table-wrap">
+            <table class="cga-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Event</th>
+                        <th scope="col">Score</th>
+                        <th scope="col">Performance</th>
+                        <th scope="col">Question</th>
+                        <th scope="col">Recorded</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for event in recent_events %}
+                        <tr>
+                            <td>
+                                <span class="cga-event-badge cga-event-{{ event.event_type }}">
+                                    {{ event.get_event_type_display|default:event.event_type }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if event.score != None %}
+                                    {{ event.score }} / 75
+                                {% else %}
+                                    <span class="cga-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ event.performance_level|default:"—" }}
+                            </td>
+                            <td>
+                                {% if event.question_number %}
+                                    {{ event.question_number }}
+                                {% else %}
+                                    <span class="cga-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <time datetime="{{ event.created_at|date:'c' }}">
+                                    {{ event.created_at|date:"d M Y, H:i" }}
+                                </time>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="cga-empty-state">
+                                    <strong>No shift activity yet</strong>
+                                    <p>
+                                        Events will appear here after the tracking
+                                        endpoint has been connected and activity is recorded.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="cga-table-footer">
+            <span>Showing the latest recorded events</span>
+            <span>{{ recent_events|length }} events displayed</span>
+        </div>
+    </section>
+
+    <footer class="cga-footer">
+        <span class="cga-footer-dot"></span>
+        <p>
+            Analytics are anonymous. Completion scores and decision accuracy are
+            recorded only after server-side answer validation.
+        </p>
+    </footer>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/dashboard/cleaning_game/cleaning_game_analytics.js' %}"
+        defer></script>
+{% endblock %}

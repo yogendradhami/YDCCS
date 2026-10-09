@@ -43,6 +43,9 @@
 
             </a>
 
+
+            
+
             <a href="{% url 'company_documents:bulk_import_list' %}" class="dashboard-nav-link">
                 <span class="dashboard-nav-icon">✦ Bulk Document Import</span>
 
@@ -364,6 +367,10 @@
                         {% if notification_counts.review_analytics %}
                             <span class="side-badge">{{ notification_counts.review_analytics }}</span>
                         {% endif %}
+                    </a>
+
+                    <a href="{% url 'cleaning_game:cleaning_game_analytics' %}">
+                        <span>Cleaning Game Analytics</span>
                     </a>
 
                     <a href="/dashboard/campaigns/">
@@ -782,6 +789,8 @@ document.addEventListener("DOMContentLoaded", function () {
     window.setInterval(refreshNotifications, 30000);
 });
 </script>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>
