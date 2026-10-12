@@ -2,7 +2,6 @@ from datetime import date, time
 
 from django.db import transaction
 from django.utils import timezone
-from induction.models import EmployeeOnboardingProfile
 
 from leave_management.models import LeaveRequest
 
@@ -49,9 +48,7 @@ def check_booking_availability(*, booking_date, booking_time, assigned_employee=
     }
 
 
-def create_booking(*, customer, service_type, booking_date, booking_time, address, suburb_postcode, quoted_price=0, notes="", assigned_employee=None, workflow_key=None, trusted_assignment=False):
-    if not customer:
-        raise ValueError("A customer is required.")
+def create_booking(*, customer=None, service_type, booking_date, booking_time, address, suburb_postcode, quoted_price=0, notes="", assigned_employee=None, workflow_key=None, trusted_assignment=False):
     if service_type not in dict(Booking.SERVICE_CHOICES):
         raise ValueError("Unsupported booking service.")
     if not isinstance(booking_date, date) or not isinstance(booking_time, time):
@@ -60,6 +57,8 @@ def create_booking(*, customer, service_type, booking_date, booking_time, addres
         raise ValueError("Address and suburb/postcode are required.")
     if assigned_employee is not None and not trusted_assignment:
         raise ValueError("Employee assignment must come from trusted staff logic.")
+    if assigned_employee is not None and not assigned_employee.active:
+        raise ValueError("An inactive employee cannot be assigned to a booking.")
 
     with transaction.atomic():
         if workflow_key:
@@ -68,27 +67,6 @@ def create_booking(*, customer, service_type, booking_date, booking_time, addres
                 return existing, False
 
         if assigned_employee:
-
-            onboarding_profile = (
-                EmployeeOnboardingProfile.objects
-                .filter(employee=assigned_employee)
-                .first()
-            )
-
-            if onboarding_profile is None:
-                raise ValueError(
-                    "The assigned employee does not have "
-                    "an onboarding profile."
-                )
-
-            if onboarding_profile.status != "ready":
-                raise ValueError(
-                    f"{assigned_employee.full_name} is not "
-                    "Ready for Work and cannot be assigned "
-                    "to this booking."
-                )
-
-            
             if LeaveRequest.objects.filter(
                 employee=assigned_employee,
                 status="approved",

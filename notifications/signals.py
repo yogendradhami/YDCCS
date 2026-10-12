@@ -78,9 +78,12 @@ def employee_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Booking)
 def booking_notification(sender, instance, created, **kwargs):
     if created:
+        customer_name = (
+            instance.customer.full_name if instance.customer else "No customer"
+        )
         notify_admins(
             "New Booking Created",
-            f"Booking created for {instance.customer.full_name}.",
+            f"Booking created for {customer_name}.",
             "booking",
             "/dashboard/bookings/",
         )
@@ -120,7 +123,7 @@ def invoice_notification(sender, instance, created, **kwargs):
             "/dashboard/invoices/",
         )
 
-    if instance.booking.customer.user:
+    if instance.booking.customer and instance.booking.customer.user:
         notify_user(
             instance.booking.customer.user,
             "Invoice Updated",
@@ -168,7 +171,7 @@ def job_photo_notification(sender, instance, created, **kwargs):
             f"/reports/booking/{instance.booking.id}/",
         )
 
-        if instance.booking.customer.user:
+        if instance.booking.customer and instance.booking.customer.user:
             notify_user(
                 instance.booking.customer.user,
                 "Job Photo Uploaded",

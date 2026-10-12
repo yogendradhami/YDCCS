@@ -25,7 +25,11 @@ class Booking(models.Model):
     ]
 
     customer = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, related_name="bookings"
+        Customer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="bookings",
     )
 
     service_type = models.CharField(max_length=100, choices=SERVICE_CHOICES)
@@ -66,7 +70,8 @@ class Booking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.customer.full_name} - {self.service_type} - {self.booking_date}"
+        customer_name = self.customer.full_name if self.customer else "No customer"
+        return f"{customer_name} - {self.service_type} - {self.booking_date}"
 
 
 class JobPhoto(models.Model):
@@ -110,4 +115,6 @@ class JobPhoto(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.booking.customer.full_name} - {self.get_photo_type_display()}"
+        customer = self.booking.customer
+        customer_name = customer.full_name if customer else "No customer"
+        return f"{customer_name} - {self.get_photo_type_display()}"

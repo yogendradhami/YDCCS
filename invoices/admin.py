@@ -58,7 +58,8 @@ class InvoiceAdmin(admin.ModelAdmin):
     )
 
     def customer_name(self, obj):
-        return obj.booking.customer.full_name
+        customer = obj.booking.customer
+        return customer.full_name if customer else "No customer"
 
     customer_name.short_description = "Customer"
 

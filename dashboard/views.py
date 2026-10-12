@@ -781,7 +781,7 @@ def add_booking(request):
 
         if form.is_valid():
             booking, _ = create_booking(
-                customer=form.cleaned_data["customer"],
+                customer=form.cleaned_data.get("customer"),
                 service_type=form.cleaned_data["service_type"],
                 booking_date=form.cleaned_data["booking_date"],
                 booking_time=form.cleaned_data["booking_time"],
@@ -831,7 +831,8 @@ def add_booking(request):
                 request.user,
                 "booking",
                 "Booking Created",
-                f"{booking.customer.full_name} - {booking.service_type} on {booking.booking_date}",
+                f"{booking.customer.full_name if booking.customer else 'No customer'} "
+                f"- {booking.service_type} on {booking.booking_date}",
             )
 
             messages.success(request, "✅ Booking created successfully.")
@@ -1227,7 +1228,8 @@ def edit_booking(request, booking_id):
                 request.user,
                 "booking",
                 "Booking Updated",
-                f"{updated_booking.customer.full_name} - {updated_booking.service_type} on {updated_booking.booking_date}",
+                f"{updated_booking.customer.full_name if updated_booking.customer else 'No customer'} "
+                f"- {updated_booking.service_type} on {updated_booking.booking_date}",
             )
 
             messages.success(request, "✅ Booking updated successfully.")
@@ -1252,7 +1254,8 @@ def edit_booking(request, booking_id):
 def delete_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
-    booking_name = f"{booking.customer.full_name} - {booking.service_type} on {booking.booking_date}"
+    customer_name = booking.customer.full_name if booking.customer else "No customer"
+    booking_name = f"{customer_name} - {booking.service_type} on {booking.booking_date}"
 
     if request.method == "POST":
         try:
@@ -2579,10 +2582,10 @@ def send_invoice_reminder(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
     customer = invoice.booking.customer
 
-    if not customer.email:
+    if not customer or not customer.email:
         messages.error(
             request,
-            "❌ Customer does not have an email address.",
+            "❌ The booking has no customer with an email address.",
         )
         return redirect("email_center")
 
@@ -2668,7 +2671,7 @@ def send_booking_reminder(request, booking_id):
     customer = booking.customer
 
     if request.method == "POST":
-        if customer.email:
+        if customer and customer.email:
             subject = "Cleaning Booking Reminder"
 
             message = f"""
@@ -4878,7 +4881,7 @@ def update_booking_quick_status(request, booking_id, new_status):
                 "booking",
                 "Booking Status Updated",
                 (
-                    f"{booking.customer.full_name} booking "
+                    f"{booking.customer.full_name if booking.customer else 'No customer'} booking "
                     f"changed from {old_status} to {new_status}."
                 ),
             )

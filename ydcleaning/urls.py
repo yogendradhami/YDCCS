@@ -12,6 +12,12 @@ from core.health import health_check
 
 
 urlpatterns = [
+
+    # for mobile application
+    path("api/v1/", include("mobile_api.urls")),
+
+
+    # this is for website
     # ====================================================
     # SYSTEM / ADMIN
     # ====================================================

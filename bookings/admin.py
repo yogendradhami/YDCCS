@@ -1,11 +1,14 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
+from .forms import BookingForm
 from .models import Booking, JobPhoto
 
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
+    form = BookingForm
+
     list_display = (
         "customer",
         "service_type",

@@ -103,20 +103,24 @@ def create_or_update_booking_event(booking):
         end_datetime = start_datetime + timedelta(hours=2)
 
     employee_name = employee.full_name
+    customer = booking.customer
+    customer_name = customer.full_name if customer else "No customer"
+    customer_phone = customer.phone if customer else "Not provided"
+    customer_email = customer.email if customer else "Not provided"
 
     event_body = {
         "summary": (
             f"{booking.service_type} - "
-            f"{booking.customer.full_name}"
+            f"{customer_name}"
         ),
         "location": (
             f"{booking.address}, "
             f"{booking.suburb_postcode}"
         ),
         "description": (
-            f"Customer: {booking.customer.full_name}\n"
-            f"Phone: {booking.customer.phone}\n"
-            f"Email: {booking.customer.email}\n"
+            f"Customer: {customer_name}\n"
+            f"Phone: {customer_phone}\n"
+            f"Email: {customer_email}\n"
             f"Service: {booking.service_type}\n"
             f"Employee: {employee_name}\n"
             f"Status: {booking.get_status_display()}\n"
@@ -224,6 +228,10 @@ def create_or_update_roster_event(roster):
         return None
 
     booking = roster.booking
+    customer = booking.customer
+    customer_name = customer.full_name if customer else "No customer"
+    customer_phone = customer.phone if customer else "Not provided"
+    customer_email = customer.email if customer else "Not provided"
 
     start_datetime = datetime.combine(
         roster.shift_date,
@@ -238,7 +246,7 @@ def create_or_update_roster_event(roster):
     event_body = {
         "summary": (
             f"{booking.service_type} - "
-            f"{booking.customer.full_name} - "
+            f"{customer_name} - "
             f"{employee.full_name}"
         ),
         "location": (
@@ -250,9 +258,9 @@ def create_or_update_roster_event(roster):
             f"Employee: {employee.full_name}\n"
             f"Employee Phone: {employee.phone}\n"
             f"Employee Email: {employee.email}\n\n"
-            f"Customer: {booking.customer.full_name}\n"
-            f"Customer Phone: {booking.customer.phone}\n"
-            f"Customer Email: {booking.customer.email}\n\n"
+            f"Customer: {customer_name}\n"
+            f"Customer Phone: {customer_phone}\n"
+            f"Customer Email: {customer_email}\n\n"
             f"Service: {booking.service_type}\n"
             f"Booking Status: {booking.get_status_display()}\n"
             f"Roster Status: {roster.get_status_display()}\n"

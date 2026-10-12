@@ -209,7 +209,11 @@ Bookings, employee roster shifts and leave in one weekly schedule.
                                 </h3>
 
                                 <p class="calendar-customer">
-                                    {{ booking.customer.full_name }}
+                                    {% if booking.customer %}
+                                        {{ booking.customer.full_name }}
+                                    {% else %}
+                                        No customer
+                                    {% endif %}
                                 </p>
 
                             </div>
@@ -482,7 +486,11 @@ Bookings, employee roster shifts and leave in one weekly schedule.
                             <span>
                                 {{ roster.booking.service_type }}
                                 ·
-                                {{ roster.booking.customer.full_name }}
+                                {% if roster.booking.customer %}
+                                    {{ roster.booking.customer.full_name }}
+                                {% else %}
+                                    No customer
+                                {% endif %}
                             </span>
 
                         {% else %}

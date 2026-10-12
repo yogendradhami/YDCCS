@@ -113,6 +113,7 @@ else:
     ALLOWED_HOSTS = [
         "127.0.0.1",
         "localhost",
+        "192.0.0.2",
         "ydcleaning.com.au",
         "www.ydcleaning.com.au",
     ]
@@ -190,6 +191,15 @@ INSTALLED_APPS = [
     "company_documents",
     "cleaning_game",
 
+    "corsheaders",
+
+
+    # Mobile API
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "mobile_api.apps.MobileApiConfig",
+
+
 ]
 
 
@@ -244,6 +254,8 @@ if any(arg.startswith("test") for arg in sys.argv):
 # ==========================================================
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+
     "django.middleware.security.SecurityMiddleware",
 
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -783,3 +795,35 @@ LOGGING = {
         ),
     },
 }
+
+
+
+# ==========================================================
+# MOBILE API
+# ==========================================================
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "30/hour",
+        "user": "300/hour",
+    },
+}
+
+
+# Local development only: Expo web preview
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8081",
+    "http://localhost:8082",
+    "http://127.0.0.1:8081",
+    "http://127.0.0.1:8082",
+]

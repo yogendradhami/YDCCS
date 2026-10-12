@@ -54,13 +54,13 @@ def generate_invoice_pdf(invoice):
 
     pdf.setFont("Helvetica", 10)
     y = height - 220
-    pdf.drawString(45, y, f"Name: {customer.full_name}")
+    pdf.drawString(45, y, f"Name: {customer.full_name if customer else 'No customer'}")
     y -= 16
-    pdf.drawString(45, y, f"Phone: {customer.phone}")
+    pdf.drawString(45, y, f"Phone: {customer.phone if customer else 'Not provided'}")
     y -= 16
-    pdf.drawString(45, y, f"Email: {customer.email}")
+    pdf.drawString(45, y, f"Email: {customer.email if customer else 'Not provided'}")
     y -= 16
-    pdf.drawString(45, y, f"Address: {customer.address}")
+    pdf.drawString(45, y, f"Address: {customer.address if customer else 'Not provided'}")
 
     pdf.setFont("Helvetica-Bold", 13)
     pdf.drawString(330, height - 200, "JOB DETAILS")

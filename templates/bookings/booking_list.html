@@ -608,13 +608,21 @@
                                         <div class="customer-cell">
 
                                             <div class="customer-avatar">
-                                                {{ booking.customer.full_name|slice:":1"|upper }}
+                                                {% if booking.customer %}
+                                                    {{ booking.customer.full_name|slice:":1"|upper }}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
                                             </div>
 
                                             <div>
 
                                                 <strong>
-                                                    {{ booking.customer.full_name }}
+                                                    {% if booking.customer %}
+                                                        {{ booking.customer.full_name }}
+                                                    {% else %}
+                                                        No customer
+                                                    {% endif %}
                                                 </strong>
 
                                                 <span>
@@ -1076,12 +1084,20 @@
                                         <div class="customer-cell">
 
                                             <div class="customer-avatar">
-                                                {{ booking.customer.full_name|slice:":1"|upper }}
+                                                {% if booking.customer %}
+                                                    {{ booking.customer.full_name|slice:":1"|upper }}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
                                             </div>
 
                                             <div>
                                                 <strong>
-                                                    {{ booking.customer.full_name }}
+                                                    {% if booking.customer %}
+                                                        {{ booking.customer.full_name }}
+                                                    {% else %}
+                                                        No customer
+                                                    {% endif %}
                                                 </strong>
 
                                                 <span>

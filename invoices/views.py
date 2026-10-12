@@ -57,7 +57,10 @@ def get_accessible_invoice(request, invoice_id):
     if request.user.is_staff or request.user.is_superuser:
         return invoice
 
-    if invoice.booking.customer.user_id == request.user.id:
+    if (
+        invoice.booking.customer
+        and invoice.booking.customer.user_id == request.user.id
+    ):
         return invoice
 
     raise PermissionDenied(

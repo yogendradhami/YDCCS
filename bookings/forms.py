@@ -1,5 +1,4 @@
 from django import forms
-from induction.models import EmployeeOnboardingProfile
 
 from leave_management.models import LeaveRequest
 
@@ -15,11 +14,14 @@ class BookingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields["customer"].required = False
+        self.fields["customer"].label = "Customer (Optional)"
+        self.fields["customer"].empty_label = "No customer"
+        self.fields["assigned_employee"].required = False
+        self.fields["assigned_employee"].label = "Assigned Employee (Optional)"
+        self.fields["assigned_employee"].empty_label = "No employee assigned"
         self.fields["assigned_employee"].queryset = (
-            self.fields["assigned_employee"]
-            .queryset
-            .filter(onboarding__status="ready")
-            .distinct()
+            self.fields["assigned_employee"].queryset.filter(active=True)
         )
 
     class Meta:
@@ -96,24 +98,6 @@ class BookingForm(forms.ModelForm):
 
         booking_date = cleaned_data.get("booking_date")
         assigned_employee = cleaned_data.get("assigned_employee")
-
-        if assigned_employee:
-            onboarding_profile = (
-                EmployeeOnboardingProfile.objects
-                .filter(employee=assigned_employee)
-                .first()
-            )
-
-            if onboarding_profile is None:
-                raise forms.ValidationError(
-                    "The selected employee does not have an onboarding profile."
-                )
-
-            if onboarding_profile.status != "ready":
-                raise forms.ValidationError(
-                    f"{assigned_employee.full_name} is not Ready for Work "
-                    "and cannot be assigned to this booking."
-                )
 
         if booking_date and assigned_employee:
 

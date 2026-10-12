@@ -103,3 +103,55 @@ class BookingServiceTests(TestCase):
 	def test_public_form_has_no_customer_selector_but_staff_form_does(self):
 		self.assertNotIn("customer", PublicBookingForm().fields)
 		self.assertIn("customer", BookingForm().fields)
+
+	def test_staff_form_allows_booking_without_customer_or_employee(self):
+		form = BookingForm(
+			data={
+				"customer": "",
+				"service_type": "Office Cleaning",
+				"booking_date": (date.today() + timedelta(days=3)).isoformat(),
+				"booking_time": "10:00",
+				"address": "1 King Street",
+				"suburb_postcode": "Adelaide 5000",
+				"quoted_price": "0.00",
+				"assigned_employee": "",
+				"status": "pending",
+				"notes": "",
+			}
+		)
+
+		self.assertFalse(form.fields["customer"].required)
+		self.assertFalse(form.fields["assigned_employee"].required)
+		self.assertTrue(form.is_valid(), form.errors)
+		booking = form.save()
+		self.assertIsNone(booking.customer)
+		self.assertIsNone(booking.assigned_employee)
+		self.assertEqual(str(booking), f"No customer - Office Cleaning - {booking.booking_date}")
+
+	def test_staff_form_lists_active_employee_without_ready_onboarding(self):
+		form = BookingForm()
+
+		self.assertIn(self.employee, form.fields["assigned_employee"].queryset)
+		self.assertEqual(
+			form.fields["assigned_employee"].label,
+			"Assigned Employee (Optional)",
+		)
+
+	def test_active_employee_can_be_assigned_before_onboarding_is_ready(self):
+		booking, created = create_booking(
+			**self.booking_kwargs(assigned_employee=self.employee),
+			trusted_assignment=True,
+		)
+
+		self.assertTrue(created)
+		self.assertEqual(booking.assigned_employee, self.employee)
+
+	def test_booking_service_allows_missing_customer_and_employee(self):
+		booking, created = create_booking(
+			**self.booking_kwargs(customer=None),
+			workflow_key="booking-without-customer",
+		)
+
+		self.assertTrue(created)
+		self.assertIsNone(booking.customer)
+		self.assertIsNone(booking.assigned_employee)

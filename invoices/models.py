@@ -119,4 +119,6 @@ class Invoice(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.invoice_number} - " f"{self.booking.customer.full_name}"
+        customer = self.booking.customer
+        customer_name = customer.full_name if customer else "No customer"
+        return f"{self.invoice_number} - {customer_name}"
