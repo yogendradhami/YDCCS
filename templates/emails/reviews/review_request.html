@@ -1,233 +1,105 @@
 {% extends "emails/base.html" %}
 
-{% block title %}We'd Love Your Feedback — YD Commercial Cleaning Services{% endblock %}
+{% block email_title %}How Was Your Cleaning Service? — YD Commercial Cleaning Services{% endblock %}
 
-{% block preheader %}
-Thank you for choosing YD Commercial Cleaning Services. We'd love to hear about your experience.
-{% endblock %}
+{% block preheader %}Thank you for choosing YD Commercial Cleaning Services. We would love to hear about your experience.{% endblock %}
 
 {% block content %}
+<div style="padding:8px 0 28px;font-family:Arial,Helvetica,sans-serif;">
 
-<div style="padding:8px 0 28px;">
-
-    <!-- Eyebrow -->
-    <p style="
-        margin:0 0 10px;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:12px;
-        line-height:18px;
-        font-weight:700;
-        letter-spacing:1.5px;
-        text-transform:uppercase;
-        color:#66736e;
-    ">
+    <p style="margin:0 0 12px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#39745d;">
         Customer Feedback
     </p>
 
-    <!-- Heading -->
-    <h1 style="
-        margin:0 0 18px;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:30px;
-        line-height:38px;
-        font-weight:700;
-        color:#14211d;
-    ">
-        We'd love to hear from you.
+    <h1 style="margin:0 0 18px;font-size:30px;line-height:38px;font-weight:700;letter-spacing:-0.6px;color:#0b2c24;">
+        How was your cleaning service?
     </h1>
 
-    <!-- Greeting -->
-    <p style="
-        margin:0 0 18px;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:16px;
-        line-height:27px;
-        color:#4d5b56;
-    ">
-        Hi {{ customer_name }},
+    <p style="margin:0 0 24px;font-size:16px;line-height:26px;color:#66736e;">
+        We'd love to hear from you.
     </p>
 
-    <!-- Introduction -->
-    <p style="
-        margin:0 0 16px;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:15px;
-        line-height:26px;
-        color:#4d5b56;
-    ">
+    <p style="margin:0 0 16px;font-size:15px;line-height:26px;color:#34483e;">
+        Hi {{ customer_name|default:"there" }},
+    </p>
+
+    <p style="margin:0 0 16px;font-size:15px;line-height:27px;color:#4d5b56;">
         Thank you for choosing
-        <strong style="color:#14211d;">
-            YD Commercial Cleaning Services
-        </strong>.
-        We appreciate the opportunity to provide your cleaning service.
+        <strong style="color:#0b2c24;">YD Commercial Cleaning Services</strong>.
+        We appreciate the opportunity to take care of your cleaning needs.
     </p>
 
-    <p style="
-        margin:0 0 26px;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:15px;
-        line-height:26px;
-        color:#4d5b56;
-    ">
-        We hope you were happy with the service. If you have a moment,
-        we'd really appreciate hearing about your experience.
+    <p style="margin:0 0 28px;font-size:15px;line-height:27px;color:#4d5b56;">
+        Your cleaning service has been completed, and we hope you're happy with the results.
+        If you have a moment, we'd really appreciate hearing about your experience.
     </p>
 
-    <!-- Review CTA Card -->
-    <table
-        role="presentation"
-        width="100%"
-        cellpadding="0"
-        cellspacing="0"
-        border="0"
-        style="
-            margin:0 0 26px;
-            border-collapse:collapse;
-            background:#eef5f1;
-            border:1px solid #d8e6df;
-        "
-    >
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+        style="width:100%;margin:0 0 24px;border-collapse:separate;background-color:#f0f6f2;border:1px solid #dce9e0;border-radius:10px;">
         <tr>
-            <td
-                align="center"
-                style="padding:26px 20px;"
-            >
+            <td align="center" style="padding:30px 22px;">
+                <p style="margin:0 0 10px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#39745d;">
+                    Your feedback matters
+                </p>
 
-                <p style="
-                    margin:0 0 8px;
-                    font-family:Arial,Helvetica,sans-serif;
-                    font-size:18px;
-                    line-height:26px;
-                    font-weight:700;
-                    color:#174b3d;
-                ">
+                <h2 style="margin:0 0 12px;font-size:23px;line-height:31px;font-weight:700;color:#0b2c24;">
                     How did we do?
+                </h2>
+
+                <p style="max-width:420px;margin:0 0 18px;font-size:14px;line-height:24px;color:#53645b;">
+                    Your feedback helps us improve our service and helps other customers discover a trusted local cleaning business.
                 </p>
 
-                <p style="
-                    margin:0 0 14px;
-                    font-family:Arial,Helvetica,sans-serif;
-                    font-size:14px;
-                    line-height:23px;
-                    color:#66736e;
-                ">
-                    Your feedback helps our team continue improving
-                    and providing reliable cleaning services.
+                <p style="margin:0 0 22px;font-size:21px;line-height:28px;letter-spacing:4px;color:#d99b25;">
+                    &#9733; &#9733; &#9733; &#9733; &#9733;
                 </p>
 
-                <!-- Stars -->
-                <p style="
-                    margin:0 0 18px;
-                    font-family:Arial,Helvetica,sans-serif;
-                    font-size:22px;
-                    line-height:28px;
-                    letter-spacing:3px;
-                    color:#d99b25;
-                ">
-                    ★ ★ ★ ★ ★
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                    <tr>
+                        <td align="center" bgcolor="#174b3d" style="background-color:#174b3d;border-radius:6px;">
+                            <a href="{{ review_link|default:'https://g.page/r/CXH9ygKf16Y4EBM/review' }}"
+                               target="_blank"
+                               style="display:inline-block;padding:15px 26px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;font-weight:700;color:#ffffff;text-decoration:none;border:1px solid #174b3d;border-radius:6px;">
+                                Leave a Google Review &nbsp;&#8594;
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+
+                <p style="margin:18px 0 0;font-size:12px;line-height:20px;color:#66766d;">
+                    It only takes a moment. Thank you for your support.
                 </p>
-
-                <!-- Google Review Button -->
-                <a
-                    href="{{ review_link }}"
-                    style="
-                        display:inline-block;
-                        padding:13px 24px;
-                        background:#174b3d;
-                        color:#ffffff;
-                        text-decoration:none;
-                        border-radius:8px;
-                        font-family:Arial,Helvetica,sans-serif;
-                        font-size:14px;
-                        line-height:20px;
-                        font-weight:700;
-                    "
-                >
-                    Leave a Google Review
-                </a>
-
             </td>
         </tr>
     </table>
 
-    <!-- Review Message -->
-    <p style="
-        margin:0 0 24px;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:14px;
-        line-height:24px;
-        color:#66736e;
-        text-align:center;
-    ">
-        It only takes a moment, and your feedback means a lot to our team.
-    </p>
-
-    <!-- Direct Contact -->
-    <table
-        role="presentation"
-        width="100%"
-        cellpadding="0"
-        cellspacing="0"
-        border="0"
-        style="
-            margin:0 0 26px;
-            border-collapse:collapse;
-            background:#f7faf8;
-            border:1px solid #e3ebe6;
-        "
-    >
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+        style="width:100%;margin:0 0 26px;border-collapse:separate;background-color:#ffffff;border:1px solid #e1e9e3;border-radius:8px;">
         <tr>
-            <td style="padding:20px;">
-
-                <p style="
-                    margin:0 0 8px;
-                    font-family:Arial,Helvetica,sans-serif;
-                    font-size:14px;
-                    line-height:21px;
-                    font-weight:700;
-                    color:#14211d;
-                ">
+            <td style="padding:21px 22px;">
+                <p style="margin:0 0 8px;font-size:14px;line-height:22px;font-weight:700;color:#0b2c24;">
                     Prefer to speak with us directly?
                 </p>
-
-                <p style="
-                    margin:0;
-                    font-family:Arial,Helvetica,sans-serif;
-                    font-size:14px;
-                    line-height:23px;
-                    color:#66736e;
-                ">
-                    Simply reply to this email with your feedback or
-                    any questions. Our team will be happy to help.
+                <p style="margin:0;font-size:14px;line-height:24px;color:#66736e;">
+                    Simply reply to this email with your feedback or any questions. Our team will be happy to help.
                 </p>
-
+                <p style="margin:12px 0 0;font-size:14px;line-height:24px;color:#66736e;">
+                    Phone: <a href="tel:0430049865" style="color:#174b3d;text-decoration:none;">0430 049 865</a><br>
+                    Email: <a href="mailto:info@ydcleaning.com.au" style="color:#174b3d;text-decoration:none;">info@ydcleaning.com.au</a><br>
+                    Website: <a href="https://www.ydcleaning.com.au" style="color:#174b3d;text-decoration:none;">www.ydcleaning.com.au</a>
+                </p>
             </td>
         </tr>
     </table>
 
-    <!-- Closing -->
-    <p style="
-        margin:0 0 18px;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:15px;
-        line-height:26px;
-        color:#4d5b56;
-    ">
-        Thank you again for choosing YD Commercial Cleaning Services.
-        We truly appreciate your support.
+    <p style="margin:0 0 20px;font-size:15px;line-height:27px;color:#4d5b56;">
+        Thank you again for supporting our local Adelaide business. We look forward to providing you with professional cleaning services again.
     </p>
 
-    <p style="
-        margin:0;
-        font-family:Arial,Helvetica,sans-serif;
-        font-size:15px;
-        line-height:26px;
-        color:#14211d;
-    ">
+    <p style="margin:0;font-size:15px;line-height:26px;color:#34483e;">
         Kind regards,<br>
-        <strong>YD Commercial Cleaning Services</strong>
+        <strong style="color:#0b2c24;">YD Commercial Cleaning Services</strong><br>
+        <span style="font-size:13px;color:#66736e;">Professional Cleaning Solutions</span>
     </p>
-
 </div>
-
 {% endblock %}
