@@ -26,7 +26,7 @@
     <aside class="crm-sidebar" id="crmSidebar">
 
         <div class="crm-logo">
-            <img src="{% static 'images/logo.jpeg' %}" alt="YD Cleaning Logo">
+            <img src="{% static 'images/company/logoo-256.webp' %}" alt="YD Cleaning Logo">
             <h2>YD Cleaning</h2>
             <p>Business CRM</p>
         </div>
@@ -68,9 +68,7 @@
                 <div class="sidebar-submenu">
                     <a href="/dashboard/leads/">
                         <span>Leads / Quotes</span>
-                        {% if notification_counts.quote %}
-                            <span class="side-badge" data-notification-type="quote">{{ notification_counts.quote }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="quote" {% if not notification_counts.quote %}hidden{% endif %}>{{ notification_counts.quote|default:0 }}</span>
                     </a>
 
                     {% comment %} <a href="/dashboard/quote-requests/">
@@ -102,9 +100,7 @@
 
                     <a href="/dashboard/customers/">
                         <span>Customers</span>
-                        {% if notification_counts.customer %}
-                            <span class="side-badge" data-notification-type="customer">{{ notification_counts.customer }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="customer" {% if not notification_counts.customer %}hidden{% endif %}>{{ notification_counts.customer|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/faq-questions/">
@@ -152,16 +148,12 @@
                 <div class="sidebar-submenu">
                     <a href="/dashboard/bookings/">
                         <span>Bookings</span>
-                        {% if notification_counts.booking %}
-                            <span class="side-badge" data-notification-type="booking">{{ notification_counts.booking }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="booking" {% if not notification_counts.booking %}hidden{% endif %}>{{ notification_counts.booking|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/contracts/">
                         <span>Recurring Contracts</span>
-                        {% if notification_counts.contract %}
-                            <span class="side-badge" data-notification-type="contract">{{ notification_counts.contract }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="contract" {% if not notification_counts.contract %}hidden{% endif %}>{{ notification_counts.contract|default:0 }}</span>
                     </a>
                     <a href="/dashboard/contracts/renewals/">
                         <span>Contract Renewals</span>
@@ -173,16 +165,12 @@
 
                     <a href="/dashboard/reports/">
                         <span>Cleaning Reports</span>
-                        {% if notification_counts.report %}
-                            <span class="side-badge" data-notification-type="report">{{ notification_counts.report }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="report" {% if not notification_counts.report %}hidden{% endif %}>{{ notification_counts.report|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/gallery/">
                         <span>Gallery</span>
-                        {% if notification_counts.gallery %}
-                            <span class="side-badge" data-notification-type="gallery">{{ notification_counts.gallery }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="gallery" {% if not notification_counts.gallery %}hidden{% endif %}>{{ notification_counts.gallery|default:0 }}</span>
                     </a>
                 </div>
             </div>
@@ -196,9 +184,7 @@
                 <div class="sidebar-submenu">
                     <a href="/dashboard/employees/">
                         <span>Employees</span>
-                        {% if notification_counts.employee %}
-                            <span class="side-badge" data-notification-type="employee">{{ notification_counts.employee }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="employee" {% if not notification_counts.employee %}hidden{% endif %}>{{ notification_counts.employee|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/induction/">
@@ -245,9 +231,7 @@
 
                     <a href="/dashboard/attendance/">
                         <span>Attendance Report</span>
-                        {% if notification_counts.attendance %}
-                            <span class="side-badge" data-notification-type="attendance">{{ notification_counts.attendance }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="attendance" {% if not notification_counts.attendance %}hidden{% endif %}>{{ notification_counts.attendance|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/employee-attendance-analytics/">
@@ -264,23 +248,17 @@
 
                     <a href="/dashboard/leave/">
                         <span>Leave Management</span>
-                        {% if notification_counts.leave %}
-                            <span class="side-badge" data-notification-type="leave">{{ notification_counts.leave }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="leave" {% if not notification_counts.leave %}hidden{% endif %}>{{ notification_counts.leave|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/rosters/">
                         <span>Roster</span>
-                        {% if notification_counts.roster %}
-                            <span class="side-badge" data-notification-type="roster">{{ notification_counts.roster }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="roster" {% if not notification_counts.roster %}hidden{% endif %}>{{ notification_counts.roster|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/payroll/">
                         <span>Payroll</span>
-                        {% if notification_counts.payroll %}
-                            <span class="side-badge" data-notification-type="payroll">{{ notification_counts.payroll }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="payroll" {% if not notification_counts.payroll %}hidden{% endif %}>{{ notification_counts.payroll|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/employee-bonuses/">
@@ -309,9 +287,7 @@
 
                     <a href="/dashboard/invoices/">
                         <span>Invoices</span>
-                        {% if notification_counts.invoice %}
-                            <span class="side-badge" data-notification-type="invoice">{{ notification_counts.invoice }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="invoice" {% if not notification_counts.invoice %}hidden{% endif %}>{{ notification_counts.invoice|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/expenses/">
@@ -350,9 +326,7 @@
                 <div class="sidebar-submenu">
                     <a href="/dashboard/reviews/">
                         <span>Reviews</span>
-                        {% if notification_counts.review %}
-                            <span class="side-badge" data-notification-type="review">{{ notification_counts.review }}</span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-type="review" {% if not notification_counts.review %}hidden{% endif %}>{{ notification_counts.review|default:0 }}</span>
                     </a>
 
                     <a href="/dashboard/review-requests/">
@@ -753,6 +727,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bell.addEventListener("click", function () {
         const isOpen = notificationBox.classList.toggle("active");
         bell.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        if (isOpen) refreshNotifications();
     });
 
     markRead.addEventListener("click", function () {
@@ -786,7 +761,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     refreshNotifications();
-    window.setInterval(refreshNotifications, 30000);
+    window.setInterval(refreshNotifications, 15000);
+    window.addEventListener("focus", refreshNotifications);
 });
 </script>
 

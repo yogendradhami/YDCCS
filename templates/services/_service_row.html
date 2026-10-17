@@ -1,5 +1,5 @@
 {# Partial: service row - expects `service` and `index` (1-based) in context #}
-{% load static %}
+{% load static seo_tags %}
 {% with base=service.slug|cut:'-adelaide' %}
 <article class="service-row {% if index|divisibleby:2 %}reverse{% endif %}" role="article" aria-labelledby="service-{{ index }}">
     <div class="service-content" id="service-{{ index }}">
@@ -12,8 +12,8 @@
         {% if service.hero_image %}
             {# Display uploaded image from media folder #}
             <picture>
-                <source srcset="{{ service.hero_image.url }} 1x, {{ service.hero_image.url }} 2x" type="image/jpeg">
-                <img src="{{ service.hero_image.url }}" alt="{{ service.name }} image" loading="lazy" width="800" height="500">
+                <source srcset="{{ service.hero_image.url|cloudinary_optimize:'800' }} 1x, {{ service.hero_image.url|cloudinary_optimize:'1600' }} 2x">
+                <img src="{{ service.hero_image.url|cloudinary_optimize:'800' }}" alt="{{ service.name }} image" loading="lazy" width="800" height="500">
             </picture>
         {% else %}
             {# Fallback to static placeholder images #}

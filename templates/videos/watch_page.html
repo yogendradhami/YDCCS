@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ video_title }}{% endblock %}
+
+{% block meta_description %}{{ video_description }}{% endblock %}
+
+{% block og_title %}{{ video_title }}{% endblock %}
+
+{% block og_description %}{{ video_description }}{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<script type="application/ld+json">{{ video_schema|safe }}</script>
+<style>
+    .video-watch-page {
+        padding: clamp(32px, 6vw, 72px) 0;
+        background: #f8fafc;
+    }
+    .video-watch-page .container {
+        max-width: 1100px;
+    }
+    .video-watch-page h1 {
+        margin: 0 0 16px;
+        color: #0f172a;
+        font-size: clamp(2rem, 4vw, 3.25rem);
+        line-height: 1.1;
+    }
+    .video-watch-intro {
+        max-width: 760px;
+        margin: 0 0 28px;
+        color: #475569;
+        font-size: 1.1rem;
+        line-height: 1.7;
+    }
+    .video-watch-player {
+        display: block;
+        width: 100%;
+        max-height: 75vh;
+        margin: 0 0 28px;
+        background: #020617;
+        aspect-ratio: 16 / 9;
+    }
+    .video-watch-description {
+        max-width: 760px;
+        color: #334155;
+        line-height: 1.7;
+    }
+    .video-watch-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="video-watch-page">
+    <section class="container" aria-labelledby="video-title">
+        <h1 id="video-title">{{ video_title }}</h1>
+        <p class="video-watch-intro">{{ video_description }}</p>
+
+        <video
+            class="video-watch-player"
+            controls
+            playsinline
+            preload="metadata"
+            poster="{{ video_thumbnail_url }}"
+            width="1280"
+            height="720"
+        >
+            <source src="{{ video_file_url }}" type="{{ video_mime_type }}">
+            Your browser does not support HTML5 video.
+        </video>
+
+        <div class="video-watch-description">
+            <p>
+                YD Commercial Cleaning Services provides residential and
+                commercial cleaning across Adelaide. Contact our local team
+                to discuss cleaning for your home, office or business.
+            </p>
+            <div class="video-watch-actions">
+                <a href="{% url 'testimonials' %}" class="btn btn-outline">
+                    More customer stories
+                </a>
+                <a href="{% url 'contact' %}" class="btn btn-primary">
+                    Request a free quote
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

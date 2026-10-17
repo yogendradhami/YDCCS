@@ -1,0 +1,27 @@
+
+Hi {{ employee.full_name }},
+
+Your payroll has been marked as paid by YD Commercial Cleaning Services.
+
+PAYROLL PAYMENT SUMMARY
+-----------------------
+Payroll reference: {{ payroll_reference }}
+Pay period: {{ payroll.period_start|date:"d M Y" }} to {{ payroll.period_end|date:"d M Y" }}
+Hours worked: {{ payroll.total_hours|floatformat:2 }}
+Hourly rate: ${{ payroll.hourly_rate|floatformat:2 }} AUD
+Gross earnings: ${{ payroll.gross_pay|floatformat:2 }} AUD
+Payment status: {{ payroll.get_status_display }}
+
+Your detailed PDF payslip is attached to this email for your records.
+
+Please review the pay period, recorded hours and earnings. If any details
+appear incorrect, contact your manager or email info@ydcleaning.com.au.
+
+Kind regards,
+YD Commercial Cleaning Services
+Professional Cleaning Solutions
+
+Phone: 0430 049 865
+Email: info@ydcleaning.com.au
+Website: https://ydcleaning.com.au
+Address: 2/10 Da Costa Avenue, Prospect SA 5082

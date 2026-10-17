@@ -1,0 +1,99 @@
+
+{% extends "emails/base.html" %}
+
+{% block email_title %}Your Payroll Has Been Paid{% endblock %}
+
+{% block preheader %}
+Your payroll for {{ payroll.period_start|date:"d M Y" }} to {{ payroll.period_end|date:"d M Y" }} has been marked as paid. Your payslip is attached.
+{% endblock %}
+
+{% block content %}
+
+<h1 style="margin:0 0 12px;color:#0b2c24;font-size:27px;line-height:34px;">
+    Your payroll has been paid
+</h1>
+
+<p style="margin:0 0 20px;color:#53635b;font-size:15px;line-height:25px;">
+    Hi {{ employee.full_name }},
+</p>
+
+<p style="margin:0 0 20px;color:#53635b;font-size:15px;line-height:25px;">
+    Your payroll has been marked as paid. Thank you for your work and
+    contribution to YD Commercial Cleaning Services.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="border:1px solid #dce5df;border-radius:12px;margin:22px 0;">
+    <tr>
+        <td colspan="2"
+            style="background:#0b2c24;padding:15px 18px;color:#ffffff;font-size:14px;font-weight:bold;">
+            PAYROLL PAYMENT SUMMARY
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:13px 16px;color:#65736c;border-bottom:1px solid #e7ede9;">
+            Payroll reference
+        </td>
+        <td style="padding:13px 16px;text-align:right;font-weight:bold;border-bottom:1px solid #e7ede9;">
+            {{ payroll_reference }}
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:13px 16px;color:#65736c;border-bottom:1px solid #e7ede9;">
+            Pay period
+        </td>
+        <td style="padding:13px 16px;text-align:right;border-bottom:1px solid #e7ede9;">
+            {{ payroll.period_start|date:"d M Y" }} – {{ payroll.period_end|date:"d M Y" }}
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:13px 16px;color:#65736c;border-bottom:1px solid #e7ede9;">
+            Hours worked
+        </td>
+        <td style="padding:13px 16px;text-align:right;border-bottom:1px solid #e7ede9;">
+            {{ payroll.total_hours|floatformat:2 }} hours
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:13px 16px;color:#65736c;border-bottom:1px solid #e7ede9;">
+            Hourly rate
+        </td>
+        <td style="padding:13px 16px;text-align:right;border-bottom:1px solid #e7ede9;">
+            ${{ payroll.hourly_rate|floatformat:2 }} AUD
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:16px;color:#0b2c24;font-weight:bold;">
+            Gross earnings
+        </td>
+        <td style="padding:16px;text-align:right;color:#0b2c24;font-size:21px;font-weight:bold;">
+            ${{ payroll.gross_pay|floatformat:2 }} AUD
+        </td>
+    </tr>
+</table>
+
+<p style="margin:0 0 18px;color:#53635b;font-size:14px;line-height:24px;">
+    Your detailed PDF payslip is attached to this email for your records.
+    Please review the pay period, recorded hours and earnings.
+</p>
+
+<p style="margin:0 0 20px;padding:14px 16px;background:#f3f6f4;border-radius:8px;color:#53635b;font-size:13px;line-height:22px;">
+    <strong>Need help?</strong><br>
+    If you believe any payroll details are incorrect, please contact your
+    manager or email
+    <a href="mailto:info@ydcleaning.com.au" style="color:#0b2c24;">
+        info@ydcleaning.com.au
+    </a>.
+</p>
+
+<p style="margin:0;color:#53635b;font-size:14px;line-height:24px;">
+    Kind regards,<br>
+    <strong style="color:#0b2c24;">YD Commercial Cleaning Services</strong><br>
+    Professional Cleaning Solutions<br>
+    <a href="https://ydcleaning.com.au" style="color:#0b2c24;">
+        ydcleaning.com.au
+    </a><br>
+    0430 049 865
+</p>
+
+{% endblock %}

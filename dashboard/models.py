@@ -6,7 +6,10 @@
 # ==========================================================
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import models
+
+COMPANY_SETTINGS_CACHE_KEY = "dashboard.company_settings"
 
 
 def site_image_upload_path(instance, filename):
@@ -72,6 +75,22 @@ class CompanySettings(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        result = super().save(*args, **kwargs)
+        try:
+            cache.delete(COMPANY_SETTINGS_CACHE_KEY)
+        except Exception:
+            pass
+        return result
+
+    def delete(self, *args, **kwargs):
+        result = super().delete(*args, **kwargs)
+        try:
+            cache.delete(COMPANY_SETTINGS_CACHE_KEY)
+        except Exception:
+            pass
+        return result
 
     def __str__(self):
         return self.business_name

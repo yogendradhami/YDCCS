@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% load static %}
+{% load static seo_tags %}
 
 {% block title %}
 Cleaning Gallery | Before & After Photos | YD Commercial Cleaning
@@ -659,7 +659,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                             </span>
 
                             <img
-                                src="{{ first_item.before_image.url }}"
+                                src="{{ first_item.before_image.url|cloudinary_optimize:'1600' }}"
                                 alt="{{ group.title }} before"
                                 class="gallery-image"
                             >
@@ -674,7 +674,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                             </span>
 
                             <img
-                                src="{{ first_item.after_image.url }}"
+                                src="{{ first_item.after_image.url|cloudinary_optimize:'1600' }}"
                                 alt="{{ group.title }} after"
                                 class="gallery-image"
                             >
@@ -689,7 +689,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                     <!-- MAIN IMAGE -->
 
                     <img
-                        src="{{ first_item.image.url }}"
+                        src="{{ first_item.image.url|cloudinary_optimize:'1600' }}"
                         alt="{{ group.title }}"
                         class="gallery-image"
                     >
@@ -704,7 +704,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                         {% if first_media.is_image %}
 
                             <img
-                                src="{{ first_media.url }}"
+                                src="{{ first_media.url|cloudinary_optimize:'1600' }}"
                                 alt="{{ group.title }}"
                                 class="gallery-image"
                             >
@@ -820,7 +820,7 @@ View real before and after cleaning results from YD Commercial Cleaning. Profess
                         >
 
                             <img
-                                src="{{ media.url }}"
+                                src="{{ media.url|cloudinary_optimize:'480' }}"
                                 alt="{{ group.title }} photo {{ forloop.counter }}"
                                 loading="lazy"
                             >
@@ -1067,7 +1067,7 @@ galleryGroups.push({
 
                 {
                     url:
-                        "{{ media.url|escapejs }}",
+                        "{{ media.url|cloudinary_optimize:'1600'|escapejs }}",
 
                     alt:
                         "{{ group.title|escapejs }}"

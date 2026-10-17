@@ -262,432 +262,150 @@ def get_safe_filename(uploaded_file):
 
 
 
-@transaction.atomic
+MAX_BULK_IMPORT_FILES = 20
+MAX_BULK_IMPORT_TOTAL_SIZE = 250 * 1024 * 1024
+MAX_BULK_IMPORT_FILE_SIZE = 50 * 1024 * 1024
+ALLOWED_BULK_IMPORT_EXTENSIONS = {
+    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+    ".csv", ".txt", ".zip", ".rar", ".jpg", ".jpeg", ".png", ".webp",
+}
+
+
+def _cleanup_staging_assets(public_ids):
+    import logging
+    logger = logging.getLogger(__name__)
+    for public_id in public_ids:
+        try:
+            cloudinary.uploader.destroy(
+                public_id,
+                resource_type="raw",
+                invalidate=True,
+            )
+        except Exception:
+            logger.exception("Could not clean up company document staging asset")
+
 
 def create_batch(user, files):
+    """Validate and stage a bounded batch of raw company documents."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from pathlib import Path
+    from django.conf import settings
+    import logging
 
-    """
-
-    Create a bulk import batch and persist uploaded files
-
-    directly into Cloudinary RAW staging storage.
-
-
-
-    IMPORTANT:
-
-
-
-    This function does NOT create permanent CompanyDocument
-
-    records.
-
-
-
-    Files are first stored as temporary RAW Cloudinary
-
-    resources attached to BulkImportItem records.
-
-
-
-    Workflow:
-
-
-
-        upload
-
-        -> staging
-
-        -> analysis
-
-        -> review
-
-        -> approval
-
-        -> permanent CompanyDocument
-
-    """
-
-
-
+    logger = logging.getLogger(__name__)
     files = list(files)
+    if not files:
+        raise ValueError("Select at least one document.")
+    if len(files) > MAX_BULK_IMPORT_FILES:
+        raise ValueError(
+            f"Choose no more than {MAX_BULK_IMPORT_FILES} documents per batch."
+        )
 
-
-
-    batch = BulkImportBatch.objects.create(
-
-        batch_reference=generate_batch_reference(),
-
-        status=BulkImportBatch.Status.UPLOADED,
-
-        uploaded_by=user,
-
-        total_files=len(files),
-
+    max_file_size = getattr(
+        settings,
+        "COMPANY_DOCUMENT_MAX_SIZE",
+        MAX_BULK_IMPORT_FILE_SIZE,
     )
-
-
-
-    staging_folder = timezone.now().strftime(
-
-        "company_document_staging/%Y/%m"
-
-    )
-
-
-
+    total_size = 0
     for uploaded_file in files:
+        filename = str(getattr(uploaded_file, "name", ""))
+        suffix = Path(filename).suffix.lower()
+        size = int(getattr(uploaded_file, "size", 0) or 0)
+        if suffix not in ALLOWED_BULK_IMPORT_EXTENSIONS:
+            raise ValueError(f"Unsupported document type: {suffix or 'unknown'}.")
+        if not 0 < size <= max_file_size:
+            raise ValueError("Each document must be between 1 byte and 50 MB.")
+        total_size += size
+    if total_size > MAX_BULK_IMPORT_TOTAL_SIZE:
+        raise ValueError("The combined size of a batch must not exceed 250 MB.")
 
-
-
-        # --------------------------------------------------
-
-        # FILE HASH
-
-        # --------------------------------------------------
-
-
-
-        file_hash = calculate_hash(
-
-            uploaded_file
-
+    staging_folder = timezone.now().strftime("company_document_staging/%Y/%m")
+    with transaction.atomic():
+        batch = BulkImportBatch.objects.create(
+            batch_reference=generate_batch_reference(),
+            status=BulkImportBatch.Status.UPLOADED,
+            uploaded_by=user,
+            total_files=len(files),
         )
-
-
-
-        # --------------------------------------------------
-
-        # ORIGINAL METADATA
-
-        # --------------------------------------------------
-
-
-
-        original_filename = (
-
-            getattr(
-
-                uploaded_file,
-
-                "name",
-
-                "",
-
+        items = []
+        for uploaded_file in files:
+            file_hash = calculate_hash(uploaded_file)
+            item = BulkImportItem.objects.create(
+                batch=batch,
+                original_filename=str(getattr(uploaded_file, "name", "unnamed-file"))[:500],
+                file_size=int(getattr(uploaded_file, "size", 0) or 0),
+                mime_type=str(getattr(uploaded_file, "content_type", "") or ""),
+                file_hash=file_hash,
+                status=BulkImportItem.Status.PENDING,
             )
+            items.append(item)
 
-            or "unnamed-file"
-
-        )
-
-
-
-        original_filename = str(
-
-            original_filename
-
-        )[:500]
-
-
-
-        file_size = (
-
-            getattr(
-
-                uploaded_file,
-
-                "size",
-
-                0,
-
-            )
-
-            or 0
-
-        )
-
-
-
-        mime_type = (
-
-            getattr(
-
-                uploaded_file,
-
-                "content_type",
-
-                "",
-
-            )
-
-            or ""
-
-        )
-
-
-
-        # --------------------------------------------------
-
-        # CREATE STAGING ITEM
-
-        # --------------------------------------------------
-
-
-
-        item = BulkImportItem.objects.create(
-
-            batch=batch,
-
-            original_filename=original_filename,
-
-            file_size=file_size,
-
-            mime_type=mime_type,
-
-            file_hash=file_hash,
-
-            status=BulkImportItem.Status.PENDING,
-
-        )
-
-
-
-        # --------------------------------------------------
-
-        # RESET FILE POINTER
-
-        # --------------------------------------------------
-
-
-
+    def stage_file(uploaded_file):
         try:
-
             uploaded_file.seek(0)
-
         except (AttributeError, OSError):
-
             pass
-
-
-
-        # --------------------------------------------------
-
-        # SAFE FILENAME
-
-        # --------------------------------------------------
-
-
-
-        safe_filename = get_safe_filename(
-
-            uploaded_file
-
+        result = cloudinary.uploader.upload(
+            uploaded_file,
+            resource_type="raw",
+            folder=staging_folder,
+            use_filename=True,
+            unique_filename=True,
+            overwrite=False,
         )
+        if not isinstance(result, dict) or not result.get("public_id"):
+            raise ValueError("Cloudinary did not return a staging asset ID.")
+        if result.get("resource_type") not in (None, "raw"):
+            _cleanup_staging_assets([result["public_id"]])
+            raise ValueError("Cloudinary returned an unexpected resource type.")
+        return result["public_id"]
 
+    public_ids = [None] * len(files)
+    failures = []
+    with ThreadPoolExecutor(max_workers=min(3, len(files))) as executor:
+        futures = {
+            executor.submit(stage_file, uploaded_file): index
+            for index, uploaded_file in enumerate(files)
+        }
+        for future in as_completed(futures):
+            try:
+                public_ids[futures[future]] = future.result()
+            except Exception as exc:
+                logger.exception("Company document staging upload failed for batch %s", batch.pk)
+                failures.append(exc)
 
-
-        # --------------------------------------------------
-
-        # CLOUDINARY RAW STAGING
-
-        # --------------------------------------------------
-
-
-
-        try:
-
-
-
-            result = cloudinary.uploader.upload(
-
-                uploaded_file,
-
-                resource_type="raw",
-
-                folder=staging_folder,
-
-                use_filename=True,
-
-                unique_filename=True,
-
-                overwrite=False,
-
-            )
-
-
-
-        except Exception as exc:
-
-
-
-            item.status = (
-
-                BulkImportItem.Status.FAILED
-
-            )
-
-
-
-            item.error_message = (
-
-                "Cloudinary staging upload failed: "
-
-                f"{exc}"
-
-            )[:5000]
-
-
-
-            item.save(
-
-                update_fields=[
-
-                    "status",
-
-                    "error_message",
-
-                ]
-
-            )
-
-
-
-            raise
-
-
-
-        # --------------------------------------------------
-
-        # GET CLOUDINARY PUBLIC ID
-
-        # --------------------------------------------------
-
-
-
-        public_id = (
-
-            result.get("public_id")
-
-            if isinstance(result, dict)
-
-            else None
-
+    if failures:
+        _cleanup_staging_assets([public_id for public_id in public_ids if public_id])
+        message = "One or more documents could not be staged. No files from this batch were kept."
+        BulkImportItem.objects.filter(batch=batch).update(
+            status=BulkImportItem.Status.FAILED,
+            error_message=message,
         )
+        batch.status = BulkImportBatch.Status.FAILED
+        batch.failed_count = len(items)
+        batch.error_message = message
+        batch.save(update_fields=["status", "failed_count", "error_message"])
+        raise RuntimeError(message) from failures[0]
 
-
-
-        if not public_id:
-
-
-
-            item.status = (
-
-                BulkImportItem.Status.FAILED
-
-            )
-
-
-
-            item.error_message = (
-
-                "Cloudinary staging upload succeeded "
-
-                "but did not return a public_id."
-
-            )
-
-
-
-            item.save(
-
-                update_fields=[
-
-                    "status",
-
-                    "error_message",
-
-                ]
-
-            )
-
-
-
-            raise ValueError(
-
-                "Cloudinary staging upload did not "
-
-                "return a public_id."
-
-            )
-
-
-
-        # --------------------------------------------------
-
-        # STORE THE ACTUAL CLOUDINARY PUBLIC ID
-
-        # --------------------------------------------------
-
-        #
-
-        # IMPORTANT:
-
-        #
-
-        # staging_file.name must contain the actual
-
-        # Cloudinary RAW public ID.
-
-        #
-
-        # Example:
-
-        #
-
-        # company_document_staging/2026/10/
-
-        # Annual_Compliance_Calendar_t9gdtr.docx
-
-        #
-
-        # NOT merely:
-
-        #
-
-        # Annual_Compliance_Calendar_t9gdtr.docx
-
-        #
-
-        # This allows get_staged_file_for_extraction()
-
-        # to generate the correct RAW Cloudinary URL.
-
-        # --------------------------------------------------
-
-
-
-        item.staging_file.name = public_id
-
-
-
-        item.save(
-
-            update_fields=[
-
-                "staging_file",
-
-            ]
-
+    try:
+        with transaction.atomic():
+            for item, public_id in zip(items, public_ids):
+                item.staging_file.name = public_id
+                item.save(update_fields=["staging_file"])
+    except Exception:
+        _cleanup_staging_assets(public_ids)
+        message = "The staged files could not be linked to the import batch."
+        BulkImportItem.objects.filter(batch=batch).update(
+            status=BulkImportItem.Status.FAILED,
+            error_message=message,
         )
-
-
+        batch.status = BulkImportBatch.Status.FAILED
+        batch.failed_count = len(items)
+        batch.error_message = message
+        batch.save(update_fields=["status", "failed_count", "error_message"])
+        raise
 
     return batch
-
-
-
-
-
 
 
 # ==========================================================

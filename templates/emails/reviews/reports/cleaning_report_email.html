@@ -1,0 +1,113 @@
+
+{% extends "emails/base.html" %}
+
+{% block email_title %}Your Cleaning Completion Report — YD Commercial Cleaning Services{% endblock %}
+
+{% block preheader %}
+Your cleaning service is complete. Your branded completion report is attached as a PDF.
+{% endblock %}
+
+{% block content %}
+<div style="padding:8px 0 24px;font-family:Arial,Helvetica,sans-serif;">
+
+    <p style="margin:0 0 12px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#39745d;">
+        Service Completed
+    </p>
+
+    <h1 style="margin:0 0 18px;font-size:29px;line-height:37px;font-weight:700;color:#0b2c24;">
+        Your cleaning report is ready.
+    </h1>
+
+    <p style="margin:0 0 20px;font-size:15px;line-height:27px;color:#4d5b56;">
+        Hi {{ customer_name|default:"there" }},
+    </p>
+
+    <p style="margin:0 0 24px;font-size:15px;line-height:27px;color:#4d5b56;">
+        Thank you for choosing
+        <strong style="color:#0b2c24;">YD Commercial Cleaning Services</strong>.
+        Your cleaning completion report is attached to this email as a PDF
+        for your records.
+    </p>
+
+    <!-- Booking summary -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           border="0"
+           style="width:100%;margin:0 0 24px;background:#f0f6f2;border:1px solid #dce9e0;border-radius:10px;">
+        <tr>
+            <td style="padding:22px;">
+
+                <p style="margin:0 0 14px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#39745d;">
+                    Report Summary
+                </p>
+
+                <p style="margin:0 0 9px;font-size:14px;line-height:23px;color:#53645b;">
+                    <strong style="color:#0b2c24;">Service:</strong>
+                    {{ booking.service_type }}
+                </p>
+
+                <p style="margin:0 0 9px;font-size:14px;line-height:23px;color:#53645b;">
+                    <strong style="color:#0b2c24;">Booking date:</strong>
+                    {{ booking.booking_date|date:"d F Y" }}
+                </p>
+
+                <p style="margin:0 0 9px;font-size:14px;line-height:23px;color:#53645b;">
+                    <strong style="color:#0b2c24;">Reference:</strong>
+                    YD-{{ booking.pk|stringformat:"06d" }}
+                </p>
+
+                <p style="margin:0;font-size:14px;line-height:23px;color:#53645b;">
+                    <strong style="color:#0b2c24;">Service address:</strong>
+                    {{ booking.address }}, {{ booking.suburb_postcode }}
+                </p>
+
+            </td>
+        </tr>
+    </table>
+
+    <p style="margin:0 0 24px;font-size:15px;line-height:27px;color:#4d5b56;">
+        Your attached report contains the recorded service details, completion
+        notes, available job photographs and verification information.
+        Please keep it for your records.
+    </p>
+
+    <!-- Contact card -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           border="0"
+           style="width:100%;margin:0 0 24px;background:#ffffff;border:1px solid #e1e9e3;border-radius:8px;">
+        <tr>
+            <td style="padding:20px 22px;">
+
+                <p style="margin:0 0 8px;font-size:14px;line-height:22px;font-weight:700;color:#0b2c24;">
+                    Questions about your service?
+                </p>
+
+                <p style="margin:0;font-size:14px;line-height:24px;color:#66736e;">
+                    Reply to this email or contact our team on
+                    <a href="tel:0430049865" style="color:#174b3d;text-decoration:none;">
+                        0430 049 865
+                    </a>
+                    or
+                    <a href="mailto:info@ydcleaning.com.au" style="color:#174b3d;text-decoration:none;">
+                        info@ydcleaning.com.au
+                    </a>.
+                </p>
+
+            </td>
+        </tr>
+    </table>
+
+    <p style="margin:0 0 20px;font-size:15px;line-height:27px;color:#4d5b56;">
+        We appreciate your trust in our local Adelaide business and look forward
+        to helping you again.
+    </p>
+
+    <p style="margin:0;font-size:15px;line-height:26px;color:#34483e;">
+        Kind regards,<br>
+        <strong style="color:#0b2c24;">YD Commercial Cleaning Services</strong><br>
+        <span style="font-size:13px;color:#66736e;">
+            Professional Cleaning Solutions
+        </span>
+    </p>
+
+</div>
+{% endblock %}

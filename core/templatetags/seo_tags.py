@@ -1,4 +1,4 @@
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit, urlunsplit
 import json
 
 from django import template
@@ -41,7 +41,7 @@ def open_graph_image(context):
 
     if company_settings and getattr(company_settings, "logo", None):
         return context.get("site_url", "") + company_settings.logo.url
-    return urljoin(context.get("site_url", ""), "/static/images/logo.jpeg")
+    return urljoin(context.get("site_url", ""), "/static/images/company/logoo.webp")
 
 @register.simple_tag(takes_context=True)
 def twitter_title(context):
@@ -64,7 +64,7 @@ def organization_schema():
         "name": "YD Commercial Cleaning Services",
         "alternateName": "YD Cleaning",
         "url": "https://ydcleaning.com.au",
-        "logo": "https://ydcleaning.com.au/static/images/logo.jpeg",
+        "logo": "https://ydcleaning.com.au/static/images/company/logoo.webp",
         "description": "Professional cleaning services in Adelaide for homes, offices, end-of-lease and commercial spaces.",
         "address": {
             "@type": "PostalAddress",
@@ -142,36 +142,27 @@ def breadcrumb_schema(items):
 
 @register.filter
 def cloudinary_optimize(image_url, width=None):
-    """Optimize Cloudinary image URL with f_auto, q_auto, and optional width.
-    
-    Usage: {{ item.image.url|cloudinary_optimize:"400" }}
-    Applies: format=auto, quality=auto, and width transformation for better performance.
-    """
-    if not image_url or "res.cloudinary.com" not in str(image_url):
+    """Use Cloudinary's automatic format/quality and cap delivered image width."""
+    if not image_url:
         return image_url
-    
+
     try:
-        # Split the URL at /upload/ to inject transformation params
-        url_str = str(image_url)
-        if "/upload/" in url_str:
-            parts = url_str.split("/upload/")
-            if len(parts) == 2:
-                base_url = parts[0]
-                resource_path = parts[1]
-                
-                # Build transformations: format=auto, quality=auto, width=X (if specified)
-                transforms = ["f_auto", "q_auto"]
-                if width:
-                    try:
-                        transforms.append(f"w_{int(width)}")
-                        transforms.append("c_scale")  # Scale to fit width
-                    except (ValueError, TypeError):
-                        pass
-                
-                # Combine transformations
-                transform_string = ",".join(transforms)
-                return f"{base_url}/upload/{transform_string}/{resource_path}"
-    except Exception:
-        pass
-    
-    return image_url
+        width = max(64, min(2400, int(width or 1200)))
+    except (TypeError, ValueError):
+        width = 1200
+
+    parsed = urlsplit(str(image_url))
+    host = (parsed.hostname or "").lower()
+    if host != "res.cloudinary.com" and not host.endswith(".res.cloudinary.com"):
+        return image_url
+
+    marker = "/image/upload/"
+    if marker not in parsed.path:
+        return image_url
+
+    path = parsed.path.replace(
+        marker,
+        f"{marker}f_auto,q_auto,c_limit,w_{width}/",
+        1,
+    )
+    return urlunsplit((parsed.scheme, parsed.netloc, path, parsed.query, parsed.fragment))

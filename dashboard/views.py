@@ -30,7 +30,7 @@ import requests
 from django.http import StreamingHttpResponse
 import mimetypes
 from urllib.parse import quote as urlquote
-from django.db.models import Avg, Count, F, Max, Q, Sum
+from django.db.models import Avg, Count, DecimalField, ExpressionWrapper, F, Max, Q, Sum
 from django.core.paginator import Paginator
 from django.db.models.functions import TruncDate, TruncMonth
 from django.http import HttpResponse
@@ -53,6 +53,7 @@ from employees.services import create_employee_from_form
 from expenses.models import Expense
 from gallery.forms import GalleryItemForm
 from gallery.models import GalleryItem, GalleryImage
+from gallery.upload_services import save_gallery_uploads
 from google_reviews.calendar_utils import (
     create_or_update_booking_event,
     delete_booking_event,
@@ -111,61 +112,103 @@ def dashboard_home(request):
     overdue_date = today - timedelta(days=2)
     month_start = today.replace(day=1)
 
-    active_vehicles = Vehicle.objects.filter(status="active").count()
-
-    vehicle_alerts = (
-        Vehicle.objects.filter(insurance_expiry__lt=today).count()
-        + Vehicle.objects.filter(registration_expiry__lt=today).count()
-        + Vehicle.objects.filter(service_due_date__lt=today).count()
+    vehicle_metrics = Vehicle.objects.aggregate(
+        active=Count("pk", filter=Q(status="active")),
+        insurance_alerts=Count("pk", filter=Q(insurance_expiry__lt=today)),
+        registration_alerts=Count("pk", filter=Q(registration_expiry__lt=today)),
+        service_alerts=Count("pk", filter=Q(service_due_date__lt=today)),
+        insurance_expiring=Count(
+            "pk",
+            filter=Q(insurance_expiry__gte=today, insurance_expiry__lte=today + timedelta(days=30)),
+        ),
+        service_due=Count(
+            "pk",
+            filter=Q(service_due_date__gte=today, service_due_date__lte=today + timedelta(days=30)),
+        ),
     )
-
-    insurance_expiring = Vehicle.objects.filter(
-        insurance_expiry__lte=today + timedelta(days=30), insurance_expiry__gte=today
-    ).count()
-
-    service_due = Vehicle.objects.filter(
-        service_due_date__lte=today + timedelta(days=30), service_due_date__gte=today
-    ).count()
-
-    overdue_equipment = Equipment.objects.filter(next_service_date__lt=today).count()
-
-    due_today_equipment = Equipment.objects.filter(next_service_date=today).count()
-
-    active_equipment = Equipment.objects.exclude(condition="retired").count()
-
-    total_equipment_value = (
-        Equipment.objects.aggregate(total=Sum("purchase_cost"))["total"] or 0
+    active_vehicles = vehicle_metrics["active"]
+    vehicle_alerts = sum(
+        vehicle_metrics[key]
+        for key in ("insurance_alerts", "registration_alerts", "service_alerts")
     )
+    insurance_expiring = vehicle_metrics["insurance_expiring"]
+    service_due = vehicle_metrics["service_due"]
 
-    low_stock_supplies = CleaningSupply.objects.filter(
-        current_stock__lte=F("minimum_stock")
-    ).count()
-
-    total_supplies = CleaningSupply.objects.count()
-
-    total_supplies_value = sum(
-        item.total_value() for item in CleaningSupply.objects.all()
+    equipment_metrics = Equipment.objects.aggregate(
+        overdue=Count("pk", filter=Q(next_service_date__lt=today)),
+        due_today=Count("pk", filter=Q(next_service_date=today)),
+        active=Count("pk", filter=~Q(condition="retired")),
+        total_value=Sum("purchase_cost"),
     )
+    overdue_equipment = equipment_metrics["overdue"]
+    due_today_equipment = equipment_metrics["due_today"]
+    active_equipment = equipment_metrics["active"]
+    total_equipment_value = equipment_metrics["total_value"] or 0
 
-    new_quotes = QuoteRequest.objects.filter(status="new").count()
-    contacted_quotes = QuoteRequest.objects.filter(status="contacted").count()
-    quoted_quotes = QuoteRequest.objects.filter(status="quoted").count()
-    booked_quotes = QuoteRequest.objects.filter(status="booked").count()
-    completed_quotes = QuoteRequest.objects.filter(status="completed").count()
-    lost_quotes = QuoteRequest.objects.filter(status="lost").count()
+    supply_metrics = CleaningSupply.objects.aggregate(
+        low_stock=Count("pk", filter=Q(current_stock__lte=F("minimum_stock"))),
+        total=Count("pk"),
+        total_value=Sum(
+            ExpressionWrapper(
+                F("current_stock") * F("unit_cost"),
+                output_field=DecimalField(max_digits=20, decimal_places=2),
+            )
+        ),
+    )
+    low_stock_supplies = supply_metrics["low_stock"]
+    total_supplies = supply_metrics["total"]
+    total_supplies_value = supply_metrics["total_value"] or 0
 
-    pending_bookings = Booking.objects.filter(status="pending").count()
-    confirmed_bookings = Booking.objects.filter(status="confirmed").count()
-    assigned_bookings = Booking.objects.filter(status="assigned").count()
-    in_progress_bookings = Booking.objects.filter(status="in_progress").count()
-    completed_bookings = Booking.objects.filter(status="completed").count()
-    cancelled_bookings = Booking.objects.filter(status="cancelled").count()
+    quote_metrics = QuoteRequest.objects.aggregate(
+        total=Count("pk"),
+        today=Count("pk", filter=Q(created_at__date=today)),
+        week=Count("pk", filter=Q(created_at__date__gte=week_start)),
+        month=Count("pk", filter=Q(created_at__date__gte=month_start)),
+        new=Count("pk", filter=Q(status="new")),
+        contacted=Count("pk", filter=Q(status="contacted")),
+        quoted=Count("pk", filter=Q(status="quoted")),
+        booked=Count("pk", filter=Q(status="booked")),
+        completed=Count("pk", filter=Q(status="completed")),
+        lost=Count("pk", filter=Q(status="lost")),
+    )
+    total_quotes = quote_metrics["total"]
+    today_quotes = quote_metrics["today"]
+    week_quotes = quote_metrics["week"]
+    month_quotes = quote_metrics["month"]
+    new_quotes = quote_metrics["new"]
+    contacted_quotes = quote_metrics["contacted"]
+    quoted_quotes = quote_metrics["quoted"]
+    booked_quotes = quote_metrics["booked"]
+    completed_quotes = quote_metrics["completed"]
+    lost_quotes = quote_metrics["lost"]
 
-    booking_revenue = (
-        Booking.objects.filter(status="completed").aggregate(total=Sum("quoted_price"))[
-            "total"
-        ]
-        or 0
+    booking_metrics = Booking.objects.aggregate(
+        total=Count("pk"),
+        today=Count("pk", filter=Q(booking_date=today)),
+        upcoming=Count("pk", filter=Q(booking_date__gte=today) & ~Q(status="cancelled")),
+        pending=Count("pk", filter=Q(status="pending")),
+        confirmed=Count("pk", filter=Q(status="confirmed")),
+        assigned=Count("pk", filter=Q(status="assigned")),
+        in_progress=Count("pk", filter=Q(status="in_progress")),
+        completed=Count("pk", filter=Q(status="completed")),
+        cancelled=Count("pk", filter=Q(status="cancelled")),
+        revenue=Sum("quoted_price", filter=Q(status="completed")),
+    )
+    total_bookings = booking_metrics["total"]
+    today_bookings = booking_metrics["today"]
+    upcoming_bookings = booking_metrics["upcoming"]
+    pending_bookings = booking_metrics["pending"]
+    confirmed_bookings = booking_metrics["confirmed"]
+    assigned_bookings = booking_metrics["assigned"]
+    in_progress_bookings = booking_metrics["in_progress"]
+    completed_bookings = booking_metrics["completed"]
+    cancelled_bookings = booking_metrics["cancelled"]
+    booking_revenue = booking_metrics["revenue"] or 0
+
+    employee_metrics = Employee.objects.aggregate(
+        total=Count("pk"),
+        active_total=Count("pk", filter=Q(active=True)),
+        available_total=Count("pk", filter=Q(active=True, availability="available")),
     )
 
     unassigned_jobs = (
@@ -228,22 +271,18 @@ def dashboard_home(request):
     )
 
     action_alert_count = (
-        unassigned_jobs.count()
-        + urgent_jobs_today.count()
-        + overdue_leads.count()
+        len(unassigned_jobs)
+        + len(urgent_jobs_today)
+        + len(overdue_leads)
         + pending_bookings
     )
     recent_activity = ActivityLog.objects.select_related("user").all()[:10]
     context = {
         "recent_activity": recent_activity,
-        "total_quotes": QuoteRequest.objects.count(),
-        "today_quotes": QuoteRequest.objects.filter(created_at__date=today).count(),
-        "week_quotes": QuoteRequest.objects.filter(
-            created_at__date__gte=week_start
-        ).count(),
-        "month_quotes": QuoteRequest.objects.filter(
-            created_at__date__gte=month_start
-        ).count(),
+        "total_quotes": total_quotes,
+        "today_quotes": today_quotes,
+        "week_quotes": week_quotes,
+        "month_quotes": month_quotes,
         "new_quotes": new_quotes,
         "contacted_quotes": contacted_quotes,
         "quoted_quotes": quoted_quotes,
@@ -253,16 +292,12 @@ def dashboard_home(request):
         "gallery_count": GalleryItem.objects.count(),
         "reviews_count": Review.objects.count(),
         "customer_count": Customer.objects.count(),
-        "employee_count": Employee.objects.count(),
-        "available_employees": Employee.objects.filter(
-            availability="available", active=True
-        ).count(),
-        "active_employees": Employee.objects.filter(active=True).count(),
-        "total_bookings": Booking.objects.count(),
-        "today_bookings": Booking.objects.filter(booking_date=today).count(),
-        "upcoming_bookings": Booking.objects.filter(booking_date__gte=today)
-        .exclude(status="cancelled")
-        .count(),
+        "employee_count": employee_metrics["total"],
+        "available_employees": employee_metrics["available_total"],
+        "active_employees": employee_metrics["active_total"],
+        "total_bookings": total_bookings,
+        "today_bookings": today_bookings,
+        "upcoming_bookings": upcoming_bookings,
         "completed_bookings": completed_bookings,
         "booking_revenue": booking_revenue,
         "pending_bookings": pending_bookings,
@@ -1700,23 +1735,23 @@ def add_gallery_item(request):
         )
 
         if form.is_valid():
-
-            gallery_item = form.save()
-
-            for uploaded_image in request.FILES.getlist("additional_images"):
-                GalleryImage.objects.create(
-                    gallery=gallery_item,
-                    image=uploaded_image,
+            gallery_item = form.save(commit=False)
+            primary_files = {
+                name: form.cleaned_data.get(name)
+                for name in ("image", "before_image", "after_image")
+            }
+            try:
+                save_gallery_uploads(
+                    gallery_item,
+                    primary_files,
+                    form.cleaned_data.get("additional_images", []),
                 )
-
-            messages.success(
-                request,
-                "✅ Gallery item added successfully.",
-            )
-
-            return redirect(
-                "gallery_list"
-            )
+            except Exception:
+                logger.exception("Gallery upload failed while adding an item")
+                form.add_error(None, "The gallery images could not be saved. Please try again.")
+            else:
+                messages.success(request, "✅ Gallery item added successfully.")
+                return redirect("gallery_list")
 
         messages.error(
             request,
@@ -1760,23 +1795,23 @@ def edit_gallery_item(
         )
 
         if form.is_valid():
-
-            gallery_item = form.save()
-
-            for uploaded_image in request.FILES.getlist("additional_images"):
-                GalleryImage.objects.create(
-                    gallery=gallery_item,
-                    image=uploaded_image,
+            gallery_item = form.save(commit=False)
+            primary_files = {
+                name: form.cleaned_data.get(name)
+                for name in ("image", "before_image", "after_image")
+            }
+            try:
+                save_gallery_uploads(
+                    gallery_item,
+                    primary_files,
+                    form.cleaned_data.get("additional_images", []),
                 )
-
-            messages.success(
-                request,
-                "✅ Gallery item updated successfully.",
-            )
-
-            return redirect(
-                "gallery_list"
-            )
+            except Exception:
+                logger.exception("Gallery upload failed while editing item %s", item.pk)
+                form.add_error(None, "The gallery images could not be saved. Please try again.")
+            else:
+                messages.success(request, "✅ Gallery item updated successfully.")
+                return redirect("gallery_list")
 
         messages.error(
             request,

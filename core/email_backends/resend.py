@@ -23,6 +23,9 @@ class ResendEmailBackend(BaseEmailBackend):
 
         if self.api_key:
             resend.api_key = self.api_key
+            resend.default_http_client = resend.RequestsClient(
+                timeout=getattr(settings, "RESEND_REQUEST_TIMEOUT", 90)
+            )
 
     def send_messages(self, email_messages):
         """

@@ -1,10 +1,16 @@
 from decimal import Decimal
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import logging
+from pathlib import Path
+import uuid
 
 from django.db import transaction
 
 from bookings.models import Booking
 from bookings.services import create_booking
 from .models import QuoteImage, QuoteRequest
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_quote_estimate(quote):
@@ -42,15 +48,55 @@ def create_quote_request(*, form, images=None, workflow_key=None):
         if existing:
             return existing, False
 
+    image_files = list(images or [])
+    image_storage = QuoteImage._meta.get_field("image").storage
+    stored_names = [None] * len(image_files)
+
+    def store_image(image):
+        suffix = Path(image.name).suffix.lower()
+        filename = f"quote_images/{uuid.uuid4().hex}{suffix}"
+        image.seek(0)
+        return image_storage.save(filename, image)
+
+    if image_files:
+        failures = []
+        with ThreadPoolExecutor(max_workers=min(3, len(image_files))) as executor:
+            futures = {
+                executor.submit(store_image, image): index
+                for index, image in enumerate(image_files)
+            }
+            for future in as_completed(futures):
+                try:
+                    stored_names[futures[future]] = future.result()
+                except Exception as exc:
+                    failures.append(exc)
+
+        if failures:
+            for name in filter(None, stored_names):
+                try:
+                    image_storage.delete(name)
+                except Exception:
+                    logger.exception("Could not clean up quote image %s", name)
+            raise failures[0]
+
     quote = form.save(commit=False)
     quote.estimated_price = calculate_quote_estimate(quote)
-
-    with transaction.atomic():
-        if workflow_key:
-            quote.idempotency_key = workflow_key
-        quote.save()
-        for image in images or []:
-            QuoteImage.objects.create(quote=quote, image=image)
+    try:
+        with transaction.atomic():
+            if workflow_key:
+                quote.idempotency_key = workflow_key
+            quote.save()
+            QuoteImage.objects.bulk_create(
+                [QuoteImage(quote=quote, image=name) for name in stored_names],
+                batch_size=6,
+            )
+    except Exception:
+        for name in filter(None, stored_names):
+            try:
+                image_storage.delete(name)
+            except Exception:
+                logger.exception("Could not clean up quote image %s", name)
+        raise
 
     return quote, True
 

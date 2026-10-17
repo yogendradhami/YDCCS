@@ -7,6 +7,7 @@ from .seo_data import LOCATION_ALIASES
 from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
 from services.models import Service
 from django.utils import timezone
+from .models import TestimonialVideo
 
 
 
@@ -41,7 +42,14 @@ class StaticViewSitemap(BaseSitemap):
 
 
     def items(self):
-        return ["home", "contact", "booking"]
+        return [
+            "home",
+            "contact",
+            "booking",
+            "testimonials",
+            "cleaning_services_video",
+            "customer_testimonial_video",
+        ]
 
     def location(self, item):
         return reverse(item)
@@ -181,6 +189,25 @@ class AdelaideLocalLetterSitemap(BaseSitemap):
         return timezone.now()
 
 
+class TestimonialVideoSitemap(BaseSitemap):
+    """Dedicated watch pages for active customer testimonial videos."""
+
+    def items(self):
+        return TestimonialVideo.objects.filter(active=True)
+
+    def location(self, video):
+        return reverse(
+            "testimonial_video_watch",
+            kwargs={"video_id": video.pk},
+        )
+
+    def lastmod(self, video):
+        return video.updated_at
+
+    def priority(self, video):
+        return 0.7
+
+
 sitemaps = {
     "static": StaticViewSitemap,
     "services_index": ServicesIndexSitemap,
@@ -189,4 +216,5 @@ sitemaps = {
     "adelaide_local_areas": AdelaideLocalAreaSitemap,
     "adelaide_local_index": AdelaideLocalIndexSitemap,
     "adelaide_local_letters": AdelaideLocalLetterSitemap,
+    "testimonial_videos": TestimonialVideoSitemap,
 }

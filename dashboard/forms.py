@@ -6,6 +6,7 @@
 # ==========================================================
 
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 from customers.models import MarketingSubscriber
 from .models import (
     CampaignLog,
@@ -143,6 +144,18 @@ class CompanySettingsForm(forms.ModelForm):
                 }
             ),
         }
+
+    def _clean_brand_image(self, field_name):
+        image = self.cleaned_data.get(field_name)
+        if isinstance(image, UploadedFile) and image.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("Branding images must be 5 MB or smaller.")
+        return image
+
+    def clean_logo(self):
+        return self._clean_brand_image("logo")
+
+    def clean_favicon(self):
+        return self._clean_brand_image("favicon")
 
 
 class EquipmentForm(forms.ModelForm):

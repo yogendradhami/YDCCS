@@ -1,9 +1,12 @@
+from io import BytesIO
 from datetime import date, time, timedelta
 from unittest.mock import Mock, patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core import mail
 from django.test import TestCase, override_settings
+from django.utils.datastructures import MultiValueDict
+from PIL import Image
 
 from quotes.forms import QuoteRequestForm
 from quotes.forms import QuickQuoteForm
@@ -18,6 +21,10 @@ from services.models import Service
 
 @override_settings(RECAPTCHA_SITE_KEY="test-site-key", RECAPTCHA_SECRET_KEY="test-secret-key")
 class QuoteFormTests(TestCase):
+    def workflow_key(self):
+        response = self.client.get("/", HTTP_HOST="127.0.0.1")
+        return response.context["form"]["workflow_key"].value()
+
     def test_quote_form_uses_real_captcha_and_hides_price_ui(self):
         form = QuoteRequestForm()
         self.assertIn("g_recaptcha_response", form.fields)
@@ -31,6 +38,7 @@ class QuoteFormTests(TestCase):
         mock_post.return_value.raise_for_status.return_value = None
         mock_post.return_value.json.return_value = {"success": True}
 
+        workflow_key = self.workflow_key()
         response = self.client.post(
             "/",
             {
@@ -45,6 +53,7 @@ class QuoteFormTests(TestCase):
                 "bathrooms": "1",
                 "lead_source": "website",
                 "g-recaptcha-response": "localhost-test-token",
+                "workflow_key": workflow_key,
             },
             HTTP_HOST="127.0.0.1",
         )
@@ -68,6 +77,7 @@ class QuoteFormTests(TestCase):
         mock_post.return_value.raise_for_status.return_value = None
         mock_post.return_value.json.return_value = {"success": True}
 
+        workflow_key = self.workflow_key()
         response = self.client.post(
             "/",
             {
@@ -83,6 +93,7 @@ class QuoteFormTests(TestCase):
                 "lead_source": "website",
                 "g-recaptcha-response": "localhost-test-token",
                 "property_images": [invalid_image],
+                "workflow_key": workflow_key,
             },
             HTTP_HOST="127.0.0.1",
         )
@@ -95,6 +106,40 @@ class QuoteFormTests(TestCase):
         # The malformed upload must not create a quote or quote image.
         self.assertEqual(QuoteRequest.objects.count(), 0)
         self.assertEqual(QuoteImage.objects.count(), 0)
+
+    @patch("core.views.send_admin_quote_email", return_value=True)
+    @patch("core.views.send_customer_quote_email", return_value=True)
+    @patch("quotes.forms.requests.post")
+    def test_repeated_quote_post_with_same_workflow_does_not_duplicate_or_resend(
+        self, recaptcha_post, _customer_email, _admin_email
+    ):
+        recaptcha_post.return_value = Mock()
+        recaptcha_post.return_value.raise_for_status.return_value = None
+        recaptcha_post.return_value.json.return_value = {"success": True}
+        workflow_key = self.workflow_key()
+        data = {
+            "name": "Test User",
+            "email": "test@example.com",
+            "phone": "0400000000",
+            "property_type": "House",
+            "suburb_postcode": "Adelaide 5000",
+            "preferred_date": "2026-08-09",
+            "message": "Test quote",
+            "bedrooms": "2",
+            "bathrooms": "1",
+            "lead_source": "website",
+            "g-recaptcha-response": "localhost-test-token",
+            "workflow_key": workflow_key,
+        }
+
+        first = self.client.post("/", data, HTTP_HOST="127.0.0.1")
+        second = self.client.post("/", data, HTTP_HOST="127.0.0.1")
+
+        self.assertEqual(first.status_code, 302)
+        self.assertEqual(second.status_code, 302)
+        self.assertEqual(QuoteRequest.objects.count(), 1)
+        self.assertEqual(_customer_email.call_count, 1)
+        self.assertEqual(_admin_email.call_count, 1)
 
 
 @override_settings(RECAPTCHA_SITE_KEY="", RECAPTCHA_SECRET_KEY="")
@@ -131,6 +176,26 @@ class QuoteServiceTests(TestCase):
         self.assertEqual(QuoteRequest.objects.count(), 1)
         self.assertEqual(first.estimated_price, 200)
 
+    def test_idempotent_retry_does_not_upload_duplicate_images(self):
+        storage = QuoteImage._meta.get_field("image").storage
+        with patch.object(storage, "save", side_effect=lambda name, _file: name) as save_image:
+            first, created = create_quote_request(
+                form=self.valid_form(),
+                images=[self.image_upload("first.jpg")],
+                workflow_key="quote-image-retry",
+            )
+            second, second_created = create_quote_request(
+                form=self.valid_form(email="duplicate@example.com"),
+                images=[self.image_upload("retry.jpg")],
+                workflow_key="quote-image-retry",
+            )
+
+        self.assertTrue(created)
+        self.assertFalse(second_created)
+        self.assertEqual(first.pk, second.pk)
+        self.assertEqual(save_image.call_count, 1)
+        self.assertEqual(QuoteImage.objects.count(), 1)
+
     def test_different_workflows_create_independent_quotes(self):
         first, _ = create_quote_request(form=self.valid_form(), workflow_key="quote-one")
         second, _ = create_quote_request(
@@ -142,6 +207,78 @@ class QuoteServiceTests(TestCase):
         form = self.valid_form(property_type="")
         with self.assertRaises(ValueError):
             create_quote_request(form=form)
+
+    def test_property_photo_combined_size_is_limited(self):
+        class OversizedImage(SimpleUploadedFile):
+            @property
+            def size(self):
+                return getattr(self, "fake_size", self._size)
+
+            @size.setter
+            def size(self, value):
+                self._size = value
+
+        images = []
+        for index in range(6):
+            image = self.image_upload(f"photo-{index}.jpg")
+            oversized = OversizedImage(
+                image.name,
+                image.read(),
+                content_type="image/jpeg",
+            )
+            oversized.fake_size = 11 * 1024 * 1024
+            images.append(oversized)
+        form = QuoteRequestForm(
+            data=self.valid_form().data,
+            files=MultiValueDict({"property_images": images}),
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("property_images", form.errors)
+
+    @staticmethod
+    def image_upload(name):
+        buffer = BytesIO()
+        Image.new("RGB", (4, 4), color="green").save(buffer, format="JPEG")
+        return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/jpeg")
+
+    def test_failed_parallel_image_upload_cleans_successful_asset_and_saves_no_quote(self):
+        form = self.valid_form()
+        self.assertTrue(form.is_valid())
+        storage = QuoteImage._meta.get_field("image").storage
+        successful_name = "quote_images/saved.jpg"
+
+        def save_image(name, uploaded_file):
+            if uploaded_file.name == "bad.jpg":
+                raise RuntimeError("storage failure")
+            return successful_name
+
+        with patch.object(storage, "save", side_effect=save_image):
+            with patch.object(storage, "delete") as delete_storage:
+                with self.assertRaises(RuntimeError):
+                    create_quote_request(
+                        form=form,
+                        images=[self.image_upload("good.jpg"), self.image_upload("bad.jpg")],
+                    )
+
+        delete_storage.assert_called_once_with(successful_name)
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+        self.assertEqual(QuoteImage.objects.count(), 0)
+
+    def test_quote_database_failure_cleans_all_uploaded_images(self):
+        form = self.valid_form()
+        self.assertTrue(form.is_valid())
+        storage = QuoteImage._meta.get_field("image").storage
+
+        with patch.object(storage, "save", side_effect=lambda name, _file: name):
+            with patch.object(storage, "delete") as delete_storage:
+                with patch("quotes.services.QuoteImage.objects.bulk_create", side_effect=RuntimeError("db failure")):
+                    with self.assertRaises(RuntimeError):
+                        create_quote_request(form=form, images=[self.image_upload("good.jpg")])
+
+        delete_storage.assert_called_once()
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+        self.assertEqual(QuoteImage.objects.count(), 0)
 
     def make_quote(self, **overrides):
         data = {

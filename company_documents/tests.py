@@ -17,6 +17,7 @@ from .models import (
 )
 from .services.compliance_requirements import evaluate_requirement
 from .services.compliance_resolution import resolve_document_compliance
+from .services.bulk_import import create_batch
 
 
 class ComplianceResolutionTests(TestCase):
@@ -395,3 +396,58 @@ class BulkImportHistoryTests(TestCase):
                 )
 
         mock_delete_staged_raw_document.assert_not_called()
+
+
+class BulkImportUploadSafetyTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("bulk-upload-admin")
+
+    @staticmethod
+    def pdf(name):
+        return SimpleUploadedFile(name, b"%PDF-1.4 sample", content_type="application/pdf")
+
+    @patch("company_documents.services.bulk_import.cloudinary.uploader.upload")
+    def test_documents_are_staged_as_raw_resources(self, upload):
+        upload.side_effect = lambda uploaded, **_kwargs: {
+            "public_id": f"company_document_staging/{uploaded.name}",
+            "resource_type": "raw",
+        }
+
+        batch = create_batch(self.user, [self.pdf("one.pdf"), self.pdf("two.pdf")])
+
+        self.assertEqual(batch.items.count(), 2)
+        self.assertTrue(all(item.staging_file.name for item in batch.items.all()))
+        self.assertTrue(all(call.kwargs["resource_type"] == "raw" for call in upload.call_args_list))
+
+    @patch("company_documents.services.bulk_import._cleanup_staging_assets")
+    @patch("company_documents.services.bulk_import.cloudinary.uploader.upload")
+    def test_partial_stage_failure_cleans_assets_and_marks_batch_failed(
+        self, upload, cleanup
+    ):
+        def upload_side_effect(uploaded, **_kwargs):
+            if uploaded.name == "bad.pdf":
+                raise RuntimeError("Cloudinary unavailable")
+            return {
+                "public_id": "company_document_staging/good.pdf",
+                "resource_type": "raw",
+            }
+
+        upload.side_effect = upload_side_effect
+        with self.assertRaises(RuntimeError):
+            create_batch(self.user, [self.pdf("good.pdf"), self.pdf("bad.pdf")])
+
+        batch = BulkImportBatch.objects.get(uploaded_by=self.user)
+        self.assertEqual(batch.status, BulkImportBatch.Status.FAILED)
+        self.assertEqual(batch.items.filter(status=BulkImportItem.Status.FAILED).count(), 2)
+        cleanup.assert_called_once_with(["company_document_staging/good.pdf"])
+
+    @patch("company_documents.services.bulk_import.cloudinary.uploader.upload")
+    def test_unsupported_file_type_is_rejected_before_batch_creation(self, upload):
+        with self.assertRaises(ValueError):
+            create_batch(
+                self.user,
+                [SimpleUploadedFile("payload.exe", b"not allowed")],
+            )
+
+        self.assertEqual(BulkImportBatch.objects.count(), 0)
+        upload.assert_not_called()

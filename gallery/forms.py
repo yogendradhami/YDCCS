@@ -14,6 +14,8 @@ except Exception:
 
 from .models import GalleryItem
 
+MAX_GALLERY_IMAGE_SIZE = 20 * 1024 * 1024
+
 
 class HEICImageField(forms.ImageField):
     """
@@ -22,6 +24,9 @@ class HEICImageField(forms.ImageField):
 
     def clean(self, data, initial=None):
         file = super().clean(data, initial)
+
+        if file and getattr(file, "size", 0) > MAX_GALLERY_IMAGE_SIZE:
+            raise forms.ValidationError("Each gallery image must be 20 MB or smaller.")
 
         if file and hasattr(file, "name"):
             filename = file.name.lower()
@@ -116,6 +121,11 @@ class MultipleHEICImageField(forms.FileField):
             if not file:
                 continue
 
+            if getattr(file, "size", 0) > MAX_GALLERY_IMAGE_SIZE:
+                raise forms.ValidationError(
+                    f'"{getattr(file, "name", "Image")}" is larger than 20 MB.'
+                )
+
             filename = getattr(file, "name", "").lower()
 
             # Validate as an image first
@@ -194,6 +204,8 @@ class GalleryItemForm(forms.ModelForm):
             "JPG, PNG, WEBP, HEIC and HEIF are supported."
         ),
     )
+    MAX_IMAGE_SIZE = MAX_GALLERY_IMAGE_SIZE
+    MAX_ADDITIONAL_IMAGES = 20
 
     class Meta:
         model = GalleryItem
@@ -219,4 +231,26 @@ class GalleryItemForm(forms.ModelForm):
                     "class",
                     "form-control",
                 )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for field_name in ("image", "before_image", "after_image"):
+            uploaded = cleaned_data.get(field_name)
+            if uploaded and getattr(uploaded, "size", 0) > self.MAX_IMAGE_SIZE:
+                self.add_error(field_name, "Each gallery image must be 20 MB or smaller.")
+
+        additional_images = cleaned_data.get("additional_images", [])
+        if len(additional_images) > self.MAX_ADDITIONAL_IMAGES:
+            self.add_error(
+                "additional_images",
+                f"Choose no more than {self.MAX_ADDITIONAL_IMAGES} additional images at once.",
+            )
+        for uploaded in additional_images:
+            if getattr(uploaded, "size", 0) > self.MAX_IMAGE_SIZE:
+                self.add_error(
+                    "additional_images",
+                    "Each gallery image must be 20 MB or smaller.",
+                )
+                break
+        return cleaned_data
 

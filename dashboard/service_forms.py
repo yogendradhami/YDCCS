@@ -5,6 +5,7 @@ Purpose: Forms for managing services through the dashboard
 """
 
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 from services.models import Service
 import json
 
@@ -51,6 +52,12 @@ class ServiceForm(forms.ModelForm):
             items = [item.strip() for item in data.split('\n') if item.strip()]
             return items
         return []
+
+    def clean_hero_image(self):
+        image = self.cleaned_data.get("hero_image")
+        if isinstance(image, UploadedFile) and image.size > 15 * 1024 * 1024:
+            raise forms.ValidationError("Service images must be 15 MB or smaller.")
+        return image
     
     def clean_packages_json(self):
         """Validate JSON format"""

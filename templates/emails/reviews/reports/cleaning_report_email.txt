@@ -1,0 +1,28 @@
+
+Hello {{ customer_name }},
+
+Your cleaning completion report from YD Commercial Cleaning Services is ready.
+
+BOOKING DETAILS
+------------------------------
+Booking reference: #{{ booking.id }}
+Service: {{ booking.get_service_type_display }}
+Date: {{ booking.booking_date|date:"d F Y" }}
+Time: {{ booking.booking_time|time:"g:i A" }}
+Address: {{ booking.address }}
+Suburb/Postcode: {{ booking.suburb_postcode }}
+Report generated: {{ report_date|date:"d F Y, g:i A" }}
+
+Your cleaning completion report is attached to this email as a PDF.
+
+If you have any questions about your report, please contact us.
+
+YD Commercial Cleaning Services
+Professional Cleaning Solutions
+
+Phone: 0430 049 865
+Email: info@ydcleaning.com.au
+Website: https://ydcleaning.com.au
+Address: 2/10 Da Costa Avenue, Prospect SA 5082
+
+Thank you for choosing YD Commercial Cleaning Services.

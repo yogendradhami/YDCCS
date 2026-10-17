@@ -43,22 +43,13 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
 
 <section class="hero-section" id="home">
 
-    <video
-        id="heroVideo"
+    <img
         class="hero-video"
-        autoplay
-        muted
-        loop
-        playsinline
-        preload="none"
-        poster="{% static 'images/hero-cleaning-poster.webp' %}"
+        src="{% static 'images/hero-cleaning-poster.webp' %}"
+        alt=""
         aria-hidden="true"
+        fetchpriority="high"
     >
-        <source
-            data-src="https://res.cloudinary.com/yd-commercial-cleaning/video/upload/v1787021334/testimonial-videos/fujal5mx7vdtoew5jgr2.mp4"
-            type="video/mp4"
-        >
-    </video>
 
     <div class="hero-overlay" aria-hidden="true"></div>
 
@@ -96,6 +87,13 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
                 >
                     <span class="phone-icon">☎</span>
                     0430 049 865
+                </a>
+
+                <a
+                    href="{% url 'customer_testimonial_video' %}"
+                    class="btn btn-outline-light hero-phone"
+                >
+                    Watch a Customer Story
                 </a>
 
             </div>
@@ -1104,7 +1102,7 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
                     {% if item.primary_image %}
 
                         <img
-                            src="{{ item.primary_image.url }}"
+                            src="{{ item.primary_image.url|cloudinary_optimize:'1200' }}"
                             alt="{{ item.title|default:'Professional cleaning work in Adelaide' }}"
                             loading="lazy"
                         >
@@ -1917,6 +1915,7 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
                 >
 
                     {% csrf_token %}
+                    {{ form.workflow_key }}
 
 
                     <div class="form-row">
@@ -2091,9 +2090,11 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
                         {{ form.property_images }}
 
                         <small>
-                            Optional — images can help us understand
-                            the property and cleaning requirements.
+                            Optional — add up to 6 images (15 MB each, 60 MB total) to help us
+                            understand the property and cleaning requirements.
                         </small>
+                        <div id="quoteImageLimitError" class="field-error" role="alert" hidden></div>
+                        <div class="field-error">{{ form.property_images.errors }}</div>
 
                     </div>
 
@@ -2410,6 +2411,35 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
     }
 
 })();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const quoteForm = document.getElementById("quoteForm");
+    const input = quoteForm?.querySelector("[name=property_images]");
+    const errorBox = document.getElementById("quoteImageLimitError");
+    if (!quoteForm || !input || !errorBox) return;
+
+    function validateQuoteImages() {
+        const files = Array.from(input.files || []);
+        const totalBytes = files.reduce((total, file) => total + file.size, 0);
+        let message = "";
+        if (files.length > 6) message = "Choose no more than 6 property photos.";
+        else if (files.some((file) => file.size > 15 * 1024 * 1024)) message = "Each property photo must be 15 MB or smaller.";
+        else if (totalBytes > 60 * 1024 * 1024) message = "Property photos must total 60 MB or less.";
+        errorBox.textContent = message;
+        errorBox.hidden = !message;
+        return !message;
+    }
+
+    input.addEventListener("change", validateQuoteImages);
+    quoteForm.addEventListener("submit", function (event) {
+        if (!validateQuoteImages()) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
+});
 </script>
 
 {% if form.recaptcha_site_key %}

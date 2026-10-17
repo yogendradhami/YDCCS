@@ -277,6 +277,10 @@ MIDDLEWARE = [
 
     "core.middleware.CacheHeaderMiddleware",
 
+    "core.middleware.SlowRequestLoggingMiddleware",
+
+    "core.middleware.ExceptionLoggingMiddleware",
+
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -625,6 +629,11 @@ RESEND_API_KEY = env.str(
     default="",
 )
 
+RESEND_REQUEST_TIMEOUT = env.int(
+    "RESEND_REQUEST_TIMEOUT",
+    default=90,
+)
+
 if IS_PRODUCTION and not ADMIN_EMAIL:
     raise RuntimeError(
         "ADMIN_EMAIL must be configured when IS_PRODUCTION=True."
@@ -793,6 +802,15 @@ LOGGING = {
             "DJANGO_LOG_LEVEL",
             default="INFO",
         ),
+    },
+    "loggers": {
+        # Django logs uncaught request exceptions with exc_info. Route those
+        # tracebacks to Render's console logs instead of relying on email admins.
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
     },
 }
 

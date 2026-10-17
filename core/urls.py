@@ -13,6 +13,7 @@ from .views import (
     booking_terms,
     blog,
     cleaning_services_video,
+    customer_testimonial_video,
     careers,
     case_studies,
     contact,
@@ -30,6 +31,7 @@ from .views import (
     referral_program,
     resources,
     testimonials,
+    testimonial_video_watch_page,
     robots_txt,
     rss_xml,
     service_page,
@@ -143,5 +145,15 @@ urlpatterns = [
         "videos/cleaning-services-adelaide/",
         cleaning_services_video,
         name="cleaning_services_video",
+    ),
+    path(
+        "videos/customer-testimonial/",
+        customer_testimonial_video,
+        name="customer_testimonial_video",
+    ),
+    path(
+        "videos/testimonial/<int:video_id>/",
+        testimonial_video_watch_page,
+        name="testimonial_video_watch",
     ),
 ]

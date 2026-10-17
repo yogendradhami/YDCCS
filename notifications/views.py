@@ -3,11 +3,14 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
+from .utils import invalidate_notification_count_cache
+
 
 @login_required
 @require_POST
 def mark_notifications_read(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
+    invalidate_notification_count_cache(request.user)
 
     return JsonResponse(
         {

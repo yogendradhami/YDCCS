@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static seo_tags %}
 
 {% block title %}Blog - Cleaning Tips & Professional Advice | YD Commercial Cleaning{% endblock %}
 {% block meta_description %}Read our professional cleaning tips, industry insights, and helpful guides. Learn how to maintain clean and healthy spaces.{% endblock %}
@@ -42,7 +42,7 @@
         <div class="featured-blog-post">
             <div class="featured-image">
                 {% if featured.featured_image %}
-                    <img src="{{ featured.featured_image.url }}" alt="{{ featured.title }}" loading="lazy" width="1200" height="630">
+                    <img src="{{ featured.featured_image.url|cloudinary_optimize:'1200' }}" alt="{{ featured.title }}" loading="lazy" width="1200" height="630">
                 {% else %}
                     <img src="{% static 'uploads/blog/office_cleaning.png' %}" alt="{{ featured.title }}" loading="lazy">
                 {% endif %}
@@ -66,7 +66,7 @@
             <article class="blog-card" data-category="{{ post.category|default:'Tips & Guides'|slugify }}">
                 <div class="blog-image">
                     {% if post.featured_image %}
-                        <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" loading="lazy" width="800" height="450">
+                        <img src="{{ post.featured_image.url|cloudinary_optimize:'800' }}" alt="{{ post.title }}" loading="lazy" width="800" height="450">
                     {% else %}
                         <img src="{% static 'uploads/blog/office_cleaning.png' %}" alt="{{ post.title }}" loading="lazy" width="800" height="450">
                     {% endif %}

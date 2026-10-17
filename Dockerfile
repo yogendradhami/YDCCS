@@ -19,5 +19,12 @@ COPY . /app/
 
 ENV DJANGO_SETTINGS_MODULE=ydcleaning.settings
 
+RUN CLOUDINARY_CLOUD_NAME=build-placeholder \
+    CLOUDINARY_API_KEY=build-placeholder \
+    CLOUDINARY_API_SECRET=build-placeholder \
+    python manage.py collectstatic --noinput
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p ${PORT:-8000} ydcleaning.asgi:application"]
+# Keep startup focused on binding the web port. Configure
+# `python manage.py migrate --noinput` as Render's pre-deploy command on a
+# paid web service before deploying schema changes.
+CMD ["sh", "-c", "exec daphne -b 0.0.0.0 -p ${PORT:-8000} ydcleaning.asgi:application"]

@@ -5,7 +5,7 @@
 =================================================== -->
 
 {% extends 'base.html' %}
-{% load static %}
+{% load static seo_tags %}
 
 
 {% block extra_css %}
@@ -272,7 +272,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                 {% else %}
 
                 <img
-                    src="{% static 'images/logo.jpeg' %}"
+                    src="{% static 'images/company/logoo-256.webp' %}"
                     alt="YD Commercial Cleaning Services Adelaide"
                     loading="lazy"
                     decoding="async"
@@ -1006,7 +1006,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                         {% if img.url %}
 
                         <img
-                            src="{{ img.url }}"
+                            src="{{ img.url|cloudinary_optimize:'1200' }}"
                             alt="{{ service.title }} - image {{ forloop.counter }}"
                             loading="lazy"
                             decoding="async"
@@ -1017,7 +1017,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                         {% else %}
 
                         <img
-                            src="{{ img }}"
+                            src="{{ img|cloudinary_optimize:'1200' }}"
                             alt="{{ service.title }} - image {{ forloop.counter }}"
                             loading="lazy"
                             decoding="async"
@@ -1530,7 +1530,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
         "url": "https://ydcleaning.com.au",
         "telephone": "+61 430 049 865",
         "email": "info@ydcleaning.com.au",
-        "image": "{% if service.hero_image %}{{ service.hero_image }}{% else %}https://ydcleaning.com.au/static/images/logo.jpeg{% endif %}",
+        "image": "{% if service.hero_image %}{{ service.hero_image }}{% else %}https://ydcleaning.com.au/static/images/company/logoo.webp{% endif %}",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Adelaide",

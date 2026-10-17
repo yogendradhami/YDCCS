@@ -79,13 +79,13 @@
 
     <link
         rel="icon"
-        href="{% static 'images/logo.jpeg' %}"
-        type="image/jpeg"
+        href="{% static 'images/company/logoo-48.webp' %}"
+        type="image/webp"
     >
 
     <link
         rel="apple-touch-icon"
-        href="{% static 'images/logo.jpeg' %}"
+        href="{% static 'images/company/logoo-256.webp' %}"
     >
 
     <link
@@ -121,10 +121,9 @@
     >
 
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    >
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
     <link rel="stylesheet" href="{% static 'css/components/faq.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/why-choose-us.css' %}">
@@ -383,7 +382,7 @@
 
           "logo": {
             "@type": "ImageObject",
-            "url": "https://ydcleaning.com.au/static/images/logo.jpeg"
+            "url": "https://ydcleaning.com.au/static/images/company/logoo.webp"
           },
 
           "sameAs": [
@@ -426,7 +425,7 @@
 
           "image": {
             "@type": "ImageObject",
-            "url": "https://ydcleaning.com.au/static/images/logo.jpeg"
+            "url": "https://ydcleaning.com.au/static/images/company/logoo.webp"
           },
 
           "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",

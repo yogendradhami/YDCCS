@@ -69,7 +69,7 @@
                     id="bulk-files"
                     multiple
                     required
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png,.webp"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.zip,.rar,.jpg,.jpeg,.png,.webp"
                 >
 
                 <span>
@@ -93,8 +93,13 @@
                 </div>
 
                 <div>
-                    <strong>Multiple</strong>
-                    <span>Documents per batch</span>
+                    <strong>20 files</strong>
+                    <span>Maximum per batch</span>
+                </div>
+
+                <div>
+                    <strong>250 MB</strong>
+                    <span>Combined batch size</span>
                 </div>
 
                 <div>
@@ -218,6 +223,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const input = document.getElementById("bulk-files");
     const list = document.getElementById("bulk-file-list");
+    const form = input?.closest("form");
+    const allowedExtensions = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|csv|txt|zip|rar|jpe?g|png|webp)$/i;
+    const maxFileBytes = 50 * 1024 * 1024;
+    const maxBatchBytes = 250 * 1024 * 1024;
+    const maxFiles = 20;
 
     if (!input || !list) {
         return;
@@ -225,31 +235,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
     input.addEventListener("change", function () {
 
-        list.innerHTML = "";
+        list.textContent = "";
+        const files = Array.from(input.files);
 
-        Array.from(input.files).forEach(function (file) {
+        files.forEach(function (file) {
 
             const item = document.createElement("div");
 
             item.className = "bulk-selected-file";
 
             const size = file.size / (1024 * 1024);
-
-            item.innerHTML = `
-                <span class="bulk-file-name">
-                    ${file.name}
-                </span>
-                <span class="bulk-file-size">
-                    ${size < 1
-                        ? Math.round(file.size / 1024) + " KB"
-                        : size.toFixed(2) + " MB"}
-                </span>
-            `;
+            const filename = document.createElement("span");
+            filename.className = "bulk-file-name";
+            filename.textContent = file.name;
+            const filesize = document.createElement("span");
+            filesize.className = "bulk-file-size";
+            filesize.textContent = size < 1
+                ? Math.round(file.size / 1024) + " KB"
+                : size.toFixed(2) + " MB";
+            item.append(filename, filesize);
 
             list.appendChild(item);
 
         });
 
+        const totalBytes = files.reduce((total, file) => total + file.size, 0);
+        if (files.length > maxFiles) {
+            list.dataset.error = `Choose no more than ${maxFiles} documents per batch.`;
+        } else if (totalBytes > maxBatchBytes) {
+            list.dataset.error = "The combined size of a batch must not exceed 250 MB.";
+        } else if (files.some((file) => file.size > maxFileBytes)) {
+            list.dataset.error = "Each document must be 50 MB or smaller.";
+        } else if (files.some((file) => !allowedExtensions.test(file.name))) {
+            list.dataset.error = "Choose a supported document, spreadsheet, archive, or image file.";
+        } else {
+            delete list.dataset.error;
+        }
+
+    });
+
+    form?.addEventListener("submit", function (event) {
+        if (list.dataset.error) {
+            event.preventDefault();
+            window.alert(list.dataset.error);
+        }
     });
 
 });

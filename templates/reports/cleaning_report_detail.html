@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load seo_tags %}
 
 {% block title %}
 Cleaning Report | YD Commercial Cleaning
@@ -84,7 +85,7 @@ Cleaning Report | YD Commercial Cleaning
             <div class="job-photo-grid">
                 {% for photo in before_photos %}
                     <div class="job-photo-card">
-                        <img src="{{ photo.image.url }}" alt="Before photo">
+                        <img src="{{ photo.image.url|cloudinary_optimize:'1200' }}" alt="Before photo" loading="lazy">
 
                         <div class="job-photo-info">
                             <span class="photo-type photo-before">Before</span>
@@ -104,7 +105,7 @@ Cleaning Report | YD Commercial Cleaning
             <div class="job-photo-grid">
                 {% for photo in after_photos %}
                     <div class="job-photo-card">
-                        <img src="{{ photo.image.url }}" alt="After photo">
+                        <img src="{{ photo.image.url|cloudinary_optimize:'1200' }}" alt="After photo" loading="lazy">
 
                         <div class="job-photo-info">
                             <span class="photo-type photo-after">After</span>

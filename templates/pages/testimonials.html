@@ -188,23 +188,18 @@ Read genuine Google reviews and watch real cleaning videos from YD Commercial Cl
 
             <div class="testimonial-video-media">
 
-                <video
-                    controls
-                    playsinline
-                    preload="metadata"
-                    {% if video.thumbnail %}
-                    poster="{{ video.thumbnail.url }}"
-                    {% endif %}
+                <a
+                    class="testimonial-video-watch-link"
+                    href="{% url 'testimonial_video_watch' video_id=video.pk %}"
+                    aria-label="Watch {{ video.title }}"
                 >
-
-                    <source
-                        src="{{ video.video.url }}"
-                        type="video/mp4"
+                    <img
+                        src="{{ video.video_thumbnail_url }}"
+                        alt=""
+                        loading="lazy"
                     >
-
-                    Your browser does not support HTML5 video.
-
-                </video>
+                    <span>Watch video</span>
+                </a>
 
             </div>
 
@@ -267,21 +262,18 @@ Read genuine Google reviews and watch real cleaning videos from YD Commercial Cl
 
         <div class="testimonial-feature-video-media">
 
-            <video
-                controls
-                playsinline
-                preload="metadata"
-                poster="{% static 'images/hero-cleaning-poster.webp' %}"
+            <a
+                class="testimonial-video-watch-link"
+                href="{% url 'cleaning_services_video' %}"
+                aria-label="Watch Professional Cleaning Services in Adelaide"
             >
-
-                <source
-                    src="{% static 'videos/cleaning-hero.mp4' %}"
-                    type="video/mp4"
+                <img
+                    src="{% static 'images/hero-cleaning-poster.webp' %}"
+                    alt=""
+                    loading="lazy"
                 >
-
-                Your browser does not support HTML5 video.
-
-            </video>
+                <span>Watch video</span>
+            </a>
 
         </div>
 

@@ -27,8 +27,17 @@ Upload Job Photo | Employee Portal
                 <p><strong>Address:</strong> {{ booking.address }}</p>
             </div>
 
-            <form method="POST" enctype="multipart/form-data">
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+                id="job-photo-upload-form"
+                data-upload-url="{% url 'upload_job_photo' booking.id %}"
+                data-cloud-name="{{ cloudinary_cloud_name }}"
+            >
                 {% csrf_token %}
+                <input type="hidden" name="cloudinary_uploads" value="">
+                <input type="hidden" name="cloudinary_nonce" value="">
+                {{ form.non_field_errors }}
 
                 <div class="form-group">
                     <label>Photo Type</label>
@@ -38,11 +47,18 @@ Upload Job Photo | Employee Portal
 
                 <div class="form-group">
                     <label>Upload Images</label>
-                    <input type="file" name="images" multiple accept="image/*" class="form-control" /> 
-                    <small> You can select unlimited images. </small>
-                    <small>
-                    You can select unlimited before/after photos.
-                    </small>
+                    <input
+                        type="file"
+                        name="images"
+                        id="job-photo-files"
+                        multiple
+                        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                        class="form-control"
+                    />
+                    <small>Select up to 12 photos per batch. Large batches upload directly to secure cloud storage.</small>
+                    <div id="job-photo-upload-status" role="status" aria-live="polite" hidden></div>
+                    <progress id="job-photo-upload-progress" max="100" value="0" hidden style="width:100%;margin-top:0.5rem"></progress>
+                    <button type="button" id="job-photo-upload-cancel" class="btn-outline" hidden>Cancel upload</button>
 
                     <div class="form-group">
                         <label>Employee Signature (Optional)</label>
@@ -64,7 +80,7 @@ Upload Job Photo | Employee Portal
                     <div class="text-danger">{{ form.notes.errors }}</div>
                 </div>
 
-                <button type="submit" class="btn-fill full-width">
+                <button type="submit" id="job-photo-upload-button" class="btn-fill full-width">
                     Upload Photo
                 </button>
 
@@ -77,5 +93,225 @@ Upload Job Photo | Employee Portal
 
     </div>
 </section>
+
+<script>
+(() => {
+    const form = document.getElementById("job-photo-upload-form");
+    const input = document.getElementById("job-photo-files");
+    const button = document.getElementById("job-photo-upload-button");
+    const status = document.getElementById("job-photo-upload-status");
+    const progress = document.getElementById("job-photo-upload-progress");
+    const cancelButton = document.getElementById("job-photo-upload-cancel");
+    if (!form || !input || !button) return;
+
+    const maxPhotos = 12;
+    const maxBytes = 25 * 1024 * 1024;
+    const allowedExtensions = /\.(jpe?g|png|webp|heic|heif)$/i;
+    const activeRequests = new Set();
+    let signedNonce = "";
+    let cancelled = false;
+
+    function setStatus(message) {
+        status.hidden = false;
+        status.textContent = message;
+    }
+
+    function uploadToCloudinary(file, params, onProgress) {
+        return new Promise((resolve, reject) => {
+            const request = new XMLHttpRequest();
+            const body = new FormData();
+            body.append("file", file);
+            body.append("public_id", params.public_id);
+            body.append("timestamp", params.timestamp);
+            body.append("allowed_formats", params.allowed_formats);
+            body.append("api_key", params.api_key);
+            body.append("signature", params.signature);
+
+            request.open(
+                "POST",
+                `https://api.cloudinary.com/v1_1/${encodeURIComponent(form.dataset.cloudName)}/image/upload`
+            );
+            activeRequests.add(request);
+            const cleanup = () => activeRequests.delete(request);
+            request.upload.addEventListener("progress", onProgress);
+            request.addEventListener("load", () => {
+                cleanup();
+                let response;
+                try {
+                    response = JSON.parse(request.responseText);
+                } catch (_) {
+                    reject(new Error("Cloud storage returned an unreadable response."));
+                    return;
+                }
+                if (request.status < 200 || request.status >= 300) {
+                    const error = new Error(response.error?.message || "A photo could not be uploaded.");
+                    error.status = request.status;
+                    reject(error);
+                    return;
+                }
+                resolve({
+                    public_id: response.public_id,
+                    version: response.version,
+                    signature: response.signature,
+                    resource_type: response.resource_type,
+                    format: response.format,
+                    bytes: response.bytes,
+                });
+            });
+            request.addEventListener("error", () => {
+                cleanup();
+                const error = new Error("Network error while uploading a photo.");
+                error.retryable = true;
+                reject(error);
+            });
+            request.addEventListener("abort", () => {
+                cleanup();
+                reject(new Error("Upload cancelled."));
+            });
+            request.send(body);
+        });
+    }
+
+    async function uploadWithRetry(file, params, onProgress) {
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            if (cancelled) throw new Error("Upload cancelled.");
+            try {
+                return await uploadToCloudinary(file, params, onProgress);
+            } catch (error) {
+                const retryable = error.retryable || error.status === 429 || error.status >= 500;
+                if (cancelled || !retryable || attempt === 2) throw error;
+                await new Promise((resolve) => setTimeout(resolve, 350 * (attempt + 1)));
+            }
+        }
+    }
+
+    async function cancelRemoteBatch() {
+        if (!signedNonce) return;
+        const csrfToken = form.querySelector("[name=csrfmiddlewaretoken]").value;
+        const body = new URLSearchParams({
+            upload_action: "cancel",
+            nonce: signedNonce,
+            csrfmiddlewaretoken: csrfToken,
+        });
+        try {
+            await fetch(form.dataset.uploadUrl, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                    "X-CSRFToken": csrfToken,
+                },
+                body,
+            });
+        } catch (_) {
+            // The server expires unused batches after one hour if cleanup cannot reach it.
+        }
+        signedNonce = "";
+    }
+
+    cancelButton.addEventListener("click", () => {
+        cancelled = true;
+        activeRequests.forEach((request) => request.abort());
+    });
+
+    form.addEventListener("submit", async (event) => {
+        const files = Array.from(input.files || []);
+        if (!files.length) return;
+
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        if (files.length > maxPhotos) {
+            setStatus(`Choose no more than ${maxPhotos} photos per batch.`);
+            return;
+        }
+        for (const file of files) {
+            if (!allowedExtensions.test(file.name)) {
+                setStatus("Use JPG, PNG, WebP, or HEIC photos.");
+                return;
+            }
+            if (file.size > maxBytes) {
+                setStatus(`${file.name} is larger than 25 MB.`);
+                return;
+            }
+        }
+
+        button.disabled = true;
+        cancelButton.hidden = false;
+        cancelled = false;
+        progress.hidden = false;
+        progress.value = 0;
+        setStatus("Preparing secure upload…");
+
+        try {
+            const params = new URLSearchParams({
+                upload_action: "sign",
+                count: String(files.length),
+                csrfmiddlewaretoken: form.querySelector("[name=csrfmiddlewaretoken]").value,
+            });
+            const signingResponse = await fetch(form.dataset.uploadUrl, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                    "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value,
+                },
+                body: params,
+            });
+            const signedBatch = await signingResponse.json();
+            if (!signingResponse.ok) throw new Error(signedBatch.error || "Could not prepare the upload.");
+            signedNonce = signedBatch.nonce;
+
+            const loadedByFile = files.map(() => 0);
+            const updateProgress = () => {
+                const total = files.reduce((sum, file) => sum + file.size, 0);
+                const loaded = loadedByFile.reduce((sum, value) => sum + value, 0);
+                progress.value = total ? Math.round((loaded / total) * 100) : 0;
+                setStatus(`Uploading photos: ${progress.value}%`);
+            };
+            const results = new Array(files.length);
+            let nextIndex = 0;
+
+            async function uploadWorker() {
+                while (nextIndex < files.length) {
+                    const index = nextIndex++;
+                    results[index] = await uploadWithRetry(
+                        files[index],
+                        signedBatch.uploads[index],
+                        (event) => {
+                            if (event.lengthComputable) {
+                                loadedByFile[index] = event.loaded;
+                                updateProgress();
+                            }
+                        }
+                    );
+                    loadedByFile[index] = files[index].size;
+                    updateProgress();
+                }
+            }
+
+            const outcomes = await Promise.allSettled(
+                Array.from({ length: Math.min(3, files.length) }, () => uploadWorker())
+            );
+            const failed = outcomes.find((outcome) => outcome.status === "rejected");
+            if (failed) throw failed.reason;
+            if (cancelled) throw new Error("Upload cancelled.");
+
+            form.querySelector("[name=cloudinary_uploads]").value = JSON.stringify(results);
+            form.querySelector("[name=cloudinary_nonce]").value = signedNonce;
+            input.value = "";
+            setStatus("Saving uploaded photos…");
+            cancelButton.hidden = true;
+            form.submit();
+        } catch (error) {
+            cancelled = true;
+            activeRequests.forEach((request) => request.abort());
+            await cancelRemoteBatch();
+            setStatus(error.message || "The upload failed. Please try again.");
+            button.disabled = false;
+            cancelButton.hidden = true;
+        }
+    });
+})();
+</script>
 
 {% endblock %}

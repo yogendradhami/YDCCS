@@ -65,12 +65,10 @@ Payroll
         </div>
 
         <!-- Generate Payroll Button -->
-        <a
-            href="{% url 'generate_payroll' %}"
-            class="btn-fill"
-        >
-            Generate Payroll
-        </a>
+        <form method="post" action="{% url 'generate_payroll' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-fill">Generate Payroll</button>
+        </form>
 
     </div>
 
@@ -223,22 +221,18 @@ Payroll
                             <!-- Draft Payroll -->
                             {% if payroll.status == "draft" %}
 
-                                <a
-                                    href="{% url 'approve_payroll' payroll.id %}"
-                                    class="btn-fill"
-                                >
-                                    Approve
-                                </a>
+                                <form method="post" action="{% url 'approve_payroll' payroll.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-fill">Approve</button>
+                                </form>
 
                             <!-- Approved Payroll -->
                             {% elif payroll.status == "approved" %}
 
-                                <a
-                                    href="{% url 'mark_payroll_paid' payroll.id %}"
-                                    class="btn-fill"
-                                >
-                                    Mark Paid
-                                </a>
+                                <form method="post" action="{% url 'mark_payroll_paid' payroll.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-fill">Mark Paid</button>
+                                </form>
 
                             <!-- Paid Payroll -->
                             {% elif payroll.status == "paid" %}

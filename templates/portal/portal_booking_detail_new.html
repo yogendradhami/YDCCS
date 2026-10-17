@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load seo_tags %}
 
 {% block title %}
 Booking Details
@@ -60,7 +61,7 @@ Booking Details
 
                 {% for photo in before_photos %}
                     <img
-                        src="{{ photo.image.url }}"
+                        src="{{ photo.image.url|cloudinary_optimize:'800' }}"
                         style="
                             width:250px;
                             margin:10px;
@@ -81,7 +82,7 @@ Booking Details
 
                 {% for photo in after_photos %}
                     <img
-                        src="{{ photo.image.url }}"
+                        src="{{ photo.image.url|cloudinary_optimize:'800' }}"
                         style="
                             width:250px;
                             margin:10px;

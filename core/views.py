@@ -5,17 +5,23 @@
 # ====================================================
 
 import copy
+import hashlib
 import os
 import logging
+import secrets
 import signal
+import json
+from mimetypes import guess_type
+from urllib.parse import urlsplit, urlunsplit
 
 from django.conf import settings
+from django.core import signing
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse
 from django.http import JsonResponse
 from django.db import transaction
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.conf import settings
 from django.template import TemplateDoesNotExist
@@ -76,6 +82,24 @@ from customers.forms import MarketingSignupForm
 from customers.models import MarketingSubscriber
 
 logger = logging.getLogger(__name__)
+
+
+def _new_quote_workflow_key():
+    return signing.dumps(secrets.token_urlsafe(24), salt="public-quote-workflow")
+
+
+def _quote_idempotency_key(signed_workflow_key):
+    if not signed_workflow_key:
+        return None
+    try:
+        token = signing.loads(
+            signed_workflow_key,
+            salt="public-quote-workflow",
+            max_age=24 * 60 * 60,
+        )
+    except signing.BadSignature:
+        return None
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 def _timeout_handler(signum, frame):
@@ -361,39 +385,52 @@ def home(request):
         if form.is_valid():
 
             uploaded_images = form.cleaned_data.get("property_images", [])
+            workflow_key = _quote_idempotency_key(
+                form.cleaned_data.get("workflow_key")
+            )
 
-            try:
-                quote, _ = create_quote_request(
-                    form=form,
-                    images=uploaded_images,
-                )
+            if not workflow_key:
+                form.add_error(None, "This quote form expired. Reload the page and try again.")
+                messages.error(request, "❌ Please check the form and try again.")
+            else:
+                try:
+                    quote, created = create_quote_request(
+                        form=form,
+                        images=uploaded_images,
+                        workflow_key=workflow_key,
+                    )
 
-                customer_email_sent = send_customer_quote_email(quote)
-                admin_email_sent = send_admin_quote_email(quote)
+                    if created:
+                        customer_email_sent = send_customer_quote_email(quote)
+                        admin_email_sent = send_admin_quote_email(quote)
 
-                if not customer_email_sent:
-                    print("WARNING: Customer quote email was not sent.")
+                        if not customer_email_sent:
+                            print("WARNING: Customer quote email was not sent.")
 
-                if not admin_email_sent:
-                    print("WARNING: Admin quote email was not sent.")
+                        if not admin_email_sent:
+                            print("WARNING: Admin quote email was not sent.")
 
-                messages.success(
-                    request,
-                    f"✅ Thank you! Your quote request has been submitted successfully. Estimated price: ${quote.estimated_price}. Our team will confirm the final price shortly.",
-                )
+                    messages.success(
+                        request,
+                        f"✅ Thank you! Your quote request has been submitted successfully. Estimated price: ${quote.estimated_price}. Our team will confirm the final price shortly.",
+                    )
 
-                return redirect("/#quote")
+                    return redirect("/#quote")
 
-            except Exception as error:
-                form.add_error(
-                    "property_images",
-                    "One or more uploaded images could not be processed. Please try again with a valid image file.",
-                )
+                except Exception:
+                    logger.exception("Quote submission failed")
+                    form.add_error(
+                        "property_images",
+                        "One or more uploaded images could not be processed. Please try again with a valid image file.",
+                    )
 
         messages.error(request, "❌ Please check the form and try again.")
 
     else:
-        form = QuoteRequestForm(request=request)
+        form = QuoteRequestForm(
+            request=request,
+            initial={"workflow_key": _new_quote_workflow_key()},
+        )
 
     quick_quote_context = _quick_quote_context(request)
 
@@ -586,6 +623,11 @@ def testimonials(request):
         .filter(active=True)
         .order_by("-created_at")
     )
+    for video in testimonial_videos:
+        video.video_thumbnail_url = _video_thumbnail_url(
+            video.video.url,
+            video.thumbnail.url if video.thumbnail else None,
+        )
 
     # ---------------------------------------------------------
     # GOOGLE RATING CALCULATION
@@ -2456,6 +2498,106 @@ def cleaning_services_video(request):
         request,
         "videos/cleaning_services_adelaide.html"
     )
+
+
+def _video_thumbnail_url(video_url, uploaded_thumbnail=None):
+    """Return an uploaded thumbnail or a stable first-frame Cloudinary image."""
+    if uploaded_thumbnail:
+        if uploaded_thumbnail.startswith(("https://", "http://")):
+            return uploaded_thumbnail
+        return f"{settings.SITE_URL.rstrip('/')}{uploaded_thumbnail}"
+
+    parsed_url = urlsplit(str(video_url))
+    marker = "/video/upload/"
+    if marker in parsed_url.path and parsed_url.hostname:
+        prefix, resource_path = parsed_url.path.split(marker, 1)
+        resource_path = resource_path.rsplit(".", 1)[0] + ".jpg"
+        thumbnail_path = f"{prefix}{marker}so_0/{resource_path}"
+        return urlunsplit(
+            (parsed_url.scheme, parsed_url.netloc, thumbnail_path, "", "")
+        )
+
+    return f"{settings.SITE_URL.rstrip('/')}/static/images/hero-cleaning-poster.webp"
+
+
+def _video_watch_context(request, *, title, description, video_url,
+                         thumbnail_url, upload_date):
+    canonical = f"{settings.SITE_URL.rstrip('/')}{request.path}"
+    schema = {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        "@id": f"{canonical}#video",
+        "name": title,
+        "description": description,
+        "thumbnailUrl": [thumbnail_url],
+        "uploadDate": upload_date,
+        "contentUrl": video_url,
+        "embedUrl": canonical,
+        "publisher": {
+            "@type": "Organization",
+            "@id": "https://ydcleaning.com.au/#organization",
+            "name": "YD Commercial Cleaning Services",
+            "url": "https://ydcleaning.com.au/",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://ydcleaning.com.au/static/images/company/logoo.webp",
+            },
+        },
+    }
+    # Escape characters that could terminate the JSON-LD script element.
+    schema_json = json.dumps(schema).replace("<", "\\u003c")
+    return {
+        "video_title": title,
+        "video_description": description,
+        "video_file_url": video_url,
+        "video_mime_type": guess_type(urlsplit(video_url).path)[0] or "video/mp4",
+        "video_thumbnail_url": thumbnail_url,
+        "video_schema": schema_json,
+    }
+
+
+def customer_testimonial_video(request):
+    """Dedicated watch page for the customer testimonial used on the homepage."""
+    video_url = (
+        "https://res.cloudinary.com/yd-commercial-cleaning/video/upload/"
+        "v1787021334/testimonial-videos/fujal5mx7vdtoew5jgr2.mp4"
+    )
+    title = "Customer Testimonial | YD Commercial Cleaning Services"
+    description = (
+        "Watch a customer testimonial about YD Commercial Cleaning Services "
+        "and our cleaning services in Adelaide."
+    )
+    context = _video_watch_context(
+        request,
+        title=title,
+        description=description,
+        video_url=video_url,
+        thumbnail_url=_video_thumbnail_url(video_url),
+        upload_date="2026-08-17",
+    )
+    return render(request, "videos/watch_page.html", context)
+
+
+def testimonial_video_watch_page(request, video_id):
+    video = get_object_or_404(TestimonialVideo, pk=video_id, active=True)
+    video_url = video.video.url
+    thumbnail_url = _video_thumbnail_url(
+        video_url,
+        video.thumbnail.url if video.thumbnail else None,
+    )
+    description = video.description.strip() or (
+        f"Watch {video.title}, a customer video from YD Commercial Cleaning "
+        "Services in Adelaide."
+    )
+    context = _video_watch_context(
+        request,
+        title=video.title,
+        description=description,
+        video_url=video_url,
+        thumbnail_url=thumbnail_url,
+        upload_date=video.created_at.date().isoformat(),
+    )
+    return render(request, "videos/watch_page.html", context)
 
 
 @require_POST

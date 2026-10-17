@@ -1,7 +1,74 @@
 # core/middleware.py
 
+import logging
+import time
+
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.db import connection
+from django.http import Http404
 from django.shortcuts import redirect
+
+logger = logging.getLogger(__name__)
+
+
+class ExceptionLoggingMiddleware:
+    """Write unexpected request tracebacks to the service console logs."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
+    def process_exception(self, request, exception):
+        if not isinstance(exception, (Http404, PermissionDenied, SuspiciousOperation)):
+            logger.error(
+                "Unhandled request exception for %s %s",
+                request.method,
+                request.path,
+                exc_info=(type(exception), exception, exception.__traceback__),
+            )
+        return None
+
+
+class SlowRequestLoggingMiddleware:
+    """Record end-to-end and SQL timing for slow HTTP requests."""
+
+    SLOW_REQUEST_SECONDS = 1.0
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        started = time.perf_counter()
+        query_stats = {"count": 0, "seconds": 0.0}
+
+        def time_query(execute, sql, params, many, context):
+            query_started = time.perf_counter()
+            try:
+                return execute(sql, params, many, context)
+            finally:
+                query_stats["count"] += 1
+                query_stats["seconds"] += time.perf_counter() - query_started
+
+        response = None
+        try:
+            with connection.execute_wrapper(time_query):
+                response = self.get_response(request)
+            return response
+        finally:
+            elapsed = time.perf_counter() - started
+            if elapsed >= self.SLOW_REQUEST_SECONDS:
+                logger.warning(
+                    "Slow request method=%s path=%s status=%s total_ms=%.1f db_queries=%s db_ms=%.1f",
+                    request.method,
+                    request.path,
+                    getattr(response, "status_code", "exception"),
+                    elapsed * 1000,
+                    query_stats["count"],
+                    query_stats["seconds"] * 1000,
+                )
 
 
 class RoleAccessMiddleware:

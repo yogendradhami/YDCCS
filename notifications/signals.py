@@ -1,5 +1,4 @@
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from attendance.models import AttendanceLog
@@ -15,31 +14,7 @@ from quotes.models import QuoteRequest
 from reviews.models import Review
 from rosters.models import Roster
 
-from .models import Notification
-
-
-def notify_admins(title, message, notification_type="system", link=""):
-    admins = User.objects.filter(is_staff=True)
-
-    for admin in admins:
-        Notification.objects.create(
-            user=admin,
-            title=title,
-            message=message,
-            notification_type=notification_type,
-            link=link,
-        )
-
-
-def notify_user(user, title, message, notification_type="system", link=""):
-    if user:
-        Notification.objects.create(
-            user=user,
-            title=title,
-            message=message,
-            notification_type=notification_type,
-            link=link,
-        )
+from .utils import notify_admins, notify_user
 
 
 @receiver(post_save, sender=QuoteRequest)
@@ -75,6 +50,19 @@ def employee_notification(sender, instance, created, **kwargs):
         )
 
 
+@receiver(pre_save, sender=Booking)
+def remember_booking_notification_state(sender, instance, **kwargs):
+    previous = None
+    if instance.pk:
+        previous = sender.objects.filter(pk=instance.pk).values(
+            "status", "assigned_employee_id"
+        ).first()
+    instance._notification_previous_status = previous["status"] if previous else None
+    instance._notification_previous_employee_id = (
+        previous["assigned_employee_id"] if previous else None
+    )
+
+
 @receiver(post_save, sender=Booking)
 def booking_notification(sender, instance, created, **kwargs):
     if created:
@@ -88,7 +76,16 @@ def booking_notification(sender, instance, created, **kwargs):
             "/dashboard/bookings/",
         )
 
-    if instance.assigned_employee and instance.assigned_employee.user:
+    employee_assignment_changed = created or (
+        instance.assigned_employee_id != getattr(
+            instance, "_notification_previous_employee_id", None
+        )
+    )
+    if (
+        employee_assignment_changed
+        and instance.assigned_employee
+        and instance.assigned_employee.user
+    ):
         notify_user(
             instance.assigned_employee.user,
             "Booking Assigned",
@@ -100,7 +97,11 @@ def booking_notification(sender, instance, created, **kwargs):
             f"/employee/jobs/{instance.id}/",
         )
 
-    if instance.customer and instance.customer.user:
+    status_changed = created or (
+        instance.status
+        != getattr(instance, "_notification_previous_status", instance.status)
+    )
+    if status_changed and instance.customer and instance.customer.user:
         notify_user(
             instance.customer.user,
             "Booking Updated",
@@ -161,11 +162,12 @@ def review_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=JobPhoto)
 def job_photo_notification(sender, instance, created, **kwargs):
     if created:
+        uploader = instance.employee.full_name if instance.employee else "An employee"
         notify_admins(
             "Job Photo Uploaded",
             (
-                f"{instance.get_photo_type_display()} photo uploaded for booking #"
-                f"{instance.booking.id}."
+                f"{uploader} uploaded a {instance.get_photo_type_display().lower()} "
+                f"photo for booking #{instance.booking.id}."
             ),
             "report",
             f"/reports/booking/{instance.booking.id}/",
@@ -195,6 +197,16 @@ def contract_notification(sender, instance, created, **kwargs):
         )
 
 
+@receiver(pre_save, sender=AttendanceLog)
+def remember_attendance_notification_state(sender, instance, **kwargs):
+    previous = None
+    if instance.pk:
+        previous = sender.objects.filter(pk=instance.pk).values("check_out_time").first()
+    instance._notification_previous_check_out = (
+        previous["check_out_time"] if previous else None
+    )
+
+
 @receiver(post_save, sender=AttendanceLog)
 def attendance_notification(sender, instance, created, **kwargs):
     if created:
@@ -207,7 +219,10 @@ def attendance_notification(sender, instance, created, **kwargs):
             "attendance",
             "/dashboard/attendance/",
         )
-    elif instance.check_out_time:
+    elif (
+        instance.check_out_time
+        and not getattr(instance, "_notification_previous_check_out", None)
+    ):
         notify_admins(
             "Employee Checked Out",
             (
@@ -230,6 +245,14 @@ def payroll_notification(sender, instance, created, **kwargs):
         )
 
 
+@receiver(pre_save, sender=LeaveRequest)
+def remember_leave_notification_state(sender, instance, **kwargs):
+    previous = None
+    if instance.pk:
+        previous = sender.objects.filter(pk=instance.pk).values("status").first()
+    instance._notification_previous_status = previous["status"] if previous else None
+
+
 @receiver(post_save, sender=LeaveRequest)
 def leave_notification(sender, instance, created, **kwargs):
     if created:
@@ -240,7 +263,10 @@ def leave_notification(sender, instance, created, **kwargs):
             "/dashboard/leave/",
         )
 
-    if instance.employee.user:
+    status_changed = not created and instance.status != getattr(
+        instance, "_notification_previous_status", instance.status
+    )
+    if status_changed and instance.employee.user:
         notify_user(
             instance.employee.user,
             "Leave Request Updated",
@@ -248,6 +274,26 @@ def leave_notification(sender, instance, created, **kwargs):
             "leave",
             "/employee/leave/",
         )
+    if status_changed:
+        notify_admins(
+            "Leave Request Updated",
+            (
+                f"{instance.employee.full_name}'s leave request is now "
+                f"{instance.get_status_display()}."
+            ),
+            "leave",
+            "/dashboard/leave/",
+        )
+
+
+@receiver(pre_save, sender=Roster)
+def remember_roster_notification_state(sender, instance, **kwargs):
+    previous = None
+    if instance.pk:
+        previous = sender.objects.filter(pk=instance.pk).values(
+            "shift_date", "start_time", "end_time", "employee_id", "booking_id", "status"
+        ).first()
+    instance._notification_previous_roster = previous
 
 
 @receiver(post_save, sender=Roster)
@@ -260,14 +306,40 @@ def roster_notification(sender, instance, created, **kwargs):
             "/dashboard/rosters/",
         )
 
-    if instance.employee.user:
+    previous = getattr(instance, "_notification_previous_roster", None)
+    shift_changed = created or (
+        previous
+        and any(
+            previous[field] != getattr(instance, field)
+            for field in (
+                "shift_date",
+                "start_time",
+                "end_time",
+                "employee_id",
+                "booking_id",
+                "status",
+            )
+        )
+    )
+    if shift_changed and not created:
+        notify_admins(
+            "Roster Shift Updated",
+            f"{instance.employee.full_name}'s roster shift for {instance.shift_date} was updated.",
+            "roster",
+            "/dashboard/rosters/",
+        )
+    if shift_changed and instance.employee.user:
+        title = "New Roster Shift" if created else "Roster Shift Updated"
+        message = (
+            f"You have a shift on {instance.shift_date} from "
+            f"{instance.start_time} to {instance.end_time}."
+            if instance.status != "cancelled"
+            else f"Your shift on {instance.shift_date} was cancelled."
+        )
         notify_user(
             instance.employee.user,
-            "New Roster Shift",
-            (
-                f"You have a shift on {instance.shift_date} from "
-                f"{instance.start_time} to {instance.end_time}."
-            ),
+            title,
+            message,
             "roster",
             "/employee/roster/",
         )

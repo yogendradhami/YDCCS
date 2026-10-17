@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load seo_tags %}
 
 {% block title %}
 Job Details | Employee Portal
@@ -110,7 +111,7 @@ Job Details | Employee Portal
                         <div class="job-photo-actions">
                             <a href="{% url 'delete_job_photo' photo.id %}" class="btn-delete-small" onclick="return confirm('Delete this photo?')">🗑️ Delete</a>
                         </div>
-                        <img src="{{ photo.image.url }}" alt="Before photo">
+                        <img src="{{ photo.image.url|cloudinary_optimize:'1600' }}" alt="Before photo" loading="lazy">
 
                         <div class="job-photo-info">
                             <span class="photo-type photo-before">Before</span>
@@ -133,7 +134,7 @@ Job Details | Employee Portal
                         <div class="job-photo-actions">
                             <a href="{% url 'delete_job_photo' photo.id %}" class="btn-delete-small" onclick="return confirm('Delete this photo?')">🗑️ Delete</a>
                         </div>
-                        <img src="{{ photo.image.url }}" alt="After photo">
+                        <img src="{{ photo.image.url|cloudinary_optimize:'1600' }}" alt="After photo" loading="lazy">
 
                         <div class="job-photo-info">
                             <span class="photo-type photo-after">After</span>

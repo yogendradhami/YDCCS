@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static seo_tags %}
 
 {% block meta_description %}{{ post.excerpt|default:post.title }}{% endblock %}
-{% block og_image %}{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{{ open_graph_image }}{% endif %}{% endblock %}
-{% block twitter_image %}{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{{ twitter_image }}{% endif %}{% endblock %}
+{% block og_image %}{% if post.featured_image %}{{ post.featured_image.url|cloudinary_optimize:'1200' }}{% else %}{{ open_graph_image }}{% endif %}{% endblock %}
+{% block twitter_image %}{% if post.featured_image %}{{ post.featured_image.url|cloudinary_optimize:'1200' }}{% else %}{{ twitter_image }}{% endif %}{% endblock %}
 
 {% block extra_head %}
         <script type="application/ld+json">
@@ -17,7 +17,7 @@
                 "@type": "Person",
                 "name": "YD Commercial Cleaning"
             },
-            "image": {% if post.featured_image %}"{{ post.featured_image.url|escapejs }}"{% else %}"{{ open_graph_image|default:'https://ydcleaning.com.au/static/images/logo.jpeg'|escapejs }}"{% endif %},
+            "image": {% if post.featured_image %}"{{ post.featured_image.url|cloudinary_optimize:'1200'|escapejs }}"{% else %}"{{ open_graph_image|default:'https://ydcleaning.com.au/static/images/company/logoo.webp'|escapejs }}"{% endif %},
             "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ request.build_absolute_uri|default:'https://ydcleaning.com.au'|escapejs }}"}
         }
         </script>
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
 {% block content %}
 <div class="reading-progress"><span id="readingProgressBar"></span></div>
 
-<section class="blog-detail-hero" style="background-image: url('{% if post.featured_image %}{{ post.featured_image.url }}{% else %}{% static 'images/logo.jpeg' %}{% endif %}');">
+<section class="blog-detail-hero" style="background-image: url('{% if post.featured_image %}{{ post.featured_image.url|cloudinary_optimize:'1600' }}{% else %}{% static 'images/company/logoo-256.webp' %}{% endif %}');">
     <div class="overlay">
         <div class="container">
             <div class="hero-meta">

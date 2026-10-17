@@ -41,6 +41,16 @@ class EmployeeForm(forms.ModelForm):
 
         return user
 
+    def clean_image(self):
+        image = self.cleaned_data.get("image")
+        if not image or not hasattr(image, "image"):
+            return image
+        if image.size > 5 * 1024 * 1024:
+            raise ValidationError("Choose an employee image smaller than 5 MB.")
+        if image.image.format not in {"JPEG", "PNG", "WEBP"}:
+            raise ValidationError("Use a JPEG, PNG, or WebP employee image.")
+        return image
+
     class Meta:
         model = Employee
 

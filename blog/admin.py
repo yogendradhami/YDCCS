@@ -1,12 +1,27 @@
 from django.contrib import admin
+from django import forms
+from django.core.files.uploadedfile import UploadedFile
 from django.utils.html import format_html
 import os
 
 from .models import BlogPost
 
 
+class BlogPostAdminForm(forms.ModelForm):
+    class Meta:
+        model = BlogPost
+        fields = "__all__"
+
+    def clean_featured_image(self):
+        image = self.cleaned_data.get("featured_image")
+        if isinstance(image, UploadedFile) and image.size > 15 * 1024 * 1024:
+            raise forms.ValidationError("Blog images must be 15 MB or smaller.")
+        return image
+
+
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
+    form = BlogPostAdminForm
     list_display = ("title", "category", "published", "published_at", "featured_preview")
     list_filter = ("published", "category")
     search_fields = ("title", "excerpt", "content")

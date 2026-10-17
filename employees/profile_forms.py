@@ -7,6 +7,7 @@
 
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
+from django.core.exceptions import ValidationError
 
 from .models import Employee
 
@@ -48,6 +49,16 @@ class EmployeeProfileForm(forms.ModelForm):
                 }
             ),
         }
+
+    def clean_image(self):
+        image = self.cleaned_data.get("image")
+        if not image or not hasattr(image, "image"):
+            return image
+        if image.size > 5 * 1024 * 1024:
+            raise ValidationError("Choose a profile image smaller than 5 MB.")
+        if image.image.format not in {"JPEG", "PNG", "WEBP"}:
+            raise ValidationError("Use a JPEG, PNG, or WebP profile image.")
+        return image
 
 
 class EmployeePasswordForm(PasswordChangeForm):

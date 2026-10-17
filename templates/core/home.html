@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static seo_tags %}
 
 {% block title %}
 YD Commercial Cleaning Services Adelaide
@@ -127,7 +127,7 @@ YD Commercial Cleaning Services Adelaide
                 {% for item in gallery_items %}
                     <div class="home-gallery-card">
                         {% if item.primary_image %}
-                            <img src="{{ item.primary_image.url }}" alt="{{ item.title }}" loading="lazy">
+                            <img src="{{ item.primary_image.url|cloudinary_optimize:'1200' }}" alt="{{ item.title }}" loading="lazy">
                         {% else %}
                             <img src="{% static 'images/services/placeholder.svg' %}" alt="{{ item.title }}" loading="lazy">
                         {% endif %}
@@ -241,6 +241,7 @@ YD Commercial Cleaning Services Adelaide
 
             <form method="POST" enctype="multipart/form-data" action="#quote" class="quote-card">
                 {% csrf_token %}
+                {{ form.workflow_key }}
 
                 <div class="form-group">
                     <label for="{{ form.name.id_for_label }}">Full Name *</label>
@@ -301,6 +302,7 @@ YD Commercial Cleaning Services Adelaide
                 <div class="form-group">
                     <label for="{{ form.property_images.id_for_label }}">Upload Property Images (Optional)</label>
                     {{ form.property_images }}
+                    <small>Add up to 6 images, 15 MB each, 60 MB total.</small>
                     <div class="text-danger">{{ form.property_images.errors }}</div>
                 </div>
 

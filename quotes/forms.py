@@ -26,6 +26,15 @@ class MultipleImageField(forms.ImageField):
 
 
 class QuoteRequestForm(forms.ModelForm):
+    MAX_PROPERTY_IMAGES = 6
+    MAX_PROPERTY_IMAGE_SIZE = 15 * 1024 * 1024
+    MAX_PROPERTY_IMAGE_TOTAL_SIZE = 60 * 1024 * 1024
+
+    workflow_key = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+
     g_recaptcha_response = forms.CharField(
         required=False,
         widget=forms.HiddenInput(),
@@ -143,6 +152,24 @@ class QuoteRequestForm(forms.ModelForm):
         if not value:
             raise forms.ValidationError("Please select a property type.")
         return value
+
+    def clean_property_images(self):
+        images = self.cleaned_data.get("property_images", [])
+        if len(images) > self.MAX_PROPERTY_IMAGES:
+            raise forms.ValidationError(
+                f"Choose no more than {self.MAX_PROPERTY_IMAGES} property photos."
+            )
+
+        for image in images:
+            if image.size > self.MAX_PROPERTY_IMAGE_SIZE:
+                raise forms.ValidationError(
+                    "Each property photo must be 15 MB or smaller."
+                )
+        if sum(image.size for image in images) > self.MAX_PROPERTY_IMAGE_TOTAL_SIZE:
+            raise forms.ValidationError(
+                "Property photos must total 60 MB or less."
+            )
+        return images
 
     def clean(self):
         cleaned_data = super().clean()

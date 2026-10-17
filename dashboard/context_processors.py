@@ -8,6 +8,7 @@
 
 from datetime import timedelta
 
+from django.core.cache import cache
 from django.db.models import Count, F
 from django.utils import timezone
 
@@ -22,17 +23,16 @@ from core.models import FAQQuestion
 from invoices.models import Invoice
 from quotes.models import QuoteRequest
 
-from .models import CompanySettings
+from .models import COMPANY_SETTINGS_CACHE_KEY, CompanySettings
 
 
 def company_settings(request):
-    # Return the first company settings record when present.
-    # When the database is empty, fall back to a safe default model instance
-    # so templates can still render without raising lookup errors.
-    settings = CompanySettings.objects.first()
+    def load_settings():
+        current_settings = CompanySettings.objects.first()
+        if current_settings is not None:
+            return current_settings
 
-    if settings is None:
-        settings = CompanySettings(
+        return CompanySettings(
             business_name="YD Commercial Cleaning Services",
             phone="0430 049 865",
             email="info@ydcleaning.com.au",
@@ -42,6 +42,11 @@ def company_settings(request):
             tiktok_url="https://www.tiktok.com/@yd_cleaning3",
         )
 
+    try:
+        settings = cache.get_or_set(COMPANY_SETTINGS_CACHE_KEY, load_settings, 900)
+    except Exception:
+        settings = load_settings()
+
     return {"company_settings": settings}
 
 
@@ -50,8 +55,8 @@ def seo_context(request):
     return {
         "default_seo_description": "Professional cleaning services in Adelaide. Expert residential, office, end-of-lease and commercial cleaning by YD Commercial Cleaning Services.",
         "default_seo_keywords": "cleaning services adelaide, commercial cleaning, office cleaning, house cleaning, end of lease cleaning, bond cleaning, window cleaning, carpet cleaning",
-        "open_graph_image": "https://ydcleaning.com.au/static/images/logo.jpeg",
-        "twitter_image": "https://ydcleaning.com.au/static/images/logo.jpeg",
+        "open_graph_image": "https://ydcleaning.com.au/static/images/company/logoo.webp",
+        "twitter_image": "https://ydcleaning.com.au/static/images/company/logoo.webp",
         "site_url": "https://ydcleaning.com.au",
         "same_as_urls": '["https://www.facebook.com/ydcommercialcleaning","https://www.instagram.com/ydcommercialcleaning","https://www.tiktok.com/@yd_cleaning3"]',
         "service_area_list": '["Adelaide","South Australia"]',
