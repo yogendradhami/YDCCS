@@ -84,3 +84,10 @@ jobs:
       - name: Run audit and send daily security report
         if: ${{ (github.event_name == 'schedule' && github.event.schedule == '30 22 * * *') || (github.event_name == 'workflow_dispatch' && inputs.task == 'report') }}
         run: python manage.py run_security_audit --report
+
+
+      - name: Install dependency security scanner
+        run: python -m pip install pip-audit
+
+      - name: Audit Python dependencies
+        run: pip-audit -r requirements.txt
