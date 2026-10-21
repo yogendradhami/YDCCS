@@ -43,6 +43,12 @@
 
             </a>
 
+            {% if request.user.is_superuser or perms.security.view_security_center %}
+                <a href="/dashboard/security/">
+                    <span>Security Threat Monitor</span>
+                </a>
+            {% endif %}
+
 
             
 
@@ -531,6 +537,18 @@
                 </button>
 
                 <div class="sidebar-submenu">
+                    {% if request.user.is_superuser or perms.security.manage_users %}
+                        <a href="{% url 'security_user_list' %}">
+                            <span>Users &amp; Positions</span>
+                        </a>
+                    {% endif %}
+
+                    {% if request.user.is_superuser or perms.security.view_security_center %}
+                        <a href="{% url 'security_center' %}">
+                            <span>Security Audit</span>
+                        </a>
+                    {% endif %}
+
                     <a href="/dashboard/reminders/">
                         <span>Reminder Center</span>
                         {% if notification_counts.reminders %}

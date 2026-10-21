@@ -116,9 +116,11 @@ class CustomerRegisterForm(forms.Form):
         # Prevent duplicate customer account email.
         email = self.cleaned_data["email"].strip().lower()
 
-        if User.objects.filter(username__iexact=email).exists() or Customer.objects.filter(
-            email__iexact=email
-        ).exists():
+        if (
+            User.objects.filter(username__iexact=email).exists()
+            or User.objects.filter(email__iexact=email).exists()
+            or Customer.objects.filter(email__iexact=email).exists()
+        ):
             raise forms.ValidationError("An account with this email already exists.")
 
         return email
@@ -195,6 +197,13 @@ class ResendVerificationForm(forms.Form):
 
 class CustomerProfileForm(forms.ModelForm):
     # Customer profile update form.
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().casefold()
+        user_id = getattr(self.instance, "user_id", None)
+        if User.objects.filter(email__iexact=email).exclude(pk=user_id).exists():
+            raise forms.ValidationError("Another account already uses this email address.")
+        return email
+
     class Meta:
         model = Customer
 

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Dashboard Account | YD Cleaning{% endblock %}
+{% block content %}
+<section style="max-width:620px;margin:50px auto;padding:28px;background:#fff;border:1px solid #e2e8f0;border-radius:16px">
+    <h1>Confirm your email address</h1>
+    <p>This verifies that you can receive email at <strong>{{ user.email }}</strong> and activates the dashboard account if it has not been blocked by an administrator.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" style="padding:11px 16px;border:0;border-radius:8px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer">Confirm Email</button>
+    </form>
+</section>
+{% endblock %}

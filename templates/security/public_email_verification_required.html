@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Email | YD Cleaning{% endblock %}
+{% block content %}
+<section style="max-width:620px;margin:50px auto;padding:24px;background:#fff;border:1px solid #e2e8f0;border-radius:16px">
+    <h1>Verify your email to submit this form</h1>
+    <p>We need to confirm you can receive email at <strong>{{ email }}</strong>. Your form was not submitted. Verify the listed addresses, return to the form and submit it again.</p>
+    <ul>{% for address in emails %}<li>{{ address }}</li>{% endfor %}</ul>
+    {{ emails|json_script:"publicEmailAddresses" }}
+    {% csrf_token %}
+    <button id="sendCode" type="button">Send verification code</button>
+    <p><label for="verifyCode">Six-digit code</label><br><input id="verifyCode" inputmode="numeric" maxlength="6"></p>
+    <button id="confirmCode" type="button">Verify email</button>
+    <p id="verifyMessage" aria-live="polite"></p>
+    <button id="returnToForm" type="button" hidden>Return to form</button>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const message = document.getElementById("verifyMessage");
+    const emails = JSON.parse(document.getElementById("publicEmailAddresses").textContent);
+    let emailIndex = 0;
+    let email = emails[emailIndex];
+    const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    async function post(url, payload) {
+        const response = await fetch(url, {method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json","X-CSRFToken":csrf}, body:JSON.stringify(payload)});
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || "Verification failed.");
+        return result;
+    }
+    document.getElementById("sendCode").addEventListener("click", async function () {
+        try { const result = await post("/security/email/send-code/", {email}); message.textContent = result.message; }
+        catch (error) { message.textContent = error.message; }
+    });
+    document.getElementById("confirmCode").addEventListener("click", async function () {
+        try {
+            await post("/security/email/verify-code/", {email, code:document.getElementById("verifyCode").value});
+            if (emailIndex + 1 < emails.length) {
+                emailIndex += 1;
+                email = emails[emailIndex];
+                document.getElementById("verifyCode").value = "";
+                const result = await post("/security/email/send-code/", {email});
+                message.textContent = result.message + " Address " + (emailIndex + 1) + " of " + emails.length + ".";
+                return;
+            }
+            sessionStorage.setItem("ydVerifiedPublicEmails", JSON.stringify(emails));
+            message.textContent = "Email addresses verified. Return to the form and submit it again.";
+            document.getElementById("returnToForm").hidden = false;
+        }
+        catch (error) { message.textContent = error.message; }
+    });
+    document.getElementById("returnToForm").addEventListener("click", function () { history.back(); });
+});
+</script>
+{% endblock %}

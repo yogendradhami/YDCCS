@@ -1,0 +1,14 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Manage Positions | YD Dashboard{% endblock %}
+{% block page_title %}Positions & Permissions{% endblock %}
+{% block page_subtitle %}Each position is a Django group with assigned model permissions.{% endblock %}
+
+{% block content %}
+<style>
+.role-page{max-width:1100px;margin:0 auto}.role-card{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:20px;margin-bottom:15px}.role-card h3{margin:0 0 8px}.role-card p{color:#64748b;margin:0 0 14px}.role-button{display:inline-block;padding:9px 13px;border-radius:8px;background:#0f766e;color:#fff;text-decoration:none;font-weight:800}.role-perms{display:flex;gap:7px;flex-wrap:wrap}.role-perms span{padding:4px 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:12px}
+</style>
+<div class="role-page"><p><a class="role-button" href="{% url 'security_position_create' %}">Create Position</a> <a class="role-button" href="{% url 'security_user_list' %}">Back to Users</a></p>
+{% for position in positions %}<section class="role-card"><h3>{{ position.name }}</h3><p>{{ position.user_set.count }} assigned user{{ position.user_set.count|pluralize }}</p><div class="role-perms">{% for permission in position.permissions.all %}<span>{{ permission.content_type.app_label }}.{{ permission.codename }}</span>{% empty %}<span>No permissions assigned</span>{% endfor %}</div><p style="margin-top:14px"><a class="role-button" href="{% url 'security_position_edit' position.id %}">Edit Permissions</a></p></section>{% empty %}<section class="role-card">No positions are configured yet.</section>{% endfor %}
+</div>
+{% endblock %}

@@ -37,6 +37,7 @@ from customers.models import Customer
 from invoices.models import Invoice
 from notifications.models import Notification
 from reports.models import CleaningReport
+from security.models import UserAccessBlock
 
 from .forms import (
     CustomerPasswordForm,
@@ -88,6 +89,7 @@ def portal_register(request):
                     username=email,
                     email=email,
                     password=form.cleaned_data["password"],
+                    is_active=False,
                 )
 
                 customer = Customer.objects.create(
@@ -142,9 +144,15 @@ def resend_customer_verification(request):
 
 def verify_customer_email(request, token):
     customer = get_object_or_404(Customer, verification_token=token)
+    was_unverified = not customer.email_verified
     customer.email_verified = True
     customer.verification_token = None
     customer.save(update_fields=["email_verified", "verification_token"])
+    if was_unverified and customer.user_id:
+        customer.user.is_active = not UserAccessBlock.objects.filter(
+            user=customer.user
+        ).exists()
+        customer.user.save(update_fields=["is_active"])
     messages.success(request, "Your email address has been verified successfully.")
     return redirect("portal_login")
 

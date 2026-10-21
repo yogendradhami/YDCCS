@@ -476,6 +476,12 @@
         color: #047857;
     }
 
+    .invoice-action.unpaid {
+        background: #fff7ed;
+        border-color: #fed7aa;
+        color: #c2410c;
+    }
+
     .invoice-action.danger {
         background: #ffffff;
         border-color: #fecaca;
@@ -1035,12 +1041,14 @@
 
                                         <!-- Edit -->
 
-                                        <a
-                                            href="{% url 'edit_invoice' invoice.id %}"
-                                            class="invoice-action edit"
-                                        >
-                                            Edit
-                                        </a>
+                                        {% if invoice.status != "paid" %}
+                                            <a
+                                                href="{% url 'edit_invoice' invoice.id %}"
+                                                class="invoice-action edit"
+                                            >
+                                                Edit
+                                            </a>
+                                        {% endif %}
 
 
                                         <!-- PDF -->
@@ -1076,6 +1084,29 @@
 
                                             </form>
 
+                                        {% endif %}
+
+
+                                        {% if invoice.status == "paid" %}
+                                            {% if request.user.is_staff or request.user.is_superuser %}
+                                                <form
+                                                    method="POST"
+                                                    action="{% url 'mark_invoice_unpaid' invoice.id %}"
+                                                    style="display:inline;"
+                                                    onsubmit="return confirm('Mark invoice {{ invoice.invoice_number }} as unpaid? This changes the invoice status only and does not refund a Stripe payment.');"
+                                                >
+
+                                                    {% csrf_token %}
+
+                                                    <button
+                                                        type="submit"
+                                                        class="invoice-action unpaid"
+                                                    >
+                                                        Mark Unpaid
+                                                    </button>
+
+                                                </form>
+                                            {% endif %}
                                         {% endif %}
 
 

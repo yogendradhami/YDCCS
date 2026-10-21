@@ -12,6 +12,103 @@ from django.shortcuts import redirect
 logger = logging.getLogger(__name__)
 
 
+DASHBOARD_PERMISSION_SECTIONS = {
+    "/dashboard/users/": "security.manage_users",
+    "/dashboard/security/": "security.view_security_center",
+    "/dashboard/leads/": (("quotes", "quoterequest"),),
+    "/dashboard/quote-requests/": (("quotes", "quoterequest"),),
+    "/dashboard/quote-followups/": (("quotes", "quoterequest"),),
+    "/dashboard/quote-conversion-analytics/": (("quotes", "quoterequest"),),
+    "/dashboard/ai-quote-estimator/": (("quotes", "quoterequest"),),
+    "/dashboard/corporate-leads/": (("corporate", "corporatelead"),),
+    "/dashboard/customers/": (("customers", "customer"),),
+    "/dashboard/customer-": (("customers", "customer"),),
+    "/dashboard/bookings/": (("bookings", "booking"),),
+    "/dashboard/calendar/": (("bookings", "booking"),),
+    "/dashboard/contracts/": (("contracts", "cleaningcontract"),),
+    "/dashboard/reports/": (("reports", "cleaningreport"),),
+    "/dashboard/gallery/": (("gallery", "galleryitem"),),
+    "/dashboard/reviews/": (("reviews", "review"),),
+    "/dashboard/review-": (("reviews", "review"),),
+    "/dashboard/employee-": (("employees", "employee"),),
+    "/dashboard/employees/": (("employees", "employee"),),
+    "/dashboard/induction/": (("induction", "employeeinduction"),),
+    "/dashboard/attendance/": (("attendance", "attendancelog"),),
+    "/dashboard/leave/": (("leave_management", "leaverequest"),),
+    "/dashboard/rosters/": (("rosters", "roster"),),
+    "/dashboard/payroll/": (("payroll", "payrollrecord"),),
+    "/dashboard/invoices/": (("invoices", "invoice"),),
+    "/dashboard/expenses/": (("expenses", "expense"),),
+    "/dashboard/careers/": (("dashboard", "careerapplication"),),
+    "/dashboard/campaign-": (("dashboard", "campaignlog"),),
+    "/dashboard/vip-campaigns/": (("dashboard", "campaignlog"),),
+    "/dashboard/email-": (("dashboard", "emaillog"),),
+    "/dashboard/settings/": (("dashboard", "companysettings"),),
+    "/dashboard/activity/": (("dashboard", "activitylog"),),
+    "/dashboard/equipment/": (("dashboard", "equipment"),),
+    "/dashboard/maintenance/": (("dashboard", "maintenancehistory"),),
+    "/dashboard/supplies/": (("dashboard", "cleaningsupply"),),
+    "/dashboard/purchase-orders/": (("dashboard", "purchaseorder"),),
+    "/dashboard/suppliers/": (("dashboard", "supplier"),),
+    "/dashboard/vehicles/": (("dashboard", "vehicle"),),
+    "/dashboard/faq-questions/": (("core", "faqquestion"),),
+    "/dashboard/support/": (("support", "chatenquiry"),),
+    "/dashboard/financials/": (
+        ("invoices", "invoice"),
+        ("expenses", "expense"),
+        ("payroll", "payrollrecord"),
+    ),
+    "/dashboard/finance-": (
+        ("invoices", "invoice"),
+        ("expenses", "expense"),
+        ("payroll", "payrollrecord"),
+    ),
+    "/dashboard/gst-report/": (("invoices", "invoice"),),
+    "/dashboard/profit-loss/": (("invoices", "invoice"), ("expenses", "expense")),
+    "/dashboard/business-": (("dashboard", "activitylog"),),
+    "/dashboard/executive-": (("dashboard", "activitylog"),),
+    "/dashboard/operations-centre/": (("bookings", "booking"),),
+    "/dashboard/service-performance/": (("bookings", "booking"),),
+    "/dashboard/job-profitability/": (("invoices", "invoice"),),
+    "/dashboard/performance/": (("employees", "employee"),),
+    "/dashboard/owner-": (("dashboard", "activitylog"),),
+    "/dashboard/reminders/": (("invoices", "invoice"),),
+    "/dashboard/": "security.view_security_center",
+}
+
+
+def dashboard_required_permissions(path, method):
+    section = next(
+        (
+            permissions
+            for prefix, permissions in DASHBOARD_PERMISSION_SECTIONS.items()
+            if path.startswith(prefix)
+        ),
+        None,
+    )
+    if section is None:
+        return None
+    if isinstance(section, str):
+        return (section,)
+    if not section:
+        return ()
+    if len(section) == 2 and isinstance(section[0], str):
+        section = (section,)
+
+    lowered_path = path.casefold()
+    if any(part in lowered_path for part in ("/delete", "/remove")):
+        action = "delete"
+    elif any(part in lowered_path for part in ("/add", "/create")):
+        action = "add"
+    elif any(part in lowered_path for part in ("/edit", "/update", "/approve", "/mark-", "/send")):
+        action = "change"
+    elif method == "POST":
+        action = "change"
+    else:
+        action = "view"
+    return tuple(f"{app_label}.{action}_{model_name}" for app_label, model_name in section)
+
+
 class ExceptionLoggingMiddleware:
     """Write unexpected request tracebacks to the service console logs."""
 
@@ -148,11 +245,30 @@ class RoleAccessMiddleware:
         # STAFF / SUPERUSER
         # ======================================================
         #
-        # Staff and superusers are allowed to access all
-        # application areas.
+        # Staff users need a dashboard role. Superusers retain full access.
         #
 
         if request.user.is_staff or request.user.is_superuser:
+            if request.user.is_superuser or not path.startswith("/dashboard/"):
+                return self.get_response(request)
+
+            if path.startswith("/dashboard/logout/"):
+                return self.get_response(request)
+
+            if not request.user.has_perm("security.access_dashboard"):
+                raise PermissionDenied
+
+            required_permissions = dashboard_required_permissions(
+                path,
+                request.method,
+            )
+            if required_permissions is None:
+                raise PermissionDenied
+            if required_permissions and not any(
+                request.user.has_perm(permission)
+                for permission in required_permissions
+            ):
+                raise PermissionDenied
             return self.get_response(request)
 
         # ======================================================

@@ -194,6 +194,13 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     border-color: #22c55e;
 }
 
+.btn-unpaid {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+    cursor: pointer;
+}
+
 .thank-you {
     text-align: center;
     margin-top: 30px;
@@ -345,6 +352,19 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
                 </form>
             {% else %}
                 <span class="invoice-btn btn-green">Paid</span>
+
+                {% if request.user.is_staff or request.user.is_superuser %}
+                    <form
+                        method="post"
+                        action="{% url 'mark_invoice_unpaid' invoice.id %}"
+                        onsubmit="return confirm('Mark this invoice as unpaid? This changes the invoice status only and does not refund a Stripe payment.');"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="invoice-btn btn-unpaid">
+                            Mark Unpaid
+                        </button>
+                    </form>
+                {% endif %}
             {% endif %}
         </div>
 

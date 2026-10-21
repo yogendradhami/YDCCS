@@ -29,7 +29,11 @@ env = environ.Env(
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SITE_URL = "https://www.ydcleaning.com.au"
+SITE_URL = env.str(
+    "SITE_URL",
+    default="https://www.ydcleaning.com.au",
+).rstrip("/")
+
 SITE_ID = 1
 
 
@@ -167,6 +171,7 @@ INSTALLED_APPS = [
     "blog",
     "locations",
     "dashboard",
+    "security.apps.SecurityConfig",
     "google_reviews",
     "customers",
     "bookings",
@@ -187,6 +192,12 @@ INSTALLED_APPS = [
     "support",
     "analytics",
     "corporate",
+
+    # security
+    "security_monitor",
+
+
+
     # Third-party apps
     "company_documents",
     "cleaning_game",
@@ -258,6 +269,8 @@ MIDDLEWARE = [
 
     "django.middleware.security.SecurityMiddleware",
 
+    "security_monitor.middleware.SecurityMonitoringMiddleware",
+
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -267,6 +280,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
 
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "security.middleware.SecurityAccessMiddleware",
+    "security.middleware.PublicEmailVerificationMiddleware",
     "induction.middleware.EmployeeInductionMiddleware",
 
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -283,6 +298,14 @@ MIDDLEWARE = [
 
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+SECURITY_MONITORING_ENABLED = True
+
+# Set this to the mailbox that should receive security reports.
+SECURITY_ALERT_EMAIL = env.str(
+    "SECURITY_ALERT_EMAIL",
+    default="",
+)
 
 
 # ==========================================================
@@ -425,7 +448,7 @@ AUTH_PASSWORD_VALIDATORS = [
             "MinimumLengthValidator"
         ),
         "OPTIONS": {
-            "min_length": 10,
+            "min_length": 12,
         },
     },
     {
@@ -442,6 +465,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    "security.backends.LockoutModelBackend",
+]
+
 
 # ==========================================================
 # CUSTOMER PORTAL LOGIN / LOGOUT
@@ -450,6 +477,9 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_URL = "/portal/login/"
 LOGIN_REDIRECT_URL = "/portal/dashboard/"
 LOGOUT_REDIRECT_URL = "/portal/login/"
+
+SESSION_COOKIE_AGE = 8 * 60 * 60
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 # ==========================================================
@@ -597,6 +627,10 @@ DEFAULT_FROM_EMAIL = env.str(
     "DEFAULT_FROM_EMAIL",
     default="",
 )
+
+# Employee job status updates are surfaced in the admin dashboard. Keep the
+# existing completion review email code available, but disabled in the portal.
+EMPLOYEE_PORTAL_SEND_REVIEW_REQUEST_EMAILS = False
 
 if (
     EMAIL_HOST_USER

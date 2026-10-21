@@ -1,0 +1,158 @@
+
+{% extends "dashboard_base.html" %}
+
+{% block title %}Security Centre | YD Cleaning{% endblock %}
+
+{% block extra_css %}
+<style>
+.security-page { max-width: 1200px; margin: 0 auto; }
+.security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+.security-card {
+    padding: 20px;
+    border: 1px solid #dce5df;
+    border-radius: 12px;
+    background: #fff;
+}
+.security-card strong { display: block; font-size: 26px; }
+.security-filters {
+    display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;
+}
+.security-filters input, .security-filters select,
+.security-filters button, .security-status {
+    padding: 9px; border: 1px solid #ccd5cf; border-radius: 7px;
+}
+.security-table { width: 100%; border-collapse: collapse; }
+.security-table th, .security-table td {
+    padding: 12px; text-align: left; border-bottom: 1px solid #e5e9e6;
+}
+.security-table th { background: #f2f6f3; }
+.security-scroll { overflow-x: auto; }
+.security-muted { color: #66736b; font-size: 13px; }
+@media (max-width: 650px) {
+    .security-table { min-width: 850px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="security-page">
+    <h1>Security Threat Monitor</h1>
+    <p>Rule-based attack signals, source IPs and website audit findings.</p>
+    <form method="post" action="{% url 'security_monitor:run_audit' %}">
+        {% csrf_token %}
+        <button type="submit">Run Website Audit</button>
+    </form>
+
+    <div class="security-grid">
+        <div class="security-card">
+            <span>Total findings</span>
+            <strong>{{ total_findings }}</strong>
+        </div>
+        <div class="security-card">
+            <span>Open findings</span>
+            <strong>{{ open_count }}</strong>
+        </div>
+        <div class="security-card">
+            <span>Unresolved critical</span>
+            <strong>{{ critical_count }}</strong>
+        </div>
+    </div>
+
+    <form method="get" class="security-filters">
+        <input type="search" name="q" value="{{ search_query }}"
+               placeholder="Search findings">
+
+        <select name="status">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}
+            <option value="{{ value }}"
+                {% if selected_status == value %}selected{% endif %}>
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="severity">
+            <option value="">All severities</option>
+            {% for value, label in severities %}
+            <option value="{{ value }}"
+                {% if selected_severity == value %}selected{% endif %}>
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="source">
+            <option value="">All sources</option>
+            {% for value, label in sources %}
+            <option value="{{ value }}"
+                {% if selected_source == value %}selected{% endif %}>
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filter</button>
+        <a href="{% url 'security_monitor:dashboard' %}">Reset</a>
+    </form>
+
+    <div class="security-scroll">
+        <table class="security-table">
+            <thead>
+                <tr>
+                    <th>Finding</th>
+                    <th>Severity</th>
+                    <th>Source</th>
+                    <th>Source IP</th>
+                    <th>Last seen</th>
+                    <th>Count</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for finding in findings %}
+                <tr>
+                    <td>
+                        <strong>{{ finding.title }}</strong>
+                        <p class="security-muted">
+                            {{ finding.description|truncatechars:180 }}
+                        </p>
+                    </td>
+                    <td>{{ finding.get_severity_display }}</td>
+                    <td>{{ finding.get_source_display }}</td>
+                    <td>{{ finding.source_ip|default:"—" }}</td>
+                    <td>{{ finding.last_seen|date:"d M Y H:i" }}</td>
+                    <td>{{ finding.occurrences }}</td>
+                    <td>{{ finding.get_status_display }}</td>
+                    <td>
+                        <form method="post"
+                              action="{% url 'security_monitor:update_finding' finding.pk %}">
+                            {% csrf_token %}
+                            <select name="status" class="security-status">
+                                {% for value, label in statuses %}
+                                <option value="{{ value }}"
+                                    {% if finding.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">No findings match these filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

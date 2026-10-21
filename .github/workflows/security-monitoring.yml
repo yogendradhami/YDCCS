@@ -1,0 +1,86 @@
+
+name: YDCCS Security Monitoring
+
+on:
+  schedule:
+    # Security alert queue: hourly at minute 17 UTC
+    - cron: "17 * * * *"
+
+    # Website and Django security audit: twice daily
+    - cron: "37 0,12 * * *"
+
+    # Daily security report at 22:30 UTC
+    - cron: "30 22 * * *"
+
+  # Allow manual testing of each task from GitHub Actions.
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Which security task should run?"
+        required: true
+        type: choice
+        options:
+          - alerts
+          - audit
+          - report
+
+permissions:
+  contents: read
+
+# Prevent overlapping runs of the same scheduled task.
+concurrency:
+  group: security-monitoring-${{ github.event.schedule || inputs.task || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  security-monitoring:
+    name: Run Django security task
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      DJANGO_SETTINGS_MODULE: ydcleaning.settings
+      DJANGO_DEBUG: "False"
+      IS_PRODUCTION: "True"
+      DJANGO_ALLOWED_HOSTS: "ydcleaning.com.au,www.ydcleaning.com.au"
+      SITE_URL: "https://www.ydcleaning.com.au"
+      SECURITY_MONITORING_ENABLED: "True"
+
+      # Sensitive values are stored in GitHub Actions secrets.
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      SECURITY_ALERT_EMAIL: ${{ secrets.SECURITY_ALERT_EMAIL }}
+      DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Process security alert queue
+        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '17 * * * *') || (github.event_name == 'workflow_dispatch' && inputs.task == 'alerts') }}
+        run: python manage.py process_security_alerts
+
+      - name: Run website and Django security audit
+        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '37 0,12 * * *') || (github.event_name == 'workflow_dispatch' && inputs.task == 'audit') }}
+        run: python manage.py run_security_audit
+
+      - name: Run audit and send daily security report
+        if: ${{ (github.event_name == 'schedule' && github.event.schedule == '30 22 * * *') || (github.event_name == 'workflow_dispatch' && inputs.task == 'report') }}
+        run: python manage.py run_security_audit --report

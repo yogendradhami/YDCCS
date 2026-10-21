@@ -1,0 +1,12 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Position Permissions | YD Dashboard{% endblock %}
+{% block page_title %}{% if position %}Edit Position{% else %}Create Position{% endif %}{% endblock %}
+{% block page_subtitle %}Choose exactly which application permissions this position receives.{% endblock %}
+
+{% block content %}
+<style>
+.position-form{max-width:1100px;margin:0 auto;background:#fff;padding:24px;border:1px solid #e2e8f0;border-radius:15px}.position-form input[type=text]{padding:10px;border:1px solid #cbd5e1;border-radius:8px;width:min(100%,500px)}.permission-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin-top:18px}.permission-grid label{padding:10px;border:1px solid #e2e8f0;border-radius:8px}.position-form button,.position-form a{display:inline-block;margin-top:18px;padding:10px 14px;border:0;border-radius:8px;background:#0f766e;color:#fff;text-decoration:none;font-weight:800}.position-form a{background:#e2e8f0;color:#0f172a}
+</style>
+<div class="position-form"><form method="post">{% csrf_token %}<p><label for="{{ form.name.id_for_label }}">Position name</label><br>{{ form.name }}{{ form.name.errors }}</p><h3>Permissions</h3>{{ form.permissions.errors }}<div class="permission-grid">{% for checkbox in form.permissions %}<label>{{ checkbox.tag }} {{ checkbox.choice_label }}</label>{% endfor %}</div><button type="submit">Save Position</button> <a href="{% url 'security_position_list' %}">Cancel</a></form></div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}{% if is_create %}Create User{% else %}Edit User{% endif %} | YD Dashboard{% endblock %}
+{% block page_title %}{% if is_create %}Create User{% else %}Edit User{% endif %}{% endblock %}
+{% block page_subtitle %}Assign a position group to control dashboard permissions.{% endblock %}
+
+{% block content %}
+<style>
+.security-form-shell{max-width:850px;margin:0 auto}.security-form-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:26px}.security-form-card p{margin:0 0 17px}.security-form-card label{display:block;margin-bottom:6px;font-weight:800;color:#334155}.security-form-card input,.security-form-card select{box-sizing:border-box;width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px}.security-form-card ul.errorlist{color:#b91c1c}.security-form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.security-form-actions button,.security-form-actions a{padding:11px 15px;border:0;border-radius:8px;background:#0f766e;color:#fff;text-decoration:none;font-weight:800}.security-form-actions a{background:#e2e8f0;color:#0f172a}.security-note{padding:13px;border-radius:9px;background:#fff7ed;color:#9a3412;margin-bottom:18px}
+</style>
+<div class="security-form-shell"><div class="security-form-card">
+    {% if is_create %}<div class="security-note">The account will stay inactive until the user verifies the email address. Choose a strong temporary password and share it securely.</div>{% endif %}
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}<p><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{{ field.errors }}</p>{% endfor %}
+        <div class="security-form-actions"><button type="submit">{% if is_create %}Create and Send Verification{% else %}Save User{% endif %}</button><a href="{% url 'security_user_list' %}">Cancel</a></div>
+    </form>
+</div></div>
+{% endblock %}

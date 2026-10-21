@@ -1,0 +1,68 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Users & Positions | YD Dashboard{% endblock %}
+{% block page_title %}Users & Positions{% endblock %}
+{% block page_subtitle %}Manage dashboard accounts, roles and access blocks.{% endblock %}
+
+{% block content %}
+<style>
+.security-page{max-width:1400px;margin:0 auto}.security-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:22px;margin-bottom:20px;box-shadow:0 8px 24px rgba(15,23,42,.04)}.security-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.security-button{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:9px;border:0;background:#0f766e;color:#fff;font-weight:800;text-decoration:none;cursor:pointer}.security-button.secondary{background:#e2e8f0;color:#0f172a}.security-button.danger{background:#b91c1c}.security-button.warning{background:#c2410c}.security-table-wrap{overflow:auto}.security-table{width:100%;border-collapse:collapse;min-width:850px}.security-table th,.security-table td{text-align:left;padding:13px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.security-table th{font-size:12px;text-transform:uppercase;color:#64748b}.security-table td form{display:inline-block;margin:2px}.security-pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:12px;font-weight:800}.security-pill.blocked{background:#fef2f2;color:#b91c1c}.security-pill.pending{background:#fff7ed;color:#c2410c}.muted{color:#64748b;font-size:13px}
+</style>
+<div class="security-page">
+    <section class="security-card security-toolbar">
+        <div>
+            <h2 style="margin:0 0 5px">Account access</h2>
+            <div class="muted">New dashboard accounts remain inactive until their email address is verified.</div>
+        </div>
+        <div>
+            <a class="security-button" href="{% url 'security_user_create' %}">Create User</a>
+            {% if can_manage_roles %}<a class="security-button secondary" href="{% url 'security_position_list' %}">Manage Positions</a>{% endif %}
+        </div>
+    </section>
+
+    <section class="security-card security-table-wrap">
+        <table class="security-table">
+            <thead><tr><th>User</th><th>Position</th><th>Status</th><th>Login lock</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for row in user_rows %}
+                {% with managed_user=row.user %}
+                <tr>
+                    <td><strong>{{ managed_user.get_full_name|default:managed_user.username }}</strong><br><span class="muted">{{ managed_user.email|default:"No email" }}</span></td>
+                    <td>{% for group in managed_user.groups.all %}<span>{{ group.name }}</span>{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">No position</span>{% endfor %}</td>
+                    <td>
+                        {% if row.admin_blocked %}<span class="security-pill blocked">Blocked by administrator</span>
+                        {% elif row.pending_email_verification %}<span class="security-pill pending">Pending verification</span>
+                        {% elif managed_user.is_active %}<span class="security-pill">Active</span>
+                        {% else %}<span class="security-pill blocked">Blocked</span>{% endif %}
+                        {% if row.admin_blocked and row.pending_email_verification %}<br><span class="muted">Email verification is still pending</span>{% endif %}
+                        {% if managed_user.is_superuser %}<br><span class="muted">Superuser</span>{% elif managed_user.is_staff %}<br><span class="muted">Dashboard access</span>{% endif %}
+                    </td>
+                    <td>{% if row.lock %}<span class="security-pill blocked">Locked until {{ row.lock.locked_until|date:"d M Y, H:i" }}</span>{% else %}<span class="muted">No active lock</span>{% endif %}</td>
+                    <td>
+                        {% if not managed_user.is_superuser or request.user.is_superuser %}
+                            <a class="security-button secondary" href="{% url 'security_user_edit' managed_user.id %}">Edit position</a>
+                            {% if row.pending_email_verification %}
+                                <form method="post" action="{% url 'security_user_access_action' managed_user.id 'resend-verification' %}">{% csrf_token %}<button class="security-button warning" type="submit">Resend verification</button></form>
+                            {% endif %}
+                            {% if row.admin_blocked %}
+                                {% if not row.pending_email_verification %}<form method="post" action="{% url 'security_user_access_action' managed_user.id 'unblock' %}">{% csrf_token %}<button class="security-button" type="submit">Unblock</button></form>{% endif %}
+                            {% elif managed_user.is_active or row.pending_email_verification %}
+                                {% if managed_user.id != request.user.id %}
+                                    <form method="post" action="{% url 'security_user_access_action' managed_user.id 'block' %}">{% csrf_token %}<button class="security-button danger" type="submit" onclick="return confirm('Block this user from signing in?');">Block</button></form>
+                                {% endif %}
+                            {% elif not row.pending_email_verification %}
+                                <form method="post" action="{% url 'security_user_access_action' managed_user.id 'unblock' %}">{% csrf_token %}<button class="security-button" type="submit">Unblock</button></form>
+                            {% endif %}
+                            {% if row.lock %}<form method="post" action="{% url 'security_user_access_action' managed_user.id 'clear-lock' %}">{% csrf_token %}<button class="security-button warning" type="submit">Clear 30-minute lock</button></form>{% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endwith %}
+            {% empty %}
+                <tr><td colspan="5">No users found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

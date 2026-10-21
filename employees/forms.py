@@ -212,6 +212,10 @@ class EmployeeCreateForm(forms.ModelForm):
                 is_superuser=False,
                 employee_profile__isnull=True,
             )
+            .filter(
+                Q(customer_profile__isnull=True)
+                | Q(customer_profile__email_verified=True)
+            )
             .order_by(user_model.USERNAME_FIELD)
         )
         self.fields["existing_user"].label_from_instance = self._user_label
@@ -258,6 +262,10 @@ class EmployeeCreateForm(forms.ModelForm):
                         **{f"{email_field}__iexact": login_email}
                     ).exists():
                         self.add_error("login_email", "An account already uses this email.")
+                if user_model._default_manager.filter(
+                    **{f"{user_model.USERNAME_FIELD}__iexact": login_email}
+                ).exists():
+                    self.add_error("login_email", "An account already uses this email.")
 
             username_value = username or login_email
             if not username_value:

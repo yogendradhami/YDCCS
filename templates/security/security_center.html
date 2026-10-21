@@ -1,0 +1,24 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Security Audit | YD Dashboard{% endblock %}
+{% block page_title %}Security Audit{% endblock %}
+{% block page_subtitle %}Account lockouts, configuration checks and saved security audit reports.{% endblock %}
+
+{% block content %}
+<style>
+.security-center{max-width:1400px;margin:0 auto}.security-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}.security-card{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.04)}.security-card h3{margin:0 0 7px;color:#475569;font-size:13px;text-transform:uppercase}.security-value{font-size:28px;font-weight:900;color:#0f172a}.security-table-wrap{overflow:auto}.security-table{width:100%;border-collapse:collapse;min-width:760px}.security-table th,.security-table td{text-align:left;padding:11px;border-bottom:1px solid #e2e8f0;vertical-align:top}.security-table th{font-size:12px;color:#64748b;text-transform:uppercase}.security-status{font-weight:900;text-transform:uppercase}.pass{color:#047857}.warning{color:#c2410c}.fail{color:#b91c1c}.severity-high,.severity-critical{color:#b91c1c;font-weight:800}.severity-medium{color:#c2410c;font-weight:800}.security-button{display:inline-block;padding:10px 14px;border:0;border-radius:8px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer}.security-note{padding:12px;border-radius:9px;background:#eff6ff;color:#1e40af;margin-bottom:18px}
+</style>
+<div class="security-center">
+    <div class="security-note">Automated monitoring uses local rules and configuration checks. It does not send request logs or user data to an external AI service.</div>
+    <div class="security-grid">
+        <div class="security-card"><h3>Audit score</h3><div class="security-value">{{ summary.score }}/100</div></div>
+        <div class="security-card"><h3>Events, last 24 hours</h3><div class="security-value">{{ summary.events_24h }}</div></div>
+        <div class="security-card"><h3>High severity events</h3><div class="security-value">{{ summary.high_events }}</div></div>
+        <div class="security-card"><h3>Active login locks</h3><div class="security-value">{{ summary.locked_accounts }}</div></div>
+    </div>
+    <section class="security-card" style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2 style="margin:0 0 6px">Configuration audit</h2><span>Checked {{ summary.checked_at }}</span></div><form method="post">{% csrf_token %}<button class="security-button" type="submit">Generate report</button></form></div><div class="security-table-wrap"><table class="security-table"><thead><tr><th>Check</th><th>Status</th><th>Details</th></tr></thead><tbody>{% for check in checks %}<tr><td>{{ check.name }}</td><td class="security-status {{ check.status }}">{{ check.status }}</td><td>{{ check.detail }}</td></tr>{% endfor %}</tbody></table></div></section>
+    <section class="security-card" style="margin-bottom:18px"><h2>Recommended actions</h2>{% for recommendation in recommendations %}<p>{{ recommendation }}</p>{% empty %}<p>No configuration changes are recommended by the current checks.</p>{% endfor %}</section>
+    <section class="security-card security-table-wrap" style="margin-bottom:18px"><h2>Recent security events</h2><table class="security-table"><thead><tr><th>Time</th><th>Severity</th><th>Event</th><th>Source IP</th><th>Path</th><th>Details</th></tr></thead><tbody>{% for event in events %}<tr><td>{{ event.created_at|date:"d M Y, H:i:s" }}</td><td class="severity-{{ event.severity }}">{{ event.get_severity_display }}</td><td>{{ event.get_event_type_display }}</td><td>{{ event.source_ip|default:"—" }}</td><td>{{ event.path|default:"—" }}</td><td>{{ event.description }}</td></tr>{% empty %}<tr><td colspan="6">No security events recorded.</td></tr>{% endfor %}</tbody></table></section>
+    <section class="security-card security-table-wrap"><h2>Saved reports</h2><table class="security-table"><thead><tr><th>Created</th><th>By</th><th>Score</th><th>Events</th><th>Locks</th></tr></thead><tbody>{% for report in reports %}<tr><td>{{ report.created_at|date:"d M Y, H:i" }}</td><td>{{ report.generated_by|default:"System" }}</td><td>{{ report.summary.score }}/100</td><td>{{ report.summary.events_24h }}</td><td>{{ report.summary.locked_accounts }}</td></tr>{% empty %}<tr><td colspan="5">No reports generated yet.</td></tr>{% endfor %}</tbody></table></section>
+</div>
+{% endblock %}

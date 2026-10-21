@@ -18,6 +18,7 @@ from .views import (
     invoice_detail,
     invoice_list,
     mark_invoice_paid,
+    mark_invoice_unpaid,
     stripe_payment_cancel,
     stripe_payment_success,
 )
@@ -36,6 +37,11 @@ urlpatterns = [
         "dashboard/invoices/<int:invoice_id>/mark-paid/",
         mark_invoice_paid,
         name="mark_invoice_paid",
+    ),
+    path(
+        "dashboard/invoices/<int:invoice_id>/mark-unpaid/",
+        mark_invoice_unpaid,
+        name="mark_invoice_unpaid",
     ),
 
     path(

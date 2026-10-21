@@ -24,6 +24,7 @@ urlpatterns = [
 
     path("health/", health_check, name="health"),
     path("admin/", admin.site.urls),
+    path("", include("security.urls")),
 
     # ====================================================
     # ANALYTICS
@@ -112,5 +113,11 @@ urlpatterns = [
     path(
         "dashboard/company-documents/",
         include("company_documents.urls"),
+    ),
+
+    # security monitoring
+    path(
+        "dashboard/security/",
+        include("security_monitor.urls"),
     ),
 ]

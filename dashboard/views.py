@@ -1624,6 +1624,30 @@ def add_employee(request):
                     "We could not save this employee. Check for a duplicate login and try again.",
                 )
             else:
+                if form.cleaned_data["access_mode"] == "create" and employee.user_id:
+                    try:
+                        from security.views import _send_user_activation_email
+
+                        _send_user_activation_email(
+                            request,
+                            employee.user,
+                            activate_account=employee.active,
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Employee account verification email failed: employee=%s",
+                            employee.pk,
+                        )
+                        messages.warning(
+                            request,
+                            "Employee was added, but the account verification email could not be sent. Resend it from Users & Positions.",
+                        )
+                    else:
+                        messages.success(
+                            request,
+                            "A verification link was sent to the employee's email address. Their account is inactive until verified.",
+                        )
+
                 try:
                     create_activity_log(
                         request.user,

@@ -88,3 +88,8 @@ whitenoise==6.5.0
 xmlschema==4.3.2
 yarl==1.24.2
 zope.interface==8.5
+- name: Install dependency security scanner
+  run: python -m pip install pip-audit
+
+- name: Audit Python dependencies
+  run: pip-audit -r requirements.txt

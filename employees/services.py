@@ -19,7 +19,7 @@ def create_employee_from_form(form):
             create_values = {
                 username_field: username,
                 "password": form.cleaned_data["password1"],
-                "is_active": employee.active,
+                "is_active": False,
             }
             email_field = getattr(user_model, "EMAIL_FIELD", "email")
             if any(field.name == email_field for field in user_model._meta.fields):

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.exceptions import ValidationError
@@ -43,7 +44,11 @@ class CustomerRegistrationView(APIView):
 
         email = serializers.EmailField().run_validation(email)
 
-        if User.objects.filter(email__iexact=email).exists():
+        if (
+            User.objects.filter(email__iexact=email).exists()
+            or User.objects.filter(username__iexact=email).exists()
+            or Customer.objects.filter(email__iexact=email).exists()
+        ):
             raise ValidationError({
                 "email": "An account with this email already exists."
             })
@@ -59,21 +64,26 @@ class CustomerRegistrationView(APIView):
                     username=email,
                     email=email,
                     password=password,
+                    is_active=False,
                 )
 
-                Customer.objects.create(
+                customer = Customer.objects.create(
                     user=user,
                     full_name=full_name,
                     email=email,
                     phone=phone,
+                    verification_token=get_random_string(64),
                 )
-        except IntegrityError:
+                from portal.views import send_customer_verification_email
+
+                send_customer_verification_email(request, customer)
+        except (IntegrityError, DjangoValidationError):
             raise ValidationError({
                 "email": "An account with this email already exists."
             })
 
         return Response(
-            {"message": "Account created. Please sign in to continue."},
+            {"message": "Account created. Verify your email before signing in."},
             status=status.HTTP_201_CREATED,
         )
 

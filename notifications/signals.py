@@ -101,7 +101,16 @@ def booking_notification(sender, instance, created, **kwargs):
         instance.status
         != getattr(instance, "_notification_previous_status", instance.status)
     )
-    if status_changed and instance.customer and instance.customer.user:
+    if (
+        status_changed
+        and not getattr(
+            instance,
+            "_suppress_customer_status_notification",
+            False,
+        )
+        and instance.customer
+        and instance.customer.user
+    ):
         notify_user(
             instance.customer.user,
             "Booking Updated",

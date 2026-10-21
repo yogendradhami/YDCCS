@@ -37,7 +37,7 @@ My Profile | Customer Portal
                 <div class="yd-portal-form-card">
                     <h2>Customer Information</h2>
 
-                    <form method="POST">
+                    <form method="POST" data-verified-email="{{ request.user.email|lower }}">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="profile">
 

@@ -565,6 +565,7 @@ def employee_job_detail(request, booking_id):
         if form.is_valid():
 
             changed_fields = tuple(form.changed_data)
+            previous_status = booking.status
 
             updated_booking = form.save(commit=False)
 
@@ -604,6 +605,11 @@ def employee_job_detail(request, booking_id):
                         booking_id=booking.id,
                     )
 
+            if "status" in changed_fields:
+                # The booking signal uses this marker to keep employee
+                # status updates in the admin dashboard only.
+                updated_booking._suppress_customer_status_notification = True
+
             updated_booking.save()
 
             # Notify administrators about job changes.
@@ -612,7 +618,7 @@ def employee_job_detail(request, booking_id):
                 if "status" in changed_fields:
                     details = (
                         f"changed job #{updated_booking.id} "
-                        f"from {booking.get_status_display()} "
+                        f"from {dict(Booking.STATUS_CHOICES).get(previous_status, previous_status)} "
                         f"to {updated_booking.get_status_display()}"
                     )
                 else:
@@ -667,10 +673,10 @@ def employee_job_detail(request, booking_id):
                         f"/reports/booking/{updated_booking.id}/",
                     )
 
-            # Update employee completion statistics and send the
-            # review email only on the transition to completed.
+            # Update employee completion statistics only on the transition
+            # to completed.
             if (
-                booking.get_status_display()     != "completed"
+                previous_status != "completed"
                 and updated_booking.status == "completed"
             ):
 
@@ -681,89 +687,88 @@ def employee_job_detail(request, booking_id):
 
                 employee.save()
 
-                # Send the branded customer review email.
-                try:
-                    import logging
+                # Keep the existing branded review email available behind a
+                # setting, but do not send customer emails from the employee
+                # portal by default.
+                if getattr(
+                    settings,
+                    "EMPLOYEE_PORTAL_SEND_REVIEW_REQUEST_EMAILS",
+                    False,
+                ):
+                    try:
+                        from django.core.mail import EmailMultiAlternatives
+                        from django.template.loader import render_to_string
 
-                    from django.conf import settings
-                    from django.core.mail import EmailMultiAlternatives
-                    from django.template.loader import render_to_string
+                        customer = updated_booking.customer
 
-                    logger = logging.getLogger(__name__)
+                        if not customer.email or not customer.email.strip():
 
-                    customer = updated_booking.customer
-
-                    if not customer.email or not customer.email.strip():
-
-                        logger.error(
-                            "Review email not sent: customer email is "
-                            "missing for booking #%s.",
-                            updated_booking.id,
-                        )
-
-                    else:
-
-                        google_review_link = (
-                            "https://g.page/r/CXH9ygKf16Y4EBM/review"
-                        )
-
-                        context = {
-                            "customer_name": customer.full_name,
-                            "review_link": google_review_link,
-                            "booking": updated_booking,
-                        }
-
-                        html_message = render_to_string(
-                            "emails/reviews/review_request.html",
-                            context,
-                        )
-
-                        text_message = render_to_string(
-                            "emails/reviews/review_request.txt",
-                            context,
-                        )
-
-                        email = EmailMultiAlternatives(
-                            subject="How was your cleaning service?",
-                            body=text_message,
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            to=[customer.email],
-                            reply_to=["info@ydcleaning.com.au"],
-                        )
-
-                        email.attach_alternative(
-                            html_message,
-                            "text/html",
-                        )
-
-                        sent_count = email.send(
-                            fail_silently=False,
-                        )
-
-                        if sent_count == 1:
-
-                            logger.info(
-                                "Review email accepted by email backend "
-                                "for booking #%s.",
+                            logger.error(
+                                "Review email not sent: customer email is "
+                                "missing for booking #%s.",
                                 updated_booking.id,
                             )
 
                         else:
 
-                            logger.error(
-                                "Review email backend reported no message "
-                                "sent for booking #%s.",
-                                updated_booking.id,
+                            google_review_link = (
+                                "https://g.page/r/CXH9ygKf16Y4EBM/review"
                             )
 
-                except Exception:
+                            context = {
+                                "customer_name": customer.full_name,
+                                "review_link": google_review_link,
+                                "booking": updated_booking,
+                            }
 
-                    import logging
+                            html_message = render_to_string(
+                                "emails/reviews/review_request.html",
+                                context,
+                            )
 
-                    logging.getLogger(__name__).exception(
-                        "Review email failed for booking #%s.",
-                        updated_booking.id,
-                    )
+                            text_message = render_to_string(
+                                "emails/reviews/review_request.txt",
+                                context,
+                            )
+
+                            email = EmailMultiAlternatives(
+                                subject="How was your cleaning service?",
+                                body=text_message,
+                                from_email=settings.DEFAULT_FROM_EMAIL,
+                                to=[customer.email],
+                                reply_to=["info@ydcleaning.com.au"],
+                            )
+
+                            email.attach_alternative(
+                                html_message,
+                                "text/html",
+                            )
+
+                            sent_count = email.send(
+                                fail_silently=False,
+                            )
+
+                            if sent_count == 1:
+
+                                logger.info(
+                                    "Review email accepted by email backend "
+                                    "for booking #%s.",
+                                    updated_booking.id,
+                                )
+
+                            else:
+
+                                logger.error(
+                                    "Review email backend reported no message "
+                                    "sent for booking #%s.",
+                                    updated_booking.id,
+                                )
+
+                    except Exception:
+                        logger.exception(
+                            "Review email failed for booking #%s.",
+                            updated_booking.id,
+                        )
 
             messages.success(
                 request,

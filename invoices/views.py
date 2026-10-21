@@ -534,6 +534,56 @@ def mark_invoice_paid(request, invoice_id):
         )
 
     return redirect("invoice_detail", invoice_id=invoice.id)
+
+
+@login_required
+@admin_required
+@require_POST
+def mark_invoice_unpaid(request, invoice_id):
+    invoice = get_object_or_404(
+        Invoice.objects.select_related("booking__customer"),
+        id=invoice_id,
+    )
+
+    if invoice.status != "paid":
+        messages.info(
+            request,
+            f"Invoice {invoice.invoice_number} is not marked as paid.",
+        )
+        return redirect("invoice_detail", invoice_id=invoice.id)
+
+    invoice.status = (
+        "overdue"
+        if invoice.due_date and invoice.due_date < timezone.localdate()
+        else "sent"
+    )
+    invoice.paid_at = None
+    invoice.save()
+
+    try:
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type="invoice",
+            title="Invoice Marked Unpaid",
+            description=(
+                f"{invoice.invoice_number} was marked unpaid by "
+                f"{request.user.get_username()}."
+            ),
+        )
+    except Exception:
+        logger.exception(
+            "Could not log invoice %s being marked unpaid.",
+            invoice.invoice_number,
+        )
+
+    messages.success(
+        request,
+        f"Invoice {invoice.invoice_number} marked as {invoice.get_status_display()}. "
+        "This does not refund or reverse a Stripe payment.",
+    )
+    return redirect("invoice_detail", invoice_id=invoice.id)
+
+
 # ==========================================================
 # CANCEL INVOICE
 # ==========================================================
