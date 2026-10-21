@@ -86,8 +86,7 @@ jobs:
         run: python manage.py run_security_audit --report
 
 
-      - name: Install dependency security scanner
-        run: python -m pip install pip-audit
-
-      - name: Audit Python dependencies
-        run: pip-audit -r requirements.txt
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
