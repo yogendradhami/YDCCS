@@ -16,6 +16,7 @@ import warnings
 from pathlib import Path
 
 import environ
+from django.utils.csp import CSP
 
 
 # ==========================================================
@@ -295,9 +296,10 @@ MIDDLEWARE = [
     "core.middleware.SlowRequestLoggingMiddleware",
 
     "core.middleware.ExceptionLoggingMiddleware",
-
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
 
 SECURITY_MONITORING_ENABLED = True
 
@@ -816,6 +818,42 @@ SECURE_HSTS_PRELOAD = env.bool(
     "SECURE_HSTS_PRELOAD",
     default=False,
 )
+
+
+# ==========================================================
+# CONTENT SECURITY POLICY (CSP)
+# ==========================================================
+
+# Report-only mode: observe potential policy violations
+# without blocking scripts, styles, images, or other resources.
+# Review browser console reports before enforcing a policy.
+
+SECURE_CSP_REPORT_ONLY = {
+    "default-src": [CSP.SELF],
+
+    "style-src": [CSP.SELF],
+    "style-src-elem": [
+        CSP.SELF,
+        "https://fonts.googleapis.com",
+        "https://cdnjs.cloudflare.com",
+    ],
+
+    "font-src": [
+        CSP.SELF,
+        "https://fonts.gstatic.com",
+        "https://cdnjs.cloudflare.com",
+        "data:",
+    ],
+
+    "script-src": [CSP.SELF],
+    "img-src": [
+        CSP.SELF,
+        "data:",
+        "blob:",
+    ],
+    "connect-src": [CSP.SELF],
+}
+
 
 
 # ==========================================================

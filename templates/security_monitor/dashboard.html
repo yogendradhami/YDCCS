@@ -5,154 +5,909 @@
 
 {% block extra_css %}
 <style>
-.security-page { max-width: 1200px; margin: 0 auto; }
-.security-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
+/* ==========================================================
+   YDCCS SECURITY OPERATIONS CENTRE
+   Scoped styles: no changes to the shared dashboard layout.
+   ========================================================== */
+
+.security-page {
+    --sec-green: #174b38;
+    --sec-green-dark: #103728;
+    --sec-ink: #1b2c24;
+    --sec-muted: #718078;
+    --sec-border: #e2e9e4;
+    --sec-surface: #ffffff;
+    --sec-background: #f5f8f6;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 28px;
+    color: var(--sec-ink);
 }
-.security-card {
-    padding: 20px;
-    border: 1px solid #dce5df;
-    border-radius: 12px;
+
+.security-page,
+.security-page * {
+    box-sizing: border-box;
+}
+
+.security-page button,
+.security-page input,
+.security-page select {
+    font: inherit;
+}
+
+.security-page button,
+.security-page a,
+.security-page select {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.security-page button:focus-visible,
+.security-page a:focus-visible,
+.security-page input:focus-visible,
+.security-page select:focus-visible {
+    outline: 3px solid #78b99b;
+    outline-offset: 3px;
+}
+
+.security-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-bottom: 26px;
+}
+
+.security-brandline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: #287653;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.security-brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2e9665;
+    box-shadow: 0 0 0 4px #e0f3e7;
+}
+
+.security-page h1 {
+    margin: 0;
+    color: var(--sec-ink);
+    font-size: clamp(27px, 3vw, 37px);
+    font-weight: 800;
+    letter-spacing: -.045em;
+    line-height: 1.2;
+}
+
+.security-subtitle {
+    margin: 10px 0 0;
+    color: var(--sec-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.security-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.security-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 11px 16px;
+    border: 1px solid var(--sec-green);
+    border-radius: 10px;
+    background: var(--sec-green);
+    color: #fff !important;
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .18s ease, transform .18s ease;
+}
+
+.security-button:hover {
+    background: var(--sec-green-dark);
+}
+
+.security-button-secondary {
+    border-color: var(--sec-border);
     background: #fff;
+    color: var(--sec-green) !important;
 }
-.security-card strong { display: block; font-size: 26px; }
+
+.security-button-secondary:hover {
+    background: var(--sec-background);
+}
+
+.security-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.security-card {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    padding: 21px;
+    border: 1px solid var(--sec-border);
+    border-radius: 15px;
+    background: var(--sec-surface);
+    box-shadow: 0 4px 16px rgb(25 55 38 / 3%);
+}
+
+.security-card::after {
+    position: absolute;
+    right: -20px;
+    bottom: -35px;
+    width: 95px;
+    height: 95px;
+    border: 15px solid rgb(30 100 65 / 4%);
+    border-radius: 50%;
+    content: "";
+    pointer-events: none;
+}
+
+.security-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.security-card-label {
+    color: #68776e;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.security-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 11px;
+    background: #e7f3eb;
+    color: #1c7048;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.security-icon-warning {
+    background: #fff1dd;
+    color: #a96512;
+}
+
+.security-icon-critical {
+    background: #fde9e9;
+    color: #b12f2f;
+}
+
+.security-icon-blue {
+    background: #e8f0ff;
+    color: #315fa6;
+}
+
+.security-card-value {
+    display: block;
+    margin: 17px 0 7px;
+    color: var(--sec-ink);
+    font-size: clamp(28px, 3vw, 36px);
+    font-weight: 850;
+    letter-spacing: -.05em;
+    line-height: 1;
+}
+
+.security-card-caption {
+    color: var(--sec-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.security-card-critical {
+    border-top: 3px solid #c94444;
+}
+
+.security-card-open {
+    border-top: 3px solid #d69230;
+}
+
+.security-card-investigating {
+    border-top: 3px solid #527fc1;
+}
+
+.security-card-resolved {
+    border-top: 3px solid #329268;
+}
+
+.security-panel {
+    min-width: 0;
+    margin-bottom: 22px;
+    padding: 23px;
+    border: 1px solid var(--sec-border);
+    border-radius: 15px;
+    background: var(--sec-surface);
+    box-shadow: 0 4px 16px rgb(25 55 38 / 3%);
+}
+
+.security-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.security-panel-heading h2 {
+    margin: 0;
+    color: var(--sec-ink);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -.025em;
+}
+
+.security-panel-heading p {
+    margin: 5px 0 0;
+    color: var(--sec-muted);
+    font-size: 12px;
+}
+
+.security-panel-count {
+    padding: 7px 11px;
+    border: 1px solid var(--sec-border);
+    border-radius: 8px;
+    background: var(--sec-background);
+    color: #43554a;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.security-delivery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.security-delivery-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+    padding: 17px;
+    border: 1px solid #e8eee9;
+    border-radius: 12px;
+    background: #f8faf8;
+}
+
+.security-delivery-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 10px;
+    background: #e8f1eb;
+    color: var(--sec-green);
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.security-delivery-item strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -.04em;
+}
+
+.security-muted {
+    color: var(--sec-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
 .security-filters {
-    display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;
+    display: grid;
+    grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(130px, 1fr)) auto auto;
+    gap: 10px;
+    margin-bottom: 20px;
 }
-.security-filters input, .security-filters select,
-.security-filters button, .security-status {
-    padding: 9px; border: 1px solid #ccd5cf; border-radius: 7px;
+
+.security-filters input,
+.security-filters select,
+.security-status {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid #dbe4dd;
+    border-radius: 9px;
+    background: #fff;
+    color: #26382f;
+    font-size: 12px;
 }
-.security-table { width: 100%; border-collapse: collapse; }
-.security-table th, .security-table td {
-    padding: 12px; text-align: left; border-bottom: 1px solid #e5e9e6;
+
+.security-filters input::placeholder {
+    color: #94a097;
 }
-.security-table th { background: #f2f6f3; }
-.security-scroll { overflow-x: auto; }
-.security-muted { color: #66736b; font-size: 13px; }
-@media (max-width: 650px) {
-    .security-table { min-width: 850px; }
+
+.security-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #e8eee9;
+    border-radius: 11px;
+}
+
+.security-table {
+    width: 100%;
+    min-width: 1040px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.security-table th {
+    padding: 14px;
+    background: #f5f8f6;
+    color: #68776e;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.security-table td {
+    padding: 15px 14px;
+    border-top: 1px solid #edf1ee;
+    color: #35463b;
+    font-size: 12px;
+    vertical-align: top;
+}
+
+.security-table tbody tr {
+    transition: background .15s ease;
+}
+
+.security-table tbody tr:hover {
+    background: #f8fbf8;
+}
+
+.security-finding-title {
+    display: block;
+    max-width: 320px;
+    color: #20382c;
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.security-finding-description {
+    max-width: 350px;
+    margin: 5px 0 0;
+    color: #718078;
+    font-size: 11px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.security-path {
+    display: block;
+    margin-top: 6px;
+    color: #7b8b80;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.security-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 20px;
+    background: #edf1ee;
+    color: #536158;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.security-severity-critical {
+    background: #fde8e8;
+    color: #a62222;
+}
+
+.security-severity-high {
+    background: #fff0dc;
+    color: #95530a;
+}
+
+.security-severity-medium {
+    background: #fff7d6;
+    color: #81620a;
+}
+
+.security-severity-low {
+    background: #e5f1ff;
+    color: #245d9b;
+}
+
+.security-severity-info {
+    background: #edf0f2;
+    color: #53616b;
+}
+
+.security-status-open {
+    background: #fff0dc;
+    color: #95530a;
+}
+
+.security-status-investigating {
+    background: #e5f1ff;
+    color: #245d9b;
+}
+
+.security-status-resolved {
+    background: #e1f5e9;
+    color: #17643c;
+}
+
+.security-status-ignored {
+    background: #edf0f2;
+    color: #53616b;
+}
+
+.security-update-form {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 205px;
+}
+
+.security-update-form button {
+    min-height: 38px;
+    padding: 8px 11px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--sec-green);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.security-update-form button:hover {
+    background: var(--sec-green-dark);
+}
+
+.security-empty {
+    padding: 42px 20px !important;
+    color: #718078 !important;
+    text-align: center;
+}
+
+.security-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 19px;
+}
+
+.security-pagination-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.security-pagination a,
+.security-page-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 1px solid #dce5df;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--sec-green);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.security-pagination a:hover {
+    background: #edf5ef;
+}
+
+.security-page-number {
+    background: #174b38;
+    color: #fff;
+}
+
+.security-empty-state {
+    padding: 38px 18px;
+    text-align: center;
+}
+
+.security-empty-state strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #35463b;
+    font-size: 15px;
+}
+
+@media (max-width: 1200px) {
+    .security-filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .security-page {
+        padding: 20px;
+    }
+
+    .security-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .security-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .security-page {
+        padding: 14px;
+    }
+
+    .security-hero {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .security-hero-actions,
+    .security-hero-actions form,
+    .security-hero-actions .security-button {
+        width: 100%;
+    }
+
+    .security-metrics {
+        gap: 10px;
+    }
+
+    .security-card {
+        padding: 15px;
+    }
+
+    .security-card-value {
+        font-size: 28px;
+    }
+
+    .security-card-icon {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+        font-size: 15px;
+    }
+
+    .security-panel {
+        padding: 15px;
+    }
+
+    .security-delivery-grid,
+    .security-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .security-delivery-item {
+        padding: 13px;
+    }
+
+    .security-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .security-page *,
+    .security-page *::before,
+    .security-page *::after {
+        transition: none !important;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="security-page">
-    <h1>Security Threat Monitor</h1>
-    <p>Rule-based attack signals, source IPs and website audit findings.</p>
-    <form method="post" action="{% url 'security_monitor:run_audit' %}">
-        {% csrf_token %}
-        <button type="submit">Run Website Audit</button>
-    </form>
-
-    <div class="security-grid">
-        <div class="security-card">
-            <span>Total findings</span>
-            <strong>{{ total_findings }}</strong>
+    <header class="security-hero">
+        <div>
+            <div class="security-brandline">
+                <span class="security-brand-dot"></span>
+                YDCCS · Security Operations
+            </div>
+            <h1>Security Centre</h1>
+            <p class="security-subtitle">
+                Monitor security findings, investigate incidents and manage alert delivery.
+            </p>
         </div>
-        <div class="security-card">
-            <span>Open findings</span>
-            <strong>{{ open_count }}</strong>
+
+        <div class="security-hero-actions">
+            <form method="post" action="{% url 'security_monitor:run_audit' %}">
+                {% csrf_token %}
+                <button class="security-button" type="submit">
+                    &#8635; Run website audit
+                </button>
+            </form>
         </div>
-        <div class="security-card">
-            <span>Unresolved critical</span>
-            <strong>{{ critical_count }}</strong>
+    </header>
+
+    <section class="security-metrics" aria-label="Security overview">
+        <article class="security-card">
+            <div class="security-card-top">
+                <span class="security-card-label">Total findings</span>
+                <span class="security-card-icon">&#9678;</span>
+            </div>
+            <strong class="security-card-value">{{ total_findings|default:0 }}</strong>
+            <span class="security-card-caption">All recorded findings</span>
+        </article>
+
+        <article class="security-card security-card-open">
+            <div class="security-card-top">
+                <span class="security-card-label">Open findings</span>
+                <span class="security-card-icon security-icon-warning">!</span>
+            </div>
+            <strong class="security-card-value">{{ open_count|default:0 }}</strong>
+            <span class="security-card-caption">Awaiting review</span>
+        </article>
+
+        <article class="security-card security-card-critical">
+            <div class="security-card-top">
+                <span class="security-card-label">Critical incidents</span>
+                <span class="security-card-icon security-icon-critical">&#9888;</span>
+            </div>
+            <strong class="security-card-value">{{ critical_count|default:0 }}</strong>
+            <span class="security-card-caption">Unresolved critical findings</span>
+        </article>
+
+        <article class="security-card security-card-investigating">
+            <div class="security-card-top">
+                <span class="security-card-label">Investigating</span>
+                <span class="security-card-icon security-icon-blue">&#9906;</span>
+            </div>
+            <strong class="security-card-value">{{ investigating_count|default:0 }}</strong>
+            <span class="security-card-caption">Under active investigation</span>
+        </article>
+    </section>
+
+    <section class="security-panel" aria-labelledby="security-delivery-heading">
+        <div class="security-panel-heading">
+            <div>
+                <h2 id="security-delivery-heading">Alert delivery</h2>
+                <p>Track email notifications generated by the security monitor.</p>
+            </div>
         </div>
-    </div>
 
-    <form method="get" class="security-filters">
-        <input type="search" name="q" value="{{ search_query }}"
-               placeholder="Search findings">
+        <div class="security-delivery-grid">
+            <div class="security-delivery-item">
+                <span class="security-delivery-icon">&#9711;</span>
+                <div>
+                    <span class="security-muted">Pending</span>
+                    <strong>{{ delivery_metrics.pending|default:0 }}</strong>
+                </div>
+            </div>
+            <div class="security-delivery-item">
+                <span class="security-delivery-icon">&#10003;</span>
+                <div>
+                    <span class="security-muted">Sent</span>
+                    <strong>{{ delivery_metrics.sent|default:0 }}</strong>
+                </div>
+            </div>
+            <div class="security-delivery-item">
+                <span class="security-delivery-icon">&#9888;</span>
+                <div>
+                    <span class="security-muted">Failed</span>
+                    <strong>{{ delivery_metrics.failed|default:0 }}</strong>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <select name="status">
-            <option value="">All statuses</option>
-            {% for value, label in statuses %}
-            <option value="{{ value }}"
-                {% if selected_status == value %}selected{% endif %}>
-                {{ label }}
-            </option>
-            {% endfor %}
-        </select>
+    <section class="security-panel" aria-labelledby="security-findings-heading">
+        <div class="security-panel-heading">
+            <div>
+                <h2 id="security-findings-heading">Security findings</h2>
+                <p>Review activity, prioritise incidents and update their status.</p>
+            </div>
+            {% if page_obj %}
+                <span class="security-panel-count">
+                    {{ page_obj.paginator.count }} matching records
+                </span>
+            {% else %}
+                <span class="security-panel-count">Latest findings</span>
+            {% endif %}
+        </div>
 
-        <select name="severity">
-            <option value="">All severities</option>
-            {% for value, label in severities %}
-            <option value="{{ value }}"
-                {% if selected_severity == value %}selected{% endif %}>
-                {{ label }}
-            </option>
-            {% endfor %}
-        </select>
+        <form method="get" class="security-filters">
+            <input
+                type="search"
+                name="q"
+                value="{{ search_query }}"
+                placeholder="Search findings"
+                aria-label="Search security findings"
+            >
 
-        <select name="source">
-            <option value="">All sources</option>
-            {% for value, label in sources %}
-            <option value="{{ value }}"
-                {% if selected_source == value %}selected{% endif %}>
-                {{ label }}
-            </option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Filter</button>
-        <a href="{% url 'security_monitor:dashboard' %}">Reset</a>
-    </form>
-
-    <div class="security-scroll">
-        <table class="security-table">
-            <thead>
-                <tr>
-                    <th>Finding</th>
-                    <th>Severity</th>
-                    <th>Source</th>
-                    <th>Source IP</th>
-                    <th>Last seen</th>
-                    <th>Count</th>
-                    <th>Status</th>
-                    <th>Update</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for finding in findings %}
-                <tr>
-                    <td>
-                        <strong>{{ finding.title }}</strong>
-                        <p class="security-muted">
-                            {{ finding.description|truncatechars:180 }}
-                        </p>
-                    </td>
-                    <td>{{ finding.get_severity_display }}</td>
-                    <td>{{ finding.get_source_display }}</td>
-                    <td>{{ finding.source_ip|default:"—" }}</td>
-                    <td>{{ finding.last_seen|date:"d M Y H:i" }}</td>
-                    <td>{{ finding.occurrences }}</td>
-                    <td>{{ finding.get_status_display }}</td>
-                    <td>
-                        <form method="post"
-                              action="{% url 'security_monitor:update_finding' finding.pk %}">
-                            {% csrf_token %}
-                            <select name="status" class="security-status">
-                                {% for value, label in statuses %}
-                                <option value="{{ value }}"
-                                    {% if finding.status == value %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit">Save</button>
-                        </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8">No findings match these filters.</td>
-                </tr>
+            <select name="status" aria-label="Filter by status">
+                <option value="">All statuses</option>
+                {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            </select>
+
+            <select name="severity" aria-label="Filter by severity">
+                <option value="">All severities</option>
+                {% for value, label in severities %}
+                    <option value="{{ value }}" {% if selected_severity == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="source" aria-label="Filter by source">
+                <option value="">All sources</option>
+                {% for value, label in sources %}
+                    <option value="{{ value }}" {% if selected_source == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button class="security-button" type="submit">Apply filters</button>
+            <a class="security-button security-button-secondary"
+               href="{% url 'security_monitor:dashboard' %}">Reset</a>
+        </form>
+
+        <div class="security-table-wrap">
+            <table class="security-table">
+                <thead>
+                    <tr>
+                        <th>Finding</th>
+                        <th>Severity</th>
+                        <th>Source</th>
+                        <th>Source IP</th>
+                        <th>Last seen</th>
+                        <th>Events</th>
+                        <th>Status</th>
+                        <th>Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for finding in findings %}
+                    <tr>
+                        <td>
+                            <span class="security-finding-title">{{ finding.title }}</span>
+                            <p class="security-finding-description">
+                                {{ finding.description|truncatechars:180 }}
+                            </p>
+                            {% if finding.path %}
+                                <span class="security-path">{{ finding.path|truncatechars:100 }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="security-badge security-severity-{{ finding.severity }}">
+                                {{ finding.get_severity_display }}
+                            </span>
+                        </td>
+
+                        <td>{{ finding.get_source_display }}</td>
+                        <td>{{ finding.source_ip|default:"—" }}</td>
+                        <td>{{ finding.last_seen|date:"d M Y, H:i" }}</td>
+                        <td>{{ finding.occurrences }}</td>
+
+                        <td>
+                            <span class="security-badge security-status-{{ finding.status }}">
+                                {{ finding.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <form
+                                class="security-update-form"
+                                method="post"
+                                action="{% url 'security_monitor:update_finding' finding.pk %}"
+                            >
+                                {% csrf_token %}
+                                <select
+                                    name="status"
+                                    class="security-status"
+                                    aria-label="Status for {{ finding.title }}"
+                                >
+                                    {% for value, label in statuses %}
+                                        <option value="{{ value }}" {% if finding.status == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="security-empty-state">
+                                <strong>No findings found</strong>
+                                <span class="security-muted">
+                                    Try changing your filters or run a website security audit.
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj %}
+        <nav class="security-pagination" aria-label="Security findings pagination">
+            <span class="security-muted">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                · {{ page_obj.paginator.count }} findings
+            </span>
+
+            <div class="security-pagination-links">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&severity={{ selected_severity|urlencode }}&source={{ selected_source|urlencode }}&page=1">
+                        First
+                    </a>
+                    <a href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&severity={{ selected_severity|urlencode }}&source={{ selected_source|urlencode }}&page={{ page_obj.previous_page_number }}">
+                        Previous
+                    </a>
+                {% endif %}
+
+                <span class="security-page-number">{{ page_obj.number }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&severity={{ selected_severity|urlencode }}&source={{ selected_source|urlencode }}&page={{ page_obj.next_page_number }}">
+                        Next
+                    </a>
+                    <a href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&severity={{ selected_severity|urlencode }}&source={{ selected_source|urlencode }}&page={{ page_obj.paginator.num_pages }}">
+                        Last
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+        {% endif %}
+    </section>
+
+    <p class="security-muted">
+        Security findings are generated by the configured monitoring and audit checks.
+        Review each finding before deciding whether to resolve or ignore it.
+    </p>
 </div>
 {% endblock %}
