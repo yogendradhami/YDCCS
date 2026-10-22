@@ -11,8 +11,7 @@ from security_monitor.models import (
 from django.core import mail
 from django.core.management import call_command
 from django.test import override_settings
-
-
+from django.utils import timezone
 
 
 
@@ -97,3 +96,49 @@ class SecurityFindingTests(TestCase):
             mail.outbox[0].to,
             ["security-test@example.com"],
         )
+
+
+    
+    def test_high_finding_queues_an_alert(self):
+        finding, created = record_finding(
+            title="High security test",
+            description="Testing high severity alert creation.",
+            severity=SecurityFinding.Severity.HIGH,
+            source=SecurityFinding.Source.AUDIT,
+            path="/high-test/",
+        )
+
+        self.assertTrue(created)
+        self.assertTrue(
+            SecurityAlertDelivery.objects.filter(
+                finding=finding,
+                status=SecurityAlertDelivery.Status.PENDING,
+            ).exists()
+        )
+
+    def test_resolved_finding_reopens_when_detected_again(self):
+        finding, _ = record_finding(
+            title="Recurring finding test",
+            description="First detection.",
+            severity=SecurityFinding.Severity.HIGH,
+            source=SecurityFinding.Source.AUDIT,
+            path="/recurring-test/",
+        )
+
+        finding.status = SecurityFinding.Status.RESOLVED
+        finding.resolved_at = timezone.now()
+        finding.save(update_fields=["status", "resolved_at"])
+
+        updated, created = record_finding(
+            title="Recurring finding test",
+            description="Detected again.",
+            severity=SecurityFinding.Severity.HIGH,
+            source=SecurityFinding.Source.AUDIT,
+            path="/recurring-test/",
+        )
+
+        self.assertFalse(created)
+        self.assertEqual(updated.pk, finding.pk)
+        self.assertEqual(updated.status, SecurityFinding.Status.OPEN)
+        self.assertIsNone(updated.resolved_at)
+        self.assertEqual(updated.occurrences, 2)

@@ -15,6 +15,7 @@ def record_finding(
     severity,
     source,
     path="",
+    source_ip=None,
     details=None,
 ):
     details = details or {}
@@ -24,8 +25,13 @@ def record_finding(
         "source": source,
         "path": path,
     }
+
+    # Keep non-request fingerprints compatible with existing findings.
+    if source_ip:
+        identity["source_ip"] = source_ip
+
     fingerprint = hashlib.sha256(
-        json.dumps(identity, sort_keys=True).encode()
+        json.dumps(identity, sort_keys=True).encode("utf-8")
     ).hexdigest()
 
     now = timezone.now()
@@ -39,6 +45,7 @@ def record_finding(
                 "severity": severity,
                 "source": source,
                 "path": path[:500],
+                "source_ip": source_ip,
                 "first_seen": now,
                 "last_seen": now,
                 "occurrences": 1,
@@ -72,10 +79,15 @@ def record_finding(
                 "details",
             ]
 
+            if source_ip:
+                finding.source_ip = source_ip
+                update_fields.append("source_ip")
+
             if was_resolved:
                 finding.status = SecurityFinding.Status.OPEN
                 finding.resolved_at = None
                 finding.resolved_by = None
+
                 update_fields.extend([
                     "status",
                     "resolved_at",
