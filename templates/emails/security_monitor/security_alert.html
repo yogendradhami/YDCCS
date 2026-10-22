@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security Incident Alert | YDCCS</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f6f4;
+             font-family:Arial,Helvetica,sans-serif;color:#1d2923;">
+  <div style="display:none;max-height:0;overflow:hidden;">
+    {{ finding.severity|upper }} security finding:
+    {{ finding.title|truncatechars:100 }}
+  </div>
+
+  <table role="presentation" width="100%" cellspacing="0"
+         cellpadding="0" border="0" style="background:#f3f6f4;">
+    <tr>
+      <td align="center" style="padding:32px 12px;">
+        <table role="presentation" width="600" cellspacing="0"
+               cellpadding="0" border="0"
+               style="width:100%;max-width:600px;background:#ffffff;
+                      border:1px solid #dfe7e1;">
+
+          <tr>
+            <td style="background:#153f2d;padding:25px 30px;">
+              <div style="font-size:12px;letter-spacing:2px;
+                          color:#c7dfce;font-weight:bold;">
+                YDCCS · SECURITY OPERATIONS
+              </div>
+              <div style="font-size:24px;line-height:1.3;
+                          font-weight:bold;color:#ffffff;margin-top:10px;">
+                Security incident alert
+              </div>
+              <div style="font-size:13px;color:#dce9df;margin-top:7px;">
+                YD Commercial Cleaning Services
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:28px 30px 10px;">
+              <div style="font-size:12px;color:#64746a;
+                          text-transform:uppercase;letter-spacing:1px;">
+                Detected security finding
+              </div>
+              <h1 style="font-size:23px;line-height:1.35;
+                         color:#153f2d;margin:10px 0 16px;">
+                {{ finding.title }}
+              </h1>
+
+              {% if finding.severity == "critical" %}
+                <span style="display:inline-block;padding:7px 11px;
+                  background:#fde8e7;color:#9e2424;font-size:12px;
+                  font-weight:bold;border-radius:4px;">
+                  CRITICAL SEVERITY
+                </span>
+              {% elif finding.severity == "high" %}
+                <span style="display:inline-block;padding:7px 11px;
+                  background:#fff0df;color:#8c4600;font-size:12px;
+                  font-weight:bold;border-radius:4px;">
+                  HIGH SEVERITY
+                </span>
+              {% elif finding.severity == "medium" %}
+                <span style="display:inline-block;padding:7px 11px;
+                  background:#fff5cc;color:#765900;font-size:12px;
+                  font-weight:bold;border-radius:4px;">
+                  MEDIUM SEVERITY
+                </span>
+              {% else %}
+                <span style="display:inline-block;padding:7px 11px;
+                  background:#e9f0ec;color:#315443;font-size:12px;
+                  font-weight:bold;border-radius:4px;">
+                  {{ finding.severity|upper }} SEVERITY
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:12px 30px 20px;">
+              <p style="font-size:15px;line-height:1.7;margin:0;">
+                {{ finding.description }}
+              </p>
+              <p style="font-size:13px;line-height:1.6;color:#64746a;">
+                This alert records a detected security signal. It does not,
+                by itself, confirm a successful compromise.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 30px 24px;">
+              <div style="font-size:16px;font-weight:bold;
+                          color:#153f2d;margin-bottom:12px;">
+                Incident details
+              </div>
+              <table role="presentation" width="100%" cellspacing="0"
+                     cellpadding="0" border="0"
+                     style="font-size:13px;border:1px solid #e1e8e3;">
+                <tr>
+                  <td style="padding:11px;background:#f6f8f6;
+                             color:#607066;width:38%;">Status</td>
+                  <td style="padding:11px;font-weight:bold;">
+                    {{ finding.get_status_display }}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:11px;color:#607066;">Detection source</td>
+                  <td style="padding:11px;">
+                    {{ finding.get_source_display }}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:11px;background:#f6f8f6;
+                             color:#607066;">Affected path</td>
+                  <td style="padding:11px;word-break:break-word;">
+                    {{ finding.path|default:"Not applicable" }}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:11px;color:#607066;">Source IP</td>
+                  <td style="padding:11px;">
+                    {{ finding.source_ip|default:"Not recorded" }}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:11px;background:#f6f8f6;
+                             color:#607066;">First detected</td>
+                  <td style="padding:11px;">
+                    {{ finding.first_seen|date:"d M Y, H:i T" }}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:11px;color:#607066;">Last detected</td>
+                  <td style="padding:11px;">
+                    {{ finding.last_seen|date:"d M Y, H:i T" }}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:11px;background:#f6f8f6;
+                             color:#607066;">Occurrences</td>
+                  <td style="padding:11px;font-weight:bold;">
+                    {{ finding.occurrences }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 30px 30px;">
+              <a href="{{ dashboard_url }}"
+                 style="display:inline-block;background:#17613d;
+                        color:#ffffff;text-decoration:none;
+                        font-size:14px;font-weight:bold;
+                        padding:14px 20px;border-radius:4px;">
+                Review in Security Dashboard
+              </a>
+              <p style="font-size:12px;color:#64746a;line-height:1.6;
+                        margin-top:18px;">
+                Recommended action: review the finding, validate the
+                evidence, and record the investigation outcome.
+                Do not treat this notification alone as proof of a breach.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background:#f3f6f4;border-top:1px solid #dfe7e1;
+                       padding:22px 30px;">
+              <div style="font-size:13px;font-weight:bold;color:#153f2d;">
+                YD Commercial Cleaning Services
+              </div>
+              <div style="font-size:11px;line-height:1.7;color:#64746a;
+                          margin-top:6px;">
+                Professional Cleaning Solutions<br>
+                Automated security notification · Please use the
+                authenticated dashboard to investigate.
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

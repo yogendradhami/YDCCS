@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security Audit Report | YDCCS</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f6f4;
+             font-family:Arial,Helvetica,sans-serif;color:#1d2923;">
+  <div style="display:none;max-height:0;overflow:hidden;">
+    Scheduled YDCCS security report:
+    {{ total_open }} open findings and
+    {{ critical }} unresolved critical findings.
+  </div>
+
+  <table role="presentation" width="100%" cellspacing="0"
+         cellpadding="0" border="0" style="background:#f3f6f4;">
+    <tr>
+      <td align="center" style="padding:32px 12px;">
+        <table role="presentation" width="680" cellspacing="0"
+               cellpadding="0" border="0"
+               style="width:100%;max-width:680px;background:#ffffff;
+                      border:1px solid #dfe7e1;">
+
+          <tr>
+            <td style="background:#153f2d;padding:27px 30px;">
+              <div style="font-size:12px;letter-spacing:2px;
+                          color:#c7dfce;font-weight:bold;">
+                YDCCS · SECURITY OPERATIONS
+              </div>
+              <h1 style="font-size:25px;line-height:1.3;
+                         color:#ffffff;margin:12px 0 8px;">
+                Security audit report
+              </h1>
+              <div style="font-size:13px;color:#dce9df;">
+                Executive summary · {{ generated_at|date:"d M Y, H:i T" }}
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:27px 30px 12px;">
+              <p style="font-size:14px;line-height:1.7;margin:0;">
+                This report summarises the security findings currently
+                recorded by the YDCCS monitoring system. Findings
+                require appropriate review and validation.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:15px 30px 25px;">
+              <table role="presentation" width="100%" cellspacing="0"
+                     cellpadding="0" border="0">
+                <tr>
+                  <td width="50%" style="padding:6px;">
+                    <div style="border:1px solid #dfe7e1;
+                                background:#f7f9f7;padding:17px;">
+                      <div style="font-size:12px;color:#64746a;">
+                        Open findings
+                      </div>
+                      <div style="font-size:32px;font-weight:bold;
+                                  color:#153f2d;margin-top:8px;">
+                        {{ total_open }}
+                      </div>
+                    </div>
+                  </td>
+                  <td width="50%" style="padding:6px;">
+                    <div style="border:1px solid #f0d3d0;
+                                background:#fff7f6;padding:17px;">
+                      <div style="font-size:12px;color:#8f3832;">
+                        Unresolved critical findings
+                      </div>
+                      <div style="font-size:32px;font-weight:bold;
+                                  color:#a32828;margin-top:8px;">
+                        {{ critical }}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="50%" style="padding:6px;">
+                    <div style="border:1px solid #f0dfbd;
+                                background:#fffaf0;padding:17px;">
+                      <div style="font-size:12px;color:#80591d;">
+                        High severity · unresolved
+                      </div>
+                      <div style="font-size:24px;font-weight:bold;
+                                  color:#80501b;margin-top:8px;">
+                        {{ high }}
+                      </div>
+                    </div>
+                  </td>
+                  <td width="50%" style="padding:6px;">
+                    <div style="border:1px solid #dfe7e1;
+                                background:#f7f9f7;padding:17px;">
+                      <div style="font-size:12px;color:#64746a;">
+                        Under investigation
+                      </div>
+                      <div style="font-size:24px;font-weight:bold;
+                                  color:#153f2d;margin-top:8px;">
+                        {{ investigating }}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 30px 24px;">
+              <h2 style="font-size:17px;color:#153f2d;margin:0 0 12px;">
+                Recent security findings
+              </h2>
+
+              {% if findings %}
+                <table role="presentation" width="100%" cellspacing="0"
+                       cellpadding="0" border="0"
+                       style="border-collapse:collapse;font-size:12px;">
+                  <tr style="background:#edf3ef;">
+                    <th align="left" style="padding:11px 8px;
+                        color:#355443;border-bottom:1px solid #dfe7e1;">
+                      Finding
+                    </th>
+                    <th align="left" style="padding:11px 8px;
+                        color:#355443;border-bottom:1px solid #dfe7e1;">
+                      Severity
+                    </th>
+                    <th align="left" style="padding:11px 8px;
+                        color:#355443;border-bottom:1px solid #dfe7e1;">
+                      Status
+                    </th>
+                    <th align="left" style="padding:11px 8px;
+                        color:#355443;border-bottom:1px solid #dfe7e1;">
+                      Last seen
+                    </th>
+                  </tr>
+                  {% for finding in findings %}
+                    <tr>
+                      <td style="padding:12px 8px;vertical-align:top;
+                                 border-bottom:1px solid #e8ede9;">
+                        <strong>{{ finding.title|truncatechars:90 }}</strong>
+                        <div style="color:#64746a;margin-top:5px;">
+                          {{ finding.get_source_display }}
+                        </div>
+                      </td>
+                      <td style="padding:12px 8px;vertical-align:top;
+                                 border-bottom:1px solid #e8ede9;">
+                        {{ finding.severity|upper }}
+                      </td>
+                      <td style="padding:12px 8px;vertical-align:top;
+                                 border-bottom:1px solid #e8ede9;">
+                        {{ finding.get_status_display }}
+                      </td>
+                      <td style="padding:12px 8px;vertical-align:top;
+                                 border-bottom:1px solid #e8ede9;">
+                        {{ finding.last_seen|date:"d M Y, H:i" }}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </table>
+              {% else %}
+                <p style="padding:18px;background:#f4f8f5;
+                          color:#355443;font-size:13px;line-height:1.6;">
+                  No non-ignored findings are currently recorded.
+                  This does not establish that the system is free of risk.
+                </p>
+              {% endif %}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 30px 28px;">
+              <a href="{{ dashboard_url }}"
+                 style="display:inline-block;background:#17613d;
+                        color:#ffffff;text-decoration:none;
+                        font-size:14px;font-weight:bold;
+                        padding:14px 20px;border-radius:4px;">
+                Open Security Dashboard
+              </a>
+
+              <div style="font-size:12px;line-height:1.7;color:#64746a;
+                          margin-top:20px;">
+                <strong>Scope and limitations</strong><br>
+                This report reflects findings stored by the monitoring
+                system at generation time. It is not a certification,
+                penetration-test report, or guarantee that every
+                vulnerability or security incident has been detected.
+                Validate findings and document investigation outcomes.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background:#f3f6f4;border-top:1px solid #dfe7e1;
+                       padding:22px 30px;">
+              <div style="font-size:13px;font-weight:bold;color:#153f2d;">
+                YD Commercial Cleaning Services
+              </div>
+              <div style="font-size:11px;line-height:1.7;color:#64746a;
+                          margin-top:6px;">
+                Professional Cleaning Solutions<br>
+                Automated security audit summary
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
