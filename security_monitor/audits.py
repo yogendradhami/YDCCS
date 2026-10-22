@@ -7,6 +7,7 @@ from contextlib import redirect_stderr, redirect_stdout
 import requests
 from django.conf import settings
 from django.core.management import call_command
+from django.utils import timezone
 
 from .models import SecurityFinding
 from .scanners import record_finding
@@ -32,6 +33,45 @@ SECURITY_HEADERS = {
         "Referrer policy header is missing",
     ),
 }
+
+
+
+
+
+def resolve_availability_findings():
+    """Resolve active website availability findings after recovery."""
+    SecurityFinding.objects.filter(
+        title="Website availability check failed",
+        source=SecurityFinding.Source.UPTIME,
+        status__in=[
+            SecurityFinding.Status.OPEN,
+            SecurityFinding.Status.INVESTIGATING,
+        ],
+    ).update(
+        status=SecurityFinding.Status.RESOLVED,
+        resolved_at=timezone.now(),
+        resolved_by=None,
+    )
+
+
+
+def resolve_header_finding(title):
+    """Resolve an active missing-header finding after verification."""
+    now = timezone.now()
+
+    SecurityFinding.objects.filter(
+        title=title,
+        source=SecurityFinding.Source.AUDIT,
+        path="/",
+        status__in=[
+            SecurityFinding.Status.OPEN,
+            SecurityFinding.Status.INVESTIGATING,
+        ],
+    ).update(
+        status=SecurityFinding.Status.RESOLVED,
+        resolved_at=now,
+        resolved_by=None,
+    )
 
 
 def audit_public_website():
@@ -82,6 +122,9 @@ def audit_public_website():
             details={"status_code": response.status_code},
         )
 
+    elif 200 <= response.status_code < 400:
+        resolve_availability_findings()
+
     if response.url.startswith("http://"):
         record_finding(
             title="Website ended on an insecure HTTP URL",
@@ -93,18 +136,56 @@ def audit_public_website():
         )
 
     for header, (severity, title) in SECURITY_HEADERS.items():
-        if header not in response.headers:
+        if header in response.headers:
+            resolve_header_finding(title)
+            continue
+
+        # A report-only CSP header is active monitoring, not enforcement.
+        if (
+            header == "Content-Security-Policy"
+            and "Content-Security-Policy-Report-Only" in response.headers
+        ):
+            resolve_header_finding(title)
+
             record_finding(
-                title=title,
+                title="Content Security Policy is report-only",
                 description=(
-                    f"The response from {site_url} did not contain "
-                    f"the {header} header."
+                    "The public website sends a "
+                    "Content-Security-Policy-Report-Only header. "
+                    "This allows policy violations to be reported but "
+                    "does not enforce the policy against browser resources."
                 ),
-                severity=severity,
+                severity=SecurityFinding.Severity.INFO,
                 source=SecurityFinding.Source.AUDIT,
                 path="/",
-                details={"missing_header": header},
+                details={
+                    "header": "Content-Security-Policy-Report-Only",
+                    "enforced": False,
+                },
             )
+            continue
+
+        record_finding(
+            title=title,
+            description=(
+                f"The final response from {response.url} did not contain "
+                f"the {header} header."
+            ),
+            severity=severity,
+            source=SecurityFinding.Source.AUDIT,
+            path="/",
+            details={
+                "missing_header": header,
+                "checked_url": response.url,
+                "status_code": response.status_code,
+            },
+        )
+
+    # If CSP enforcement is present, the report-only finding is obsolete.
+    if "Content-Security-Policy" in response.headers:
+        resolve_header_finding(
+            "Content Security Policy is report-only"
+        )
 
     response.close()
 
