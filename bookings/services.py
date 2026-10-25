@@ -1,9 +1,10 @@
 from datetime import date, time
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from leave_management.models import LeaveRequest
+from employees.models import Employee
 
 from .models import Booking
 
@@ -60,37 +61,47 @@ def create_booking(*, customer=None, service_type, booking_date, booking_time, a
     if assigned_employee is not None and not assigned_employee.active:
         raise ValueError("An inactive employee cannot be assigned to a booking.")
 
-    with transaction.atomic():
+    try:
+        with transaction.atomic():
+            if workflow_key:
+                existing = Booking.objects.filter(idempotency_key=workflow_key).first()
+                if existing:
+                    return existing, False
+
+            if assigned_employee:
+                # Serialize availability checks for this employee so concurrent
+                # booking requests cannot both pass when no conflicting row exists.
+                Employee.objects.select_for_update().get(pk=assigned_employee.pk)
+                if LeaveRequest.objects.filter(
+                    employee=assigned_employee,
+                    status="approved",
+                    start_date__lte=booking_date,
+                    end_date__gte=booking_date,
+                ).exists():
+                    raise ValueError("The assigned employee is on approved leave.")
+                if Booking.objects.select_for_update().filter(
+                    assigned_employee=assigned_employee,
+                    booking_date=booking_date,
+                    booking_time=booking_time,
+                ).exclude(status="cancelled").exists():
+                    raise ValueError("The assigned employee is not available.")
+
+            booking = Booking.objects.create(
+                customer=customer,
+                service_type=service_type,
+                booking_date=booking_date,
+                booking_time=booking_time,
+                address=address,
+                suburb_postcode=suburb_postcode,
+                quoted_price=quoted_price,
+                assigned_employee=assigned_employee,
+                notes=notes,
+                idempotency_key=workflow_key,
+            )
+    except IntegrityError:
         if workflow_key:
             existing = Booking.objects.filter(idempotency_key=workflow_key).first()
             if existing:
                 return existing, False
-
-        if assigned_employee:
-            if LeaveRequest.objects.filter(
-                employee=assigned_employee,
-                status="approved",
-                start_date__lte=booking_date,
-                end_date__gte=booking_date,
-            ).exists():
-                raise ValueError("The assigned employee is on approved leave.")
-            if Booking.objects.select_for_update().filter(
-                assigned_employee=assigned_employee,
-                booking_date=booking_date,
-                booking_time=booking_time,
-            ).exclude(status="cancelled").exists():
-                raise ValueError("The assigned employee is not available.")
-
-        booking = Booking.objects.create(
-            customer=customer,
-            service_type=service_type,
-            booking_date=booking_date,
-            booking_time=booking_time,
-            address=address,
-            suburb_postcode=suburb_postcode,
-            quoted_price=quoted_price,
-            assigned_employee=assigned_employee,
-            notes=notes,
-            idempotency_key=workflow_key,
-        )
+        raise
     return booking, True

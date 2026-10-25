@@ -1,9 +1,17 @@
+from datetime import timedelta
+from unittest.mock import patch
+
 from django.conf import settings
 from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
 
+from bookings.models import Booking
 from dashboard.models import CompanySettings
 from google_reviews.models import GoogleReview
 from services.models import Service
+from customers.models import Customer
+from core.test_utils import mark_public_email_verified
 
 
 class SmokeTest(TestCase):
@@ -37,7 +45,8 @@ class SmokeTest(TestCase):
             "staticfiles": {
                 "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
             },
-        }
+        },
+        WHITENOISE_MANIFEST_STRICT=False,
     )
     def test_home_page_renders_without_missing_manifest_entries(self):
         response = self.client.get("/")
@@ -231,3 +240,64 @@ class SmokeTest(TestCase):
         sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
         self.assertIn("/services/carpet-steam-cleaning-adelaide-glenelg/", sitemap)
         self.assertNotIn("/services/carpet-steam-cleaning-glenelg/", sitemap)
+
+
+class PublicBookingWorkflowTests(TestCase):
+    def booking_data(self, workflow_key):
+        return {
+            "workflow_key": workflow_key,
+            "name": "Booking Customer",
+            "email": "booking.public@example.com",
+            "phone": "0400000000",
+            "service_type": "Office Cleaning",
+            "booking_date": (timezone.localdate() + timedelta(days=5)).isoformat(),
+            "booking_time": "10:00",
+            "address": "1 King Street",
+            "suburb_postcode": "Adelaide 5000",
+            "notes": "Please call on arrival.",
+        }
+
+    def test_public_booking_page_renders_the_public_customer_fields(self):
+        response = self.client.get(reverse("booking"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].is_bound is False)
+        for field in ("name", "email", "phone", "workflow_key"):
+            self.assertIn(field, response.context["form"].fields)
+
+    @patch("google_reviews.calendar_utils.create_or_update_booking_event")
+    @patch("core.views.send_booking_request_email", return_value=True)
+    def test_replaying_public_booking_does_not_duplicate_or_repeat_side_effects(
+        self, send_email, calendar_sync
+    ):
+        form_page = self.client.get(reverse("booking"))
+        workflow_key = form_page.context["form"]["workflow_key"].value()
+        data = self.booking_data(workflow_key)
+
+        mark_public_email_verified(self.client, data["email"])
+        first = self.client.post(reverse("booking"), data)
+        mark_public_email_verified(self.client, data["email"])
+        second = self.client.post(reverse("booking"), data)
+
+        self.assertRedirects(first, reverse("home"))
+        self.assertRedirects(second, reverse("home"))
+        self.assertEqual(Booking.objects.count(), 1)
+        self.assertEqual(Customer.objects.count(), 1)
+        send_email.assert_called_once()
+        calendar_sync.assert_called_once()
+
+    @patch("core.views.create_booking", side_effect=RuntimeError("private failure"))
+    def test_booking_failure_rolls_back_customer_and_hides_exception(self, _create_booking):
+        form_page = self.client.get(reverse("booking"))
+        data = self.booking_data(
+            form_page.context["form"]["workflow_key"].value()
+        )
+        mark_public_email_verified(self.client, data["email"])
+
+        response = self.client.post(reverse("booking"), data)
+
+        self.assertEqual(response.status_code, 500)
+        self.assertContains(response, "We couldn&#x27;t complete your booking request", status_code=500)
+        self.assertNotContains(response, "private failure", status_code=500)
+        self.assertEqual(Customer.objects.count(), 0)
+        self.assertEqual(Booking.objects.count(), 0)

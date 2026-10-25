@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth import logout
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
@@ -156,7 +156,11 @@ class PublicEmailVerificationMiddleware(MiddlewareMixin):
             try:
                 validate_email(email)
             except ValidationError:
-                return HttpResponseBadRequest("Enter a valid email address.")
+                # Let the destination form report malformed addresses with its
+                # normal field-level errors. Invalid addresses cannot match a
+                # verified-email receipt, and valid submissions are still
+                # blocked below until their mailbox has been verified.
+                return None
 
         receipt = request.session.get("verified_public_email", {})
         available = {
@@ -179,7 +183,10 @@ class PublicEmailVerificationMiddleware(MiddlewareMixin):
             request._verified_public_emails = email_values
             return None
 
-        if request.content_type == "application/json":
+        if (
+            request.content_type == "application/json"
+            or request.headers.get("x-requested-with") == "XMLHttpRequest"
+        ):
             return JsonResponse(
                 {
                     "success": False,

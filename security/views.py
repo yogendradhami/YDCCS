@@ -624,6 +624,10 @@ def security_center(request):
     if not _can_view_security_center(request.user):
         return _forbidden(request)
     if request.method == "POST":
+        if not request.user.is_superuser and not request.user.has_perm(
+            "security.add_securityauditreport"
+        ):
+            return _forbidden(request)
         summary, checks, recommendations = build_security_snapshot()
         SecurityAuditReport.objects.create(
             generated_by=request.user,

@@ -83,6 +83,11 @@ def booking_notification(sender, instance, created, **kwargs):
     )
     if (
         employee_assignment_changed
+        and not getattr(
+            instance,
+            "_suppress_employee_assignment_notification",
+            False,
+        )
         and instance.assigned_employee
         and instance.assigned_employee.user
     ):
@@ -307,6 +312,9 @@ def remember_roster_notification_state(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Roster)
 def roster_notification(sender, instance, created, **kwargs):
+    if getattr(instance, "_suppress_roster_notifications", False):
+        return
+
     if created:
         notify_admins(
             "New Roster Shift Created",

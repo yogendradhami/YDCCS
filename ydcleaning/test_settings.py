@@ -8,3 +8,10 @@ DATABASES = {
         "CONN_MAX_AGE": 0,
     }
 }
+
+STORAGES = {
+    **STORAGES,
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}

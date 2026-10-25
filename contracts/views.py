@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.mail import send_mail
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
@@ -221,6 +221,10 @@ def contract_detail(request, contract_id):
 
 @admin_required
 @require_POST
+@permission_required(
+    ("contracts.change_cleaningcontract", "bookings.add_booking"),
+    raise_exception=True,
+)
 def generate_contract_bookings(request, contract_id):
     contract = get_object_or_404(CleaningContract, id=contract_id)
 
@@ -306,6 +310,10 @@ def contract_renewals(request):
 
 @admin_required
 @require_POST
+@permission_required(
+    ("contracts.change_cleaningcontract", "dashboard.add_emaillog"),
+    raise_exception=True,
+)
 def send_contract_renewal_email(request, contract_id):
 
     contract = get_object_or_404(CleaningContract, id=contract_id)

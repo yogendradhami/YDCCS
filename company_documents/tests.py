@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from core.test_utils import grant_dashboard_permissions
 from employees.models import Employee
 
 from .models import (
@@ -100,6 +101,11 @@ class ComplianceResolutionTests(TestCase):
         mock_upload_raw_document.return_value = "company_documents/new-file.pdf"
         self.user.is_staff = True
         self.user.save(update_fields=["is_staff"])
+        grant_dashboard_permissions(
+            self.user,
+            "company_documents.view_companydocument",
+            "company_documents.change_companydocument",
+        )
         self.client.force_login(self.user)
         today = timezone.localdate()
         document = self.create_document(
@@ -161,6 +167,11 @@ class BulkImportHistoryTests(TestCase):
             username="document-manager",
             password="test-password",
             is_staff=True,
+        )
+        grant_dashboard_permissions(
+            self.staff,
+            "company_documents.view_bulkimportbatch",
+            "company_documents.delete_bulkimportbatch",
         )
         self.uploader = User.objects.create_user(
             username="jlee",

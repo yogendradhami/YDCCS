@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import logging
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -6,6 +9,17 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from employees.models import EmployeeGoogleAccount
+from googleapiclient.errors import HttpError
+
+logger = logging.getLogger(__name__)
+
+
+class CalendarServiceUnavailable(RuntimeError):
+    pass
+
+
+class CalendarNotConfigured(RuntimeError):
+    pass
 
 
 EMPLOYEE_GOOGLE_SCOPES = [
@@ -57,6 +71,65 @@ def get_employee_google_calendar_service(employee):
         "v3",
         credentials=credentials,
     )
+
+
+
+def _upsert_calendar_event(service, event_id, event_body, resource_type, resource_id):
+    """Update an existing Calendar event or recreate it if it no longer exists."""
+    if event_id:
+        try:
+            return (
+                service.events()
+                .update(
+                    calendarId="primary",
+                    eventId=event_id,
+                    body=event_body,
+                )
+                .execute()
+            )
+        except HttpError as exc:
+            if getattr(exc.resp, "status", None) != 404:
+                logger.exception(
+                    "Could not update Google Calendar event for %s %s.",
+                    resource_type,
+                    resource_id,
+                )
+                raise
+
+            logger.info(
+                "Google Calendar event for %s %s was not found; creating a replacement.",
+                resource_type,
+                resource_id,
+            )
+
+    try:
+        return (
+            service.events()
+            .insert(
+                calendarId="primary",
+                body=event_body,
+            )
+            .execute()
+        )
+    except HttpError as exc:
+        if getattr(exc.resp, "status", None) != 409 or not event_id:
+            raise
+
+        logger.info(
+            "Google Calendar event ID for %s %s already exists; updating it.",
+            resource_type,
+            resource_id,
+        )
+        return (
+            service.events()
+            .update(
+                calendarId="primary",
+                eventId=event_id,
+                body=event_body,
+            )
+            .execute()
+        )
+
 
 
 def create_or_update_booking_event(booking):
@@ -137,78 +210,23 @@ def create_or_update_booking_event(booking):
         },
     }
 
-    if booking.google_calendar_event_id:
 
-        event = (
-            service.events()
-            .update(
-                calendarId="primary",
-                eventId=booking.google_calendar_event_id,
-                body=event_body,
-            )
-            .execute()
-        )
+    event = _upsert_calendar_event(
+        service,
+        booking.google_calendar_event_id,
+        event_body,
+        "booking",
+        booking.pk,
+    )
 
-    else:
-
-        event = (
-            service.events()
-            .insert(
-                calendarId="primary",
-                body=event_body,
-            )
-            .execute()
-        )
-
-        booking.google_calendar_event_id = event.get("id")
-
-        booking.save(
-            update_fields=[
-                "google_calendar_event_id"
-            ]
-        )
+    new_event_id = event.get("id")
+    if new_event_id and new_event_id != booking.google_calendar_event_id:
+        booking.google_calendar_event_id = new_event_id
+        booking.save(update_fields=["google_calendar_event_id"])
 
     return event
 
 
-def delete_booking_event(booking):
-    """
-    Delete the booking event from the assigned employee's
-    Google Calendar.
-    """
-
-    employee = booking.assigned_employee
-
-    if not employee:
-        return False
-
-    service = get_employee_google_calendar_service(employee)
-
-    if not service:
-        return False
-
-    if not booking.google_calendar_event_id:
-        return False
-
-    try:
-
-        service.events().delete(
-            calendarId="primary",
-            eventId=booking.google_calendar_event_id,
-        ).execute()
-
-    except Exception:
-        pass
-
-    booking.google_calendar_event_id = None
-
-    booking.save(
-        update_fields=[
-            "google_calendar_event_id"
-        ]
-    )
-
-    return True
 
 
 def create_or_update_roster_event(roster):
@@ -220,12 +238,16 @@ def create_or_update_roster_event(roster):
     employee = roster.employee
 
     if not employee:
-        return None
+        raise CalendarServiceUnavailable(
+            f"Roster {roster.pk} has no assigned employee for Calendar sync."
+        )
 
     service = get_employee_google_calendar_service(employee)
 
     if not service:
-        return None
+        raise CalendarNotConfigured(
+            f"Google Calendar is not configured for employee {employee.pk}."
+        )
 
     booking = roster.booking
     customer = booking.customer
@@ -279,75 +301,102 @@ def create_or_update_roster_event(roster):
         },
     }
 
-    if roster.google_calendar_event_id:
-
-        event = (
-            service.events()
-            .update(
-                calendarId="primary",
-                eventId=roster.google_calendar_event_id,
-                body=event_body,
+    event_id = roster.google_calendar_event_id
+    if not event_id:
+        stable_id_source = f"roster:{roster.pk}:employee:{employee.pk}".encode()
+        event_id = (
+            "r"
+            + base64.b32hexencode(
+                hashlib.sha256(stable_id_source).digest()
             )
-            .execute()
+            .decode("ascii")
+            .lower()
+            .rstrip("=")
         )
+        roster.google_calendar_event_id = event_id
+        roster.save(update_fields=["google_calendar_event_id"])
+    event_body["id"] = event_id
 
-    else:
+    event = _upsert_calendar_event(
+        service,
+        event_id,
+        event_body,
+        "roster",
+        roster.pk,
+    )
 
-        event = (
-            service.events()
-            .insert(
-                calendarId="primary",
-                body=event_body,
-            )
-            .execute()
-        )
-
-        roster.google_calendar_event_id = event.get("id")
-
-        roster.save(
-            update_fields=[
-                "google_calendar_event_id"
-            ]
-        )
+    new_event_id = event.get("id")
+    if new_event_id and new_event_id != roster.google_calendar_event_id:
+        roster.google_calendar_event_id = new_event_id
+        roster.save(update_fields=["google_calendar_event_id"])
 
     return event
 
 
-def delete_roster_event(roster):
-    """
-    Delete the roster event from the employee's
-    Google Calendar.
-    """
 
-    employee = roster.employee
 
-    if not employee:
+
+def _delete_calendar_event(service, event_id, resource_type, resource_id):
+    """Delete a Google Calendar event, treating HTTP 404 as success."""
+    try:
+        service.events().delete(
+            calendarId="primary",
+            eventId=event_id,
+        ).execute()
+    except HttpError as exc:
+        if getattr(exc.resp, "status", None) != 404:
+            logger.exception(
+                "Could not delete Google Calendar event for %s %s.",
+                resource_type,
+                resource_id,
+            )
+            return False
+    except Exception:
+        logger.exception(
+            "Could not delete Google Calendar event for %s %s.",
+            resource_type,
+            resource_id,
+        )
+        return False
+
+    return True
+
+
+def delete_booking_event(booking):
+    """Delete the booking event from the assigned employee's calendar."""
+    employee = booking.assigned_employee
+    event_id = booking.google_calendar_event_id
+
+    if not employee or not event_id:
         return False
 
     service = get_employee_google_calendar_service(employee)
-
     if not service:
         return False
 
-    if not roster.google_calendar_event_id:
+    if not _delete_calendar_event(service, event_id, "booking", booking.pk):
         return False
 
-    try:
+    booking.google_calendar_event_id = None
+    booking.save(update_fields=["google_calendar_event_id"])
+    return True
 
-        service.events().delete(
-            calendarId="primary",
-            eventId=roster.google_calendar_event_id,
-        ).execute()
 
-    except Exception:
-        pass
+def delete_roster_event(roster):
+    """Delete the roster event from the employee's calendar."""
+    employee = roster.employee
+    event_id = roster.google_calendar_event_id
+
+    if not employee or not event_id:
+        return False
+
+    service = get_employee_google_calendar_service(employee)
+    if not service:
+        return False
+
+    if not _delete_calendar_event(service, event_id, "roster", roster.pk):
+        return False
 
     roster.google_calendar_event_id = None
-
-    roster.save(
-        update_fields=[
-            "google_calendar_event_id"
-        ]
-    )
-
+    roster.save(update_fields=["google_calendar_event_id"])
     return True

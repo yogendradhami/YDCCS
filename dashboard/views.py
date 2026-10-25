@@ -12,17 +12,18 @@ from datetime import timedelta
 import csv
 from collections import defaultdict
 from datetime import datetime, time, timedelta
+from functools import wraps
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from .decorators import admin_required
 import logging
 
 from django.core.exceptions import ValidationError
-from django.db import DatabaseError, IntegrityError
+from django.db import DatabaseError, IntegrityError, transaction
 from django.core.mail import EmailMessage,EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.utils.html import format_html
@@ -57,8 +58,10 @@ from gallery.upload_services import save_gallery_uploads
 from google_reviews.calendar_utils import (
     create_or_update_booking_event,
     delete_booking_event,
+    delete_roster_event,
 )
 from invoices.models import Invoice
+from invoices.services import get_or_create_invoice_for_booking
 from invoices.pdf_utils import generate_invoice_pdf
 from leave_management.models import LeaveRequest
 from notifications.models import Notification
@@ -81,6 +84,40 @@ from django.db.models import Count
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+
+
+def _lock_booking_mutations(failure_route):
+    def decorate(view):
+        @wraps(view)
+        def wrapped(request, booking_id, *args, **kwargs):
+            from rosters.services import (
+                RosterSyncLockError,
+                booking_roster_sync_lock,
+            )
+
+            try:
+                get_object_or_404(Booking, pk=booking_id)
+                with booking_roster_sync_lock(booking_id):
+                    get_object_or_404(
+                        Booking.objects.select_for_update(),
+                        pk=booking_id,
+                    )
+                    return view(request, booking_id, *args, **kwargs)
+            except (DatabaseError, RosterSyncLockError):
+                logger.exception(
+                    "Could not safely serialize booking mutation for booking %s.",
+                    booking_id,
+                )
+                messages.error(
+                    request,
+                    "The booking could not be safely updated right now. Please retry.",
+                )
+                return redirect(failure_route)
+
+        return wrapped
+
+    return decorate
+
 
 # Company settings form
 from .forms import (
@@ -516,6 +553,11 @@ def lead_list(request):
 
 
 @login_required
+@require_POST
+@permission_required(
+    ("quotes.change_quoterequest", "bookings.add_booking"),
+    raise_exception=True,
+)
 def update_quote_status(request, quote_id):
     quote = get_object_or_404(QuoteRequest, id=quote_id)
 
@@ -528,6 +570,17 @@ def update_quote_status(request, quote_id):
     if new_status not in dict(QuoteRequest.STATUS_CHOICES):
         messages.error(request, "Invalid quote status.")
         return redirect("lead_list")
+
+    if new_status == "completed":
+        linked_booking = Booking.objects.filter(
+            idempotency_key=f"quote:{quote.pk}"
+        ).first()
+        if not linked_booking or linked_booking.status != "completed":
+            messages.error(
+                request,
+                "A quote can only be marked completed after its linked job is completed.",
+            )
+            return redirect("lead_list")
 
     # ------------------------------------------------------
     # QUOTE → BOOKING
@@ -556,13 +609,16 @@ def update_quote_status(request, quote_id):
             try:
                 create_or_update_booking_event(booking)
 
-            except Exception as calendar_error:
+            except Exception:
+                logger.exception(
+                    "Google Calendar sync failed after quote conversion for booking %s.",
+                    booking.pk,
+                )
                 messages.warning(
                     request,
                     (
                         f"Booking #{booking.id} created successfully, "
-                        f"but Google Calendar sync failed: "
-                        f"{calendar_error}"
+                        "but Google Calendar could not be synced automatically."
                     ),
                 )
 
@@ -588,10 +644,11 @@ def update_quote_status(request, quote_id):
 
             return redirect("booking_list")
 
-        except Exception as error:
+        except Exception:
+            logger.exception("Quote-to-booking status update failed for quote %s.", quote.id)
             messages.error(
                 request,
-                f"Booking creation failed: {error}",
+                "The quote could not be converted to a booking. Please check its details or contact an administrator.",
             )
 
             return redirect("lead_list")
@@ -828,27 +885,46 @@ def add_booking(request):
                 trusted_assignment=True,
             )
 
+            roster_sync_succeeded = True
             try:
-                from rosters.services import sync_booking_roster
+                from rosters.services import (
+                    RosterSyncNotConfigured,
+                    RosterSyncPending,
+                    sync_booking_roster,
+                )
 
-                sync_booking_roster(booking)
+                roster_sync = sync_booking_roster(booking)
+                if isinstance(roster_sync, RosterSyncPending):
+                    raise roster_sync.error
+                if isinstance(roster_sync, RosterSyncNotConfigured):
+                    messages.info(
+                        request,
+                        "Booking saved. Employee Calendar sync is not configured.",
+                    )
 
-            except Exception as error:
+            except Exception:
+                roster_sync_succeeded = False
+                logger.exception("Roster sync failed for new booking %s.", booking.pk)
                 messages.warning(
                     request,
-                    f"Booking saved, but roster sync failed: {error}",
+                    "Booking saved, but the employee schedule could not be synced automatically.",
                 )
 
             try:
                 create_or_update_booking_event(booking)
 
-            except Exception as error:
+            except Exception:
+                logger.exception("Google Calendar sync failed for new booking %s.", booking.pk)
                 messages.warning(
                     request,
-                    f"Booking saved, but Google Calendar sync failed: {error}",
+                    "Booking saved, but Google Calendar could not be synced automatically.",
                 )
 
-            if booking.assigned_employee and booking.assigned_employee.user:
+            if (
+                roster_sync_succeeded
+                and booking.assigned_employee
+                and booking.assigned_employee.user
+            ):
                 Notification.objects.create(
                     user=booking.assigned_employee.user,
                     title="New Job Assigned",
@@ -1139,136 +1215,426 @@ def send_booking_confirmation_email(request, booking, old_status=None):
 
     return True
 
+def _save_and_sync_booking_edit(request, booking, form):
+    from google_reviews.calendar_utils import (
+        CalendarNotConfigured,
+        create_or_update_roster_event,
+    )
+    from notifications.utils import temporary_instance_flags
+    from rosters.services import (
+        RosterSyncNotConfigured,
+        RosterSyncLockError,
+        RosterSyncPending,
+        booking_roster_sync_lock,
+        sync_booking_roster,
+    )
+
+    old_roster_event_deleted = False
+    roster = None
+    original_employee_id = booking.assigned_employee_id
+    reassignment_requested = False
+    reassignment_failed = False
+    old_status = booking.status
+
+    def restore_roster_event(roster_to_restore):
+        with booking_roster_sync_lock(
+            booking.pk,
+            using=booking._state.db or "default",
+        ):
+            current_booking = (
+                Booking.objects.select_for_update()
+                .get(pk=booking.pk)
+            )
+            current_roster = (
+                Roster.objects.select_for_update()
+                .get(pk=roster_to_restore.pk)
+            )
+            if (
+                current_booking.assigned_employee_id
+                != current_roster.employee_id
+            ):
+                raise RuntimeError(
+                    "The roster assignment changed before its Calendar event could be restored."
+                )
+            event = create_or_update_roster_event(current_roster)
+            if event is None:
+                raise CalendarNotConfigured(
+                    "The old employee's Calendar is not configured."
+                )
+
+    try:
+        with booking_roster_sync_lock(
+            booking.pk,
+            using=booking._state.db or "default",
+        ):
+            booking = Booking.objects.select_for_update().get(pk=booking.pk)
+            old_status = booking.status
+            original_employee = booking.assigned_employee
+            original_employee_id = booking.assigned_employee_id
+            form = BookingForm(request.POST, instance=booking)
+            if not form.is_valid():
+                return {
+                    "form": form,
+                    "saved": False,
+                    "invalid": True,
+                }
+
+            requested_employee = form.cleaned_data.get("assigned_employee")
+            requested_employee_id = (
+                requested_employee.pk if requested_employee else None
+            )
+            reassignment_requested = requested_employee_id != original_employee_id
+
+
+            if reassignment_requested:
+                roster = booking.rosters.order_by("id").first()
+                if roster and roster.google_calendar_event_id:
+                    try:
+                        reassignment_failed = not delete_roster_event(roster)
+                        old_roster_event_deleted = not reassignment_failed
+                    except Exception:
+                        logger.exception(
+                            "Could not remove the existing roster calendar event "
+                            "before reassigning booking %s.",
+                            booking.pk,
+                        )
+                        reassignment_failed = True
+
+                    if reassignment_failed:
+                        roster.refresh_from_db(
+                            fields=["google_calendar_event_id"]
+                        )
+                        form.instance.assigned_employee = original_employee
+                        messages.warning(
+                            request,
+                            "Booking details were saved, but the employee "
+                            "reassignment failed because the existing roster "
+                            "Calendar event could not be removed. The employee "
+                            "schedule could not be synced.",
+                        )
+
+            suppression_flags = (
+                {
+                    "_suppress_employee_assignment_notification": True,
+                    "_suppress_customer_status_notification": True,
+                }
+                if reassignment_requested
+                else {}
+            )
+            try:
+                with temporary_instance_flags(form.instance, **suppression_flags):
+                    with transaction.atomic():
+                        updated_booking = form.save()
+            except Exception:
+                logger.exception(
+                    "Booking save failed after editing booking %s.",
+                    booking.pk,
+                )
+                if old_roster_event_deleted and roster:
+                    try:
+                        restore_roster_event(roster)
+                    except Exception:
+                        logger.exception(
+                            "Could not restore the old roster Calendar event "
+                            "after booking %s failed to save.",
+                            booking.pk,
+                        )
+                        messages.error(
+                            request,
+                            "The booking could not be saved. The old roster "
+                            "Calendar event could not be restored yet; retrying "
+                            "the edit will retry synchronization.",
+                        )
+                    else:
+                        messages.error(
+                            request,
+                            "The booking could not be saved. The old employee's "
+                            "roster Calendar event was restored.",
+                        )
+                else:
+                    messages.error(request, "The booking could not be saved.")
+                return {
+                    "form": form,
+                    "saved": False,
+                    "invalid": False,
+                }
+
+            new_status = updated_booking.status
+            if not reassignment_failed:
+                try:
+                    sync_result = sync_booking_roster(updated_booking)
+                    if isinstance(sync_result, RosterSyncPending):
+                        raise sync_result.error
+                    if isinstance(sync_result, RosterSyncNotConfigured):
+                        messages.info(
+                            request,
+                            "Employee Calendar sync is not configured; booking changes were saved.",
+                        )
+                except Exception:
+                    logger.exception(
+                        "Roster sync failed after editing booking %s.",
+                        updated_booking.pk,
+                    )
+                    if reassignment_requested:
+                        current_roster = (
+                            Roster.objects.filter(booking_id=updated_booking.pk)
+                            .order_by("id")
+                            .first()
+                        )
+                        updated_booking.refresh_from_db(
+                            fields=["assigned_employee"]
+                        )
+                        if (
+                            current_roster is None
+                            or current_roster.employee_id
+                            != updated_booking.assigned_employee_id
+                        ):
+                            recovery_employee_id = (
+                                current_roster.employee_id
+                                if current_roster
+                                else original_employee_id
+                            )
+                            Booking.objects.filter(pk=updated_booking.pk).update(
+                                assigned_employee_id=recovery_employee_id
+                            )
+                            updated_booking.assigned_employee_id = (
+                                recovery_employee_id
+                            )
+                        reassignment_failed = True
+                        if (
+                            current_roster
+                            and current_roster.employee_id == original_employee_id
+                            and old_roster_event_deleted
+                        ):
+                            try:
+                                restore_roster_event(current_roster)
+                            except Exception:
+                                logger.exception(
+                                    "Could not restore the old roster Calendar "
+                                    "event after reassignment of booking %s failed.",
+                                    updated_booking.pk,
+                                )
+                                messages.error(
+                                    request,
+                                    "The reassignment failed and was rolled back "
+                                    "to the original employee. Restoring that "
+                                    "employee's Calendar event is still pending; "
+                                    "retry the edit to complete synchronization.",
+                                )
+                            else:
+                                messages.warning(
+                                    request,
+                                    "The reassignment failed and was rolled back "
+                                    "to the original employee. Their roster "
+                                    "Calendar event was restored.",
+                                )
+                        else:
+                            messages.warning(
+                                request,
+                                "Booking details and employee assignment were "
+                                "saved, but the new employee's roster Calendar "
+                                "event could not be synchronized. Retry the edit "
+                                "to synchronize it.",
+                            )
+                    else:
+                        messages.warning(
+                            request,
+                            "Booking updated, but the employee schedule could not be synced automatically.",
+                        )
+
+            return {
+                "booking": updated_booking,
+                "form": form,
+                "old_status": old_status,
+                "new_status": new_status,
+                "reassignment_requested": reassignment_requested,
+                "reassignment_failed": reassignment_failed,
+                "saved": True,
+            }
+    except (DatabaseError, RosterSyncLockError):
+        logger.exception(
+            "Could not safely save and synchronize booking %s.",
+            booking.pk,
+        )
+        if old_roster_event_deleted and roster:
+            try:
+                restore_roster_event(roster)
+            except Exception:
+                logger.exception(
+                    "Could not restore the old roster Calendar event after "
+                    "booking %s synchronization failed.",
+                    booking.pk,
+                )
+                messages.error(
+                    request,
+                    "The booking update could not be completed, and Calendar "
+                    "recovery is still pending. Retry the edit to synchronize it.",
+                )
+            else:
+                messages.error(
+                    request,
+                    "The booking update could not be completed. The old "
+                    "employee's roster Calendar event was restored.",
+                )
+        else:
+            messages.error(
+                request,
+                "The booking update could not be safely serialized. No changes "
+                "were saved; please retry.",
+            )
+        return {
+            "form": form,
+            "saved": False,
+            "invalid": False,
+        }
+
+
 @admin_required
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
     if request.method == "POST":
-        old_status = booking.status
         form = BookingForm(request.POST, instance=booking)
-
         if form.is_valid():
-            updated_booking = form.save()
-            new_status = updated_booking.status
-
-            # --------------------------------------------------
-            # CUSTOMER BOOKING STATUS EMAIL
-            # --------------------------------------------------
-            if old_status != new_status:
-                logger.info(
-                    "Booking status transition detected: booking=%s old=%s new=%s",
-                    updated_booking.id,
-                    old_status,
-                    new_status,
-                )
-                if send_booking_confirmation_email(
-                    request,
-                    updated_booking,
-                    old_status,
-                ):
-                    messages.success(
-                        request,
-                        f"✅ Customer notified by email: booking status is now {updated_booking.get_status_display()}.",
-                    )
+            result = _save_and_sync_booking_edit(request, booking, form)
+            form = result["form"]
+            if not result["saved"]:
+                if result.get("invalid"):
+                    pass
                 else:
-                    messages.warning(
+                    return render(
                         request,
-                        "⚠️ Booking updated, but the customer status email could not be sent.",
+                        "bookings/booking_form.html",
+                        {
+                            "form": form,
+                            "page_title": "Edit Booking",
+                            "button_text": "Update Booking",
+                        },
                     )
+            else:
+                updated_booking = result["booking"]
+                old_status = result["old_status"]
+                new_status = result["new_status"]
+                reassignment_requested = result["reassignment_requested"]
+                reassignment_failed = result["reassignment_failed"]
 
-            try:
-                from rosters.services import sync_booking_roster
+                if reassignment_requested and not reassignment_failed:
+                    assigned_employee = updated_booking.assigned_employee
+                    if assigned_employee and assigned_employee.user:
+                        Notification.objects.create(
+                            user=assigned_employee.user,
+                            title="Booking Assigned",
+                            message=(
+                                f"You have a job: {updated_booking.service_type} "
+                                f"on {updated_booking.booking_date}."
+                            ),
+                            notification_type="booking",
+                            link=f"/employee/jobs/{updated_booking.pk}/",
+                        )
+                    customer = updated_booking.customer
+                    if old_status != new_status and customer and customer.user:
+                        Notification.objects.create(
+                            user=customer.user,
+                            title="Booking Updated",
+                            message=(
+                                f"Your booking for {updated_booking.service_type} is now "
+                                f"{updated_booking.get_status_display()}."
+                            ),
+                            notification_type="booking",
+                            link=f"/portal/bookings/{updated_booking.pk}/",
+                        )
 
-                sync_booking_roster(updated_booking)
-
-            except Exception as error:
-                messages.warning(
-                    request,
-                    f"Booking updated, but roster sync failed: {error}",
-                )
-
-            if updated_booking.status == "completed":
-
-                existing_invoice = Invoice.objects.filter(
-                    booking=updated_booking
-                ).first()
-
-                if existing_invoice:
-
-                    messages.info(
+                if not reassignment_failed and old_status != new_status:
+                    logger.info(
+                        "Booking status transition detected: booking=%s old=%s new=%s",
+                        updated_booking.id,
+                        old_status,
+                        new_status,
+                    )
+                    if send_booking_confirmation_email(
                         request,
-                        f"Invoice already exists: {existing_invoice.invoice_number}",
-                    )
-
-                else:
-
-                    invoice = Invoice.objects.create(
-                        booking=updated_booking,
-                        amount=updated_booking.quoted_price,
-                        description=(
-                            f"{updated_booking.service_type} "
-                            f"completed on "
-                            f"{updated_booking.booking_date}"
-                        ),
-                        notes=updated_booking.notes,
-                    )
-
-                    messages.success(
-                        request,
-                        f"Invoice automatically created: {invoice.invoice_number}",
-                    )
-
-                    # --------------------------------------------------
-                    # AUTOMATIC INVOICE EMAIL
-                    # --------------------------------------------------
-                    if send_invoice_email(request, invoice):
+                        updated_booking,
+                        old_status,
+                    ):
                         messages.success(
                             request,
-                            f"Invoice {invoice.invoice_number} emailed to "
-                            f"{invoice.booking.customer.email}.",
+                            f"✅ Customer notified by email: booking status is now {updated_booking.get_status_display()}.",
                         )
                     else:
                         messages.warning(
                             request,
-                            f"Invoice {invoice.invoice_number} was created, "
-                            "but the customer invoice email could not be sent.",
+                            "⚠️ Booking updated, but the customer status email could not be sent.",
                         )
 
-            try:
-                create_or_update_booking_event(updated_booking)
-            except Exception as error:
-                messages.warning(
-                    request,
-                    f"Booking updated, but Google Calendar sync failed: {error}",
+                if not reassignment_failed and updated_booking.status == "completed":
+                    invoice, invoice_created = get_or_create_invoice_for_booking(
+                        updated_booking
+                    )
+                    if not invoice_created:
+                        messages.info(
+                            request,
+                            f"Invoice already exists: {invoice.invoice_number}",
+                        )
+                    else:
+                        messages.success(
+                            request,
+                            f"Invoice automatically created: {invoice.invoice_number}",
+                        )
+                        if send_invoice_email(request, invoice):
+                            messages.success(
+                                request,
+                                f"Invoice {invoice.invoice_number} emailed to "
+                                f"{invoice.booking.customer.email}.",
+                            )
+                        else:
+                            messages.warning(
+                                request,
+                                f"Invoice {invoice.invoice_number} was created, "
+                                "but the customer invoice email could not be sent.",
+                            )
+
+                if not reassignment_failed:
+                    try:
+                        create_or_update_booking_event(updated_booking)
+                    except Exception:
+                        logger.exception(
+                            "Google Calendar sync failed after editing booking %s.",
+                            updated_booking.pk,
+                        )
+                        messages.warning(
+                            request,
+                            "Booking updated, but Google Calendar could not be synced automatically.",
+                        )
+
+                if (
+                    not reassignment_failed
+                    and updated_booking.assigned_employee
+                    and updated_booking.assigned_employee.user
+                ):
+                    Notification.objects.create(
+                        user=updated_booking.assigned_employee.user,
+                        title="Booking Updated",
+                        message=(
+                            f"Booking updated: "
+                            f"{updated_booking.service_type} "
+                            f"on {updated_booking.booking_date} "
+                            f"at {updated_booking.booking_time}."
+                        ),
+                        notification_type="booking",
+                        link="/employee/jobs/",
+                    )
+
+                create_activity_log(
+                    request.user,
+                    "booking",
+                    "Booking Updated",
+                    f"{updated_booking.customer.full_name if updated_booking.customer else 'No customer'} "
+                    f"- {updated_booking.service_type} on {updated_booking.booking_date}",
                 )
 
-            if (
-                updated_booking.assigned_employee
-                and updated_booking.assigned_employee.user
-            ):
-                Notification.objects.create(
-                    user=updated_booking.assigned_employee.user,
-                    title="Booking Updated",
-                    message=(
-                        f"Booking updated: "
-                        f"{updated_booking.service_type} "
-                        f"on {updated_booking.booking_date} "
-                        f"at {updated_booking.booking_time}."
-                    ),
-                    notification_type="booking",
-                    link="/employee/jobs/",
-                )
-
-            create_activity_log(
-                request.user,
-                "booking",
-                "Booking Updated",
-                f"{updated_booking.customer.full_name if updated_booking.customer else 'No customer'} "
-                f"- {updated_booking.service_type} on {updated_booking.booking_date}",
-            )
-
-            messages.success(request, "✅ Booking updated successfully.")
-            return redirect("booking_list")
+                if not reassignment_failed:
+                    messages.success(request, "✅ Booking updated successfully.")
+                return redirect("booking_list")
 
     else:
         form = BookingForm(instance=booking)
@@ -1286,6 +1652,7 @@ def edit_booking(request, booking_id):
 
 @require_POST
 @admin_required
+@_lock_booking_mutations("booking_list")
 def delete_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
@@ -1294,12 +1661,24 @@ def delete_booking(request, booking_id):
 
     if request.method == "POST":
         try:
-            delete_booking_event(booking)
-        except Exception as error:
+            for roster in booking.rosters.all():
+                if roster.google_calendar_event_id and not delete_roster_event(roster):
+                    raise RuntimeError("Roster calendar event removal did not complete.")
+            if (
+                booking.google_calendar_event_id
+                and not delete_booking_event(booking)
+            ):
+                raise RuntimeError("Booking calendar event removal did not complete.")
+        except Exception:
+            logger.exception(
+                "Calendar cleanup failed before deleting booking %s.",
+                booking.pk,
+            )
             messages.warning(
                 request,
-                f"Booking deleted, but Google Calendar event could not be removed: {error}",
+                "The booking was kept because its calendar events could not all be removed. Please retry or contact an administrator.",
             )
+            return redirect("booking_list")
 
         booking.delete()
 
@@ -2637,6 +3016,10 @@ def email_center(request):
 
 @require_POST
 @admin_required
+@permission_required(
+    ("invoices.change_invoice", "dashboard.add_emaillog"),
+    raise_exception=True,
+)
 def send_invoice_reminder(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
     customer = invoice.booking.customer
@@ -2725,6 +3108,10 @@ def send_invoice_reminder(request, invoice_id):
 
 @require_POST
 @admin_required
+@permission_required(
+    ("bookings.change_booking", "dashboard.add_emaillog"),
+    raise_exception=True,
+)
 def send_booking_reminder(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     customer = booking.customer
@@ -2779,6 +3166,10 @@ YD Commercial Cleaning Services
 
 @require_POST
 @admin_required
+@permission_required(
+    ("quotes.change_quoterequest", "dashboard.add_emaillog"),
+    raise_exception=True,
+)
 def send_quote_followup(request, quote_id):
     quote = get_object_or_404(QuoteRequest, id=quote_id)
 
@@ -3211,6 +3602,16 @@ def review_requests(request):
 
 @require_POST
 @admin_required
+@permission_required(
+    (
+        "bookings.view_booking",
+        "dashboard.add_reviewrequestlog",
+        "dashboard.change_reviewrequestlog",
+        "dashboard.add_emaillog",
+        "dashboard.add_activitylog",
+    ),
+    raise_exception=True,
+)
 def send_review_request(request, booking_id):
     booking = get_object_or_404(
         Booking.objects.select_related("customer"),
@@ -3622,6 +4023,16 @@ def employee_bonuses(request):
 
 
 @login_required
+@require_POST
+@permission_required(
+    (
+        "customers.add_marketingsubscriber",
+        "customers.change_marketingsubscriber",
+        "dashboard.add_emaillog",
+        "dashboard.add_activitylog",
+    ),
+    raise_exception=True,
+)
 def dashboard_newsletter_subscribe(request):
     if request.method != "POST":
         return redirect("campaign_center")
@@ -4025,6 +4436,10 @@ def campaign_center(request):
 
 @require_POST
 @admin_required
+@permission_required(
+    ("customers.view_customer", "dashboard.add_campaignlog", "dashboard.add_emaillog", "dashboard.add_activitylog"),
+    raise_exception=True,
+)
 def send_vip_campaign(request):
     vip_customers = Customer.objects.filter(total_revenue__gte=1000).exclude(email="")
 
@@ -4087,6 +4502,10 @@ YD Commercial Cleaning Services
 
 @require_POST
 @admin_required
+@permission_required(
+    ("customers.view_customer", "dashboard.add_campaignlog", "dashboard.add_emaillog", "dashboard.add_activitylog"),
+    raise_exception=True,
+)
 def send_inactive_campaign(request):
     inactive_customers = Customer.objects.filter(jobs_completed__lte=1).exclude(
         email=""
@@ -4153,6 +4572,16 @@ YD Commercial Cleaning Services
 
 @require_POST
 @admin_required
+@permission_required(
+    (
+        "bookings.view_booking",
+        "dashboard.add_reviewrequestlog",
+        "dashboard.add_emaillog",
+        "dashboard.add_campaignlog",
+        "dashboard.add_activitylog",
+    ),
+    raise_exception=True,
+)
 def send_review_campaign(request):
     completed_bookings = (
         Booking.objects
@@ -4781,184 +5210,169 @@ def finance_trends(request):
     )
 
 
+def _save_quick_status_and_sync(request, booking_id, new_status):
+    from notifications.utils import temporary_instance_flags
+    from rosters.services import (
+        RosterSyncNotConfigured,
+        RosterSyncPending,
+        booking_roster_sync_lock,
+        sync_booking_roster,
+    )
+
+    with booking_roster_sync_lock(booking_id):
+        booking = get_object_or_404(
+            Booking.objects.select_for_update(),
+            pk=booking_id,
+        )
+        old_status = booking.status
+        booking.status = new_status
+        with temporary_instance_flags(
+            booking,
+            _suppress_customer_status_notification=True,
+        ):
+            booking.save()
+
+        roster_sync_succeeded = True
+        try:
+            roster_sync = sync_booking_roster(booking)
+            if isinstance(roster_sync, RosterSyncPending):
+                raise roster_sync.error
+            if isinstance(roster_sync, RosterSyncNotConfigured):
+                messages.info(
+                    request,
+                    "Employee Calendar sync is not configured; booking status was saved.",
+                )
+        except Exception:
+            roster_sync_succeeded = False
+            logger.exception("Roster sync failed for booking %s.", booking.pk)
+            messages.warning(
+                request,
+                "Booking status was saved, but the employee schedule could not be synced automatically.",
+            )
+
+        if (
+            roster_sync_succeeded
+            and old_status != new_status
+            and booking.customer
+            and booking.customer.user
+        ):
+            Notification.objects.create(
+                user=booking.customer.user,
+                title="Booking Updated",
+                message=(
+                    f"Your booking for {booking.service_type} is now "
+                    f"{booking.get_status_display()}."
+                ),
+                notification_type="booking",
+                link=f"/portal/bookings/{booking.pk}/",
+            )
+
+        if roster_sync_succeeded:
+            try:
+                if new_status == "cancelled":
+                    delete_booking_event(booking)
+                else:
+                    create_or_update_booking_event(booking)
+            except Exception:
+                logger.exception(
+                    "Google Calendar sync failed for booking %s.",
+                    booking.pk,
+                )
+                messages.warning(
+                    request,
+                    "Booking updated, but Google Calendar could not be synced automatically.",
+                )
+
+    return booking, old_status, roster_sync_succeeded
+
+
 @require_POST
 @admin_required
 def update_booking_quick_status(request, booking_id, new_status):
-    booking = get_object_or_404(Booking, id=booking_id)
-
-    allowed_statuses = [
+    allowed_statuses = {
         "pending",
         "confirmed",
         "assigned",
         "in_progress",
         "completed",
         "cancelled",
-    ]
+    }
 
-    if request.method == "POST":
+    if new_status not in allowed_statuses:
+        messages.error(request, "❌ Invalid booking status.")
+        return redirect("booking_calendar")
 
-        if new_status in allowed_statuses:
+    from rosters.services import RosterSyncLockError
 
-            # ----------------------------------------------------------
-            # STORE OLD STATUS BEFORE CHANGING IT
-            # ----------------------------------------------------------
-            old_status = booking.status
+    try:
+        booking, old_status, roster_sync_succeeded = (
+            _save_quick_status_and_sync(request, booking_id, new_status)
+        )
+    except (DatabaseError, RosterSyncLockError):
+        logger.exception(
+            "Could not safely serialize quick status update for booking %s.",
+            booking_id,
+        )
+        messages.error(
+            request,
+            "The booking could not be safely updated right now. Please retry.",
+        )
+        return redirect("booking_calendar")
 
-            # ----------------------------------------------------------
-            # UPDATE BOOKING STATUS
-            # ----------------------------------------------------------
-            booking.status = new_status
-            booking.save()
+    if roster_sync_succeeded and old_status != new_status:
+        logger.info(
+            "Booking status transition detected: booking=%s old=%s new=%s",
+            booking.id,
+            old_status,
+            new_status,
+        )
 
-            # ----------------------------------------------------------
-            # CUSTOMER BOOKING STATUS EMAIL
-            #
-            # Only send when the booking status actually changes.
-            # ----------------------------------------------------------
-            if old_status != new_status:
-                logger.info(
-                    "Booking status transition detected: booking=%s old=%s new=%s",
-                    booking.id,
-                    old_status,
-                    new_status,
-                )
-
-                if send_booking_confirmation_email(
-                    request,
-                    booking,
-                    old_status,
-                ):
-                    messages.success(
-                        request,
-                        f"✅ Customer notified by email: booking status is now {booking.get_status_display()}.",
-                    )
-                else:
-                    messages.warning(
-                        request,
-                        "⚠️ Booking updated, but the customer status email could not be sent.",
-                    )
-
-            # ----------------------------------------------------------
-            # GOOGLE CALENDAR SYNC
-            # ----------------------------------------------------------
-            try:
-                create_or_update_booking_event(booking)
-
-            except Exception as error:
-                messages.warning(
-                    request,
-                    f"Booking updated, but Google Calendar sync failed: {error}",
-                )
-
-            # ----------------------------------------------------------
-            # COMPLETED BOOKING → CREATE INVOICE
-            # ----------------------------------------------------------
-            if new_status == "completed":
-
-                existing_invoice = Invoice.objects.filter(
-                    booking=booking
-                ).first()
-
-                # ------------------------------------------------------
-                # INVOICE ALREADY EXISTS
-                # ------------------------------------------------------
-                if existing_invoice:
-
-                    messages.info(
-                        request,
-                        f"Invoice already exists: "
-                        f"{existing_invoice.invoice_number}",
-                    )
-
-                # ------------------------------------------------------
-                # CREATE NEW INVOICE
-                # ------------------------------------------------------
-                else:
-
-                    invoice = Invoice.objects.create(
-                        booking=booking,
-                        amount=booking.quoted_price,
-                        description=(
-                            f"{booking.service_type} "
-                            f"completed on "
-                            f"{booking.booking_date}"
-                        ),
-                    )
-
-                    # --------------------------------------------------
-                    # EMAIL INVOICE TO CUSTOMER
-                    #
-                    # Use the shared branded invoice email helper.
-                    # This generates the PDF, attaches it, sends through
-                    # the existing email backend, logs the email, and
-                    # marks the invoice as sent.
-                    # --------------------------------------------------
-                    if send_invoice_email(request, invoice):
-
-                        messages.success(
-                            request,
-                            f"Invoice {invoice.invoice_number} created and emailed "
-                            f"to {invoice.booking.customer.email}.",
-                        )
-
-                    else:
-
-                        messages.warning(
-                            request,
-                            f"Invoice {invoice.invoice_number} was created, "
-                            "but the customer invoice email could not be sent.",
-                        )
-
-            # ----------------------------------------------------------
-            # GOOGLE CALENDAR
-            #
-            # Cancelled bookings are removed from Calendar.
-            # All other statuses are synced/updated.
-            # ----------------------------------------------------------
-            try:
-
-                if new_status == "cancelled":
-
-                    delete_booking_event(booking)
-
-                else:
-
-                    create_or_update_booking_event(booking)
-
-            except Exception as error:
-
-                messages.warning(
-                    request,
-                    f"Google Calendar sync failed: {error}",
-                )
-
-            # ----------------------------------------------------------
-            # BOOKING ACTIVITY LOG
-            # ----------------------------------------------------------
-            create_activity_log(
-                request.user,
-                "booking",
-                "Booking Status Updated",
-                (
-                    f"{booking.customer.full_name if booking.customer else 'No customer'} booking "
-                    f"changed from {old_status} to {new_status}."
-                ),
-            )
-
-            # ----------------------------------------------------------
-            # FINAL SUCCESS MESSAGE
-            # ----------------------------------------------------------
+        if send_booking_confirmation_email(request, booking, old_status):
             messages.success(
                 request,
-                "✅ Booking status updated successfully.",
+                f"✅ Customer notified by email: booking status is now {booking.get_status_display()}.",
             )
-
         else:
-
-            messages.error(
+            messages.warning(
                 request,
-                "❌ Invalid booking status.",
+                "⚠️ Booking updated, but the customer status email could not be sent.",
             )
+
+    if roster_sync_succeeded and new_status == "completed":
+        invoice, invoice_created = get_or_create_invoice_for_booking(booking)
+        if not invoice_created:
+            messages.info(
+                request,
+                f"Invoice already exists: {invoice.invoice_number}",
+            )
+        elif send_invoice_email(request, invoice):
+            messages.success(
+                request,
+                f"Invoice {invoice.invoice_number} created and emailed "
+                f"to {invoice.booking.customer.email}.",
+            )
+        else:
+            messages.warning(
+                request,
+                f"Invoice {invoice.invoice_number} was created, "
+                "but the customer invoice email could not be sent.",
+            )
+
+    create_activity_log(
+        request.user,
+        "booking",
+        "Booking Status Updated",
+        (
+            f"{booking.customer.full_name if booking.customer else 'No customer'} booking "
+            f"changed from {old_status} to {new_status}."
+        ),
+    )
+
+    if roster_sync_succeeded:
+        messages.success(
+            request,
+            "✅ Booking status updated successfully.",
+        )
 
     return redirect("booking_calendar")
 
@@ -5195,6 +5609,11 @@ def add_purchase_order(request):
 
 
 @login_required
+@require_POST
+@permission_required(
+    ("dashboard.change_purchaseorder", "dashboard.change_cleaningsupply"),
+    raise_exception=True,
+)
 def receive_purchase_order(request, order_id):
 
     from .models import PurchaseOrder
@@ -5758,6 +6177,8 @@ def export_business_report(request):
 
 
 @login_required
+@require_POST
+@permission_required(("expenses.view_expense", "invoices.view_invoice"), raise_exception=True)
 def email_business_report(request):
 
     from io import BytesIO
@@ -5872,6 +6293,8 @@ def customer_360(request, customer_id):
 
 
 @login_required
+@require_POST
+@permission_required("customers.change_customer", raise_exception=True)
 def send_customer_followup(request, customer_id):
 
     customer = get_object_or_404(Customer, id=customer_id)
@@ -6172,6 +6595,11 @@ def export_employee_performance_pdf(request):
 
 
 @login_required
+@require_POST
+@permission_required(
+    ("attendance.view_attendancelog", "bookings.view_booking", "employees.view_employee", "payroll.view_payrollrecord"),
+    raise_exception=True,
+)
 def email_employee_performance_report(request):
 
     from io import BytesIO
@@ -6564,6 +6992,8 @@ def quote_followup_centre(request):
 
 
 @login_required
+@require_POST
+@permission_required("quotes.change_quoterequest", raise_exception=True)
 def send_quote_followup_email(request, quote_id):
 
     quote = get_object_or_404(QuoteRequest, id=quote_id)
@@ -6591,6 +7021,10 @@ YD Commercial Cleaning Services
 
 @require_POST
 @admin_required
+@permission_required(
+    ("quotes.change_quoterequest", "bookings.add_booking"),
+    raise_exception=True,
+)
 def convert_quote_to_booking(request, quote_id):
 
     quote = get_object_or_404(QuoteRequest, id=quote_id)
@@ -6601,16 +7035,24 @@ def convert_quote_to_booking(request, quote_id):
             booking_date=quote.preferred_date or timezone.localdate(),
             booking_time=time(9, 0),
         )
-    except ValueError as error:
-        messages.error(request, str(error))
+    except ValueError:
+        logger.exception("Quote conversion failed for QuoteRequest %s.", quote.pk)
+        messages.error(
+            request,
+            "This quote could not be converted to a booking. Please check its details or contact an administrator.",
+        )
         return redirect("lead_list")
 
     try:
         create_or_update_booking_event(booking)
-    except Exception as error:
+    except Exception:
+        logger.exception(
+            "Google Calendar sync failed after quote conversion for booking %s.",
+            booking.pk,
+        )
         messages.warning(
             request,
-            f"Booking created, but Google Calendar sync failed: {error}",
+            "Booking created, but Google Calendar could not be synced automatically.",
         )
 
     messages.success(request, "Quote converted to booking successfully.")
@@ -6618,25 +7060,17 @@ def convert_quote_to_booking(request, quote_id):
 
 @require_POST
 @admin_required
+@permission_required(
+    ("bookings.view_booking", "invoices.add_invoice"),
+    raise_exception=True,
+)
 def create_invoice_from_booking(request, booking_id):
 
     booking = get_object_or_404(Booking, id=booking_id)
-
-    existing_invoice = Invoice.objects.filter(booking=booking).first()
-
-    if existing_invoice:
-
+    invoice, created = get_or_create_invoice_for_booking(booking)
+    if not created:
         messages.warning(request, "Invoice already exists.")
-
-        return redirect("invoice_detail", invoice_id=existing_invoice.id)
-
-    invoice = Invoice.objects.create(
-        booking=booking,
-        description=booking.service_type,
-        amount=booking.quoted_price,
-        status="draft",
-        notes=booking.notes,
-    )
+        return redirect("invoice_detail", invoice_id=invoice.id)
 
     messages.success(request, "Invoice created successfully.")
 

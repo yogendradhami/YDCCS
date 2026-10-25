@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.test import TestCase
 
+from core.test_utils import grant_dashboard_permissions
 from .models import Customer
 from .services import resolve_customer
 
@@ -61,6 +62,7 @@ class CustomerServiceTests(TestCase):
 class CustomerDirectoryViewTests(TestCase):
 	def test_directory_renders_customer_metrics_and_account_status_counts(self):
 		user = User.objects.create_user("directory-customer", is_staff=True)
+		grant_dashboard_permissions(user, "customers.view_customer")
 		Customer.objects.create(
 			user=user,
 			full_name="Linked Customer",
@@ -89,6 +91,11 @@ class CustomerDirectoryViewTests(TestCase):
 
 	def test_edit_page_renders_customer_profile_sections(self):
 		user = User.objects.create_user("customer-editor", is_staff=True)
+		grant_dashboard_permissions(
+			user,
+			"customers.view_customer",
+			"customers.change_customer",
+		)
 		customer = Customer.objects.create(
 			full_name="Edit Customer",
 			email="edit@example.com",
@@ -102,3 +109,11 @@ class CustomerDirectoryViewTests(TestCase):
 		self.assertContains(response, "Customer details")
 		self.assertContains(response, "Service profile")
 		self.assertContains(response, "Internal notes")
+
+	def test_staff_without_customer_permissions_is_denied(self):
+		user = User.objects.create_user("unauthorized-customer-viewer", is_staff=True)
+		self.client.force_login(user)
+
+		response = self.client.get(reverse("customer_list"))
+
+		self.assertEqual(response.status_code, 403)

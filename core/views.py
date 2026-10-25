@@ -69,6 +69,7 @@ from .adelaide_local_content import ADELAIDE_LOCAL_CONTENT
 from .suburbs_data import ADELAIDE_SUBURBS
 
 from bookings.forms import BookingForm, PublicBookingForm
+from bookings.models import Booking
 from bookings.services import create_booking
 from customers.services import resolve_customer
 from notifications.models import Notification
@@ -95,6 +96,24 @@ def _quote_idempotency_key(signed_workflow_key):
         token = signing.loads(
             signed_workflow_key,
             salt="public-quote-workflow",
+            max_age=24 * 60 * 60,
+        )
+    except signing.BadSignature:
+        return None
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _new_booking_workflow_key():
+    return signing.dumps(secrets.token_urlsafe(24), salt="public-booking-workflow")
+
+
+def _booking_idempotency_key(signed_workflow_key):
+    if not signed_workflow_key:
+        return None
+    try:
+        token = signing.loads(
+            signed_workflow_key,
+            salt="public-booking-workflow",
             max_age=24 * 60 * 60,
         )
     except signing.BadSignature:
@@ -205,6 +224,7 @@ def _quick_quote_context(request, *, allow_unmarked_post=False):
     form = QuickQuoteForm(
         request.POST if is_quick_quote_post else None,
         request=request,
+        initial={"workflow_key": _new_quote_workflow_key()},
     )
     page_id = request.path.strip("/").replace("/", "_").replace("-", "_") or "home"
     form.auto_id = f"id_quick_quote_{page_id}_%s"
@@ -213,60 +233,76 @@ def _quick_quote_context(request, *, allow_unmarked_post=False):
 
     if is_quick_quote_post:
         if form.is_valid():
-            try:
-                quote, created = create_quote_request(form=form)
-                if created:
-                    service_name = dict(form.fields["service"].choices).get(
-                        form.cleaned_data["service"], "Cleaning service"
-                    )
-                    source_page = request.build_absolute_uri(request.path)
-                    submitted_at = timezone.localtime(timezone.now())
-                    customer_email_sent = send_customer_quote_email(
-                        quote,
-                        service_name=service_name,
-                        source_page=source_page,
-                        submitted_at=submitted_at,
-                    )
-                    admin_email_sent = send_admin_quote_email(
-                        quote,
-                        service_name=service_name,
-                        source_page=source_page,
-                        submitted_at=submitted_at,
-                    )
-                    if not customer_email_sent:
-                        logger.error(
-                            "Quick quote customer email was not sent for QuoteRequest %s.",
-                            quote.id,
-                        )
-                    if not admin_email_sent:
-                        logger.error(
-                            "Quick quote company email was not sent for QuoteRequest %s.",
-                            quote.id,
-                        )
-
-                    feedback_parts = [
-                        "Thanks, your quote request has been received.",
-                        (
-                            "Confirmation email sent to your email address."
-                            if customer_email_sent
-                            else "We couldn't send a confirmation email; our team will follow up."
-                        ),
-                        (
-                            "Your request has been received by our team."
-                            if admin_email_sent
-                            else "Our team notification could not be sent automatically; please call 0430 049 865."
-                        ),
-                    ]
-                    feedback = " ".join(feedback_parts)
-                    feedback_status = "success"
-                    form = QuickQuoteForm(request=request)
-            except Exception:
-                logger.exception("Quick quote submission failed on %s.", request.path)
-                feedback = (
-                    "We couldn't complete your request right now. "
-                    "Please try again or contact us directly."
-                )
+            workflow_key = _quote_idempotency_key(
+                form.cleaned_data.get("workflow_key")
+            )
+            if not workflow_key:
+                form.add_error(None, "This quote form expired. Reload the page and try again.")
+                feedback = "This quote form expired. Reload the page and try again."
                 feedback_status = "error"
+            else:
+                try:
+                    quote, created = create_quote_request(
+                        form=form,
+                        workflow_key=workflow_key,
+                    )
+                    if created:
+                        service_name = dict(form.fields["service"].choices).get(
+                            form.cleaned_data["service"], "Cleaning service"
+                        )
+                        source_page = request.build_absolute_uri(request.path)
+                        submitted_at = timezone.localtime(timezone.now())
+                        customer_email_sent = send_customer_quote_email(
+                            quote,
+                            service_name=service_name,
+                            source_page=source_page,
+                            submitted_at=submitted_at,
+                        )
+                        admin_email_sent = send_admin_quote_email(
+                            quote,
+                            service_name=service_name,
+                            source_page=source_page,
+                            submitted_at=submitted_at,
+                        )
+                        if not customer_email_sent:
+                            logger.error(
+                                "Quick quote customer email was not sent for QuoteRequest %s.",
+                                quote.id,
+                            )
+                        if not admin_email_sent:
+                            logger.error(
+                                "Quick quote company email was not sent for QuoteRequest %s.",
+                                quote.id,
+                            )
+
+                        feedback_parts = [
+                            "Thanks, your quote request has been received.",
+                            (
+                                "Confirmation email sent to your email address."
+                                if customer_email_sent
+                                else "We couldn't send a confirmation email; our team will follow up."
+                            ),
+                            (
+                                "Your request has been received by our team."
+                                if admin_email_sent
+                                else "Our team notification could not be sent automatically; please call 0430 049 865."
+                            ),
+                        ]
+                        feedback = " ".join(feedback_parts)
+                    else:
+                        feedback = "Your quote request has already been received. Our team will be in touch."
+                    feedback_status = "success"
+                    form = QuickQuoteForm(
+                        request=request,
+                        initial={"workflow_key": _new_quote_workflow_key()},
+                    )
+                except Exception:
+                    logger.exception("Quick quote submission failed on %s.", request.path)
+                    feedback = (
+                        "We couldn't complete your request right now. "
+                        "Please try again or contact us directly."
+                    )
+                    feedback_status = "error"
         else:
             feedback = "Please check the highlighted fields and try again."
             feedback_status = "error"
@@ -442,6 +478,9 @@ def home(request):
                 "success": quick_quote_context["quick_quote_message_status"] == "success",
                 "message": quick_quote_context["quick_quote_message"],
                 "errors": quick_quote_context["quick_quote_form"].errors.get_json_data(),
+                "workflow_key": quick_quote_context["quick_quote_form"][
+                    "workflow_key"
+                ].value(),
             },
             status=quick_quote_context["quick_quote_response_status"],
         )
@@ -480,6 +519,7 @@ def contact(request):
                 "success": context["quick_quote_message_status"] == "success",
                 "message": context["quick_quote_message"],
                 "errors": context["quick_quote_form"].errors.get_json_data(),
+                "workflow_key": context["quick_quote_form"]["workflow_key"].value(),
             },
             status=context["quick_quote_response_status"],
         )
@@ -764,6 +804,7 @@ def pricing(request):
                 "success": context["quick_quote_message_status"] == "success",
                 "message": context["quick_quote_message"],
                 "errors": context["quick_quote_form"].errors.get_json_data(),
+                "workflow_key": context["quick_quote_form"]["workflow_key"].value(),
             },
             status=context["quick_quote_response_status"],
         )
@@ -862,6 +903,7 @@ def eco_friendly_cleaning(request):
                 "success": quote_context["quick_quote_message_status"] == "success",
                 "message": quote_context["quick_quote_message"],
                 "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+                "workflow_key": quote_context["quick_quote_form"]["workflow_key"].value(),
             },
             status=quote_context["quick_quote_response_status"],
         )
@@ -883,6 +925,7 @@ def emergency_cleaning(request):
                 "success": quote_context["quick_quote_message_status"] == "success",
                 "message": quote_context["quick_quote_message"],
                 "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+                "workflow_key": quote_context["quick_quote_form"]["workflow_key"].value(),
             },
             status=quote_context["quick_quote_response_status"],
         )
@@ -1263,6 +1306,7 @@ def local_suburb_detail(request, area_slug):
                 "success": quote_context["quick_quote_message_status"] == "success",
                 "message": quote_context["quick_quote_message"],
                 "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+                "workflow_key": quote_context["quick_quote_form"]["workflow_key"].value(),
             },
             status=quote_context["quick_quote_response_status"],
         )
@@ -2143,6 +2187,7 @@ def service_page(request, service_slug):
                 "success": quote_context["quick_quote_message_status"] == "success",
                 "message": quote_context["quick_quote_message"],
                 "errors": quote_context["quick_quote_form"].errors.get_json_data(),
+                "workflow_key": quote_context["quick_quote_form"]["workflow_key"].value(),
             },
             status=quote_context["quick_quote_response_status"],
         )
@@ -2435,55 +2480,94 @@ def send_booking_request_email(request, booking):
 
 def booking(request):
     if request.method == "POST":
-        form = PublicBookingForm(request.POST)
-
-        if form.is_valid():
-            customer, _ = resolve_customer(
-                email=form.cleaned_data["email"],
-                name=form.cleaned_data["name"],
-                phone=form.cleaned_data["phone"],
-                address=form.cleaned_data["address"],
-                suburb_postcode=form.cleaned_data["suburb_postcode"],
-                create=True,
-            )
-            booking, _ = create_booking(
-                customer=customer,
-                service_type=form.cleaned_data["service_type"],
-                booking_date=form.cleaned_data["booking_date"],
-                booking_time=form.cleaned_data["booking_time"],
-                address=form.cleaned_data["address"],
-                suburb_postcode=form.cleaned_data["suburb_postcode"],
-                notes=form.cleaned_data.get("notes", ""),
-            )
-
-            try:
-                send_booking_request_email(request, booking)
-            except Exception:
-                logger.exception(
-                    "Failed to send booking request email for booking %s.",
-                    booking.id,
-                )
-
-            try:
-                from google_reviews.calendar_utils import create_or_update_booking_event
-
-                create_or_update_booking_event(booking)
-
-            except Exception as error:
-                messages.warning(
-                    request,
-                    f"Booking submitted, but Google Calendar sync failed: {error}",
-                )
-
+        workflow_key = _booking_idempotency_key(
+            request.POST.get("workflow_key")
+        )
+        if workflow_key and Booking.objects.filter(
+            idempotency_key=workflow_key
+        ).exists():
             messages.success(
                 request,
-                "Your booking request has been submitted successfully."
+                "Your booking request has already been submitted successfully.",
             )
-
             return redirect("home")
+        form = PublicBookingForm(
+            request.POST,
+            idempotency_key=workflow_key,
+        )
+
+        if form.is_valid():
+            if not workflow_key:
+                form.add_error(None, "This booking form expired. Reload the page and try again.")
+            else:
+                try:
+                    with transaction.atomic():
+                        customer, _ = resolve_customer(
+                            email=form.cleaned_data["email"],
+                            name=form.cleaned_data["name"],
+                            phone=form.cleaned_data["phone"],
+                            address=form.cleaned_data["address"],
+                            suburb_postcode=form.cleaned_data["suburb_postcode"],
+                            create=True,
+                        )
+                        booking, created = create_booking(
+                            customer=customer,
+                            service_type=form.cleaned_data["service_type"],
+                            booking_date=form.cleaned_data["booking_date"],
+                            booking_time=form.cleaned_data["booking_time"],
+                            address=form.cleaned_data["address"],
+                            suburb_postcode=form.cleaned_data["suburb_postcode"],
+                            notes=form.cleaned_data.get("notes", ""),
+                            workflow_key=workflow_key,
+                        )
+                except Exception:
+                    logger.exception("Public booking submission failed.")
+                    form.add_error(
+                        None,
+                        "We couldn't complete your booking request. Please try again or contact us.",
+                    )
+                    return render(
+                        request,
+                        "bookings/public_booking.html",
+                        {"form": form},
+                        status=500,
+                    )
+
+                if created:
+                    try:
+                        send_booking_request_email(request, booking)
+                    except Exception:
+                        logger.exception(
+                            "Failed to send booking request email for booking %s.",
+                            booking.id,
+                        )
+
+                    try:
+                        from google_reviews.calendar_utils import create_or_update_booking_event
+
+                        create_or_update_booking_event(booking)
+
+                    except Exception:
+                        logger.exception(
+                            "Google Calendar sync failed for public booking %s.",
+                            booking.id,
+                        )
+                        messages.warning(
+                            request,
+                            "Booking submitted, but the calendar could not be updated automatically.",
+                        )
+
+                messages.success(
+                    request,
+                    "Your booking request has been submitted successfully."
+                )
+
+                return redirect("home")
 
     else:
-        form = BookingForm()
+        form = PublicBookingForm(
+            initial={"workflow_key": _new_booking_workflow_key()}
+        )
 
     return render(
         request,

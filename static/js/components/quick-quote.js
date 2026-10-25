@@ -116,7 +116,13 @@ document.addEventListener("DOMContentLoaded", function () {
 				var result = await response.json();
 				showErrors(result.errors || {});
 				showFeedback(result.message || "We couldn't complete your request right now. Please try again or contact us directly.", result.success ? "success" : "error");
-				if (result.success) form.reset();
+				if (result.success) {
+					form.reset();
+					var workflowField = form.elements.namedItem("workflow_key");
+					if (workflowField && result.workflow_key) {
+						workflowField.value = result.workflow_key;
+					}
+				}
 			} catch (error) {
 				showFeedback("We couldn't complete your request right now. Please try again or contact us directly.", "error");
 			} finally {

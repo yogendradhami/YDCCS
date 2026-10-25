@@ -260,6 +260,8 @@ class QuoteRequestForm(forms.ModelForm):
 class QuickQuoteForm(forms.ModelForm):
     """Short lead-capture form for high-conversion website placements."""
 
+    workflow_key = forms.CharField(required=False, widget=forms.HiddenInput())
+
     service = forms.ChoiceField(
         required=True,
         choices=[

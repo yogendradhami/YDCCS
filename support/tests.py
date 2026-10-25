@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 from unittest.mock import AsyncMock
 
+from core.test_utils import grant_dashboard_permissions
 from customers.models import Customer
 from notifications.models import Notification
 
@@ -458,6 +459,11 @@ class LiveChatConversationTests(TestCase):
 			username="http-support-staff",
 			is_staff=True,
 		)
+		grant_dashboard_permissions(
+			staff,
+			"support.view_livechatconversation",
+			"support.change_livechatconversation",
+		)
 		conversation = LiveChatConversation.objects.create(
 			name="HTTP Customer",
 			session_key="http-lifecycle-session",
@@ -497,6 +503,11 @@ class SupportTicketWorkflowTests(TestCase):
 			username="staff",
 			password="test-password",
 			is_staff=True,
+		)
+		grant_dashboard_permissions(
+			self.staff_user,
+			"support.view_supportticket",
+			"support.change_supportticket",
 		)
 
 	def test_customer_creates_and_views_ticket(self):

@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 import uuid
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from bookings.models import Booking
 from bookings.services import create_booking
@@ -90,12 +90,18 @@ def create_quote_request(*, form, images=None, workflow_key=None):
                 [QuoteImage(quote=quote, image=name) for name in stored_names],
                 batch_size=6,
             )
-    except Exception:
+    except Exception as exc:
         for name in filter(None, stored_names):
             try:
                 image_storage.delete(name)
             except Exception:
                 logger.exception("Could not clean up quote image %s", name)
+        if isinstance(exc, IntegrityError) and workflow_key:
+            existing = QuoteRequest.objects.filter(
+                idempotency_key=workflow_key
+            ).first()
+            if existing:
+                return existing, False
         raise
 
     return quote, True

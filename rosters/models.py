@@ -104,3 +104,12 @@ class Roster(models.Model):
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.shift_date}"
+
+
+class RosterSyncLock(models.Model):
+    booking = models.OneToOneField(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name="roster_sync_lock",
+    )
+    touched_at = models.DateTimeField(auto_now=True)

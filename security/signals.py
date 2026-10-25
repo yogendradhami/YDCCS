@@ -52,6 +52,7 @@ SAFE_PERMISSION_APPS = {
     "reviews",
     "rosters",
     "security",
+    "security_monitor",
     "services",
     "support",
 }
@@ -59,6 +60,25 @@ SAFE_PERMISSION_APPS = {
 
 @receiver(post_migrate)
 def seed_security_roles(sender, **kwargs):
+    if sender.label == "security_monitor":
+        monitor_permissions = list(
+            Permission.objects.select_related("content_type").filter(
+                content_type__app_label="security_monitor",
+            )
+        )
+        for role_name, permission_set in {
+            "Administrator": monitor_permissions,
+            "Manager": [
+                permission
+                for permission in monitor_permissions
+                if permission.codename.startswith("view_")
+            ],
+        }.items():
+            group = Group.objects.filter(name=role_name).first()
+            if group:
+                group.permissions.add(*permission_set)
+        return
+
     if sender.label != "security":
         return
 
@@ -72,9 +92,15 @@ def seed_security_roles(sender, **kwargs):
         "Manager": [
             permission
             for permission in permissions
-            if permission.content_type.app_label != "security"
-            or permission.codename
-            in {"access_dashboard", "view_security_center"}
+            if (
+                permission.content_type.app_label == "security"
+                and permission.codename in {"access_dashboard", "view_security_center"}
+            )
+            or (
+                permission.content_type.app_label == "security_monitor"
+                and permission.codename.startswith("view_")
+            )
+            or permission.content_type.app_label not in {"security", "security_monitor"}
         ],
         "Operations": [
             permission
@@ -108,7 +134,7 @@ def seed_security_roles(sender, **kwargs):
             for permission in permissions
             if (
                 permission.codename.startswith("view_")
-                and permission.content_type.app_label != "security"
+                and permission.content_type.app_label not in {"security", "security_monitor"}
             )
             or (
                 permission.content_type.app_label == "security"

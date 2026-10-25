@@ -11,7 +11,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponse
@@ -715,6 +715,8 @@ def generate_payroll_pdf(payroll):
 
 
 @login_required
+@require_POST
+@permission_required("payroll.change_payrollrecord", raise_exception=True)
 def mark_payroll_paid(request, payroll_id):
     payroll = get_object_or_404(
         PayrollRecord.objects.select_related("employee"),

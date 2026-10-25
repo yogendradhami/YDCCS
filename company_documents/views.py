@@ -6,7 +6,7 @@ from cloudinary.utils import cloudinary_url
 from django.db.models import Q, Case, Count, When, Value, IntegerField
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
 from django.db.models import (
@@ -1537,6 +1537,10 @@ def compliance_attention(request):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+@permission_required(
+    ("company_documents.add_bulkimportbatch", "company_documents.add_bulkimportitem"),
+    raise_exception=True,
+)
 def bulk_import_upload(request):
     """
     Upload multiple company documents into a staging batch.
@@ -1592,6 +1596,10 @@ def bulk_import_upload(request):
 
 @login_required
 @require_http_methods(["GET"])
+@permission_required(
+    ("company_documents.view_bulkimportbatch", "company_documents.change_bulkimportbatch", "company_documents.view_bulkimportitem"),
+    raise_exception=True,
+)
 def bulk_import_review(request, pk):
     """
     Review a staged bulk-import batch before permanent import.
@@ -1656,6 +1664,10 @@ def bulk_import_review(request, pk):
 
 @login_required
 @require_http_methods(["POST"])
+@permission_required(
+    ("company_documents.change_bulkimportbatch", "company_documents.change_bulkimportitem"),
+    raise_exception=True,
+)
 def bulk_import_analyse(request, pk):
     """
     Analyse every staged item in a batch.
@@ -1695,6 +1707,10 @@ def bulk_import_analyse(request, pk):
 
 @login_required
 @require_http_methods(["POST"])
+@permission_required(
+    ("company_documents.view_bulkimportbatch", "company_documents.change_bulkimportitem"),
+    raise_exception=True,
+)
 def bulk_import_approve(request, pk):
     """
     Approve one staged document for permanent import.
@@ -1748,6 +1764,7 @@ def bulk_import_approve(request, pk):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+@permission_required("company_documents.change_bulkimportitem", raise_exception=True)
 def bulk_import_item_edit(request, pk):
     if not can_manage_documents(request.user):
         raise PermissionDenied
@@ -1873,6 +1890,10 @@ def bulk_import_item_edit(request, pk):
 
 @login_required
 @require_http_methods(["POST"])
+@permission_required(
+    ("company_documents.change_bulkimportbatch", "company_documents.change_bulkimportitem", "company_documents.add_companydocument"),
+    raise_exception=True,
+)
 def bulk_import_import(request, pk):
     """
     Permanently import approved documents into the
@@ -1967,6 +1988,10 @@ def bulk_import_import(request, pk):
 
 @login_required
 @require_http_methods(["GET"])
+@permission_required(
+    "company_documents.view_bulkimportbatch",
+    raise_exception=True,
+)
 def bulk_import_list(request):
     """
     Bulk Document Intelligence dashboard.
@@ -2074,6 +2099,7 @@ def bulk_import_list(request):
 
 @login_required
 @require_http_methods(["POST"])
+@permission_required("company_documents.delete_bulkimportbatch", raise_exception=True)
 def bulk_import_delete(request, pk):
     if not can_manage_documents(request.user):
         raise PermissionDenied
@@ -2108,6 +2134,10 @@ def bulk_import_delete(request, pk):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+@permission_required(
+    "company_documents.add_companydocument",
+    raise_exception=True,
+)
 def document_upload(request):
     """
     Upload a new company document.
@@ -2295,6 +2325,10 @@ def document_upload(request):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+@permission_required(
+    "company_documents.change_companydocument",
+    raise_exception=True,
+)
 def document_edit(request, pk):
     """
     Edit an existing company document.
@@ -2764,6 +2798,10 @@ def document_download(request, pk):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+@permission_required(
+    "company_documents.change_companydocument",
+    raise_exception=True,
+)
 def document_email(request, pk):
     """
     Email a company document as an attachment.
@@ -2928,6 +2966,10 @@ def document_email(request, pk):
 
 @login_required
 @require_http_methods(["POST"])
+@permission_required(
+    "company_documents.change_companydocument",
+    raise_exception=True,
+)
 def document_archive(request, pk):
     """
     Archive a company document.
@@ -3000,6 +3042,10 @@ def document_archive(request, pk):
 
 @login_required
 @require_http_methods(["POST"])
+@permission_required(
+    "company_documents.delete_companydocument",
+    raise_exception=True,
+)
 def document_delete(request, pk):
     """
     Permanently delete a document and attempt to remove

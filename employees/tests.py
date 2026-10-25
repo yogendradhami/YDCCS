@@ -7,8 +7,14 @@ from PIL import Image
 import io
 import tempfile
 from unittest.mock import patch
+from datetime import date, time
 
+from core.test_utils import grant_dashboard_permissions
 from induction.models import EmployeeInduction, InductionProgramme
+from bookings.models import Booking, JobPhoto
+from customers.models import Customer
+from invoices.models import Invoice
+from quotes.models import QuoteRequest
 
 from .models import Employee
 
@@ -66,12 +72,148 @@ class EmployeePasswordChangeTests(TestCase):
 		self.assertTrue(self.user.check_password("New secure password 456!"))
 
 
+class EmployeePortalSecurityTests(TestCase):
+	def test_employee_cannot_update_booking_assigned_to_another_employee(self):
+		user = User.objects.create_user("scoped-employee", "test-password")
+		Employee.objects.create(
+			user=user,
+			full_name="Scoped Employee",
+			phone="0400000000",
+		)
+		other_employee = Employee.objects.create(
+			full_name="Other Employee",
+			phone="0400000001",
+		)
+		booking = Booking.objects.create(
+			service_type="Office Cleaning",
+			booking_date=date(2026, 10, 23),
+			booking_time=time(9, 0),
+			address="1 King Street",
+			suburb_postcode="Adelaide 5000",
+			assigned_employee=other_employee,
+			status="in_progress",
+		)
+		self.client.force_login(user)
+
+		response = self.client.post(
+			reverse("employee_job_detail", args=[booking.pk]),
+			{"status": "completed", "notes": "Unauthorized update"},
+		)
+
+		self.assertEqual(response.status_code, 404)
+		booking.refresh_from_db()
+		self.assertEqual(booking.status, "in_progress")
+		self.assertEqual(booking.notes, "")
+
+	def test_inactive_employee_session_cannot_access_portal_pages(self):
+		user = User.objects.create_user("inactive-employee", password="Password 123!")
+		Employee.objects.create(
+			user=user,
+			full_name="Inactive Employee",
+			phone="0400000000",
+			active=False,
+		)
+		self.client.force_login(user)
+
+		for url_name in (
+			"employee_dashboard",
+			"employee_jobs",
+			"employee_profile",
+			"employee_google_connect",
+			"employee_google_callback",
+		):
+			with self.subTest(url_name=url_name):
+				response = self.client.get(reverse(url_name))
+				self.assertRedirects(response, reverse("employee_login"))
+
+	@patch("employees.views.notify_admins")
+	@patch("rosters.services.sync_booking_roster")
+	@patch("google_reviews.calendar_utils.create_or_update_booking_event")
+	def test_employee_completion_creates_report_draft_invoice_and_completes_quote(
+		self, _calendar_sync, _roster_sync, _notify_admins
+	):
+		user = User.objects.create_user("active-employee", password="Password 123!")
+		employee = Employee.objects.create(
+			user=user,
+			full_name="Active Employee",
+			phone="0400000000",
+		)
+		programme = InductionProgramme.objects.create(name="Workflow induction")
+		EmployeeInduction.objects.create(
+			employee=employee,
+			programme=programme,
+			status="completed",
+		)
+		customer = Customer.objects.create(
+			full_name="Workflow Customer",
+			email="workflow@example.com",
+			phone="0400000001",
+		)
+		booking = Booking.objects.create(
+			customer=customer,
+			service_type="Office Cleaning",
+			booking_date=date(2026, 10, 23),
+			booking_time=time(9, 0),
+			address="1 King Street",
+			suburb_postcode="Adelaide 5000",
+			quoted_price="250.00",
+			assigned_employee=employee,
+			status="in_progress",
+		)
+		QuoteRequest.objects.create(
+			name=customer.full_name,
+			email=customer.email,
+			phone=customer.phone,
+			property_type="Office",
+			suburb_postcode="Adelaide 5000",
+			idempotency_key=f"quote:{booking.pk}",
+		)
+		JobPhoto.objects.create(
+			booking=booking,
+			employee=employee,
+			photo_type="before",
+			image="job_photos/before.jpg",
+			employee_signature="signatures/employee.jpg",
+		)
+		JobPhoto.objects.create(
+			booking=booking,
+			employee=employee,
+			photo_type="after",
+			image="job_photos/after.jpg",
+		)
+		self.client.force_login(user)
+
+		response = self.client.post(
+			reverse("employee_job_detail", args=[booking.pk]),
+			{"status": "completed", "notes": "Job completed."},
+		)
+
+		self.assertRedirects(
+			response,
+			reverse("employee_job_detail", args=[booking.pk]),
+		)
+		booking.refresh_from_db()
+		self.assertEqual(booking.status, "completed")
+		self.assertTrue(hasattr(booking, "cleaning_report"))
+		invoice = Invoice.objects.get(booking=booking)
+		self.assertEqual(invoice.status, "draft")
+		self.assertEqual(invoice.amount, booking.quoted_price)
+		quote = QuoteRequest.objects.get(idempotency_key=f"quote:{booking.pk}")
+		self.assertEqual(quote.status, "completed")
+
+
 class EmployeeDashboardWorkflowTests(TestCase):
 	def setUp(self):
 		self.admin = User.objects.create_user(
 			username="hr-admin",
 			password="Admin password 123!",
 			is_staff=True,
+		)
+		grant_dashboard_permissions(
+			self.admin,
+			"employees.view_employee",
+			"employees.add_employee",
+			"employees.change_employee",
 		)
 		self.client.force_login(self.admin)
 

@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -21,6 +22,13 @@ def security_admin_required(view):
 @login_required
 @security_admin_required
 def security_dashboard(request):
+    if not _has_model_permissions(
+        request.user,
+        "security_monitor.view_securityfinding",
+        "security_monitor.view_securityalertdelivery",
+    ):
+        return HttpResponseForbidden("You do not have permission to view security findings.")
+
     base_findings = SecurityFinding.objects.all()
     findings = base_findings
 
@@ -131,6 +139,9 @@ def security_dashboard(request):
 @security_admin_required
 @require_POST
 def update_finding(request, pk):
+    if not _has_model_permissions(request.user, "security_monitor.change_securityfinding"):
+        return HttpResponseForbidden("You do not have permission to update security findings.")
+
     finding = get_object_or_404(SecurityFinding, pk=pk)
     form = SecurityFindingUpdateForm(
         request.POST,
@@ -168,6 +179,13 @@ def update_finding(request, pk):
 @security_admin_required
 @require_POST
 def run_security_audit(request):
+    if not _has_model_permissions(
+        request.user,
+        "security_monitor.add_securityfinding",
+        "security_monitor.change_securityfinding",
+    ):
+        return HttpResponseForbidden("You do not have permission to run security audits.")
+
     import logging
 
     from .audits import (
@@ -203,3 +221,7 @@ def run_security_audit(request):
         )
 
     return redirect("security_monitor:dashboard")
+
+
+def _has_model_permissions(user, *permissions):
+    return user.is_superuser or all(user.has_perm(permission) for permission in permissions)

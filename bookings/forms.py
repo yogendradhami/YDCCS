@@ -142,6 +142,11 @@ class PublicBookingForm(forms.ModelForm):
     name = forms.CharField(max_length=150)
     email = forms.EmailField()
     phone = forms.CharField(max_length=30)
+    workflow_key = forms.CharField(required=False, widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        self.idempotency_key = kwargs.pop("idempotency_key", None)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Booking
@@ -161,7 +166,12 @@ class PublicBookingForm(forms.ModelForm):
         cleaned_data = super().clean()
         booking_date = cleaned_data.get("booking_date")
         booking_time = cleaned_data.get("booking_time")
-        if booking_date and booking_time:
+        if booking_date and booking_time and not (
+            self.idempotency_key
+            and Booking.objects.filter(
+                idempotency_key=self.idempotency_key
+            ).exists()
+        ):
             conflict = Booking.objects.filter(
                 booking_date=booking_date,
                 booking_time=booking_time,

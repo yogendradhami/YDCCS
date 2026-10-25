@@ -8,6 +8,7 @@ from django.test import TestCase, override_settings
 from django.utils.datastructures import MultiValueDict
 from PIL import Image
 
+from core.test_utils import mark_public_email_verified
 from quotes.forms import QuoteRequestForm
 from quotes.forms import QuickQuoteForm
 from quotes.models import QuoteRequest, QuoteImage
@@ -23,6 +24,7 @@ from services.models import Service
 class QuoteFormTests(TestCase):
     def workflow_key(self):
         response = self.client.get("/", HTTP_HOST="127.0.0.1")
+        mark_public_email_verified(self.client, "test@example.com")
         return response.context["form"]["workflow_key"].value()
 
     def test_quote_form_uses_real_captcha_and_hides_price_ui(self):
@@ -133,6 +135,7 @@ class QuoteFormTests(TestCase):
         }
 
         first = self.client.post("/", data, HTTP_HOST="127.0.0.1")
+        mark_public_email_verified(self.client, "test@example.com")
         second = self.client.post("/", data, HTTP_HOST="127.0.0.1")
 
         self.assertEqual(first.status_code, 302)
@@ -383,6 +386,19 @@ class QuickQuoteFlowTests(TestCase):
         data.update(overrides)
         return data
 
+    def post_verified(self, path, data, **extra):
+        data = dict(data)
+        if not data.get("workflow_key"):
+            form_page = self.client.get(
+                path,
+                HTTP_HOST=extra.get("HTTP_HOST", "localhost"),
+            )
+            data["workflow_key"] = form_page.context[
+                "quick_quote_form"
+            ]["workflow_key"].value()
+        mark_public_email_verified(self.client, data["email"])
+        return self.client.post(path, data, **extra)
+
     def test_component_renders_on_conversion_pages(self):
         urls = [
             "/",
@@ -431,7 +447,7 @@ class QuickQuoteFlowTests(TestCase):
     def test_valid_ajax_submission_stays_on_current_page_and_emails_both_recipients(
         self, admin_email, customer_email
     ):
-        response = self.client.post(
+        response = self.post_verified(
             "/services/oven-cleaning/",
             self.valid_data(service="oven-cleaning"),
             HTTP_HOST="localhost",
@@ -440,6 +456,7 @@ class QuickQuoteFlowTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["success"])
+        self.assertNotEqual(response.json()["workflow_key"], "")
         self.assertIn("Confirmation email sent", response.json()["message"])
         self.assertIn("Your request has been received by our team", response.json()["message"])
         self.assertEqual(QuoteRequest.objects.count(), 1)
@@ -475,6 +492,18 @@ class QuickQuoteFlowTests(TestCase):
         self.assertIn("suburb_postcode", response.json()["errors"])
         self.assertEqual(QuoteRequest.objects.count(), 0)
 
+    def test_unverified_email_is_blocked_before_quote_is_saved(self):
+        response = self.client.post(
+            "/contact/",
+            self.valid_data(),
+            HTTP_HOST="localhost",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(response.json()["requires_email_verification"])
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+
     def test_native_validation_failure_renders_on_same_page_with_values(self):
         response = self.client.post(
             "/contact/",
@@ -491,7 +520,7 @@ class QuickQuoteFlowTests(TestCase):
 
     @patch("core.views.create_quote_request", side_effect=RuntimeError("private detail"))
     def test_server_failure_is_safe_and_stays_on_the_submitted_page(self, create_quote):
-        response = self.client.post(
+        response = self.post_verified(
             "/pricing/",
             self.valid_data(),
             HTTP_HOST="localhost",
@@ -509,7 +538,7 @@ class QuickQuoteFlowTests(TestCase):
     def test_email_failures_are_reported_without_losing_saved_request(
         self, admin_email, customer_email
     ):
-        response = self.client.post(
+        response = self.post_verified(
             "/pricing/",
             self.valid_data(),
             HTTP_HOST="localhost",
@@ -526,8 +555,36 @@ class QuickQuoteFlowTests(TestCase):
 
     @patch("core.views.send_customer_quote_email", return_value=True)
     @patch("core.views.send_admin_quote_email", return_value=True)
+    def test_replayed_quick_quote_workflow_does_not_duplicate_or_resend(
+        self, admin_email, customer_email
+    ):
+        data = self.valid_data()
+        form_page = self.client.get("/contact/", HTTP_HOST="localhost")
+        data["workflow_key"] = form_page.context[
+            "quick_quote_form"
+        ]["workflow_key"].value()
+        first = self.post_verified(
+            "/contact/",
+            data,
+            HTTP_HOST="localhost",
+        )
+        mark_public_email_verified(self.client, data["email"])
+        second = self.client.post(
+            "/contact/",
+            data,
+            HTTP_HOST="localhost",
+        )
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(QuoteRequest.objects.count(), 1)
+        customer_email.assert_called_once()
+        admin_email.assert_called_once()
+
+    @patch("core.views.send_customer_quote_email", return_value=True)
+    @patch("core.views.send_admin_quote_email", return_value=True)
     def test_native_submission_renders_success_on_same_page(self, admin_email, customer_email):
-        response = self.client.post(
+        response = self.post_verified(
             "/contact/",
             self.valid_data(),
             HTTP_HOST="localhost",
@@ -553,7 +610,7 @@ class QuickQuoteFlowTests(TestCase):
         ]
         for path, service in cases:
             with self.subTest(path=path):
-                response = self.client.post(
+                response = self.post_verified(
                     path,
                     self.valid_data(service=service),
                     HTTP_HOST="localhost",

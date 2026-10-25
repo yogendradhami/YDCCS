@@ -18,6 +18,7 @@ import json
 import logging
 import time
 import uuid
+from functools import wraps
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -27,14 +28,14 @@ from cloudinary.utils import api_sign_request
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.http import HttpResponse, JsonResponse
 from google_auth_oauthlib.flow import Flow
 
 from .models import Employee, EmployeeGoogleAccount
+from .decorators import employee_required
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -47,7 +48,7 @@ from .profile_forms import (
     EmployeePasswordForm,
     EmployeeProfileForm,
 )
-from notifications.utils import notify_admins
+from notifications.utils import notify_admins, temporary_instance_flags
 
 EMPLOYEE_GOOGLE_SCOPES = [
     "https://www.googleapis.com/auth/calendar",
@@ -61,6 +62,44 @@ ALLOWED_JOB_PHOTO_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".hei
 ALLOWED_JOB_PHOTO_FORMATS = {"jpg", "jpeg", "png", "webp", "heic", "heif"}
 logger = logging.getLogger(__name__)
 ALLOWED_JOB_PHOTO_FORMATS = {"jpg", "jpeg", "png", "webp", "heic", "heif"}
+
+
+def _lock_employee_booking_mutations(view):
+    @wraps(view)
+    def wrapped(request, booking_id, *args, **kwargs):
+        if request.method != "POST":
+            return view(request, booking_id, *args, **kwargs)
+
+        employee = get_object_or_404(Employee, user=request.user)
+        get_object_or_404(
+            Booking,
+            pk=booking_id,
+            assigned_employee=employee,
+        )
+        from rosters.services import (
+            RosterSyncLockError,
+            booking_roster_sync_lock,
+        )
+
+        try:
+            with booking_roster_sync_lock(booking_id):
+                Booking.objects.select_for_update().get(
+                    pk=booking_id,
+                    assigned_employee=employee,
+                )
+                return view(request, booking_id, *args, **kwargs)
+        except (DatabaseError, RosterSyncLockError):
+            logger.exception(
+                "Could not safely serialize employee update for booking %s.",
+                booking_id,
+            )
+            messages.error(
+                request,
+                "The job could not be safely updated right now. Please retry.",
+            )
+            return redirect("employee_job_detail", booking_id=booking_id)
+
+    return wrapped
 
 
 def _destroy_job_photo_assets(public_ids):
@@ -262,6 +301,7 @@ def get_employee_google_flow():
     return flow
 
 
+@employee_required
 def employee_google_connect(request):
     employee = get_object_or_404(Employee, user=request.user)
 
@@ -311,6 +351,7 @@ def employee_google_connect(request):
     return redirect(authorization_url)
 
 
+@employee_required
 def employee_google_callback(request):
 
     state = request.session.get("employee_google_oauth_state")
@@ -397,12 +438,15 @@ def employee_google_callback(request):
             """
         )
 
-    except Exception as error:
-
+    except Exception:
+        logger.exception(
+            "Employee Google Calendar OAuth failed for employee %s.",
+            employee.pk,
+        )
         return HttpResponse(
             f"""
             <h2>Google Calendar OAuth Error</h2>
-            <pre>{error}</pre>
+            <p>Google Calendar could not be connected. Please try again or contact an administrator.</p>
             """,
             status=500,
         )
@@ -466,7 +510,7 @@ def employee_logout(request):
 # ==========================================================
 
 
-@login_required
+@employee_required
 def employee_dashboard(request):
 
     employee = get_object_or_404(Employee, user=request.user)
@@ -506,7 +550,7 @@ def employee_dashboard(request):
 # ==========================================================
 
 
-@login_required
+@employee_required
 def employee_jobs(request):
 
     employee = get_object_or_404(Employee, user=request.user)
@@ -532,7 +576,8 @@ def employee_jobs(request):
 
 
 
-@login_required
+@employee_required
+@_lock_employee_booking_mutations
 def employee_job_detail(request, booking_id):
 
     employee = get_object_or_404(Employee, user=request.user)
@@ -605,12 +650,51 @@ def employee_job_detail(request, booking_id):
                         booking_id=booking.id,
                     )
 
-            if "status" in changed_fields:
-                # The booking signal uses this marker to keep employee
-                # status updates in the admin dashboard only.
-                updated_booking._suppress_customer_status_notification = True
+            suppression_flags = (
+                {"_suppress_customer_status_notification": True}
+                if "status" in changed_fields
+                else {}
+            )
 
-            updated_booking.save()
+            report_created = False
+            invoice_created = False
+            with temporary_instance_flags(
+                updated_booking,
+                **suppression_flags,
+            ):
+                if updated_booking.status == "completed":
+                    try:
+                        with transaction.atomic():
+                            updated_booking.save()
+
+                            from reports.models import CleaningReport
+                            from invoices.services import get_or_create_invoice_for_booking
+                            from quotes.models import QuoteRequest
+
+                            _, report_created = CleaningReport.objects.get_or_create(
+                                booking=updated_booking,
+                            )
+                            _, invoice_created = get_or_create_invoice_for_booking(
+                                updated_booking
+                            )
+                            QuoteRequest.objects.filter(
+                                idempotency_key=f"quote:{updated_booking.pk}"
+                            ).update(status="completed")
+                    except Exception:
+                        logger.exception(
+                            "Could not complete the job record workflow for booking %s.",
+                            updated_booking.pk,
+                        )
+                        messages.error(
+                            request,
+                            "The job could not be completed right now. Please try again or contact an administrator.",
+                        )
+                        return redirect(
+                            "employee_job_detail",
+                            booking_id=booking.id,
+                        )
+                else:
+                    updated_booking.save()
 
             # Notify administrators about job changes.
             if changed_fields:
@@ -636,7 +720,24 @@ def employee_job_detail(request, booking_id):
                     "/dashboard/bookings/",
                 )
 
-            # Synchronise the booking with Google Calendar.
+            # Synchronise the employee roster and calendar after the database
+            # update. External integration failures leave a safe retry path.
+            try:
+                from rosters.services import RosterSyncPending, sync_booking_roster
+
+                roster_sync = sync_booking_roster(updated_booking)
+                if isinstance(roster_sync, RosterSyncPending):
+                    raise roster_sync.error
+            except Exception:
+                logger.exception(
+                    "Roster sync failed after employee update for booking %s.",
+                    updated_booking.pk,
+                )
+                messages.warning(
+                    request,
+                    "Job updated, but the employee schedule could not be synced automatically.",
+                )
+
             try:
                 from google_reviews.calendar_utils import (
                     create_or_update_booking_event,
@@ -644,23 +745,18 @@ def employee_job_detail(request, booking_id):
 
                 create_or_update_booking_event(updated_booking)
 
-            except Exception as error:
+            except Exception:
+                logger.exception(
+                    "Google Calendar booking sync failed for booking %s.",
+                    updated_booking.pk,
+                )
                 messages.warning(
                     request,
-                    f"Job updated, but Google Calendar sync failed: {error}",
+                    "Job updated, but Google Calendar could not be synced automatically.",
                 )
 
             # Create the cleaning report if it doesn't exist.
             if updated_booking.status == "completed":
-
-                from reports.models import CleaningReport
-
-                _, report_created = (
-                    CleaningReport.objects.get_or_create(
-                        booking=updated_booking,
-                    )
-                )
-
                 if report_created:
                     notify_admins(
                         "Cleaning Report Ready",
@@ -671,6 +767,12 @@ def employee_job_detail(request, booking_id):
                         ),
                         "report",
                         f"/reports/booking/{updated_booking.id}/",
+                    )
+
+                if invoice_created:
+                    logger.info(
+                        "Draft invoice created for employee-completed booking %s.",
+                        updated_booking.pk,
                     )
 
             # Update employee completion statistics only on the transition
@@ -810,7 +912,7 @@ def employee_job_detail(request, booking_id):
 # ==========================================================
 
 
-@login_required
+@employee_required
 def upload_job_photo(request, booking_id):
     employee = get_object_or_404(Employee, user=request.user)
     booking = get_object_or_404(Booking, id=booking_id, assigned_employee=employee)
@@ -1071,7 +1173,7 @@ def upload_job_photo(request, booking_id):
 # ==========================================================
 
 
-@login_required
+@employee_required
 def employee_profile(request):
 
     employee = get_object_or_404(Employee, user=request.user)
@@ -1154,7 +1256,7 @@ def employee_profile(request):
 # Delete Job Photo
 # ==========================================================
 
-@login_required
+@employee_required
 def delete_job_photo(request, photo_id):
     """Delete a job photo uploaded by employee"""
     from bookings.models import JobPhoto
@@ -1189,4 +1291,3 @@ def delete_job_photo(request, photo_id):
             "cancel_url": f"/employees/jobs/{booking_id}/",
         },
     )
-
