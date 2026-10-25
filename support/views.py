@@ -1,12 +1,19 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
+from django.core import signing
+from django.http import HttpResponseForbidden
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_protect
+import secrets
+import re
 
 from customers.models import Customer
 from notifications.models import Notification
@@ -20,6 +27,14 @@ from .models import (
     SupportTicket,
     SupportTicketReply,
 )
+from .realtime import (
+    DASHBOARD_GROUP,
+    conversation_summary,
+    has_chat_permission,
+    queue_dashboard_update,
+    send_conversation_event,
+)
+from .rate_limits import allow_live_chat_action
 
 
 # =========================================================
@@ -219,6 +234,9 @@ def ticket_update(request, ticket_id):
 @login_required
 def support_dashboard(request):
 
+    if not has_chat_permission(request.user, "view"):
+        return HttpResponseForbidden("Support chat access required.")
+
     if not request.user.is_staff:
         return JsonResponse(
             {"success": False, "message": "Staff access required."},
@@ -260,6 +278,14 @@ def support_dashboard(request):
     ).count()
 
     recent_tickets = tickets[:15]
+    assignable_chat_staff = [
+        user
+        for user in User.objects.filter(is_active=True, is_staff=True).order_by(
+            "first_name", "last_name", "username"
+        )
+        if has_chat_permission(user, "view")
+        and has_chat_permission(user, "change")
+    ]
 
     # =====================================================
     # LIVE CHAT
@@ -309,6 +335,11 @@ def support_dashboard(request):
             "active_chats": active_chats,
             "closed_chats": closed_chats,
             "total_live_chats": total_live_chats,
+            "can_change_live_chats": has_chat_permission(
+                request.user,
+                "change",
+            ),
+            "assignable_chat_staff": assignable_chat_staff,
         },
     )
 
@@ -320,30 +351,22 @@ def support_dashboard(request):
 @require_GET
 def live_chat_counts(request):
 
-    if not request.user.is_staff:
+    if not has_chat_permission(request.user, "view"):
         return JsonResponse(
             {"success": False, "message": "Staff access required."},
             status=403,
         )
 
-    live_chats = (
-        LiveChatConversation.objects.filter(
-            status__in=[
-                "waiting",
-                "active",
-            ]
-        )
-    )
-
-    waiting_chats = live_chats.filter(
+    waiting_chats = LiveChatConversation.objects.filter(
         status="waiting"
     ).count()
 
-    active_chats = live_chats.filter(
+    active_chats = LiveChatConversation.objects.filter(
         status="active"
     ).count()
 
-    total_chats = live_chats.count()
+    closed_chats = LiveChatConversation.objects.filter(status="closed").count()
+    total_chats = LiveChatConversation.objects.count()
 
     return JsonResponse(
         {
@@ -354,6 +377,8 @@ def live_chat_counts(request):
             "waiting_chats": waiting_chats,
 
             "active_chats": active_chats,
+            "closed_chats": closed_chats,
+            "total_live_chats": total_chats,
         }
     )
 
@@ -362,8 +387,15 @@ def live_chat_counts(request):
 # WEBSITE CHAT ENQUIRY
 # =========================================================
 
+@csrf_protect
 @require_POST
 def submit_chat_enquiry(request):
+    client = request.META.get("REMOTE_ADDR", "unknown")
+    if not allow_live_chat_action(f"ip:{client}", "chat-enquiry", 5):
+        return JsonResponse(
+            {"success": False, "message": "Too many requests. Please try again later."},
+            status=429,
+        )
 
     name = request.POST.get(
         "name",
@@ -404,6 +436,38 @@ def submit_chat_enquiry(request):
         "message",
         "",
     ).strip()
+
+    if (
+        len(name) > 150
+        or len(phone) > 30
+        or len(email) > 254
+        or len(service) > 150
+        or len(suburb) > 100
+        or len(message) > 3000
+    ):
+        return JsonResponse(
+            {"success": False, "message": "One or more fields exceed the allowed length."},
+            status=400,
+        )
+    if email:
+        try:
+            validate_email(email)
+        except ValidationError:
+            return JsonResponse(
+                {"success": False, "message": "Please provide a valid email address."},
+                status=400,
+            )
+    if phone and not re.fullmatch(r"[0-9+(). -]{1,30}", phone):
+        return JsonResponse(
+            {"success": False, "message": "Please provide a valid phone number."},
+            status=400,
+        )
+    parsed_preferred_date = parse_date(preferred_date) if preferred_date else None
+    if preferred_date and parsed_preferred_date is None:
+        return JsonResponse(
+            {"success": False, "message": "Please provide a valid preferred date."},
+            status=400,
+        )
 
     if not name:
 
@@ -454,7 +518,7 @@ def submit_chat_enquiry(request):
         enquiry_type=enquiry_type,
         service=service,
         suburb=suburb,
-        preferred_date=preferred_date or None,
+        preferred_date=parsed_preferred_date,
         message=message,
     )
 
@@ -530,6 +594,91 @@ def chat_faq(request):
 # STAFF LIVE CHAT DETAIL
 # =========================================================
 
+@require_GET
+def live_chat_session_token(request):
+    client = request.META.get("REMOTE_ADDR", "unknown")
+    if not allow_live_chat_action(f"ip:{client}", "session-token", 40):
+        return JsonResponse(
+            {"success": False, "message": "Please wait before reconnecting."},
+            status=429,
+        )
+    session_key = request.session.get("live_chat_session_key")
+    if not session_key:
+        session_key = secrets.token_urlsafe(32)
+        request.session["live_chat_session_key"] = session_key
+    token = signing.dumps(
+        {"session_key": session_key},
+        salt="support.live-chat.session",
+    )
+    return JsonResponse({"success": True, "session_token": token})
+
+
+@login_required
+@require_GET
+def live_chat_list(request):
+    if not has_chat_permission(request.user, "view"):
+        return JsonResponse(
+            {"success": False, "message": "Support chat access required."},
+            status=403,
+        )
+    if not allow_live_chat_action(
+        f"staff:{request.user.pk}",
+        "staff-read",
+        240,
+    ):
+        return JsonResponse(
+            {"success": False, "message": "Please wait before refreshing chat data."},
+            status=429,
+        )
+
+    conversations = LiveChatConversation.objects.select_related("assigned_to")
+    status_filter = request.GET.get("status", "all").strip().lower()
+    if status_filter in {"waiting", "active", "closed"}:
+        conversations = conversations.filter(status=status_filter)
+    elif status_filter not in {"all", "archived"}:
+        return JsonResponse(
+            {"success": False, "message": "Invalid status filter."},
+            status=400,
+        )
+    if status_filter == "archived":
+        conversations = conversations.filter(status="closed")
+
+    assignment_filter = request.GET.get("assigned", "all").strip().lower()
+    if assignment_filter == "mine":
+        conversations = conversations.filter(assigned_to=request.user)
+    elif assignment_filter == "unassigned":
+        conversations = conversations.filter(assigned_to__isnull=True)
+    elif assignment_filter == "assigned":
+        conversations = conversations.filter(assigned_to__isnull=False)
+    elif assignment_filter != "all":
+        return JsonResponse(
+            {"success": False, "message": "Invalid assignment filter."},
+            status=400,
+        )
+
+    search = request.GET.get("q", "").strip()[:100]
+    if search:
+        conversations = conversations.filter(name__icontains=search)
+    rows = list(conversations.order_by("-updated_at", "-pk")[:200])
+    return JsonResponse(
+        {
+            "success": True,
+            "conversations": [
+                summary
+                for conversation in rows
+                if (summary := conversation_summary(conversation.pk))
+            ],
+            "has_more": conversations.count() > len(rows),
+            "counts": {
+                "waiting": LiveChatConversation.objects.filter(status="waiting").count(),
+                "active": LiveChatConversation.objects.filter(status="active").count(),
+                "closed": LiveChatConversation.objects.filter(status="closed").count(),
+                "total": LiveChatConversation.objects.count(),
+            },
+        }
+    )
+
+
 @login_required
 @require_GET
 def live_chat_detail(
@@ -537,7 +686,7 @@ def live_chat_detail(
     conversation_id,
 ):
 
-    if not request.user.is_staff:
+    if not has_chat_permission(request.user, "view"):
 
         return JsonResponse(
             {
@@ -545,6 +694,15 @@ def live_chat_detail(
                 "message": "Staff access required.",
             },
             status=403,
+        )
+    if not allow_live_chat_action(
+        f"staff:{request.user.pk}",
+        "staff-read",
+        240,
+    ):
+        return JsonResponse(
+            {"success": False, "message": "Please wait before refreshing chat data."},
+            status=429,
         )
 
     conversation = get_object_or_404(
@@ -554,9 +712,23 @@ def live_chat_detail(
         id=conversation_id,
     )
 
-    messages_list = conversation.messages.all().order_by(
-        "created_at"
-    )
+    after_id = request.GET.get("after_id")
+    if after_id:
+        try:
+            after_id = int(after_id)
+            if after_id < 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"success": False, "message": "Invalid message cursor."},
+                status=400,
+            )
+        messages_list = conversation.messages.filter(pk__gt=after_id).order_by("pk")[:500]
+        has_more = conversation.messages.filter(pk__gt=after_id).count() > 500
+    else:
+        latest_messages = list(conversation.messages.order_by("-pk")[:500])
+        messages_list = reversed(latest_messages)
+        has_more = conversation.messages.count() > 500
 
     return JsonResponse(
         {
@@ -568,13 +740,12 @@ def live_chat_detail(
                 "email": conversation.email,
                 "phone": conversation.phone,
                 "status": conversation.status,
-                "session_key": conversation.session_key,
-
                 "assigned_to": (
                     conversation.assigned_to.get_full_name()
                     if conversation.assigned_to
                     else ""
                 ),
+                "assigned_to_id": conversation.assigned_to_id,
 
                 "created_at": (
                     conversation.created_at.isoformat()
@@ -583,6 +754,12 @@ def live_chat_detail(
                 "updated_at": (
                     conversation.updated_at.isoformat()
                 ),
+                "closed_at": (
+                    conversation.closed_at.isoformat()
+                    if conversation.closed_at
+                    else None
+                ),
+                "legal_hold": conversation.legal_hold,
             },
 
             "messages": [
@@ -598,6 +775,7 @@ def live_chat_detail(
 
                 for item in messages_list
             ],
+            "has_more": has_more,
         }
     )
 
@@ -607,13 +785,14 @@ def live_chat_detail(
 # =========================================================
 
 @login_required
+@csrf_protect
 @require_POST
 def live_chat_takeover(
     request,
     conversation_id,
 ):
 
-    if not request.user.is_staff:
+    if not has_chat_permission(request.user, "change"):
 
         return JsonResponse(
             {
@@ -622,17 +801,26 @@ def live_chat_takeover(
             },
             status=403,
         )
-
-    conversation = get_object_or_404(
-        LiveChatConversation,
-        id=conversation_id,
-    )
+    if not allow_live_chat_action(
+        f"staff:{request.user.pk}",
+        "staff-mutate",
+        30,
+    ):
+        return JsonResponse(
+            {"success": False, "message": "Please wait before changing this conversation."},
+            status=429,
+        )
 
     with transaction.atomic():
         conversation = LiveChatConversation.objects.select_for_update().get(
             id=conversation_id
         )
 
+        if conversation.status == "closed":
+            return JsonResponse(
+                {"success": False, "message": "Closed conversations cannot be taken over."},
+                status=409,
+            )
         if conversation.status == "active" and conversation.assigned_to_id == request.user.id:
             return JsonResponse(
                 {
@@ -641,6 +829,19 @@ def live_chat_takeover(
                     "assigned_to": request.user.get_full_name() or request.user.username,
                 }
             )
+        if conversation.status == "active" and conversation.assigned_to_id:
+            assignee = conversation.assigned_to
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "This conversation is already assigned to "
+                        f"{assignee.get_full_name() or assignee.username}."
+                    ),
+                    "assigned_to": assignee.get_full_name() or assignee.username,
+                },
+                status=409,
+            )
 
         conversation.status = "active"
         conversation.mode = "human"
@@ -648,26 +849,37 @@ def live_chat_takeover(
         conversation.save(
             update_fields=["status", "mode", "assigned_to", "updated_at"]
         )
+        system_message = LiveChatMessage.objects.create(
+            conversation=conversation,
+            sender_type="system",
+            sender_name="YD Cleaning Support",
+            message=(
+                f"{request.user.get_full_name() or request.user.username} "
+                "has taken over this conversation."
+            ),
+        )
+        from dashboard.models import ActivityLog
 
-    LiveChatMessage.objects.create(
-        conversation=conversation,
-        sender_type="system",
-        sender_name="YD Cleaning Support",
-        message=(
-            f"{request.user.get_full_name() or request.user.username} "
-            "has taken over this conversation."
-        ),
-    )
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type="system",
+            title="Live Chat Taken Over",
+            description=f"Conversation #{conversation.pk} assigned to staff.",
+        )
+        queue_dashboard_update(conversation.id, "conversation.assigned")
 
-    async_to_sync(get_channel_layer().group_send)(
-        f"live_chat_{conversation.id}",
+    send_conversation_event(
+        conversation.id,
         {
             "type": "chat_system",
             "message": (
                 f"{request.user.get_full_name() or request.user.username} "
                 "has taken over this conversation."
             ),
+            "message_id": system_message.pk,
             "status": "active",
+            "assigned_to_id": request.user.pk,
+            "assigned_to": request.user.get_full_name() or request.user.username,
         },
     )
 
@@ -683,18 +895,169 @@ def live_chat_takeover(
     )
 
 
+@login_required
+@csrf_protect
+@require_POST
+def live_chat_assign(request, conversation_id):
+    if not has_chat_permission(request.user, "change"):
+        return JsonResponse(
+            {"success": False, "message": "Staff access required."},
+            status=403,
+        )
+    if not allow_live_chat_action(
+        f"staff:{request.user.pk}",
+        "staff-mutate",
+        30,
+    ):
+        return JsonResponse(
+            {"success": False, "message": "Please wait before changing this conversation."},
+            status=429,
+        )
+
+    raw_staff_user_id = request.POST.get("staff_user_id", "").strip()
+    try:
+        staff_user_id = int(raw_staff_user_id)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"success": False, "message": "Choose a valid staff member."},
+            status=400,
+        )
+    raw_expected_assignee_id = request.POST.get(
+        "expected_assigned_to_id",
+        "",
+    ).strip()
+    try:
+        expected_assignee_id = (
+            int(raw_expected_assignee_id)
+            if raw_expected_assignee_id
+            else None
+        )
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"success": False, "message": "The current assignment is invalid."},
+            status=400,
+        )
+
+    assignee = User.objects.filter(
+        pk=staff_user_id,
+        is_active=True,
+        is_staff=True,
+    ).first()
+    if (
+        assignee is None
+        or not has_chat_permission(assignee, "view")
+        or not has_chat_permission(assignee, "change")
+    ):
+        return JsonResponse(
+            {"success": False, "message": "That staff member cannot be assigned live chats."},
+            status=400,
+        )
+
+    with transaction.atomic():
+        conversation = get_object_or_404(
+            LiveChatConversation.objects.select_for_update(),
+            pk=conversation_id,
+        )
+        if conversation.status == "closed":
+            return JsonResponse(
+                {"success": False, "message": "Closed conversations cannot be assigned."},
+                status=409,
+            )
+        if conversation.assigned_to_id != expected_assignee_id:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "The assignment changed. Refresh the conversation and try again.",
+                },
+                status=409,
+            )
+        if conversation.assigned_to_id == assignee.pk:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "status": conversation.status,
+                    "assigned_to": assignee.get_full_name() or assignee.username,
+                    "assigned_to_id": assignee.pk,
+                }
+            )
+
+        previous_assignee = conversation.assigned_to
+        assignee_name = assignee.get_full_name() or assignee.username
+        if previous_assignee:
+            previous_assignee_name = (
+                previous_assignee.get_full_name() or previous_assignee.username
+            )
+            assignment_message = (
+                f"This conversation was reassigned from {previous_assignee_name} "
+                f"to {assignee_name} by "
+                f"{request.user.get_full_name() or request.user.username}."
+            )
+            activity_title = "Live Chat Reassigned"
+        else:
+            assignment_message = (
+                f"{assignee_name} was assigned to this conversation by "
+                f"{request.user.get_full_name() or request.user.username}."
+            )
+            activity_title = "Live Chat Assigned"
+
+        conversation.status = "active"
+        conversation.mode = "human"
+        conversation.assigned_to = assignee
+        conversation.save(
+            update_fields=["status", "mode", "assigned_to", "updated_at"]
+        )
+        system_message = LiveChatMessage.objects.create(
+            conversation=conversation,
+            sender_type="system",
+            sender_name="YD Cleaning Support",
+            message=assignment_message,
+        )
+        from dashboard.models import ActivityLog
+
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type="system",
+            title=activity_title,
+            description=(
+                f"Conversation #{conversation.pk}: {assignment_message}"
+            ),
+        )
+        queue_dashboard_update(conversation.id, "conversation.assigned")
+
+    send_conversation_event(
+        conversation.id,
+        {
+            "type": "chat_system",
+            "message": assignment_message,
+            "message_id": system_message.pk,
+            "status": "active",
+            "assigned_to_id": assignee.pk,
+            "assigned_to": assignee.get_full_name() or assignee.username,
+        },
+    )
+    return JsonResponse(
+        {
+            "success": True,
+            "status": conversation.status,
+            "assigned_to": assignee.get_full_name() or assignee.username,
+            "assigned_to_id": assignee.pk,
+        }
+    )
+
+
 # =========================================================
 # STAFF CLOSE CHAT
 # =========================================================
 
 @login_required
+@csrf_protect
 @require_POST
 def live_chat_close(
     request,
     conversation_id,
 ):
 
-    if not request.user.is_staff:
+    if not has_chat_permission(request.user, "change"):
 
         return JsonResponse(
             {
@@ -702,6 +1065,15 @@ def live_chat_close(
                 "message": "Staff access required.",
             },
             status=403,
+        )
+    if not allow_live_chat_action(
+        f"staff:{request.user.pk}",
+        "staff-mutate",
+        30,
+    ):
+        return JsonResponse(
+            {"success": False, "message": "Please wait before changing this conversation."},
+            status=429,
         )
 
     conversation = get_object_or_404(
@@ -719,26 +1091,36 @@ def live_chat_close(
 
         conversation.status = "closed"
         conversation.mode = "closed"
-        conversation.save(update_fields=["status", "mode", "updated_at"])
-
-    LiveChatMessage.objects.create(
-        conversation=conversation,
-        sender_type="system",
-        sender_name="YD Cleaning Support",
-        message=(
+        conversation.closed_at = timezone.now()
+        conversation.save(
+            update_fields=["status", "mode", "closed_at", "updated_at"]
+        )
+        close_message = (
             "This conversation was closed by "
             f"{request.user.get_full_name() or request.user.username}."
-        ),
-    )
+        )
+        system_message = LiveChatMessage.objects.create(
+            conversation=conversation,
+            sender_type="system",
+            sender_name="YD Cleaning Support",
+            message=close_message,
+        )
+        from dashboard.models import ActivityLog
 
-    async_to_sync(get_channel_layer().group_send)(
-        f"live_chat_{conversation.id}",
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type="system",
+            title="Live Chat Closed",
+            description=f"Conversation #{conversation.pk} closed by staff.",
+        )
+        queue_dashboard_update(conversation.id, "conversation.closed")
+
+    send_conversation_event(
+        conversation.id,
         {
             "type": "chat_system",
-            "message": (
-                "This conversation was closed by "
-                f"{request.user.get_full_name() or request.user.username}."
-            ),
+            "message": close_message,
+            "message_id": system_message.pk,
             "status": "closed",
         },
     )

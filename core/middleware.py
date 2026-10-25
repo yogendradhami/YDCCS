@@ -148,7 +148,7 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     faq_question_reply finance_trends financial_dashboard gallery_list generate_contract_bookings generate_payroll
     gst_report induction_cancel induction_completion_pdf induction_dashboard induction_detail induction_setup
     induction_start_record_pdf invoice_detail invoice_list job_profitability_dashboard lead_list leave_list
-    list live_chat_close live_chat_counts live_chat_detail live_chat_takeover maintenance_list
+    list live_chat_assign live_chat_close live_chat_counts live_chat_detail live_chat_list live_chat_takeover maintenance_list
     mark_invoice_paid mark_invoice_unpaid mark_payroll_paid newsletter_subscriber_detail onboarding_dashboard onboarding_detail
     onboarding_document_review onboarding_set_status operations_command_centre owner_alert_centre owner_command_centre payroll_list
     profit_loss_dashboard purchase_orders quote_conversion_analytics quote_followup_centre receive_purchase_order reject_leave_request
@@ -181,6 +181,7 @@ DASHBOARD_PERMISSION_ROUTE_OVERRIDES = {
     },
     "update_finding": {"POST": ("security_monitor.change_securityfinding",)},
     "run_audit": {"POST": ("security_monitor.add_securityfinding", "security_monitor.change_securityfinding")},
+    "live_chat_assign": {"POST": ("support.change_livechatconversation",)},
     "security_position_create": {"GET": ("security.manage_security_roles",), "POST": ("security.manage_security_roles",)},
     "security_position_edit": {"GET": ("security.manage_security_roles",), "POST": ("security.manage_security_roles",)},
     "security_position_list": {"GET": ("security.manage_users",), "HEAD": ("security.manage_users",)},
@@ -290,7 +291,7 @@ DASHBOARD_POST_ROUTE_NAMES = frozenset(
         "generate_contract_bookings", "send_contract_renewal_email", "add_leave_request",
         "approve_leave_request", "reject_leave_request", "add_roster", "edit_roster",
         "delete_roster", "add_expense", "edit_expense", "delete_expense",
-        "ticket_update", "live_chat_takeover", "live_chat_close", "upload", "edit",
+        "ticket_update", "live_chat_takeover", "live_chat_assign", "live_chat_close", "upload", "edit",
         "email", "archive", "delete", "bulk_import_delete", "bulk_import_upload",
         "bulk_import_analyse", "bulk_import_approve", "bulk_import_import",
         "bulk_import_item_edit", "update_finding", "run_audit",

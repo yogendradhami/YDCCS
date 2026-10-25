@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils import timezone
 
 from .models import (
     ChatEnquiry,
@@ -9,6 +10,7 @@ from .models import (
     SupportTicket,
     SupportTicketReply,
 )
+from .realtime import queue_dashboard_update
 
 
 @admin.register(SupportTicket)
@@ -151,13 +153,27 @@ class LiveChatConversationAdmin(admin.ModelAdmin):
         "email",
         "status",
         "assigned_to",
+        "legal_hold",
+        "closed_at",
         "created_at",
         "updated_at",
     )
-    list_filter = ("status", "created_at")
-    search_fields = ("name", "email", "phone", "session_key")
-    readonly_fields = ("created_at", "updated_at")
+    list_filter = ("status", "legal_hold", "created_at", "closed_at")
+    search_fields = ("name", "email", "phone")
+    readonly_fields = ("closed_at", "created_at", "updated_at")
+    exclude = ("session_key",)
     ordering = ("-updated_at",)
+
+    def save_model(self, request, obj, form, change):
+        if obj.status == "closed":
+            obj.closed_at = obj.closed_at or timezone.now()
+        else:
+            obj.closed_at = None
+        super().save_model(request, obj, form, change)
+        queue_dashboard_update(
+            obj.pk,
+            "conversation.closed" if obj.status == "closed" else "conversation.updated",
+        )
 
 
 @admin.register(LiveChatMessage)

@@ -9,6 +9,9 @@ from .views import (
     submit_chat_enquiry,
     support_dashboard,
     live_chat_counts,
+    live_chat_list,
+    live_chat_assign,
+    live_chat_session_token,
     ticket_detail,
     ticket_reply,
     ticket_update,
@@ -60,11 +63,21 @@ urlpatterns = [
         submit_chat_enquiry,
         name="submit_chat_enquiry",
     ),
+    path(
+        "chat/session-token/",
+        live_chat_session_token,
+        name="live_chat_session_token",
+    ),
 
     # =====================================================
     # LIVE CHAT STAFF API
     # =====================================================
 
+    path(
+        "dashboard/support/live-chat/",
+        live_chat_list,
+        name="live_chat_list",
+    ),
     path(
         "dashboard/support/live-chat/<int:conversation_id>/",
         live_chat_detail,
@@ -75,6 +88,11 @@ urlpatterns = [
         "dashboard/support/live-chat/<int:conversation_id>/takeover/",
         live_chat_takeover,
         name="live_chat_takeover",
+    ),
+    path(
+        "dashboard/support/live-chat/<int:conversation_id>/assign/",
+        live_chat_assign,
+        name="live_chat_assign",
     ),
 
     path(

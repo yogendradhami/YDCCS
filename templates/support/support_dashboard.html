@@ -62,7 +62,7 @@ Manage customer support tickets, complaints, service requests and live website c
             💬
         </div>
 
-        <div>
+        <div class="chat-list-status">
             <span>Waiting Chats</span>
 
             <strong id="waiting-chat-count">
@@ -153,7 +153,12 @@ Manage customer support tickets, complaints, service requests and live website c
      LIVE WEBSITE CHAT
 ===================================================== -->
 
-<section class="crm-panel live-chat-panel">
+<section
+    class="crm-panel live-chat-panel"
+    id="supportLiveChatPanel"
+    data-staff-user-id="{{ request.user.pk }}"
+    data-can-change="{{ can_change_live_chats|yesno:'true,false' }}"
+>
 
     <div class="crm-panel-header">
 
@@ -169,12 +174,10 @@ Manage customer support tickets, complaints, service requests and live website c
 
         </div>
 
-        <div class="live-chat-connection-status">
-
-            <span class="status-dot"></span>
-
-            Live Support
-
+        <div class="live-chat-connection-status" aria-live="polite">
+            <span class="status-dot" id="dashboardConnectionDot"></span>
+            <span id="dashboardConnectionStatus">Connecting…</span>
+            <small id="dashboardLastSync">Not synchronized yet</small>
         </div>
 
     </div>
@@ -194,13 +197,36 @@ Manage customer support tickets, complaints, service requests and live website c
                     Conversations
                 </strong>
 
-                <span>
+                <span id="liveChatListCount">
                     {{ live_chats|length }}
                 </span>
 
             </div>
 
+            <label class="live-chat-filter">
+                Search chats
+                <input id="liveChatSearch" type="search" maxlength="100" autocomplete="off">
+            </label>
+            <label class="live-chat-filter">
+                Status
+                <select id="liveChatStatusFilter">
+                    <option value="all">All conversations</option>
+                    <option value="waiting">Waiting</option>
+                    <option value="active">Active</option>
+                    <option value="closed">Closed / archived</option>
+                </select>
+            </label>
+            <label class="live-chat-filter">
+                Assignment
+                <select id="liveChatAssignmentFilter">
+                    <option value="all">All</option>
+                    <option value="mine">Assigned to me</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="unassigned">Unassigned</option>
+                </select>
+            </label>
 
+            <div id="liveChatListItems" aria-live="polite">
             {% if live_chats %}
 
                 {% for chat in live_chats %}
@@ -209,7 +235,6 @@ Manage customer support tickets, complaints, service requests and live website c
                     type="button"
                     class="live-chat-list-item"
                     data-chat-id="{{ chat.id }}"
-                    data-session-key="{{ chat.session_key }}"
                 >
 
                     <div class="chat-avatar">
@@ -248,11 +273,12 @@ Manage customer support tickets, complaints, service requests and live website c
                         <small>
                             {{ chat.updated_at|date:"d M Y H:i" }}
                         </small>
+                        <small class="chat-preview"></small>
 
                     </div>
 
 
-                    <div>
+                    <div class="chat-list-status">
 
                         {% if chat.status == "waiting" %}
 
@@ -279,7 +305,6 @@ Manage customer support tickets, complaints, service requests and live website c
                             </span>
 
                         {% endif %}
-
                     </div>
 
                 </button>
@@ -371,6 +396,29 @@ Manage customer support tickets, complaints, service requests and live website c
                         >
                             Waiting
                         </span>
+                        <span id="staffChatAssignment" aria-live="polite"></span>
+                        <span id="staffChatConnectionStatus" aria-live="polite">Disconnected</span>
+
+                        {% if can_change_live_chats %}
+                        <label class="staff-assignment-control" for="assignChatStaff">
+                            Assign to
+                            <select id="assignChatStaff">
+                                <option value="">Choose an agent</option>
+                                {% for staff_member in assignable_chat_staff %}
+                                <option value="{{ staff_member.pk }}">
+                                    {{ staff_member.get_full_name|default:staff_member.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <button
+                            type="button"
+                            id="assignChatBtn"
+                            class="staff-action-btn assign"
+                        >
+                            Assign chat
+                        </button>
+                        {% endif %}
 
                         <button
                             type="button"
@@ -1194,6 +1242,273 @@ Manage customer support tickets, complaints, service requests and live website c
 
 }
 
+.live-chat-connection-status{
+    flex-wrap:wrap;
+}
+
+.live-chat-connection-status small{
+    flex-basis:100%;
+    color:#64748b;
+    text-align:right;
+}
+
+.status-dot.connected{
+    background:#22c55e;
+    box-shadow:0 0 0 3px rgba(34,197,94,.16);
+}
+
+.live-chat-filter{
+    display:block;
+    padding:8px 14px 0;
+    color:#475569;
+    font-size:.82rem;
+}
+
+.live-chat-filter input,
+.live-chat-filter select{
+    display:block;
+    width:100%;
+    min-height:38px;
+    margin-top:4px;
+}
+
+.chat-preview{
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+}
+
+.chat-unread-indicator{
+    width:9px;
+    height:9px;
+    flex:0 0 9px;
+    align-self:center;
+    border-radius:50%;
+    background:#2563eb;
+}
+
+.staff-chat-actions button:disabled,
+.staff-chat-form button:disabled{
+    cursor:not-allowed;
+    opacity:.55;
+}
+
+/* Keep the chat workspace inside the dashboard content column at every width. */
+.crm-panel.live-chat-panel,
+.live-chat-layout,
+.live-chat-list,
+.live-chat-window,
+.staff-chat,
+.staff-chat-header,
+.staff-chat-messages{
+    min-width:0;
+}
+
+.live-chat-panel{
+    border:1px solid #dce5ee;
+    border-radius:20px;
+    background:linear-gradient(145deg,#fff 0%,#f8fbff 100%);
+    box-shadow:0 18px 50px rgba(15,35,55,.08);
+}
+
+.live-chat-summary-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+.live-chat-stat{
+    border-radius:16px;
+    box-shadow:0 8px 24px rgba(15,35,55,.04);
+}
+
+.live-chat-layout{
+    grid-template-columns:minmax(250px,310px) minmax(0,1fr);
+    min-height:640px;
+    border-color:#dbe5ef;
+    border-radius:18px;
+    background:#fff;
+}
+
+.live-chat-list{
+    max-height:740px;
+    overflow-x:hidden;
+    overscroll-behavior:contain;
+}
+
+#liveChatListItems{
+    min-width:0;
+}
+
+.live-chat-list-item{
+    display:grid;
+    grid-template-columns:40px minmax(0,1fr) auto;
+    align-items:center;
+    min-width:0;
+    padding:14px 12px;
+}
+
+.chat-list-status{
+    min-width:0;
+}
+
+.chat-list-content strong,
+.chat-list-content span,
+.chat-list-content small{
+    overflow-wrap:anywhere;
+}
+
+.live-chat-window{
+    overflow:hidden;
+}
+
+.staff-chat{
+    height:640px;
+}
+
+.staff-chat-header{
+    align-items:flex-start;
+    flex-wrap:wrap;
+    padding:18px;
+    background:linear-gradient(120deg,#fff,#f7fbff);
+}
+
+.staff-chat-actions{
+    max-width:100%;
+}
+
+.staff-assignment-control{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:#475569;
+    font-size:12px;
+    font-weight:700;
+}
+
+.staff-assignment-control select{
+    max-width:180px;
+    min-height:36px;
+    border:1px solid #cbd5e1;
+    border-radius:9px;
+    padding:6px 28px 6px 9px;
+    background:#fff;
+    color:#0f172a;
+    font:inherit;
+}
+
+.staff-action-btn.assign{
+    background:#0f766e;
+    color:#fff;
+}
+
+.staff-assignment-control select:disabled,
+.staff-action-btn:disabled{
+    cursor:not-allowed;
+    opacity:.55;
+}
+
+.staff-chat-messages{
+    background:
+        radial-gradient(circle at 1px 1px,rgba(148,163,184,.12) 1px,transparent 0) 0 0/18px 18px,
+        #f5f8fc;
+}
+
+.staff-chat-form{
+    padding:16px;
+}
+
+.staff-chat-form input{
+    min-width:0;
+}
+
+@media(max-width:1100px){
+    .live-chat-layout{
+        grid-template-columns:minmax(230px,280px) minmax(0,1fr);
+    }
+
+    .live-chat-list{
+        max-height:640px;
+    }
+}
+
+@media(max-width:900px){
+    .live-chat-summary-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .live-chat-layout{
+        grid-template-columns:minmax(0,1fr);
+    }
+
+    .live-chat-list{
+        max-height:320px;
+        border-right:0;
+        border-bottom:1px solid #dbe5ef;
+    }
+
+    .staff-chat{
+        height:min(640px,70vh);
+        min-height:500px;
+    }
+}
+
+@media(max-width:600px){
+    .live-chat-summary-grid{
+        grid-template-columns:minmax(0,1fr);
+    }
+
+    .live-chat-panel .crm-panel-header{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .live-chat-connection-status small{
+        text-align:left;
+    }
+
+    .live-chat-layout{
+        min-height:0;
+    }
+
+    .live-chat-list-item{
+        grid-template-columns:36px minmax(0,1fr);
+    }
+
+    .live-chat-list-item .chat-list-status{
+        grid-column:2;
+    }
+
+    .staff-chat{
+        height:65vh;
+        min-height:440px;
+    }
+
+    .staff-chat-actions{
+        width:100%;
+    }
+
+    .staff-assignment-control{
+        flex:1 1 100%;
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .staff-assignment-control select{
+        width:100%;
+        max-width:none;
+    }
+
+    .staff-chat-form{
+        gap:7px;
+        padding:10px;
+    }
+
+    .staff-chat-form button{
+        padding:0 14px;
+    }
+}
+
 </style>
 
 
@@ -1210,6 +1525,12 @@ Manage customer support tickets, complaints, service requests and live website c
     let selectedConversationId = null;
     let staffSocket = null;
     let conversationLoadToken = 0;
+    let reconnectAttempts = 0;
+    let reconnectTimer = null;
+    let lastMessageId = 0;
+    let staffChatAuthorized = false;
+    let staffChatUnauthorized = false;
+    const renderedMessageIds = new Set();
 
     const emptyState =
         document.getElementById("liveChatEmpty");
@@ -1235,6 +1556,12 @@ Manage customer support tickets, complaints, service requests and live website c
     const takeoverButton =
         document.getElementById("takeoverChatBtn");
 
+    const assignmentSelect =
+        document.getElementById("assignChatStaff");
+
+    const assignButton =
+        document.getElementById("assignChatBtn");
+
     const closeButton =
         document.getElementById("closeChatBtn");
 
@@ -1243,6 +1570,16 @@ Manage customer support tickets, complaints, service requests and live website c
 
     const chatInput =
         document.getElementById("staffChatInput");
+    const staffConnectionStatus =
+        document.getElementById("staffChatConnectionStatus");
+    const assignmentStatus =
+        document.getElementById("staffChatAssignment");
+    const staffUserId = Number(
+        document.getElementById("supportLiveChatPanel").dataset.staffUserId
+    );
+    const canChangeLiveChats =
+        document.getElementById("supportLiveChatPanel").dataset.canChange === "true";
+    let assignedToId = null;
 
 
     function getSocketUrl(){
@@ -1274,8 +1611,16 @@ Manage customer support tickets, complaints, service requests and live website c
     function renderMessage(
         senderType,
         senderName,
-        message
+        message,
+        messageId
     ){
+        if(messageId && renderedMessageIds.has(String(messageId))){
+            return;
+        }
+        if(messageId){
+            renderedMessageIds.add(String(messageId));
+            lastMessageId = Math.max(lastMessageId, Number(messageId) || 0);
+        }
 
         const wrapper =
             document.createElement("div");
@@ -1363,6 +1708,36 @@ Manage customer support tickets, complaints, service requests and live website c
                     ? "none"
                     : "flex";
         }
+        updateAssignmentControls();
+        updateSendAvailability();
+    }
+
+    function updateSendAvailability(){
+        const connected = staffSocket && staffSocket.readyState === WebSocket.OPEN;
+        const statusIsClosed = chatStatus && chatStatus.textContent === "Closed";
+        const mayReply = staffChatAuthorized && canChangeLiveChats
+            && chatStatus && chatStatus.textContent === "Active"
+            && Number(assignedToId) === staffUserId;
+        if(chatInput) chatInput.disabled = !connected || statusIsClosed || !mayReply;
+        const sendButton = chatForm && chatForm.querySelector("button[type='submit']");
+        if(sendButton) sendButton.disabled = !connected || statusIsClosed || !mayReply;
+        if(takeoverButton) takeoverButton.disabled = !connected || !staffChatAuthorized
+            || !canChangeLiveChats || statusIsClosed
+            || (chatStatus && chatStatus.textContent === "Active" && Number(assignedToId) !== staffUserId);
+        if(closeButton) closeButton.disabled = !connected || !staffChatAuthorized
+            || !canChangeLiveChats || statusIsClosed;
+    }
+
+    function updateAssignmentControls(){
+        if(!assignmentSelect || !assignButton) return;
+        const unavailable = !selectedConversationId
+            || !canChangeLiveChats
+            || !chatStatus
+            || chatStatus.textContent === "Closed";
+        assignmentSelect.disabled = unavailable;
+        assignButton.disabled = unavailable
+            || !assignmentSelect.value
+            || String(assignmentSelect.value) === String(assignedToId || "");
     }
 
 
@@ -1380,27 +1755,32 @@ Manage customer support tickets, complaints, service requests and live website c
         }
 
 
-        staffSocket =
-            new WebSocket(
-                getSocketUrl()
-            );
+        const socketConversationId = selectedConversationId;
+        const socket = new WebSocket(getSocketUrl());
+        staffSocket = socket;
+        staffChatAuthorized = false;
+        staffChatUnauthorized = false;
+        if(staffConnectionStatus) staffConnectionStatus.textContent = "Connecting…";
+        updateSendAvailability();
 
-
-        staffSocket.onopen =
+        socket.onopen =
             function(){
-
-                staffSocket.send(
+                if(staffSocket !== socket) return;
+                reconnectAttempts = 0;
+                if(staffConnectionStatus) staffConnectionStatus.textContent = "Connected";
+                socket.send(
                     JSON.stringify({
                         action:"staff_join",
-                        conversation_id:
-                            selectedConversationId
+                        conversation_id: socketConversationId
                     })
                 );
+                updateSendAvailability();
             };
 
 
-        staffSocket.onmessage =
+        socket.onmessage =
             function(event){
+                if(staffSocket !== socket) return;
 
                 try{
 
@@ -1417,7 +1797,8 @@ Manage customer support tickets, complaints, service requests and live website c
                         renderMessage(
                             data.sender_type,
                             data.sender_name,
-                            data.message
+                            data.message,
+                            data.message_id
                         );
                     }
 
@@ -1429,7 +1810,8 @@ Manage customer support tickets, complaints, service requests and live website c
                         renderMessage(
                             "system",
                             "System",
-                            data.message
+                            data.message,
+                            data.message_id
                         );
 
                         if(data.status){
@@ -1437,6 +1819,19 @@ Manage customer support tickets, complaints, service requests and live website c
                             updateStatus(
                                 data.status
                             );
+                        }
+                        if(Object.prototype.hasOwnProperty.call(data, "assigned_to_id")){
+                            assignedToId = data.assigned_to_id;
+                            if(assignmentStatus){
+                                assignmentStatus.textContent = data.assigned_to
+                                    ? "Assigned to " + data.assigned_to
+                                    : "Unassigned";
+                            }
+                            if(assignmentSelect){
+                                assignmentSelect.value = data.assigned_to_id || "";
+                            }
+                            updateAssignmentControls();
+                            updateSendAvailability();
                         }
                     }
 
@@ -1465,6 +1860,21 @@ Manage customer support tickets, complaints, service requests and live website c
                         data.type === "connection"
                     ){
 
+                        if(String(data.conversation_id) === String(socketConversationId)){
+                            staffChatAuthorized = true;
+                            assignedToId = data.assigned_to_id;
+                            if(assignmentStatus){
+                                assignmentStatus.textContent = data.assigned_to
+                                    ? "Assigned to " + data.assigned_to
+                                    : "Unassigned";
+                            }
+                            if(assignmentSelect){
+                                assignmentSelect.value = data.assigned_to_id || "";
+                            }
+                            if(staffConnectionStatus) staffConnectionStatus.textContent = "Connected";
+                            updateAssignmentControls();
+                            updateSendAvailability();
+                        }
                         if(data.status){
 
                             updateStatus(
@@ -1478,7 +1888,15 @@ Manage customer support tickets, complaints, service requests and live website c
                     if(
                         data.type === "error"
                     ){
-
+                        if(data.message === "Staff access required."
+                            || data.message === "Conversation not found."){
+                            staffChatUnauthorized = true;
+                            staffChatAuthorized = false;
+                            if(staffConnectionStatus) staffConnectionStatus.textContent = "Unauthorized";
+                            updateSendAvailability();
+                            socket.close();
+                            return;
+                        }
                         console.error(
                             "Live chat:",
                             data.message
@@ -1495,16 +1913,24 @@ Manage customer support tickets, complaints, service requests and live website c
             };
 
 
-        staffSocket.onclose =
+        socket.onclose =
             function(){
-
-                console.log(
-                    "Staff live chat disconnected."
-                );
+                if(staffSocket !== socket || selectedConversationId !== socketConversationId) return;
+                staffSocket = null;
+                staffChatAuthorized = false;
+                if(staffConnectionStatus) staffConnectionStatus.textContent = "Reconnecting…";
+                updateSendAvailability();
+                if(staffChatUnauthorized) return;
+                const delay = Math.min(30000, 1000 * Math.pow(2, reconnectAttempts++));
+                reconnectTimer = window.setTimeout(function(){
+                    if(selectedConversationId !== socketConversationId) return;
+                    recoverSelectedConversation();
+                    connectStaffSocket();
+                }, delay);
             };
 
 
-        staffSocket.onerror =
+        socket.onerror =
             function(error){
 
                 console.error(
@@ -1512,6 +1938,44 @@ Manage customer support tickets, complaints, service requests and live website c
                     error
                 );
             };
+    }
+
+    async function recoverSelectedConversation(){
+        if(!selectedConversationId) return;
+        try{
+            let hasMore = true;
+            while(hasMore){
+                const response = await fetch(
+                    "/dashboard/support/live-chat/" + selectedConversationId +
+                    "/?after_id=" + lastMessageId,
+                    {credentials:"same-origin", cache:"no-store"}
+                );
+                if(!response.ok) throw new Error("History refresh failed");
+                const data = await response.json();
+                if(!data.success) throw new Error("History refresh was denied");
+                data.messages.forEach(function(message){
+                    renderMessage(
+                        message.sender_type,
+                        message.sender_name,
+                        message.message,
+                        message.id
+                    );
+                });
+                if(data.conversation){
+                    updateStatus(data.conversation.status);
+                    if(assignmentStatus){
+                        assignmentStatus.textContent = data.conversation.assigned_to
+                            ? "Assigned to " + data.conversation.assigned_to
+                            : "Unassigned";
+                    }
+                    assignedToId = data.conversation.assigned_to_id;
+                }
+                hasMore = Boolean(data.has_more);
+            }
+            updateSendAvailability();
+        }catch(error){
+            if(staffConnectionStatus) staffConnectionStatus.textContent = "Connection degraded";
+        }
     }
 
 
@@ -1523,11 +1987,19 @@ Manage customer support tickets, complaints, service requests and live website c
 
         selectedConversationId =
             conversationId;
+        staffChatUnauthorized = false;
+        staffChatAuthorized = false;
 
+        if(reconnectTimer){
+            window.clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
         if(staffSocket){
             staffSocket.close();
             staffSocket = null;
         }
+        lastMessageId = 0;
+        renderedMessageIds.clear();
 
 
         document
@@ -1618,10 +2090,21 @@ Manage customer support tickets, complaints, service requests and live website c
                     renderMessage(
                         message.sender_type,
                         message.sender_name,
-                        message.message
+                        message.message,
+                        message.id
                     );
                 }
             );
+            if(assignmentStatus){
+                assignmentStatus.textContent = conversation.assigned_to
+                    ? "Assigned to " + conversation.assigned_to
+                    : "Unassigned";
+            }
+            assignedToId = conversation.assigned_to_id;
+            if(assignmentSelect){
+                assignmentSelect.value = conversation.assigned_to_id || "";
+            }
+            updateAssignmentControls();
 
 
             if(staffSocket){
@@ -1646,24 +2129,7 @@ Manage customer support tickets, complaints, service requests and live website c
     }
 
 
-    document
-        .querySelectorAll(
-            ".live-chat-list-item"
-        )
-        .forEach(
-            function(item){
-
-                item.addEventListener(
-                    "click",
-                    function(){
-
-                        loadConversation(
-                            item.dataset.chatId
-                        );
-                    }
-                );
-            }
-        );
+    window.loadSupportConversation = loadConversation;
 
 
     if(takeoverButton){
@@ -1706,6 +2172,12 @@ Manage customer support tickets, complaints, service requests and live website c
                         updateStatus(
                             "active"
                         );
+                        assignedToId = staffUserId;
+                        if(assignmentStatus) assignmentStatus.textContent = "Assigned to you";
+                        if(assignmentSelect) assignmentSelect.value = String(staffUserId);
+                        updateAssignmentControls();
+                        updateSendAvailability();
+                        if(window.refreshSupportChatList) window.refreshSupportChatList();
 
                     }else{
 
@@ -1727,6 +2199,58 @@ Manage customer support tickets, complaints, service requests and live website c
                 }
             }
         );
+    }
+
+    if(assignmentSelect && assignButton){
+        assignmentSelect.addEventListener("change", updateAssignmentControls);
+        assignButton.addEventListener("click", async function(){
+            if(!selectedConversationId || !assignmentSelect.value) return;
+            if(assignedToId && String(assignedToId) !== assignmentSelect.value){
+                const currentAgent = assignmentStatus
+                    ? assignmentStatus.textContent
+                    : "the current agent";
+                if(!window.confirm("Reassign this chat from " + currentAgent + "?")){
+                    return;
+                }
+            }
+            assignButton.disabled = true;
+            try{
+                const response = await fetch(
+                    "/dashboard/support/live-chat/" + selectedConversationId + "/assign/",
+                    {
+                        method:"POST",
+                        credentials:"same-origin",
+                        headers:{
+                            "X-CSRFToken": getCookie("csrftoken"),
+                            "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"
+                        },
+                        body:new URLSearchParams({
+                            staff_user_id: assignmentSelect.value,
+                            expected_assigned_to_id: assignedToId || ""
+                        })
+                    }
+                );
+                const data = await response.json();
+                if(!response.ok || !data.success){
+                    if(response.status === 409 && window.refreshSupportChatList){
+                        window.refreshSupportChatList();
+                    }
+                    throw new Error(data.message || "Unable to assign this chat.");
+                }
+                assignedToId = data.assigned_to_id;
+                if(assignmentStatus){
+                    assignmentStatus.textContent = "Assigned to " + data.assigned_to;
+                }
+                updateStatus(data.status);
+                if(assignmentSelect) assignmentSelect.value = String(data.assigned_to_id);
+                updateAssignmentControls();
+                updateSendAvailability();
+                if(window.refreshSupportChatList) window.refreshSupportChatList();
+            }catch(error){
+                alert(error.message || "Unable to assign this chat.");
+                updateAssignmentControls();
+            }
+        });
     }
 
 
@@ -1894,6 +2418,187 @@ Manage customer support tickets, complaints, service requests and live website c
         return null;
     }
 
+})();
+</script>
+
+
+<script>
+(function(){
+    "use strict";
+    const list = document.getElementById("liveChatListItems");
+    const search = document.getElementById("liveChatSearch");
+    const statusFilter = document.getElementById("liveChatStatusFilter");
+    const assignmentFilter = document.getElementById("liveChatAssignmentFilter");
+    const statusLabel = document.getElementById("dashboardConnectionStatus");
+    const statusDot = document.getElementById("dashboardConnectionDot");
+    const lastSync = document.getElementById("dashboardLastSync");
+    let socket = null;
+    let retries = 0;
+    let reconnectTimer = null;
+    let fallbackTimer = null;
+    let searchTimer = null;
+
+    function updateConnection(state){
+        window.liveChatDashboardConnected = state === "Connected";
+        if(statusLabel) statusLabel.textContent = state;
+        if(statusDot){
+            statusDot.setAttribute("aria-label", state);
+            statusDot.classList.toggle("connected", state === "Connected");
+        }
+    }
+
+    function statusText(status){
+        return ({waiting:"Waiting", active:"Active", closed:"Closed"})[status] || status;
+    }
+
+    function renderList(conversations){
+        if(!list) return;
+        const selected = document.querySelector(".live-chat-list-item.selected");
+        const selectedId = selected && selected.dataset.chatId;
+        list.replaceChildren();
+        if(!conversations.length){
+            const empty = document.createElement("div");
+            empty.className = "no-live-chats";
+            const heading = document.createElement("strong");
+            heading.textContent = "No conversations match";
+            const detail = document.createElement("p");
+            detail.textContent = "Try another status, assignment, or search.";
+            empty.append(heading, detail);
+            list.appendChild(empty);
+            return;
+        }
+        conversations.forEach(function(chat){
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "live-chat-list-item";
+            button.dataset.chatId = String(chat.id);
+            if(String(chat.id) === selectedId) button.classList.add("selected");
+
+            const avatar = document.createElement("span");
+            avatar.className = "chat-avatar";
+            avatar.textContent = "👤";
+            const content = document.createElement("span");
+            content.className = "chat-list-content";
+            const name = document.createElement("strong");
+            name.textContent = chat.name;
+            const assignment = document.createElement("span");
+            assignment.textContent = chat.assigned_to
+                ? "Assigned to " + chat.assigned_to
+                : (chat.status === "closed" ? "Archived" : "Unassigned");
+            const when = document.createElement("small");
+            when.textContent = new Date(chat.updated_at).toLocaleString();
+            const preview = document.createElement("small");
+            preview.className = "chat-preview";
+            preview.textContent = chat.preview || "No messages yet";
+            content.append(name, assignment, when, preview);
+            const status = document.createElement("span");
+            status.className = "chat-status " + chat.status;
+            status.textContent = statusText(chat.status);
+            button.append(avatar, content, status);
+            if(chat.unread && String(chat.id) !== selectedId){
+                const unread = document.createElement("span");
+                unread.className = "chat-unread-indicator";
+                unread.setAttribute("aria-label", "Unread customer message");
+                unread.title = "Unread customer message";
+                button.appendChild(unread);
+            }
+            list.appendChild(button);
+        });
+    }
+
+    async function refreshSupportChatList(){
+        const params = new URLSearchParams({
+            status: statusFilter ? statusFilter.value : "all",
+            assigned: assignmentFilter ? assignmentFilter.value : "all",
+            q: search ? search.value.trim() : ""
+        });
+        try{
+            const response = await fetch(
+                "{% url 'live_chat_list' %}?" + params.toString(),
+                {credentials:"same-origin", cache:"no-store"}
+            );
+            if(!response.ok) throw new Error("Conversation list request failed");
+            const data = await response.json();
+            if(!data.success) throw new Error("Conversation list was unavailable");
+            renderList(data.conversations);
+            const listCount = document.getElementById("liveChatListCount");
+            if(listCount) listCount.textContent = data.conversations.length + (data.has_more ? "+" : "");
+            const values = {
+                waiting: data.counts.waiting,
+                active: data.counts.active,
+                closed: data.counts.closed,
+                total_live_chat: data.counts.total
+            };
+            Object.keys(values).forEach(function(key){
+                const target = document.getElementById(
+                    key === "total_live_chat" ? "total-live-chat-count" : key + "-chat-count"
+                );
+                if(target) target.textContent = values[key];
+            });
+            if(lastSync) lastSync.textContent = "Last synchronized " + new Date().toLocaleTimeString();
+        }catch(error){
+            if(statusLabel) statusLabel.textContent = "Connection degraded — retrying";
+        }
+    }
+    window.refreshSupportChatList = refreshSupportChatList;
+
+    if(list){
+        list.addEventListener("click", function(event){
+            const button = event.target.closest(".live-chat-list-item");
+            if(button && window.loadSupportConversation){
+                window.loadSupportConversation(button.dataset.chatId);
+            }
+        });
+    }
+    [statusFilter, assignmentFilter].forEach(function(control){
+        if(control) control.addEventListener("change", refreshSupportChatList);
+    });
+    if(search){
+        search.addEventListener("input", function(){
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(refreshSupportChatList, 250);
+        });
+    }
+
+    function connectDashboardSocket(){
+        if(socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        socket = new WebSocket(protocol + "//" + window.location.host + "/ws/live-chat/");
+        updateConnection("Connecting…");
+        socket.onopen = function(){
+            retries = 0;
+            updateConnection("Connected");
+            socket.send(JSON.stringify({action:"dashboard_join"}));
+            refreshSupportChatList();
+        };
+        socket.onmessage = function(event){
+            try{
+                const data = JSON.parse(event.data);
+                if(data.type === "dashboard_update"){
+                    refreshSupportChatList();
+                }else if(data.type === "error"){
+                    updateConnection("Not authorized");
+                    socket.close();
+                }
+            }catch(error){
+                updateConnection("Connection degraded");
+            }
+        };
+        socket.onclose = function(){
+            window.liveChatDashboardConnected = false;
+            updateConnection("Reconnecting…");
+            const delay = Math.min(30000, 1000 * Math.pow(2, retries++));
+            reconnectTimer = window.setTimeout(connectDashboardSocket, delay);
+        };
+        socket.onerror = function(){
+            updateConnection("Connection degraded");
+        };
+    }
+    connectDashboardSocket();
+    fallbackTimer = window.setInterval(function(){
+        if(!window.liveChatDashboardConnected) refreshSupportChatList();
+    }, 30000);
+    refreshSupportChatList();
 })();
 </script>
 
@@ -2134,28 +2839,6 @@ Manage customer support tickets, complaints, service requests and live website c
             countsRequestRunning = false;
         }
     }
-
-
-    /*
-    =====================================================
-    INITIAL UPDATE
-    =====================================================
-    */
-
-    updateLiveChatCounts();
-
-
-    /*
-    =====================================================
-    AUTO REFRESH
-    Every 3 seconds
-    =====================================================
-    */
-
-    setInterval(
-        updateLiveChatCounts,
-        3000
-    );
 
 
 })();

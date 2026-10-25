@@ -1255,6 +1255,8 @@
             let liveChatReconnectTimer = null;
             let liveChatReconnectAttempts = 0;
             let liveChatWanted = false;
+            let liveChatSessionToken = null;
+            let liveChatTokenRequest = null;
 
 
             /* =================================================
@@ -1485,6 +1487,29 @@
 
                 liveChatWanted = true;
 
+                if (!liveChatSessionToken) {
+                    if (!liveChatTokenRequest) {
+                        if (liveChatStatus) liveChatStatus.textContent = "Preparing secure chat…";
+                        liveChatTokenRequest = fetch(
+                            "{% url 'live_chat_session_token' %}",
+                            {credentials: "same-origin", cache: "no-store"}
+                        ).then(function(response){
+                            if(!response.ok) throw new Error("Secure chat session unavailable");
+                            return response.json();
+                        }).then(function(data){
+                            if(!data.success || !data.session_token) throw new Error("Secure chat session unavailable");
+                            liveChatSessionToken = data.session_token;
+                        }).catch(function(){
+                            liveChatSessionToken = null;
+                            if(liveChatStatus) liveChatStatus.textContent = "Chat connection unavailable";
+                        }).finally(function(){
+                            liveChatTokenRequest = null;
+                            if(liveChatSessionToken && liveChatWanted) connectLiveChat();
+                        });
+                    }
+                    return;
+                }
+
                 if (
                     liveChatSocket &&
                     (
@@ -1548,28 +1573,6 @@
                         }
 
                         /* -----------------------------------------
-                        Get or create browser session key.
-                        ----------------------------------------- */
-
-                        let liveChatSessionKey =
-                            localStorage.getItem(
-                                "yd_live_chat_session_key"
-                            );
-
-                        if (
-                            !liveChatSessionKey
-                        ) {
-
-                            liveChatSessionKey =
-                                crypto.randomUUID();
-
-                            localStorage.setItem(
-                                "yd_live_chat_session_key",
-                                liveChatSessionKey
-                            );
-                        }
-
-                        /* -----------------------------------------
                         Automatically create/join customer chat.
                         ----------------------------------------- */
 
@@ -1579,8 +1582,8 @@
                                 action:
                                     "customer_join",
 
-                                session_key:
-                                    liveChatSessionKey,
+                                session_token:
+                                    liveChatSessionToken,
 
                                 name:
                                     "Website Visitor",
@@ -1605,11 +1608,6 @@
                                 JSON.parse(
                                     event.data
                                 );
-
-                            console.log(
-                                "YD Live Chat:",
-                                data
-                            );
 
                             /* -----------------------------------------
                             Connection
@@ -1720,10 +1718,11 @@
                                 "error"
                             ) {
 
-                                console.error(
-                                    "YD Live Chat backend error:",
-                                    data.message
-                                );
+                                if ((data.message || "").includes("session is invalid")) {
+                                    liveChatSessionToken = null;
+                                    if(liveChatSocket) liveChatSocket.close();
+                                    return;
+                                }
 
                                 addLiveChatSystemMessage(
                                     data.message ||
@@ -1998,29 +1997,6 @@
                         }
 
                         /* -----------------------------------------
-                        Make sure a persistent browser session key
-                        exists.
-                        ----------------------------------------- */
-
-                        let liveChatSessionKey =
-                            localStorage.getItem(
-                                "yd_live_chat_session_key"
-                            );
-
-                        if (
-                            !liveChatSessionKey
-                        ) {
-
-                            liveChatSessionKey =
-                                crypto.randomUUID();
-
-                            localStorage.setItem(
-                                "yd_live_chat_session_key",
-                                liveChatSessionKey
-                            );
-                        }
-
-                        /* -----------------------------------------
                         Make sure WebSocket is connected.
                         ----------------------------------------- */
 
@@ -2049,11 +2025,8 @@
                                 action:
                                     "customer_message",
 
-                                session_key:
-                                    liveChatSessionKey,
-
-                                sender_name:
-                                    "Website Visitor",
+                                session_token:
+                                    liveChatSessionToken,
 
                                 message:
                                     message

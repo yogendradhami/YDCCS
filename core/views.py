@@ -1354,11 +1354,31 @@ def _get_canonical_service_redirect_path(service_slug):
         base_slug = slug[:-len("-adelaide-cbd")]
         return f"/services/{base_slug}-adelaide-cbd/"
 
-    # Already-canonical location URLs use:
+    # Canonical location URLs use:
     # <service>-adelaide-<location>
+    # Resolve legacy service-family aliases before accepting the URL.
     for location_slug in sorted(LOCATION_ALIASES, key=len, reverse=True):
-        if slug.endswith(f"-adelaide-{location_slug}"):
+        suffix = f"-adelaide-{location_slug}"
+        if slug.endswith(suffix):
+            base_slug = slug[:-len(suffix)]
+
+            # Legacy alias keys may include the Adelaide suffix.
+            legacy_base = f"{base_slug}-adelaide"
+            alias_target = SERVICE_SLUG_ALIASES.get(
+                legacy_base,
+                SERVICE_SLUG_ALIASES.get(base_slug),
+            )
+
+            if alias_target:
+                canonical_base = alias_target.removesuffix("-adelaide")
+                canonical_slug = (
+                    f"{canonical_base}-adelaide-{location_slug}"
+                )
+                if canonical_slug != slug:
+                    return f"/services/{canonical_slug}/"
+
             return None
+
 
     # Legacy location URLs use:
     # <service>-<location>
@@ -1378,59 +1398,53 @@ def _get_canonical_service_redirect_path(service_slug):
                 return f"/services/{canonical_slug}/"
 
     return None
+
+
+
+
 def _normalize_service_slug(service_slug):
-    """
-    Convert SEO location service URLs into base service slugs.
+    """Resolve a service/location URL to its canonical base service slug."""
+    slug = (service_slug or "").lower().strip("-")
 
-    Examples:
-    end-of-lease-cleaning-north-adelaide
-        -> end-of-lease-cleaning
-
-    carpet-steam-cleaning-norwood
-        -> carpet-steam-cleaning
-    """
-
-    slug = service_slug.lower().strip("-")
-
-    # Remove full suburb names first (north-adelaide, glenelg, etc.)
     location_slugs = set(LOCATION_ALIASES.keys())
-
-
     for areas in ADELAIDE_SUBURBS.values():
         for area in areas:
             location_slugs.add(_slugify_area(area))
 
-
-    location_slugs = sorted(
-        location_slugs,
-        key=len,
-        reverse=True
-    )
-
-    for location_slug in location_slugs:
-        if slug.endswith(f"-{location_slug}"):
-            slug = slug[:-(len(location_slug) + 1)]
+    # Remove the longest matching location suffix.
+    for location_slug in sorted(location_slugs, key=len, reverse=True):
+        suffix = f"-{location_slug}"
+        if slug.endswith(suffix):
+            slug = slug[:-len(suffix)]
             break
 
-    # Remove Adelaide suffix if still present
+    # Resolve legacy aliases before stripping the Adelaide suffix.
+    alias_target = SERVICE_SLUG_ALIASES.get(slug)
+    if alias_target:
+        return alias_target
+
+    # Remove Adelaide suffix for standard service slugs.
     if slug.endswith("-adelaide"):
         slug = slug[:-len("-adelaide")]
 
-    normalized = SERVICE_SLUG_ALIASES.get(slug, slug)
+    # Resolve aliases exposed by suffix removal.
+    slug = SERVICE_SLUG_ALIASES.get(slug, slug)
 
-    # Match existing service database slugs
-    if Service.objects.filter(slug=normalized).exists():
-        return normalized
+    # Prefer an existing canonical SEO definition.
+    if slug in SERVICE_DEFINITIONS:
+        return slug
 
+    # Fall back to an existing database service record.
+    if Service.objects.filter(slug=slug).exists():
+        return slug
 
-    # Try Adelaide suffix
-    adelaide_slug = f"{normalized}-adelaide"
-
+    adelaide_slug = f"{slug}-adelaide"
     if Service.objects.filter(slug=adelaide_slug).exists():
-        return adelaide_slug
+        return slug
+
+    return slug
 
 
-    return normalized
 
 
 def _get_location_from_slug(slug):

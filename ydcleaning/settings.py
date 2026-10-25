@@ -362,6 +362,11 @@ REDIS_URL = env.str(
     default="",
 ).strip()
 
+if IS_PRODUCTION and not REDIS_URL:
+    raise RuntimeError(
+        "REDIS_URL must be configured in production for multi-worker Django Channels."
+    )
+
 if REDIS_URL:
     CHANNEL_LAYERS = {
         "default": {
@@ -377,6 +382,10 @@ else:
             "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
     }
+
+LIVE_CHAT_RETENTION_DAYS = env.int("LIVE_CHAT_RETENTION_DAYS", default=180)
+if LIVE_CHAT_RETENTION_DAYS < 1:
+    raise RuntimeError("LIVE_CHAT_RETENTION_DAYS must be at least 1.")
 
 
 # ==========================================================

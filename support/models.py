@@ -313,6 +313,9 @@ class LiveChatConversation(models.Model):
         related_name="live_chat_conversations",
     )
 
+    closed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    legal_hold = models.BooleanField(default=False, db_index=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -359,3 +362,9 @@ class LiveChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.sender_type}: {self.message[:50]}"
+
+
+class LiveChatRateLimitBucket(models.Model):
+    key = models.CharField(max_length=64, unique=True)
+    window_started_at = models.DateTimeField(db_index=True)
+    count = models.PositiveIntegerField(default=0)

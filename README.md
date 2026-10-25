@@ -133,3 +133,26 @@ Error monitoring (Sentry)
 Makefile
 - There is a `Makefile` with convenience targets such as `make run`, `make migrate`, `make test`, and `make docker-up`.
 # YDCCS
+
+## Live website chat deployment and retention
+
+- Live chat uses the existing Django Channels ASGI app (`Procfile`) and requires `REDIS_URL` in production. Production startup intentionally fails if Redis is not configured; the in-memory channel layer is development/test-only and cannot deliver across multiple workers.
+- Keep the Render web service on the existing Daphne ASGI command. Configure `REDIS_URL` as a private Redis URL in the Render environment group and use HTTPS so browser chat connects over WSS. The ASGI origin check accepts allowed hosts and requires an HTTPS origin in production.
+- Staff must have Django's `support.view_livechatconversation` permission to see chat lists/history and `support.change_livechatconversation` permission to take over, reply, or close conversations. Assign those permissions only to support roles that need them.
+- `LIVE_CHAT_RETENTION_DAYS` defaults to `180` and must be at least one day. Waiting and active chats are never eligible for cleanup. A closed chat is eligible only when its explicit `closed_at` timestamp is at or before the retention cutoff and `legal_hold` is false. Set legal hold in Django admin when preservation is required.
+- Migration `support.0008_livechat_retention_and_rate_limits` backfills pre-existing closed conversations from `updated_at`. This deliberately starts their retention clock at the last recorded update rather than assuming an earlier closure, avoiding premature deletion; review the affected population before using deletion mode.
+- First run and review a dry run against the intended environment/database:
+
+```bash
+python manage.py migrate --plan
+python manage.py cleanup_expired_live_chats --dry-run --batch-size 100
+```
+
+- There is no Render Blueprint or cron service in this repository. To schedule safe initial verification, add a Render Cron Job using the same repository, build environment, database environment group, and a daily schedule (for example, 02:00 UTC), with command:
+
+```bash
+python manage.py cleanup_expired_live_chats --dry-run --batch-size 100
+```
+
+- The command defaults to dry-run and deletes nothing unless `--delete` is explicitly supplied. Do not change the scheduled command to `--delete` until the retention policy, legal holds, dry-run counts, and database backup/recovery process have been reviewed and approved. Deletion cascades to messages and is not reversible except by restoring a database backup. Review cron output and application logs after each run; failures are counted and cause a non-zero command result for scheduler alerting.
+- The 180-day default is an operational proposal, not a guarantee of compliance with Australian privacy, tax, contractual, litigation-hold, or record-keeping requirements. Obtain policy review before enabling deletion.

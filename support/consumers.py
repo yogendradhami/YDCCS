@@ -1,13 +1,17 @@
 import asyncio
 import json
 import logging
+import re
 from datetime import timedelta
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import User
-from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.db import DatabaseError, transaction
 from django.utils import timezone
+from django.core import signing
 
 from .chat_faq import FAQ_RESPONSES
 from .chat_intent import analyze_message
@@ -20,6 +24,8 @@ from .models import (
     LiveChatConversation,
     LiveChatMessage,
 )
+from .rate_limits import allow_live_chat_action
+from .realtime import DASHBOARD_GROUP, has_chat_permission, queue_dashboard_update
 
 
 # =========================================================
@@ -60,6 +66,41 @@ class LiveChatConsumer(
                 for character in session_key
             )
         )
+
+    @database_sync_to_async
+    def validate_customer_token(self, token):
+        try:
+            payload = signing.loads(
+                token,
+                salt="support.live-chat.session",
+                max_age=60 * 60 * 24 * 14,
+            )
+        except (signing.BadSignature, TypeError, ValueError):
+            return None
+        session_key = payload.get("session_key")
+        session = self.scope.get("session")
+        if (
+            not isinstance(session_key, str)
+            or not session
+            or session.get("live_chat_session_key") != session_key
+        ):
+            return None
+        return session_key
+
+    @database_sync_to_async
+    def has_permission(self, action):
+        return has_chat_permission(
+            self.scope.get("user"),
+            action,
+        )
+
+    @database_sync_to_async
+    def rate_limit(self, identity, action, limit):
+        return allow_live_chat_action(identity, action, limit)
+
+    @database_sync_to_async
+    def schedule_dashboard_update(self, conversation_id, event_name):
+        queue_dashboard_update(conversation_id, event_name)
 
     # =====================================================
     # RAW RECEIVE
@@ -109,10 +150,20 @@ class LiveChatConsumer(
         self.conversation = None
         self.session_key = None
         self.is_staff = False
+        self.chat_role = None
         self.room_group_name = None
 
         self.inactivity_task = None
         self.chat_closed = False
+
+        client = self.scope.get("client") or ("unknown", 0)
+        if not await self.rate_limit(
+            f"ip:{client[0]}",
+            "connect",
+            40,
+        ):
+            await self.close(code=4429)
+            return
 
         await self.accept()
 
@@ -162,7 +213,7 @@ class LiveChatConsumer(
                 pass
 
             except Exception:
-                pass
+                logger.exception("Could not stop the live-chat inactivity monitor.")
 
             self.inactivity_task = None
 
@@ -180,7 +231,16 @@ class LiveChatConsumer(
                 )
 
             except Exception:
-                pass
+                logger.exception("Could not leave the live-chat conversation group.")
+
+        if getattr(self, "dashboard_group_joined", False):
+            try:
+                await self.channel_layer.group_discard(
+                    DASHBOARD_GROUP,
+                    self.channel_name,
+                )
+            except Exception:
+                logger.exception("Could not leave the live-chat dashboard group.")
 
     # =====================================================
     # RECEIVE JSON
@@ -309,6 +369,22 @@ class LiveChatConsumer(
             and user.is_staff
         )
 
+        if action == "dashboard_join":
+            if not await self.has_permission("view"):
+                await self.send_json(
+                    {"type": "error", "message": "Support chat access required."}
+                )
+                return
+            await self.channel_layer.group_add(
+                DASHBOARD_GROUP,
+                self.channel_name,
+            )
+            self.dashboard_group_joined = True
+            await self.send_json(
+                {"type": "dashboard_joined", "success": True}
+            )
+            return
+
         # =================================================
         # JOIN ACTIONS
         # =================================================
@@ -324,55 +400,65 @@ class LiveChatConsumer(
 
             if action == "customer_join":
 
-                session_key = str(
-                    content.get(
-                        "session_key",
-                        "",
-                    )
-                ).strip()
-
-                if not self.is_valid_session_key(
-                    session_key
-                ):
+                session_key = await self.validate_customer_token(
+                    content.get("session_token", "")
+                )
+                if not session_key:
 
                     await self.send_json(
                         {
                             "type": "error",
                             "message": (
-                                "Chat session could not "
-                                "be identified."
+                                "Chat session is invalid or expired. Refresh the page and retry."
                             ),
                         }
                     )
 
                     return
 
+                self.chat_role = "customer"
                 self.session_key = (
                     session_key
                 )
+                raw_name = content.get("name", "Website Visitor")
+                raw_email = content.get("email", "")
+                raw_phone = content.get("phone", "")
+                if not all(
+                    isinstance(value, str)
+                    for value in (raw_name, raw_email, raw_phone)
+                ):
+                    await self.send_json(
+                        {"type": "error", "message": "Invalid visitor details."}
+                    )
+                    return
+                name = " ".join(raw_name.split()) or "Website Visitor"
+                email = raw_email.strip().lower()
+                phone = raw_phone.strip()
+                if len(name) > 150 or len(email) > 254 or len(phone) > 30:
+                    await self.send_json(
+                        {"type": "error", "message": "Visitor details are too long."}
+                    )
+                    return
+                if email:
+                    try:
+                        validate_email(email)
+                    except ValidationError:
+                        await self.send_json(
+                            {"type": "error", "message": "Please provide a valid email address."}
+                        )
+                        return
+                if phone and not re.fullmatch(r"[0-9+(). -]{1,30}", phone):
+                    await self.send_json(
+                        {"type": "error", "message": "Please provide a valid phone number."}
+                    )
+                    return
 
                 conversation = (
                     await self.get_or_create_customer_conversation(
                         session_key=session_key,
-                        name=str(
-                            content.get(
-                                "name",
-                                "Website Visitor",
-                            )
-                        ).strip()
-                        or "Website Visitor",
-                        email=str(
-                            content.get(
-                                "email",
-                                "",
-                            )
-                        ).strip(),
-                        phone=str(
-                            content.get(
-                                "phone",
-                                "",
-                            )
-                        ).strip(),
+                        name=name,
+                        email=email,
+                        phone=phone,
                     )
                 )
 
@@ -396,7 +482,7 @@ class LiveChatConsumer(
 
             else:
 
-                if not self.is_staff:
+                if not await self.has_permission("view"):
 
                     await self.send_json(
                         {
@@ -447,10 +533,19 @@ class LiveChatConsumer(
 
                     return
 
+                self.chat_role = "staff"
+
             # -------------------------------------------------
             # Set current conversation.
             # -------------------------------------------------
 
+            previous_group = getattr(self, "room_group_name", None)
+            next_group = f"live_chat_{conversation.id}"
+            if previous_group and previous_group != next_group:
+                await self.channel_layer.group_discard(
+                    previous_group,
+                    self.channel_name,
+                )
             self.conversation = (
                 conversation
             )
@@ -459,9 +554,7 @@ class LiveChatConsumer(
                 conversation.id
             )
 
-            self.room_group_name = (
-                f"live_chat_{conversation.id}"
-            )
+            self.room_group_name = next_group
 
             await self.channel_layer.group_add(
                 self.room_group_name,
@@ -494,6 +587,24 @@ class LiveChatConsumer(
 
                 return
 
+            conversation = await self.get_conversation(conversation.id)
+            if conversation is None:
+                await self.send_json(
+                    {"type": "error", "message": "Conversation not found."}
+                )
+                return
+            if conversation.status == "closed":
+                await self.send_json(
+                    {
+                        "type": "chat_closed",
+                        "success": False,
+                        "message": "This conversation has been closed.",
+                    }
+                )
+                self.chat_closed = True
+                return
+            self.conversation = conversation
+
             # -------------------------------------------------
             # Start inactivity monitor.
             # -------------------------------------------------
@@ -516,6 +627,13 @@ class LiveChatConsumer(
                     ),
                     "message": (
                         "Live chat connected."
+                    ),
+                    "assigned_to_id": conversation.assigned_to_id,
+                    "assigned_to": (
+                        conversation.assigned_to.get_full_name()
+                        or conversation.assigned_to.username
+                        if conversation.assigned_to
+                        else ""
                     ),
                 }
             )
@@ -547,12 +665,21 @@ class LiveChatConsumer(
 
             return
 
+        if conversation_id != getattr(self, "conversation_id", None):
+            await self.send_json(
+                {
+                    "type": "error",
+                    "message": "Join this conversation before performing chat actions.",
+                }
+            )
+            return
+
         # -------------------------------------------------
         # Staff can access conversations by ID.
         # Customers must prove session ownership.
         # -------------------------------------------------
 
-        if self.is_staff:
+        if self.is_staff and self.chat_role != "customer":
 
             conversation = (
                 await self.get_conversation(
@@ -561,26 +688,14 @@ class LiveChatConsumer(
             )
 
         else:
-
-            session_key = str(
-                content.get(
-                    "session_key",
-                    "",
-                )
-            ).strip()
-
-            if session_key != getattr(
-                self,
-                "session_key",
-                None,
-            ):
+            session_key = getattr(self, "session_key", None)
+            if not session_key or conversation_id != self.conversation_id:
 
                 await self.send_json(
                     {
                         "type": "error",
                         "message": (
-                            "This conversation is not "
-                            "available to this chat session."
+                            "Chat session authorization is required."
                         ),
                     }
                 )
@@ -668,13 +783,26 @@ class LiveChatConsumer(
 
             return
 
+        if (
+            action in {"customer_message", "message"}
+            and self.is_staff
+            and self.chat_role != "customer"
+        ):
+            await self.send_json(
+                {
+                    "type": "error",
+                    "message": "Staff must use the authorized staff message action.",
+                }
+            )
+            return
+
         # =================================================
         # STAFF TAKEOVER
         # =================================================
 
         if action == "staff_takeover":
 
-            if not self.is_staff:
+            if self.chat_role != "staff" or not await self.has_permission("change"):
 
                 await self.send_json(
                     {
@@ -689,10 +817,18 @@ class LiveChatConsumer(
 
             user = self.scope["user"]
 
-            await self.takeover_conversation(
+            takeover_message_id = await self.takeover_conversation(
                 conversation.id,
                 user.id,
             )
+            if not takeover_message_id:
+                await self.send_json(
+                    {
+                        "type": "error",
+                        "message": "This chat is closed or already assigned to another staff member.",
+                    }
+                )
+                return
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -702,6 +838,7 @@ class LiveChatConsumer(
                         f"{user.get_full_name() or user.username} "
                         "has taken over this conversation."
                     ),
+                    "message_id": takeover_message_id,
                     "status": "active",
                 },
             )
@@ -714,7 +851,7 @@ class LiveChatConsumer(
 
         if action == "staff_close":
 
-            if not self.is_staff:
+            if self.chat_role != "staff" or not await self.has_permission("change"):
 
                 await self.send_json(
                     {
@@ -734,7 +871,7 @@ class LiveChatConsumer(
                 f"{user.get_full_name() or user.username}."
             )
 
-            await self.close_conversation(
+            close_message_id = await self.close_conversation(
                 conversation.id,
                 sender_name=(
                     user.get_full_name()
@@ -743,12 +880,17 @@ class LiveChatConsumer(
                 ),
                 message=close_message,
             )
-
+            if not close_message_id:
+                await self.send_json(
+                    {"type": "error", "message": "This conversation is already closed."}
+                )
+                return
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     "type": "chat_system",
                     "message": close_message,
+                    "message_id": close_message_id,
                     "status": "closed",
                 },
             )
@@ -763,7 +905,7 @@ class LiveChatConsumer(
 
         if action == "staff_message":
 
-            if not self.is_staff:
+            if self.chat_role != "staff" or not await self.has_permission("change"):
 
                 await self.send_json(
                     {
@@ -801,7 +943,7 @@ class LiveChatConsumer(
                 message_value.strip()
             )
 
-            if len(message) > 2000:
+            if len(message) > 2000 or len(message.encode("utf-8")) > 8000:
 
                 await self.send_json(
                     {
@@ -828,6 +970,16 @@ class LiveChatConsumer(
 
                 return
 
+            if not await self.rate_limit(
+                f"staff:{self.scope['user'].pk}",
+                "message",
+                30,
+            ):
+                await self.send_json(
+                    {"type": "error", "message": "Message rate limit reached. Please wait and retry."}
+                )
+                return
+
             user = self.scope["user"]
 
             sender_name = (
@@ -836,16 +988,19 @@ class LiveChatConsumer(
                 or "YD Cleaning Support"
             )
 
-            await self.save_message(
-                conversation.id,
-                "staff",
-                sender_name,
-                message,
-            )
-
-            await self.touch_conversation(
-                conversation.id
-            )
+            try:
+                message_record_id = await self.save_message(
+                    conversation.id,
+                    "staff",
+                    sender_name,
+                    message,
+                    sender_id=user.pk,
+                )
+            except (PermissionError, ValueError) as exc:
+                await self.send_json(
+                    {"type": "error", "message": str(exc)}
+                )
+                return
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -854,6 +1009,7 @@ class LiveChatConsumer(
                     "sender_type": "staff",
                     "sender_name": sender_name,
                     "message": message,
+                    "message_id": message_record_id,
                 },
             )
 
@@ -893,7 +1049,7 @@ class LiveChatConsumer(
                 message_value.strip()
             )
 
-            if len(message) > 2000:
+            if len(message) > 2000 or len(message.encode("utf-8")) > 8000:
 
                 await self.send_json(
                     {
@@ -925,16 +1081,32 @@ class LiveChatConsumer(
                 or "Website Visitor"
             )
 
-            await self.save_message(
-                conversation.id,
-                "customer",
-                sender_name,
-                message,
-            )
+            if not await self.rate_limit(
+                f"customer:{conversation.session_key}",
+                "message",
+                20,
+            ):
+                await self.send_json(
+                    {"type": "error", "message": "Message rate limit reached. Please wait and retry."}
+                )
+                return
 
-            await self.touch_conversation(
-                conversation.id
-            )
+            try:
+                message_record_id = await self.save_message(
+                    conversation.id,
+                    "customer",
+                    sender_name,
+                    message,
+                )
+            except ValueError:
+                await self.send_json(
+                    {
+                        "type": "chat_closed",
+                        "success": False,
+                        "message": "This conversation has been closed.",
+                    }
+                )
+                return
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -943,6 +1115,7 @@ class LiveChatConsumer(
                     "sender_type": "customer",
                     "sender_name": sender_name,
                     "message": message,
+                    "message_id": message_record_id,
                 },
             )
 
@@ -1003,11 +1176,33 @@ class LiveChatConsumer(
                     faq_response=faq_response,
                 )
 
-                await self.persist_workflow_result(
-                    conversation.id,
-                    result,
-                    analysis,
-                )
+                try:
+                    await self.persist_workflow_result(
+                        conversation.id,
+                        result,
+                        analysis,
+                    )
+                except ValueError:
+                    await self.send_json(
+                        {
+                            "type": "error",
+                            "message": "This conversation changed. Reconnect to continue.",
+                        }
+                    )
+                    return
+                except DatabaseError as exc:
+                    logger.warning(
+                        "Live-chat workflow persistence failed for conversation %s (%s).",
+                        conversation.id,
+                        type(exc).__name__,
+                    )
+                    await self.send_json(
+                        {
+                            "type": "error",
+                            "message": "Your message was received, but chat processing is temporarily unavailable.",
+                        }
+                    )
+                    return
 
                 result_action = result.get(
                     "action"
@@ -1093,16 +1288,26 @@ class LiveChatConsumer(
                             quote.id,
                         )
 
-                    except (
-                        ValueError,
-                        TypeError,
-                    ) as exc:
+                    except DatabaseError as exc:
+                        logger.warning(
+                            "Live chat quote persistence failed for conversation %s (%s).",
+                            conversation.id,
+                            type(exc).__name__,
+                        )
+                        await self.send_json(
+                            {
+                                "type": "error",
+                                "message": "The quote could not be completed due to a temporary chat issue.",
+                            }
+                        )
+                        return
+                    except (ValueError, TypeError) as exc:
 
                         logger.warning(
                             "Live chat quote workflow failed "
-                            "for conversation %s: %s",
+                            "for conversation %s (%s).",
                             conversation.id,
-                            exc,
+                            type(exc).__name__,
                         )
 
                         bot_response = (
@@ -1183,16 +1388,26 @@ class LiveChatConsumer(
                             booking.id,
                         )
 
-                    except (
-                        ValueError,
-                        TypeError,
-                    ) as exc:
+                    except DatabaseError as exc:
+                        logger.warning(
+                            "Live chat booking persistence failed for conversation %s (%s).",
+                            conversation.id,
+                            type(exc).__name__,
+                        )
+                        await self.send_json(
+                            {
+                                "type": "error",
+                                "message": "The booking could not be completed due to a temporary chat issue.",
+                            }
+                        )
+                        return
+                    except (ValueError, TypeError) as exc:
 
                         logger.warning(
                             "Live chat booking workflow failed "
-                            "for conversation %s: %s",
+                            "for conversation %s (%s).",
                             conversation.id,
-                            exc,
+                            type(exc).__name__,
                         )
 
                         bot_response = (
@@ -1410,14 +1625,17 @@ class LiveChatConsumer(
             current.status = "closed"
             current.mode = "closed"
             current.updated_at = now
+            current.closed_at = now
 
             current.save(
                 update_fields=[
                     "status",
                     "mode",
                     "updated_at",
+                    "closed_at",
                 ]
             )
+            queue_dashboard_update(current.pk, "conversation.closed")
 
             # -------------------------------------------------
             # Create ONE system message inside the transaction.
@@ -1486,83 +1704,54 @@ class LiveChatConsumer(
                         "Cleaning live chat."
                     ),
                 )
+                queue_dashboard_update(
+                    conversation.pk,
+                    "conversation.created",
+                )
 
                 return conversation
 
         # -------------------------------------------------
-        # Existing conversation.
-        # -------------------------------------------------
-
-        if conversation:
-
-            # -------------------------------------------------
-            # Reopen closed browser-session conversation.
-            # -------------------------------------------------
-
             if conversation.status == "closed":
-
                 conversation.status = "waiting"
                 conversation.mode = "ai"
                 conversation.assigned_to = None
+                conversation.closed_at = None
                 conversation.updated_at = timezone.now()
-
                 conversation.save(
                     update_fields=[
                         "status",
                         "mode",
                         "assigned_to",
+                        "closed_at",
                         "updated_at",
                     ]
                 )
-
-            # -------------------------------------------------
-            # Update visitor details when available.
-            # -------------------------------------------------
-
-            changed = False
-
-            if (
-                name
-                and conversation.name != name
-            ):
-
-                conversation.name = name
-                changed = True
-
-            if (
-                email
-                and conversation.email != email
-            ):
-
-                conversation.email = email
-                changed = True
-
-            if (
-                phone
-                and conversation.phone != phone
-            ):
-
-                conversation.phone = phone
-                changed = True
-
-            if changed:
-
-                conversation.updated_at = (
-                    timezone.now()
+                queue_dashboard_update(
+                    conversation.pk,
+                    "conversation.reopened",
                 )
 
+            changed_fields = []
+            for field, value in (
+                ("name", name),
+                ("email", email),
+                ("phone", phone),
+            ):
+                if value and getattr(conversation, field) != value:
+                    setattr(conversation, field, value)
+                    changed_fields.append(field)
+            if changed_fields:
+                conversation.updated_at = timezone.now()
                 conversation.save(
-                    update_fields=[
-                        "name",
-                        "email",
-                        "phone",
-                        "updated_at",
-                    ]
+                    update_fields=[*changed_fields, "updated_at"]
+                )
+                queue_dashboard_update(
+                    conversation.pk,
+                    "conversation.updated",
                 )
 
             return conversation
-
-        return conversation
 
     # =====================================================
     # GET CONVERSATION
@@ -1631,100 +1820,55 @@ class LiveChatConsumer(
         analysis,
     ):
 
-        conversation = (
-            LiveChatConversation.objects.get(
-                id=conversation_id
-            )
-        )
-
-        state = (
-            result.get("state")
-            or {}
-        )
-
-        customer = (
-            state.get("customer")
-            or {}
-        )
-
-        conversation.conversation_state = (
-            state
-        )
-
-        intent = analysis.get(
-            "intent"
-        )
-
-        if (
-            intent
-            and conversation.intent == "unknown"
-        ):
-
-            conversation.intent = intent
-
-        service = analysis.get(
-            "service"
-        )
-
-        if (
-            service
-            and not conversation.service
-        ):
-
-            conversation.service = service
-
-        if (
-            customer.get("name")
-            and not conversation.name
-        ):
-
-            conversation.name = (
-                customer["name"][:150]
-            )
-
-        if customer.get("email"):
-
-            conversation.email = (
-                customer["email"][:254]
-            )
-
-        if customer.get("phone"):
-
-            conversation.phone = (
-                customer["phone"][:30]
-            )
-
-        if result.get(
-            "state_updated"
-        ):
-
-            workflow_type = (
-                state
-                .get("workflow", {})
-                .get("type")
-            )
-
-            if workflow_type in {
-                "quote",
-                "booking",
-            }:
-
-                conversation.lead_status = (
-                    "collecting"
+        with transaction.atomic():
+            conversation = (
+                LiveChatConversation.objects.select_for_update().get(
+                    id=conversation_id
                 )
+            )
+            if conversation.status == "closed" or conversation.mode != "ai":
+                raise ValueError("This conversation is no longer available to AI chat.")
 
-        conversation.save(
-            update_fields=[
-                "conversation_state",
-                "intent",
-                "service",
-                "name",
-                "email",
-                "phone",
-                "lead_status",
-                "updated_at",
-            ]
-        )
+            state = result.get("state") or {}
+            customer = state.get("customer") or {}
+            conversation.conversation_state = state
+
+            intent = analysis.get("intent")
+            if intent and conversation.intent == "unknown":
+                conversation.intent = intent
+
+            service = analysis.get("service")
+            if service and not conversation.service:
+                conversation.service = service
+
+            if customer.get("name") and not conversation.name:
+                conversation.name = customer["name"][:150]
+            if customer.get("email"):
+                conversation.email = customer["email"][:254]
+            if customer.get("phone"):
+                conversation.phone = customer["phone"][:30]
+
+            if result.get("state_updated"):
+                workflow_type = state.get("workflow", {}).get("type")
+                if workflow_type in {"quote", "booking"}:
+                    conversation.lead_status = "collecting"
+
+            conversation.save(
+                update_fields=[
+                    "conversation_state",
+                    "intent",
+                    "service",
+                    "name",
+                    "email",
+                    "phone",
+                    "lead_status",
+                    "updated_at",
+                ]
+            )
+            queue_dashboard_update(
+                conversation.pk,
+                "conversation.updated",
+            )
 
     # =====================================================
     # CREATE QUOTE FROM CHAT
@@ -1736,11 +1880,13 @@ class LiveChatConsumer(
         conversation,
         state,
     ):
-
-        return create_confirmed_quote(
-            conversation,
-            state,
-        )
+        with transaction.atomic():
+            current = LiveChatConversation.objects.select_for_update().get(
+                pk=conversation.pk
+            )
+            if current.status == "closed" or current.mode != "ai":
+                raise ValueError("This conversation is no longer available to AI chat.")
+            return create_confirmed_quote(current, state)
 
     # =====================================================
     # CREATE BOOKING FROM CHAT
@@ -1752,11 +1898,13 @@ class LiveChatConsumer(
         conversation,
         state,
     ):
-
-        return create_confirmed_booking(
-            conversation,
-            state,
-        )
+        with transaction.atomic():
+            current = LiveChatConversation.objects.select_for_update().get(
+                pk=conversation.pk
+            )
+            if current.status == "closed" or current.mode != "ai":
+                raise ValueError("This conversation is no longer available to AI chat.")
+            return create_confirmed_booking(current, state)
 
     # =====================================================
     # MARK WORKFLOW COMPLETED
@@ -1775,15 +1923,14 @@ class LiveChatConsumer(
         record_id,
     ):
 
-        conversation = (
-            LiveChatConversation.objects.get(
+        with transaction.atomic():
+            conversation = LiveChatConversation.objects.select_for_update().get(
                 id=conversation_id
             )
-        )
+            if conversation.status == "closed" or conversation.mode != "ai":
+                raise ValueError("This conversation is no longer available to AI chat.")
 
-        new_state = dict(
-            state or {}
-        )
+            new_state = dict(state or {})
 
         # -------------------------------------------------
         # Keep customer details for future conversations,
@@ -1791,41 +1938,32 @@ class LiveChatConsumer(
         # or booking starts fresh.
         # -------------------------------------------------
 
-        customer_state = dict(
-            new_state.get("customer")
-            or {}
-        )
+            customer_state = dict(new_state.get("customer") or {})
 
-        new_state["customer"] = (
-            customer_state
-        )
+            new_state["customer"] = customer_state
 
-        new_state["quote"] = {}
-        new_state["booking"] = {}
+            new_state["quote"] = {}
+            new_state["booking"] = {}
 
-        new_state["workflow"] = {
-            "type": "none",
-            "step": "idle",
-            "awaiting_confirmation": False,
-        }
+            new_state["workflow"] = {
+                "type": "none",
+                "step": "idle",
+                "awaiting_confirmation": False,
+            }
 
-        conversation.conversation_state = (
-            new_state
-        )
+            conversation.conversation_state = new_state
 
-        conversation.lead_status = (
-            "qualified"
-            if workflow_type == "quote"
-            else "converted"
-        )
+            conversation.lead_status = (
+                "qualified" if workflow_type == "quote" else "converted"
+            )
 
-        conversation.save(
-            update_fields=[
-                "conversation_state",
-                "lead_status",
-                "updated_at",
-            ]
-        )
+            conversation.save(
+                update_fields=[
+                    "conversation_state",
+                    "lead_status",
+                    "updated_at",
+                ]
+            )
         
     # =====================================================
     # HANDOFF TO HUMAN
@@ -1838,40 +1976,22 @@ class LiveChatConsumer(
         message,
     ):
 
-        conversation = (
-            LiveChatConversation.objects.get(
+        with transaction.atomic():
+            conversation = LiveChatConversation.objects.select_for_update().get(
                 id=conversation_id
             )
-        )
+            if conversation.status == "closed" or conversation.mode in {
+                "human",
+                "waiting_for_human",
+            }:
+                return
 
-        if conversation.mode not in {
-            "human",
-            "waiting_for_human",
-        }:
-
-            conversation.mode = (
-                "waiting_for_human"
-            )
-
-            conversation.status = (
-                "waiting"
-            )
-
-            conversation.lead_status = (
-                "qualified"
-                if conversation.lead_status
-                in {
-                    "collecting",
-                    "qualified",
-                }
-                else conversation.lead_status
-            )
-
+            conversation.mode = "waiting_for_human"
+            conversation.status = "waiting"
+            if conversation.lead_status in {"collecting", "qualified"}:
+                conversation.lead_status = "qualified"
             conversation.assigned_to = None
-            conversation.updated_at = (
-                timezone.now()
-            )
-
+            conversation.updated_at = timezone.now()
             conversation.save(
                 update_fields=[
                     "mode",
@@ -1880,6 +2000,10 @@ class LiveChatConsumer(
                     "assigned_to",
                     "updated_at",
                 ]
+            )
+            queue_dashboard_update(
+                conversation.pk,
+                "conversation.waiting",
             )
 
     # =====================================================
@@ -1909,16 +2033,17 @@ class LiveChatConsumer(
             self.chat_closed = True
             return
 
-        await self.save_message(
-            conversation.id,
-            "bot",
-            "YD Cleaning Assistant",
-            message,
-        )
-
-        await self.touch_conversation(
-            conversation.id
-        )
+        if conversation.mode != "ai":
+            return
+        try:
+            message_record_id = await self.save_message(
+                conversation.id,
+                "bot",
+                "YD Cleaning Assistant",
+                message,
+            )
+        except ValueError:
+            return
 
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -1929,6 +2054,7 @@ class LiveChatConsumer(
                     "YD Cleaning Assistant"
                 ),
                 "message": message,
+                "message_id": message_record_id,
             },
         )
 
@@ -1937,16 +2063,15 @@ class LiveChatConsumer(
     # =====================================================
 
     @database_sync_to_async
+    @transaction.atomic
     def update_conversation_state(
         self,
         conversation_id,
         analysis,
     ):
 
-        conversation = (
-            LiveChatConversation.objects.get(
-                id=conversation_id
-            )
+        conversation = LiveChatConversation.objects.select_for_update().get(
+            id=conversation_id
         )
 
         state = dict(
@@ -2065,16 +2190,17 @@ class LiveChatConsumer(
                     customer_state
                 )
 
-        conversation.conversation_state = (
-            state
-        )
-
+        conversation.conversation_state = state
         conversation.save(
             update_fields=[
                 "intent",
                 "service",
                 "conversation_state",
             ]
+        )
+        queue_dashboard_update(
+            conversation.pk,
+            "conversation.updated",
         )
 
     # =====================================================
@@ -2088,21 +2214,39 @@ class LiveChatConsumer(
         sender_type,
         sender_name,
         message,
+        sender_id=None,
     ):
         from notifications.utils import notify_admins
 
         with transaction.atomic():
             conversation = (
-                LiveChatConversation.objects.get(
+                LiveChatConversation.objects.select_for_update().get(
                     id=conversation_id
                 )
             )
+            if conversation.status == "closed":
+                raise ValueError("This conversation is closed.")
+            if (
+                sender_type == "staff"
+                and conversation.assigned_to_id != sender_id
+            ):
+                raise PermissionError(
+                    "This conversation is not assigned to this staff member."
+                )
+            if sender_type == "bot" and conversation.mode != "ai":
+                raise ValueError("AI responses are no longer enabled for this conversation.")
 
-            LiveChatMessage.objects.create(
+            saved_message = LiveChatMessage.objects.create(
                 conversation=conversation,
                 sender_type=sender_type,
                 sender_name=sender_name,
                 message=message,
+            )
+            conversation.updated_at = timezone.now()
+            conversation.save(update_fields=["updated_at"])
+            queue_dashboard_update(
+                conversation.pk,
+                "conversation.message",
             )
 
             if sender_type == "customer":
@@ -2112,39 +2256,7 @@ class LiveChatConsumer(
                     "support",
                     "/dashboard/support/",
                 )
-
-    # =====================================================
-    # TOUCH CONVERSATION
-    # =====================================================
-
-    @database_sync_to_async
-    def touch_conversation(
-        self,
-        conversation_id,
-    ):
-
-        conversation = (
-            LiveChatConversation.objects.get(
-                id=conversation_id
-            )
-        )
-
-        # -------------------------------------------------
-        # Never update a closed conversation.
-        # -------------------------------------------------
-
-        if conversation.status == "closed":
-            return
-
-        conversation.updated_at = (
-            timezone.now()
-        )
-
-        conversation.save(
-            update_fields=[
-                "updated_at",
-            ]
-        )
+            return saved_message.pk
 
     # =====================================================
     # TAKEOVER
@@ -2157,45 +2269,52 @@ class LiveChatConsumer(
         user_id,
     ):
 
-        conversation = (
-            LiveChatConversation.objects.get(
+        with transaction.atomic():
+            conversation = LiveChatConversation.objects.select_for_update().get(
                 id=conversation_id
             )
-        )
+            if conversation.status == "closed":
+                return False
+            if (
+                conversation.status == "active"
+                and conversation.assigned_to_id not in {None, user_id}
+            ):
+                return False
+            user = User.objects.get(id=user_id)
+            conversation.status = "active"
+            conversation.mode = "human"
+            conversation.assigned_to = user
+            conversation.updated_at = timezone.now()
+            conversation.save(
+                update_fields=[
+                    "status",
+                    "mode",
+                    "assigned_to",
+                    "updated_at",
+                ]
+            )
+            system_message = LiveChatMessage.objects.create(
+                conversation=conversation,
+                sender_type="system",
+                sender_name="YD Cleaning Support",
+                message=(
+                    f"{user.get_full_name() or user.username} "
+                    "has taken over this conversation."
+                ),
+            )
+            from dashboard.models import ActivityLog
 
-        user = User.objects.get(
-            id=user_id
-        )
-
-        conversation.status = (
-            "active"
-        )
-
-        conversation.mode = (
-            "human"
-        )
-
-        conversation.assigned_to = (
-            user
-        )
-
-        conversation.updated_at = (
-            timezone.now()
-        )
-
-        conversation.save(
-            update_fields=[
-                "status",
-                "mode",
-                "assigned_to",
-                "updated_at",
-            ]
-        )
-
-        # -------------------------------------------------
-        # Intentionally no duplicate system DB message.
-        # The group event handles the notification.
-        # -------------------------------------------------
+            ActivityLog.objects.create(
+                user=user,
+                action_type="system",
+                title="Live Chat Taken Over",
+                description=f"Conversation #{conversation.pk} assigned to staff.",
+            )
+            queue_dashboard_update(
+                conversation.pk,
+                "conversation.assigned",
+            )
+            return system_message.pk
 
     # =====================================================
     # CLOSE CONVERSATION
@@ -2209,42 +2328,45 @@ class LiveChatConsumer(
         message,
     ):
 
-        conversation = (
-            LiveChatConversation.objects.get(
+        with transaction.atomic():
+            conversation = LiveChatConversation.objects.select_for_update().get(
                 id=conversation_id
             )
-        )
+            if conversation.status == "closed":
+                return None
+            now = timezone.now()
+            conversation.status = "closed"
+            conversation.mode = "closed"
+            conversation.closed_at = now
+            conversation.updated_at = now
+            conversation.save(
+                update_fields=[
+                    "status",
+                    "mode",
+                    "closed_at",
+                    "updated_at",
+                ]
+            )
+            system_message = LiveChatMessage.objects.create(
+                conversation=conversation,
+                sender_type="system",
+                sender_name=sender_name[:150],
+                message=message[:2000],
+            )
+            user = getattr(self, "scope", {}).get("user")
+            from dashboard.models import ActivityLog
 
-        conversation.status = (
-            "closed"
-        )
-
-        conversation.mode = (
-            "closed"
-        )
-
-        conversation.updated_at = (
-            timezone.now()
-        )
-
-        conversation.save(
-            update_fields=[
-                "status",
-                "mode",
-                "updated_at",
-            ]
-        )
-
-        # -------------------------------------------------
-        # Create ONE system message in the database.
-        # -------------------------------------------------
-
-        LiveChatMessage.objects.create(
-            conversation=conversation,
-            sender_type="system",
-            sender_name=sender_name,
-            message=message,
-        )
+            ActivityLog.objects.create(
+                user=user if getattr(user, "is_authenticated", False) else None,
+                action_type="system",
+                title="Live Chat Closed",
+                description=f"Conversation #{conversation.pk} closed by staff.",
+            )
+            queue_dashboard_update(
+                conversation.pk,
+                "conversation.closed",
+            )
+            return system_message.pk
 
     # =====================================================
     # FAQ
@@ -2516,6 +2638,25 @@ class LiveChatConsumer(
                     "message",
                     "",
                 ),
+                "message_id": event.get("message_id"),
+            }
+        )
+
+    async def dashboard_update(self, event):
+        if not await self.has_permission("view"):
+            await self.channel_layer.group_discard(
+                DASHBOARD_GROUP,
+                self.channel_name,
+            )
+            self.dashboard_group_joined = False
+            return
+        await self.send_json(
+            {
+                "type": "dashboard_update",
+                "event": event.get("event", "conversation.updated"),
+                "conversation": event.get("conversation"),
+                "conversation_id": event.get("conversation_id"),
+                "occurred_at": event.get("occurred_at"),
             }
         )
 
@@ -2538,6 +2679,9 @@ class LiveChatConsumer(
                 "status": event.get(
                     "status",
                 ),
+                "message_id": event.get("message_id"),
+                "assigned_to_id": event.get("assigned_to_id"),
+                "assigned_to": event.get("assigned_to"),
             }
         )
 
