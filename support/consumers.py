@@ -2089,19 +2089,29 @@ class LiveChatConsumer(
         sender_name,
         message,
     ):
+        from notifications.utils import notify_admins
 
-        conversation = (
-            LiveChatConversation.objects.get(
-                id=conversation_id
+        with transaction.atomic():
+            conversation = (
+                LiveChatConversation.objects.get(
+                    id=conversation_id
+                )
             )
-        )
 
-        LiveChatMessage.objects.create(
-            conversation=conversation,
-            sender_type=sender_type,
-            sender_name=sender_name,
-            message=message,
-        )
+            LiveChatMessage.objects.create(
+                conversation=conversation,
+                sender_type=sender_type,
+                sender_name=sender_name,
+                message=message,
+            )
+
+            if sender_type == "customer":
+                notify_admins(
+                    "New Website Chat Message",
+                    f"A visitor sent a message in live chat #{conversation.pk}.",
+                    "support",
+                    "/dashboard/support/",
+                )
 
     # =====================================================
     # TOUCH CONVERSATION

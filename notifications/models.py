@@ -17,6 +17,7 @@ class Notification(models.Model):
         ("payroll", "Payroll"),
         ("leave", "Leave"),
         ("roster", "Roster"),
+        ("support", "Support"),
         ("system", "System"),
     ]
 

@@ -58,6 +58,70 @@ class IntentDetectionTests(TestCase):
 
 
 class LiveChatConversationTests(TestCase):
+	def test_customer_message_notifies_staff_dashboard_without_exposing_message(self):
+		staff_user = User.objects.create_user(
+			"live-chat-staff",
+			is_staff=True,
+		)
+		User.objects.create_user("live-chat-customer")
+		conversation = LiveChatConversation.objects.create(
+			name="Website Visitor",
+			session_key="notification-session",
+		)
+		consumer = LiveChatConsumer()
+
+		async_to_sync(consumer.save_message)(
+			conversation.pk,
+			"customer",
+			"Website Visitor",
+			"Please call me about a private issue.",
+		)
+
+		notification = Notification.objects.get(user=staff_user)
+		self.assertEqual(notification.title, "New Website Chat Message")
+		self.assertEqual(notification.notification_type, "support")
+		self.assertEqual(notification.link, "/dashboard/support/")
+		self.assertIn(f"#{conversation.pk}", notification.message)
+		self.assertNotIn(
+			"private issue",
+			notification.message,
+		)
+		self.assertEqual(
+			Notification.objects.filter(
+				user__username="live-chat-customer",
+			).count(),
+			0,
+		)
+		self.assertTrue(
+			LiveChatMessage.objects.filter(
+				conversation=conversation,
+				sender_type="customer",
+				message="Please call me about a private issue.",
+			).exists()
+		)
+
+	def test_staff_message_does_not_notify_dashboard(self):
+		staff_user = User.objects.create_user(
+			"live-chat-staff-sender",
+			is_staff=True,
+		)
+		conversation = LiveChatConversation.objects.create(
+			name="Website Visitor",
+			session_key="staff-message-session",
+		)
+		consumer = LiveChatConsumer()
+
+		async_to_sync(consumer.save_message)(
+			conversation.pk,
+			"staff",
+			"Support Agent",
+			"How can I help?",
+		)
+
+		self.assertFalse(
+			Notification.objects.filter(user=staff_user).exists()
+		)
+
 	def test_same_session_key_reuses_one_conversation(self):
 		consumer = LiveChatConsumer()
 		get_conversation = async_to_sync(

@@ -81,6 +81,7 @@ def notification_context(request):
         "payroll": unread_by_type.get("payroll", 0),
         "leave": unread_by_type.get("leave", 0),
         "roster": unread_by_type.get("roster", 0),
+        "support_notifications": unread_by_type.get("support", 0),
         "support": (
             SupportTicket.objects.filter(status="open").count()
             + LiveChatConversation.objects.filter(status="waiting").count()

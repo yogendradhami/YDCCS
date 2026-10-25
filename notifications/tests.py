@@ -101,6 +101,12 @@ class NotificationStatusTests(TestCase):
         )
         Notification.objects.create(
             user=user,
+            title="New website chat message",
+            message="A visitor sent a message in live chat #1.",
+            notification_type="support",
+        )
+        Notification.objects.create(
+            user=user,
             title="Read booking",
             message="This booking was read.",
             notification_type="booking",
@@ -111,8 +117,11 @@ class NotificationStatusTests(TestCase):
         response = self.client.get(reverse("notification_status"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["unread_count"], 2)
-        self.assertEqual(response.json()["unread_by_type"], {"quote": 2})
+        self.assertEqual(response.json()["unread_count"], 3)
+        self.assertEqual(
+            response.json()["unread_by_type"],
+            {"quote": 2, "support": 1},
+        )
 
 
 class ReminderCenterReadStateTests(TestCase):

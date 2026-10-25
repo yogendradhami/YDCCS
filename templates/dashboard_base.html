@@ -578,6 +578,13 @@
                                 {{ notification_counts.support }}
                             </span>
                         {% endif %}
+                        <span
+                            class="side-badge"
+                            data-notification-type="support"
+                            aria-label="{{ notification_counts.support_notifications|default:0 }} unread support notifications"
+                            title="{{ notification_counts.support_notifications|default:0 }} unread support notifications"
+                            {% if not notification_counts.support_notifications %}hidden{% endif %}
+                        >{{ notification_counts.support_notifications|default:0 }}</span>
                     </a>
 
 
