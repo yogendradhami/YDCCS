@@ -5,6 +5,53 @@ from django.test import TestCase, override_settings
 from customers.models import Customer
 
 
+class CustomerPortalLayoutTests(TestCase):
+	def setUp(self):
+		self.user = User.objects.create_user(
+			username="customer-layout@example.com",
+			password="Customer password 123!",
+		)
+		Customer.objects.create(
+			user=self.user,
+			full_name="Portal Customer",
+			email=self.user.email,
+			phone="0400123456",
+		)
+
+	def test_customer_portal_has_one_portal_header_without_public_sections(self):
+		self.client.force_login(self.user)
+		response = self.client.get("/portal/bookings/")
+		content = response.content.decode()
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(content.count('class="customer-portal-header"'), 1)
+		self.assertContains(response, 'aria-label="Customer portal navigation"')
+		self.assertNotContains(response, 'class="yd-main-header"')
+		self.assertNotContains(response, 'id="offerBanner"')
+		self.assertNotContains(response, 'class="yd-why-choose-section"')
+		self.assertNotContains(response, 'id="yd-faq-section"')
+
+	def test_customer_login_keeps_public_header_without_duplicate_brand(self):
+		response = self.client.get("/portal/login/")
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'class="auth-card"')
+		self.assertContains(response, "Customer Portal")
+		self.assertContains(response, 'name="username"')
+		self.assertContains(response, 'name="password"')
+		self.assertContains(response, 'class="yd-main-header"')
+		self.assertContains(response, 'id="offerBanner"')
+		self.assertContains(response, 'class="premium-footer"')
+		self.assertNotContains(response, 'class="portal-auth-brand"')
+		self.assertNotContains(response, "Secure portal access")
+		self.assertNotContains(
+			response,
+			'<img src="/static/images/company/logoo-256.webp"',
+		)
+		self.assertNotContains(response, 'class="yd-why-choose-section"')
+		self.assertNotContains(response, 'id="yd-faq-section"')
+
+
 class CustomerRegistrationTests(TestCase):
 	def test_registration_rejects_invalid_customer_fields(self):
 		response = self.client.post(

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/portal/portal-shell.css' %}">
+{% endblock %}
+
+{% block faq_schema %}{% endblock %}
+{% block public_header %}{% endblock %}
+{% block default_why_choose_section %}{% endblock %}
+{% block default_faq_section %}{% endblock %}
+{% block public_footer %}{% endblock %}

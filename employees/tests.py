@@ -19,6 +19,59 @@ from quotes.models import QuoteRequest
 from .models import Employee
 
 
+class EmployeePortalLayoutTests(TestCase):
+	def setUp(self):
+		self.user = User.objects.create_user(
+			username="employee-layout@example.com",
+			password="Employee password 123!",
+		)
+		self.employee = Employee.objects.create(
+			user=self.user,
+			full_name="Portal Employee",
+			phone="0400123456",
+			email=self.user.email,
+		)
+		programme = InductionProgramme.objects.create(name="Layout test induction")
+		EmployeeInduction.objects.create(
+			employee=self.employee,
+			programme=programme,
+			status="completed",
+		)
+
+	def test_employee_portal_has_one_portal_header_without_public_sections(self):
+		self.client.force_login(self.user)
+		response = self.client.get("/employee/jobs/")
+		content = response.content.decode()
+
+		self.assertEqual(response.status_code, 200, response.headers.get("Location"))
+		self.assertEqual(content.count('class="employee-portal-header"'), 1)
+		self.assertContains(response, 'aria-label="Employee portal navigation"')
+		self.assertNotContains(response, 'class="yd-main-header"')
+		self.assertNotContains(response, 'id="offerBanner"')
+		self.assertNotContains(response, 'class="yd-why-choose-section"')
+		self.assertNotContains(response, 'id="yd-faq-section"')
+
+	def test_employee_login_keeps_public_header_without_duplicate_brand(self):
+		response = self.client.get("/employee/login/")
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'class="auth-card"')
+		self.assertContains(response, "Employee Portal")
+		self.assertContains(response, 'name="username"')
+		self.assertContains(response, 'name="password"')
+		self.assertContains(response, 'class="yd-main-header"')
+		self.assertContains(response, 'id="offerBanner"')
+		self.assertContains(response, 'class="premium-footer"')
+		self.assertNotContains(response, 'class="portal-auth-brand"')
+		self.assertNotContains(response, "Secure portal access")
+		self.assertNotContains(
+			response,
+			'<img src="/static/images/company/logoo-256.webp"',
+		)
+		self.assertNotContains(response, 'class="yd-why-choose-section"')
+		self.assertNotContains(response, 'id="yd-faq-section"')
+
+
 class EmployeePasswordChangeTests(TestCase):
 	def setUp(self):
 		self.user = User.objects.create_user(

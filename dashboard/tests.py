@@ -19,6 +19,17 @@ from rosters.models import Roster
 from quotes.models import QuoteRequest
 
 
+class DashboardLoginLayoutTests(TestCase):
+    def test_login_omits_why_choose_and_faq_sections(self):
+        response = self.client.get(reverse("dashboard_login"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="yd-main-header"')
+        self.assertContains(response, 'class="premium-footer"')
+        self.assertNotContains(response, 'class="yd-why-choose-section"')
+        self.assertNotContains(response, 'id="yd-faq-section"')
+
+
 @override_settings(
 	EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
 	ADMIN_EMAIL="admin@example.com",

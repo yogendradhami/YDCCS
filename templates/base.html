@@ -516,7 +516,9 @@
 
 <body>
 
-    {% include 'includes/header.html' %}
+    {% block public_header %}
+        {% include 'includes/header.html' %}
+    {% endblock %}
 
     <main id="main-content" role="main">
 
@@ -558,7 +560,9 @@
         {% endblock %}
 
 
-        {% include 'includes/footer.html' %}
+        {% block public_footer %}
+            {% include 'includes/footer.html' %}
+        {% endblock %}
 
     </main>
 

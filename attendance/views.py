@@ -43,7 +43,11 @@ def attendance_dashboard(request):
     return render(
         request,
         "attendance/attendance_dashboard.html",
-        {"jobs": jobs, "attendance_logs": attendance_logs},
+        {
+            "employee": employee,
+            "jobs": jobs,
+            "attendance_logs": attendance_logs,
+        },
     )
 
 

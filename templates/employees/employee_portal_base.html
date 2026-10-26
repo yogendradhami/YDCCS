@@ -1,0 +1,11 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/portal/employee-dashboard.css' %}">
+{% endblock %}
+
+{% block public_header %}
+    {% include 'portal/partials/employee_header.html' %}
+{% endblock %}

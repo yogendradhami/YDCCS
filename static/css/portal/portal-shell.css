@@ -1,0 +1,87 @@
+.customer-portal-nav,
+.employee-portal-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.customer-portal-nav a,
+.employee-portal-nav a {
+    padding: 9px 10px;
+    border-radius: 8px;
+    color: #475467;
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.customer-portal-nav a:hover,
+.employee-portal-nav a:hover {
+    background: #f0f4f7;
+    color: #102a43;
+}
+
+.portal-auth-content {
+    width: 100%;
+}
+
+.portal-auth-content .auth-card {
+    width: min(100%, 520px);
+    margin: 0 auto;
+    padding: 32px;
+    border: 1px solid #dce5e9;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 16px 44px rgba(16, 42, 67, 0.09);
+}
+
+.portal-auth-content .auth-card-wide {
+    width: 100%;
+}
+
+.portal-auth-content input,
+.portal-auth-content select,
+.portal-auth-content textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5dc;
+    border-radius: 7px;
+    background: #fff;
+    color: #172b3a;
+}
+
+.portal-auth-content input:focus,
+.portal-auth-content select:focus,
+.portal-auth-content textarea:focus {
+    border-color: #167d8d;
+    outline: 3px solid rgba(22, 125, 141, 0.14);
+}
+
+@media (max-width: 900px) {
+    .customer-topbar,
+    .portal-topbar {
+        flex-wrap: wrap;
+        padding: 8px 0;
+    }
+
+    .customer-portal-nav,
+    .employee-portal-nav {
+        order: 3;
+        flex-basis: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+}
+
+@media (max-width: 600px) {
+    .portal-auth-content .auth-card {
+        padding: 24px 20px;
+    }
+
+    .customer-logout,
+    .portal-logout {
+        display: inline-flex;
+    }
+}

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'portal/customer_base.html' %}
 {% load static %}
 
 {% block title %}
@@ -12,76 +12,6 @@ Customer Dashboard | YD Commercial Cleaning
 {% block content %}
 
 <section class="customer-portal">
-
-    <!-- =====================================================
-         CUSTOMER PORTAL HEADER
-    ====================================================== -->
-    <header class="customer-portal-header">
-
-        <div class="customer-portal-container">
-
-            <div class="customer-topbar">
-
-                <a href="{% url 'home' %}" class="customer-brand">
-
-                    <span class="customer-brand-mark">
-                        YD
-                    </span>
-
-                    <span class="customer-brand-copy">
-                        <strong>YD Commercial Cleaning</strong>
-                        <small>Customer Portal</small>
-                    </span>
-
-                </a>
-
-
-                <div class="customer-topbar-actions">
-
-                    <a href="#customer-notifications"
-                       class="customer-notification"
-                       aria-label="Notifications">
-
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                            <path d="M10 21h4"/>
-                        </svg>
-
-                        {% if unread_notifications %}
-                            <span class="notification-count">
-                                {{ unread_notifications }}
-                            </span>
-                        {% endif %}
-
-                    </a>
-
-
-                    <a href="/portal/profile/" class="customer-user-mini">
-
-                        <span class="customer-avatar-small">
-                            {{ customer.full_name|first|upper }}
-                        </span>
-
-                        <span class="customer-user-copy">
-                            <strong>{{ customer.full_name }}</strong>
-                            <small>{{ customer.email }}</small>
-                        </span>
-
-                    </a>
-
-
-                    <a href="/portal/logout/" class="customer-logout">
-                        Logout
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </header>
-
 
     <!-- =====================================================
          MAIN

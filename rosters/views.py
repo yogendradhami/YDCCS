@@ -529,6 +529,7 @@ def employee_roster(request):
         request,
         "employees/employee_roster.html",
         {
+            "employee": employee,
             "rosters": rosters,
             "today_shifts": today_shifts,
             "upcoming_shifts": upcoming_shifts,

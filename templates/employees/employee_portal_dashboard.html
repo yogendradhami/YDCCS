@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'employees/employee_portal_base.html' %}
 {% load static %}
 
 {% block title %}
@@ -12,66 +12,6 @@ Employee Dashboard | YD Commercial Cleaning
 {% block content %}
 
 <section class="employee-portal">
-
-    <!-- =========================================================
-         PORTAL HEADER
-    ========================================================== -->
-    <header class="employee-portal-header">
-        <div class="employee-portal-container">
-
-            <div class="portal-topbar">
-
-                <a href="/" class="portal-brand" aria-label="YD Commercial Cleaning">
-                    <span class="portal-brand-mark">YD</span>
-
-                    <span class="portal-brand-copy">
-                        <strong>YD Commercial Cleaning</strong>
-                        <small>Employee Portal</small>
-                    </span>
-                </a>
-
-                <div class="portal-topbar-actions">
-
-                    <a href="#notificationBell"
-                       class="portal-notification"
-                       aria-label="Notifications">
-                        <span class="portal-notification-icon">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                                <path d="M10 21h4"/>
-                            </svg>
-                        </span>
-                    </a>
-
-                    <a href="/employee/profile/" class="portal-user-mini">
-                        {% if employee.image %}
-                            <img
-                                src="{{ employee.image.url }}"
-                                alt="{{ employee.full_name }}"
-                            >
-                        {% else %}
-                            <span>
-                                {{ employee.full_name|first|upper }}
-                            </span>
-                        {% endif %}
-
-                        <span class="portal-user-mini-copy">
-                            <strong>{{ employee.full_name }}</strong>
-                            <small>{{ employee.get_availability_display }}</small>
-                        </span>
-                    </a>
-
-                    <a href="/employee/logout/" class="portal-logout">
-                        Logout
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-    </header>
-
 
     <!-- =========================================================
          MAIN CONTENT
