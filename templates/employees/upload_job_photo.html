@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 Upload Job Photo | Employee Portal
@@ -94,6 +95,7 @@ Upload Job Photo | Employee Portal
     </div>
 </section>
 
+<script src="{% static 'js/fast-image-upload.js' %}"></script>
 <script>
 (() => {
     const form = document.getElementById("job-photo-upload-form");
@@ -110,6 +112,7 @@ Upload Job Photo | Employee Portal
     const activeRequests = new Set();
     let signedNonce = "";
     let cancelled = false;
+    let submissionInProgress = false;
 
     function setStatus(message) {
         status.hidden = false;
@@ -212,11 +215,25 @@ Upload Job Photo | Employee Portal
     cancelButton.addEventListener("click", () => {
         cancelled = true;
         activeRequests.forEach((request) => request.abort());
+        setStatus("Cancelling upload…");
     });
 
     form.addEventListener("submit", async (event) => {
-        const files = Array.from(input.files || []);
-        if (!files.length) return;
+        if (submissionInProgress) {
+            event.preventDefault();
+            return;
+        }
+
+        let files = Array.from(input.files || []);
+        if (!files.length) {
+            if (!form.reportValidity()) {
+                event.preventDefault();
+                return;
+            }
+            submissionInProgress = true;
+            button.disabled = true;
+            return;
+        }
 
         event.preventDefault();
         if (!form.reportValidity()) return;
@@ -229,20 +246,38 @@ Upload Job Photo | Employee Portal
                 setStatus("Use JPG, PNG, WebP, or HEIC photos.");
                 return;
             }
-            if (file.size > maxBytes) {
-                setStatus(`${file.name} is larger than 25 MB.`);
-                return;
-            }
         }
 
+        submissionInProgress = true;
         button.disabled = true;
         cancelButton.hidden = false;
         cancelled = false;
         progress.hidden = false;
         progress.value = 0;
-        setStatus("Preparing secure upload…");
+        setStatus("Optimizing photos…");
 
         try {
+            if (window.YDImageUpload) {
+                try {
+                    files = await window.YDImageUpload.prepareFiles(
+                        files,
+                        (preparedCount, totalCount) => {
+                            setStatus(`Optimizing photos: ${preparedCount}/${totalCount}`);
+                        }
+                    );
+                } catch (error) {
+                    console.warn("Photo optimization failed; using original files.", error);
+                }
+            }
+            if (cancelled) throw new Error("Upload cancelled.");
+
+            for (const file of files) {
+                if (file.size > maxBytes) {
+                    throw new Error(`${file.name} is larger than 25 MB.`);
+                }
+            }
+
+            setStatus("Preparing secure upload…");
             const params = new URLSearchParams({
                 upload_action: "sign",
                 count: String(files.length),
@@ -301,12 +336,14 @@ Upload Job Photo | Employee Portal
             input.value = "";
             setStatus("Saving uploaded photos…");
             cancelButton.hidden = true;
+            submissionInProgress = true;
             form.submit();
         } catch (error) {
             cancelled = true;
             activeRequests.forEach((request) => request.abort());
             await cancelRemoteBatch();
             setStatus(error.message || "The upload failed. Please try again.");
+            submissionInProgress = false;
             button.disabled = false;
             cancelButton.hidden = true;
         }

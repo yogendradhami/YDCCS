@@ -8,8 +8,10 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
+from bookings.models import Booking
 from employees.models import EmployeeGoogleAccount
 from googleapiclient.errors import HttpError
+from .models import GoogleAccount
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,45 @@ class CalendarNotConfigured(RuntimeError):
 EMPLOYEE_GOOGLE_SCOPES = [
     "https://www.googleapis.com/auth/calendar",
 ]
+
+COMPANY_GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+]
+
+
+def get_company_google_calendar_service():
+    google_account = GoogleAccount.objects.order_by(
+        "-updated_at", "-id"
+    ).first()
+    if not google_account or not google_account.access_token:
+        return None
+
+    credentials = Credentials(
+        token=google_account.access_token,
+        refresh_token=google_account.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=settings.GOOGLE_CLIENT_ID,
+        client_secret=settings.GOOGLE_CLIENT_SECRET,
+        scopes=COMPANY_GOOGLE_SCOPES,
+        expiry=google_account.updated_at + timedelta(minutes=55),
+    )
+
+    if credentials.expired:
+        if not credentials.refresh_token:
+            raise CalendarNotConfigured(
+                "The company Google Calendar token expired without a refresh token. "
+                "Reconnect the company Google account."
+            )
+
+        credentials.refresh(Request())
+        google_account.access_token = credentials.token
+        if credentials.refresh_token:
+            google_account.refresh_token = credentials.refresh_token
+        google_account.save(
+            update_fields=["access_token", "refresh_token", "updated_at"]
+        )
+
+    return build("calendar", "v3", credentials=credentials)
 
 
 def get_employee_google_calendar_service(employee):
@@ -132,21 +173,19 @@ def _upsert_calendar_event(service, event_id, event_body, resource_type, resourc
 
 
 
-def create_or_update_booking_event(booking):
+def create_or_update_booking_event(booking, *, service=None):
     """
-    Create or update the booking event in the assigned
-    employee's Google Calendar.
+    Create or update the booking event in the company Google Calendar.
     """
 
     employee = booking.assigned_employee
 
-    if not employee:
-        return None
-
-    service = get_employee_google_calendar_service(employee)
-
     if not service:
-        return None
+        service = get_company_google_calendar_service()
+        if not service:
+            raise CalendarNotConfigured(
+                "The company Google Calendar is not connected."
+            )
 
     start_time = booking.booking_time
     end_time = None
@@ -175,7 +214,7 @@ def create_or_update_booking_event(booking):
     else:
         end_datetime = start_datetime + timedelta(hours=2)
 
-    employee_name = employee.full_name
+    employee_name = employee.full_name if employee else "Unassigned"
     customer = booking.customer
     customer_name = customer.full_name if customer else "No customer"
     customer_phone = customer.phone if customer else "Not provided"
@@ -363,14 +402,13 @@ def _delete_calendar_event(service, event_id, resource_type, resource_id):
 
 
 def delete_booking_event(booking):
-    """Delete the booking event from the assigned employee's calendar."""
-    employee = booking.assigned_employee
+    """Delete the booking event from the company Google Calendar."""
     event_id = booking.google_calendar_event_id
 
-    if not employee or not event_id:
+    if not event_id:
         return False
 
-    service = get_employee_google_calendar_service(employee)
+    service = get_company_google_calendar_service()
     if not service:
         return False
 
@@ -380,6 +418,34 @@ def delete_booking_event(booking):
     booking.google_calendar_event_id = None
     booking.save(update_fields=["google_calendar_event_id"])
     return True
+
+
+def sync_existing_bookings_to_company_calendar():
+    """Backfill non-cancelled bookings into the connected company calendar."""
+    service = get_company_google_calendar_service()
+    if not service:
+        raise CalendarNotConfigured("The company Google Calendar is not connected.")
+
+    synced_count = 0
+    failed_count = 0
+
+    for booking in Booking.objects.exclude(status="cancelled").order_by("id"):
+        try:
+            event = create_or_update_booking_event(booking, service=service)
+            if event is None:
+                raise CalendarServiceUnavailable(
+                    "Google Calendar did not return an event for the booking."
+                )
+        except Exception:
+            failed_count += 1
+            logger.exception(
+                "Could not sync booking %s to the company Google Calendar.",
+                booking.pk,
+            )
+        else:
+            synced_count += 1
+
+    return synced_count, failed_count
 
 
 def delete_roster_event(roster):

@@ -96,19 +96,33 @@ def google_callback(request):
         credentials = flow.credentials
 
 
-        # Save Google token in database
-        GoogleAccount.objects.all().delete()
+        # Preserve the existing refresh token when Google does not issue a new
+        # one during reconnection.
+        google_account = GoogleAccount.objects.order_by(
+            "-updated_at", "-id"
+        ).first()
+        if google_account is None:
+            google_account = GoogleAccount()
+        google_account.access_token = credentials.token
+        if credentials.refresh_token:
+            google_account.refresh_token = credentials.refresh_token
+        id_token = credentials.id_token
+        if isinstance(id_token, dict):
+            google_account.email = id_token.get("email", "")
+        google_account.save()
 
-        GoogleAccount.objects.create(
-            access_token=credentials.token,
-            refresh_token=credentials.refresh_token or ""
-        )
+        from .calendar_utils import sync_existing_bookings_to_company_calendar
+
+        synced_count, failed_count = sync_existing_bookings_to_company_calendar()
 
 
         return HttpResponse(
-            """
+            f"""
             <h2>✅ Google connected successfully</h2>
             <p>Your Google account is connected.</p>
+            <p>{synced_count} existing job(s) synced to the company calendar.</p>
+            <p>{failed_count} job(s) could not be synced. Check the application logs
+            and reconnect or retry after fixing the reported issue.</p>
             <a href="/google/reviews/">Check Reviews</a>
             """
         )

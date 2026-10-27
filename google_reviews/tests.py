@@ -7,7 +7,7 @@ from bookings.models import Booking
 from employees.models import Employee
 from rosters.models import Roster
 
-from .models import GoogleReview
+from .models import GoogleAccount, GoogleReview
 from .calendar_utils import delete_booking_event, delete_roster_event
 from .review_utils import get_google_reviews_api, get_public_google_reviews
 from googleapiclient.errors import HttpError
@@ -17,6 +17,7 @@ from google_reviews.calendar_utils import (
     CalendarServiceUnavailable,
     create_or_update_booking_event,
     create_or_update_roster_event,
+    sync_existing_bookings_to_company_calendar,
 )
 
 
@@ -36,6 +37,39 @@ class GoogleReviewsUtilsTests(TestCase):
         self.assertEqual(reviews[0]["reviewer_name"], "Alicia")
         self.assertEqual(reviews[0]["comment"], "Excellent service and attention to detail.")
         self.assertEqual(reviews[0]["rating"], "⭐⭐⭐⭐⭐")
+
+    def test_company_google_callback_backfills_bookings_and_keeps_refresh_token(self):
+        account = GoogleAccount.objects.create(
+            access_token="old-access-token",
+            refresh_token="existing-refresh-token",
+        )
+        flow = MagicMock()
+        flow.credentials.token = "new-access-token"
+        flow.credentials.refresh_token = None
+        flow.credentials.id_token = {"email": "company@example.com"}
+
+        session = self.client.session
+        session["google_oauth_state"] = "oauth-state"
+        session["google_code_verifier"] = "oauth-verifier"
+        session.save()
+
+        with (
+            patch("google_reviews.views.get_flow", return_value=flow),
+            patch(
+                "google_reviews.calendar_utils.sync_existing_bookings_to_company_calendar",
+                return_value=(3, 1),
+            ) as sync_bookings,
+        ):
+            response = self.client.get("/google/oauth/callback/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "3 existing job(s) synced")
+        self.assertContains(response, "1 job(s) could not be synced")
+        sync_bookings.assert_called_once_with()
+        account.refresh_from_db()
+        self.assertEqual(account.access_token, "new-access-token")
+        self.assertEqual(account.refresh_token, "existing-refresh-token")
+        self.assertEqual(account.email, "company@example.com")
 
 
 class CalendarDeleteRetryTests(TestCase):
@@ -62,13 +96,53 @@ class CalendarDeleteRetryTests(TestCase):
             google_calendar_event_id="roster-event-1",
         )
 
+    def test_booking_sync_reports_missing_company_calendar_configuration(self):
+        with patch(
+            "google_reviews.calendar_utils.get_company_google_calendar_service",
+            return_value=None,
+        ):
+            with self.assertRaises(CalendarNotConfigured):
+                create_or_update_booking_event(self.booking)
+
+    def test_company_calendar_sync_creates_event_for_unassigned_booking(self):
+        self.booking.status = "cancelled"
+        self.booking.save(update_fields=["status"])
+        booking = Booking.objects.create(
+            service_type="Office Cleaning",
+            booking_date=timezone.localdate(),
+            booking_time=timezone.localtime().time().replace(second=0, microsecond=0),
+            address="1 King Street",
+            suburb_postcode="Adelaide 5000",
+        )
+        service = MagicMock()
+        service.events.return_value.insert.return_value.execute.return_value = {
+            "id": "company-calendar-event",
+        }
+
+        with patch(
+            "google_reviews.calendar_utils.get_company_google_calendar_service",
+            return_value=service,
+        ):
+            synced_count, failed_count = sync_existing_bookings_to_company_calendar()
+
+        self.assertEqual((synced_count, failed_count), (1, 0))
+        booking.refresh_from_db()
+        self.assertEqual(
+            booking.google_calendar_event_id,
+            "company-calendar-event",
+        )
+        service.events.return_value.insert.assert_called_once()
+        insert_call = service.events.return_value.insert.call_args
+        self.assertEqual(insert_call.kwargs["calendarId"], "primary")
+        self.assertIn("Employee: Unassigned", insert_call.kwargs["body"]["description"])
+
     def test_booking_delete_failure_preserves_event_id_for_retry(self):
         service = MagicMock()
         service.events.return_value.delete.return_value.execute.side_effect = RuntimeError(
             "calendar unavailable"
         )
         with patch(
-            "google_reviews.calendar_utils.get_employee_google_calendar_service",
+            "google_reviews.calendar_utils.get_company_google_calendar_service",
             return_value=service,
         ), self.assertLogs("google_reviews.calendar_utils", level="ERROR"):
             result = delete_booking_event(self.booking)
@@ -153,7 +227,7 @@ class CalendarDeleteRetryTests(TestCase):
         )
 
         with patch(
-            "google_reviews.calendar_utils.get_employee_google_calendar_service",
+            "google_reviews.calendar_utils.get_company_google_calendar_service",
             return_value=service,
         ):
             result = delete_booking_event(self.booking)
@@ -211,7 +285,7 @@ class CalendarEventRecoveryTests(CalendarDeleteRetryTests):
         service = self._make_calendar_service(self._not_found_error())
 
         with patch(
-            "google_reviews.calendar_utils.get_employee_google_calendar_service",
+            "google_reviews.calendar_utils.get_company_google_calendar_service",
             return_value=service,
         ):
             create_or_update_booking_event(self.booking)
@@ -301,7 +375,7 @@ class CalendarEventRecoveryTests(CalendarDeleteRetryTests):
         )
 
         with patch(
-            "google_reviews.calendar_utils.get_employee_google_calendar_service",
+            "google_reviews.calendar_utils.get_company_google_calendar_service",
             return_value=service,
         ):
             with self.assertRaises(HttpError):

@@ -76,6 +76,16 @@ class JobPhotoDirectUploadTests(TestCase):
         }
         session.save()
 
+    def test_upload_page_loads_image_optimizer_before_upload_handler(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        optimizer_position = content.index("/static/js/fast-image-upload.js")
+        upload_handler_position = content.index('form.addEventListener("submit"')
+        self.assertLess(optimizer_position, upload_handler_position)
+        self.assertIn("window.YDImageUpload.prepareFiles", content)
+
     def test_signing_requires_csrf_and_employee_job_assignment(self):
         csrf_client = Client(enforce_csrf_checks=True)
         csrf_client.force_login(self.user)
@@ -186,4 +196,3 @@ class JobPhotoDirectUploadTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(JobPhoto.objects.filter(booking=self.booking).count(), 0)
         destroy_assets.assert_called_once_with([public_id])
-
