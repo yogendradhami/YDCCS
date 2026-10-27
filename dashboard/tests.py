@@ -1,6 +1,7 @@
 from unittest.mock import patch
 from datetime import date, time
 
+from django.contrib.messages import get_messages
 from django.test import TestCase, Client, override_settings
 from django.core import mail
 from django.urls import reverse
@@ -17,6 +18,7 @@ from bookings.models import Booking
 from employees.models import Employee
 from rosters.models import Roster
 from quotes.models import QuoteRequest
+from invoices.models import Invoice
 
 
 class DashboardLoginLayoutTests(TestCase):
@@ -121,17 +123,63 @@ class BookingCalendarDeletionTests(TestCase):
 		)
 		self.client.force_login(self.admin)
 
-	@patch("dashboard.views.delete_roster_event", return_value=False)
-	def test_booking_is_kept_when_roster_calendar_event_cannot_be_removed(
-		self, delete_event
+	@patch("dashboard.views.delete_booking_event", return_value=True)
+	@patch("dashboard.views.delete_roster_event", return_value=True)
+	def test_booking_delete_link_opens_confirmation_and_deletes_booking(
+		self, delete_roster_event_mock, delete_booking_event_mock
 	):
-		response = self.client.post(reverse("delete_booking", args=[self.booking.pk]))
+		booking_id = self.booking.pk
+		delete_url = reverse("delete_booking", args=[booking_id])
+		response = self.client.get(delete_url)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Confirm Delete")
+		self.assertTrue(Booking.objects.filter(pk=booking_id).exists())
+
+		response = self.client.post(delete_url)
+
+		self.assertRedirects(
+			response,
+			reverse("booking_list"),
+			fetch_redirect_response=False,
+		)
+		self.assertFalse(Booking.objects.filter(pk=booking_id).exists())
+		delete_roster_event_mock.assert_called_once()
+		delete_booking_event_mock.assert_called_once()
+
+	@patch("dashboard.views.delete_booking_event", return_value=True)
+	@patch("dashboard.views.delete_roster_event", return_value=False)
+	def test_booking_is_deleted_when_roster_calendar_event_cannot_be_removed(
+		self, delete_roster_event_mock, delete_booking_event_mock
+	):
+		booking_id = self.booking.pk
+		response = self.client.post(reverse("delete_booking", args=[booking_id]))
 
 		self.assertRedirects(response, reverse("booking_list"), fetch_redirect_response=False)
-		self.assertTrue(Booking.objects.filter(pk=self.booking.pk).exists())
-		self.roster.refresh_from_db()
-		self.assertEqual(self.roster.google_calendar_event_id, "roster-event")
-		delete_event.assert_called_once_with(self.roster)
+		self.assertFalse(Booking.objects.filter(pk=booking_id).exists())
+		self.assertFalse(Roster.objects.filter(pk=self.roster.pk).exists())
+		delete_roster_event_mock.assert_called_once_with(self.roster)
+		delete_booking_event_mock.assert_called_once()
+		self.assertTrue(
+			any("Booking deleted" in str(message) for message in get_messages(response.wsgi_request))
+		)
+
+	@patch("dashboard.views.delete_booking_event", return_value=True)
+	@patch("dashboard.views.delete_roster_event", return_value=True)
+	def test_booking_and_related_invoice_can_be_deleted(
+		self, delete_roster_event_mock, delete_booking_event_mock
+	):
+		invoice = Invoice.objects.create(booking=self.booking)
+
+		response = self.client.post(reverse("delete_booking", args=[self.booking.pk]))
+
+		self.assertRedirects(
+			response,
+			reverse("booking_list"),
+			fetch_redirect_response=False,
+		)
+		self.assertFalse(Booking.objects.filter(pk=self.booking.pk).exists())
+		self.assertFalse(Invoice.objects.filter(pk=invoice.pk).exists())
 
 
 class QuoteCompletionStateTests(TestCase):

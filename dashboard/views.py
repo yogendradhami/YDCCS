@@ -18,7 +18,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 from .decorators import admin_required
 import logging
 
@@ -1650,7 +1650,7 @@ def edit_booking(request, booking_id):
     )
 
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @admin_required
 @_lock_booking_mutations("booking_list")
 def delete_booking(request, booking_id):
@@ -1660,31 +1660,56 @@ def delete_booking(request, booking_id):
     booking_name = f"{customer_name} - {booking.service_type} on {booking.booking_date}"
 
     if request.method == "POST":
-        try:
-            for roster in booking.rosters.all():
-                if roster.google_calendar_event_id and not delete_roster_event(roster):
-                    raise RuntimeError("Roster calendar event removal did not complete.")
-            if (
-                booking.google_calendar_event_id
-                and not delete_booking_event(booking)
-            ):
-                raise RuntimeError("Booking calendar event removal did not complete.")
-        except Exception:
-            logger.exception(
-                "Calendar cleanup failed before deleting booking %s.",
-                booking.pk,
-            )
-            messages.warning(
-                request,
-                "The booking was kept because its calendar events could not all be removed. Please retry or contact an administrator.",
-            )
-            return redirect("booking_list")
+        calendar_cleanup_failed = False
+
+        for roster in booking.rosters.all():
+            if not roster.google_calendar_event_id:
+                continue
+            try:
+                if not delete_roster_event(roster):
+                    calendar_cleanup_failed = True
+                    logger.warning(
+                        "Could not remove calendar event for roster %s "
+                        "while deleting booking %s.",
+                        roster.pk,
+                        booking.pk,
+                    )
+            except Exception:
+                calendar_cleanup_failed = True
+                logger.exception(
+                    "Calendar cleanup failed for roster %s while deleting "
+                    "booking %s.",
+                    roster.pk,
+                    booking.pk,
+                )
+
+        if booking.google_calendar_event_id:
+            try:
+                if not delete_booking_event(booking):
+                    calendar_cleanup_failed = True
+                    logger.warning(
+                        "Could not remove calendar event for booking %s.",
+                        booking.pk,
+                    )
+            except Exception:
+                calendar_cleanup_failed = True
+                logger.exception(
+                    "Calendar cleanup failed for booking %s.",
+                    booking.pk,
+                )
 
         booking.delete()
 
         create_activity_log(request.user, "booking", "Booking Deleted", booking_name)
 
-        messages.success(request, "✅ Booking deleted successfully.")
+        if calendar_cleanup_failed:
+            messages.warning(
+                request,
+                "Booking deleted, but one or more Google Calendar events could "
+                "not be removed.",
+            )
+        else:
+            messages.success(request, "✅ Booking deleted successfully.")
         return redirect("booking_list")
 
     return render(

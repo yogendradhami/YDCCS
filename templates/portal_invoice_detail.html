@@ -236,7 +236,7 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             </div>
 
             <div class="invoice-meta">
-                <div class="invoice-number">Invoice#{{ invoice.id|stringformat:"02d" }}</div>
+                <div class="invoice-number">{{ invoice.invoice_number }}</div>
                 <p><strong>Issued Date:</strong> {{ invoice.issue_date }}</p>
 
                 {% if invoice.due_date %}

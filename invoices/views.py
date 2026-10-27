@@ -43,6 +43,7 @@ from django.db import transaction
 from django.db.models import Sum, Q
 from dashboard.models import ActivityLog, EmailLog
 from customers.models import Customer
+from google_reviews.calendar_utils import delete_booking_event, delete_roster_event
 
 
 
@@ -1418,17 +1419,13 @@ def send_payment_received_email(invoice):
 @require_POST
 def delete_invoice(request, invoice_id):
     """
-    Permanently delete an invoice while keeping the related
-    booking and customer history intact.
+    Permanently delete an invoice and its linked booking.
 
     Financial cleanup:
-    - Deletes the invoice.
-    - Deletes invoice-related email logs.
-    - Deletes invoice-related activity logs where identifiable.
-    - Recalculates the customer's stored revenue from remaining
-      paid invoices.
-    - Does NOT delete the booking.
-    - Does NOT delete the customer.
+    - Deletes all invoices and related records attached to the booking.
+    - Removes identifiable invoice email and activity logs.
+    - Recalculates the customer's stored revenue from remaining paid invoices.
+    - Leaves the customer intact.
     """
 
     with transaction.atomic():
@@ -1439,15 +1436,65 @@ def delete_invoice(request, invoice_id):
         )
 
         invoice_number = invoice.invoice_number
-        customer = invoice.booking.customer
-        customer_id = customer.id
+        booking = invoice.booking
+        booking_id = booking.pk
+        customer_id = booking.customer_id
+        invoice_numbers = list(
+            Invoice.objects.filter(booking_id=booking_id)
+            .exclude(invoice_number="")
+            .values_list("invoice_number", flat=True)
+        )
+
+        calendar_cleanup_failed = False
+
+        for roster in booking.rosters.all():
+            if not roster.google_calendar_event_id:
+                continue
+            try:
+                if not delete_roster_event(roster):
+                    calendar_cleanup_failed = True
+                    logger.warning(
+                        "Could not remove calendar event for roster %s "
+                        "while deleting invoice %s and booking %s.",
+                        roster.pk,
+                        invoice_number,
+                        booking_id,
+                    )
+            except Exception:
+                calendar_cleanup_failed = True
+                logger.exception(
+                    "Calendar cleanup failed for roster %s while deleting "
+                    "invoice %s and booking %s.",
+                    roster.pk,
+                    invoice_number,
+                    booking_id,
+                )
+
+        if booking.google_calendar_event_id:
+            try:
+                if not delete_booking_event(booking):
+                    calendar_cleanup_failed = True
+                    logger.warning(
+                        "Could not remove calendar event for booking %s "
+                        "while deleting invoice %s.",
+                        booking_id,
+                        invoice_number,
+                    )
+            except Exception:
+                calendar_cleanup_failed = True
+                logger.exception(
+                    "Calendar cleanup failed for booking %s while deleting "
+                    "invoice %s.",
+                    booking_id,
+                    invoice_number,
+                )
 
         # -----------------------------------------------------
-        # 1. Remove invoice-related email records
+        # 1. Remove email logs for invoices attached to this booking
         # -----------------------------------------------------
 
         EmailLog.objects.filter(
-            related_object=invoice_number
+            related_object__in=invoice_numbers
         ).delete()
 
         # -----------------------------------------------------
@@ -1458,18 +1505,23 @@ def delete_invoice(request, invoice_id):
         # contain this invoice number.
         # -----------------------------------------------------
 
-        ActivityLog.objects.filter(
-            action_type="invoice"
-        ).filter(
-            Q(title__icontains=invoice_number)
-            | Q(description__icontains=invoice_number)
-        ).delete()
+        if invoice_numbers:
+            invoice_activity_filter = Q()
+            for related_invoice_number in invoice_numbers:
+                invoice_activity_filter |= (
+                    Q(title__icontains=related_invoice_number)
+                    | Q(description__icontains=related_invoice_number)
+                )
+
+            ActivityLog.objects.filter(
+                action_type="invoice"
+            ).filter(invoice_activity_filter).delete()
 
         # -----------------------------------------------------
-        # 3. Delete the invoice itself
+        # 3. Delete the booking and its related invoices
         # -----------------------------------------------------
 
-        invoice.delete()
+        booking.delete()
 
         # -----------------------------------------------------
         # 4. Recalculate customer revenue
@@ -1477,26 +1529,34 @@ def delete_invoice(request, invoice_id):
         # Only remaining PAID invoices count as revenue.
         # -----------------------------------------------------
 
-        remaining_paid_revenue = (
-            Invoice.objects.filter(
-                booking__customer_id=customer_id,
-                status="paid",
-            ).aggregate(
-                total=Sum("total_amount")
-            )["total"]
-            or 0
-        )
+        if customer_id is not None:
+            remaining_paid_revenue = (
+                Invoice.objects.filter(
+                    booking__customer_id=customer_id,
+                    status="paid",
+                ).aggregate(
+                    total=Sum("total_amount")
+                )["total"]
+                or 0
+            )
 
-        Customer.objects.filter(
-            id=customer_id
-        ).update(
-            total_revenue=remaining_paid_revenue
-        )
+            Customer.objects.filter(
+                id=customer_id
+            ).update(
+                total_revenue=remaining_paid_revenue
+            )
 
     messages.success(
         request,
-        f"Invoice {invoice_number} was permanently deleted. "
-        "Financial records have been recalculated.",
+        (
+            f"Invoice {invoice_number} and its linked booking were deleted. "
+            "Financial records have been recalculated."
+            if not calendar_cleanup_failed
+            else (
+                f"Invoice {invoice_number} and its linked booking were deleted, "
+                "but one or more Google Calendar events could not be removed."
+            )
+        ),
     )
 
     return redirect("invoice_list")

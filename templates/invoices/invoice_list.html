@@ -645,11 +645,11 @@
             </div>
 
             <div class="invoice-kpi-value">
-                ${{ total_invoiced|default:"0.00"|floatformat:2 }}
+                ${{ stats.total_invoiced|default:"0.00"|floatformat:2 }}
             </div>
 
             <div class="invoice-kpi-meta">
-                {{ active_invoice_count|default:"0" }} active invoices
+                {{ stats.invoice_count|default:"0" }} active invoices
             </div>
 
         </div>
@@ -670,11 +670,11 @@
             </div>
 
             <div class="invoice-kpi-value">
-                ${{ total_collected|default:"0.00"|floatformat:2 }}
+                ${{ stats.paid_total|default:"0.00"|floatformat:2 }}
             </div>
 
             <div class="invoice-kpi-meta">
-                {{ paid_invoice_count|default:"0" }} paid invoices
+                {{ stats.paid_count|default:"0" }} paid invoices
             </div>
 
         </div>
@@ -695,11 +695,11 @@
             </div>
 
             <div class="invoice-kpi-value">
-                ${{ total_outstanding|default:"0.00"|floatformat:2 }}
+                ${{ stats.outstanding_total|default:"0.00"|floatformat:2 }}
             </div>
 
             <div class="invoice-kpi-meta">
-                {{ outstanding_invoice_count|default:"0" }} awaiting payment
+                {{ stats.outstanding_count|default:"0" }} awaiting payment
             </div>
 
         </div>
@@ -720,11 +720,11 @@
             </div>
 
             <div class="invoice-kpi-value">
-                ${{ total_overdue|default:"0.00"|floatformat:2 }}
+                ${{ stats.overdue_total|default:"0.00"|floatformat:2 }}
             </div>
 
             <div class="invoice-kpi-meta">
-                {{ overdue_invoice_count|default:"0" }} overdue accounts
+                {{ stats.overdue_count|default:"0" }} overdue accounts
             </div>
 
         </div>
@@ -934,10 +934,6 @@
 
                                     <div class="invoice-number">
                                         {{ invoice.invoice_number }}
-                                    </div>
-
-                                    <div class="invoice-id">
-                                        #{{ invoice.id }}
                                     </div>
 
                                 </td>
