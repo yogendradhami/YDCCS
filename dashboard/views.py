@@ -71,7 +71,7 @@ from invoices.pdf_utils import generate_invoice_pdf
 from leave_management.models import LeaveRequest
 from notifications.models import Notification
 from payroll.models import PayrollRecord
-from quotes.models import QuoteImage, QuoteRequest
+from quotes.models import QuoteRequest
 from quotes.services import convert_quote_to_booking as convert_quote_service
 from reviews.forms import ReviewForm
 from reviews.models import Review
@@ -654,29 +654,9 @@ def lead_list(request):
 def delete_quote_request(request, quote_id):
     quote = get_object_or_404(QuoteRequest, pk=quote_id)
     quote_name = quote.name
-    image_names = list(quote.images.values_list("image", flat=True))
     quote.delete()
 
-    image_storage = QuoteImage._meta.get_field("image").storage
-    cleanup_failed = False
-    for image_name in image_names:
-        try:
-            image_storage.delete(image_name)
-        except Exception:
-            cleanup_failed = True
-            logger.exception(
-                "Could not delete Cloudinary image %s after deleting quote %s.",
-                image_name,
-                quote_id,
-            )
-
-    if cleanup_failed:
-        messages.warning(
-            request,
-            f'Quote request for "{quote_name}" was deleted, but one or more property photos could not be removed.',
-        )
-    else:
-        messages.success(request, f'Quote request for "{quote_name}" was deleted.')
+    messages.success(request, f'Quote request for "{quote_name}" was deleted.')
     return redirect("lead_list")
 
 

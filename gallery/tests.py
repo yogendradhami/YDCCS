@@ -283,6 +283,104 @@ class GalleryDirectUploadTests(TestCase):
         self.assertContains(response, "data-upload-url")
         self.assertContains(response, "Additional gallery images")
 
+    def test_edit_form_shows_remove_controls_for_saved_gallery_images(self):
+        item = GalleryItem.objects.create(
+            title="Saved media",
+            service_type="House Cleaning",
+            source="manual",
+            image="gallery/admin/saved/main.jpg",
+            before_image="gallery/admin/saved/before.jpg",
+            after_image="gallery/admin/saved/after.jpg",
+        )
+        GalleryImage.objects.create(
+            gallery=item,
+            image="gallery/admin/saved/additional.jpg",
+        )
+
+        response = self.client.get(reverse("edit_gallery_item", args=[item.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-remove-saved-slot="image"')
+        self.assertContains(response, 'data-remove-saved-slot="before_image"')
+        self.assertContains(response, 'data-remove-saved-slot="after_image"')
+        self.assertContains(
+            response,
+            f'data-remove-saved-additional="{GalleryImage.objects.get(gallery=item).pk}"',
+        )
+
+    def test_staff_can_remove_saved_primary_and_additional_gallery_images(self):
+        item = GalleryItem.objects.create(
+            title="Saved media",
+            service_type="House Cleaning",
+            source="manual",
+            image="gallery/admin/saved/main.jpg",
+        )
+        additional = GalleryImage.objects.create(
+            gallery=item,
+            image="gallery/admin/saved/additional.jpg",
+        )
+
+        primary_response = self.client.post(
+            self.batch_url,
+            {
+                "upload_action": "remove_saved",
+                "item_id": item.pk,
+                "slot": "image",
+            },
+        )
+        additional_response = self.client.post(
+            self.batch_url,
+            {
+                "upload_action": "remove_saved",
+                "item_id": item.pk,
+                "slot": "additional_images",
+                "image_id": additional.pk,
+            },
+        )
+
+        self.assertEqual(primary_response.status_code, 200)
+        self.assertEqual(additional_response.status_code, 200)
+        item.refresh_from_db()
+        self.assertFalse(item.image)
+        self.assertFalse(GalleryImage.objects.filter(pk=additional.pk).exists())
+
+    def test_saved_gallery_image_removal_requires_change_permission(self):
+        item = GalleryItem.objects.create(
+            title="Saved media",
+            service_type="House Cleaning",
+            source="manual",
+            image="gallery/admin/saved/main.jpg",
+        )
+        user = get_user_model().objects.create_user(
+            username="gallery-read-only",
+            password="test-pass123",
+            is_staff=True,
+        )
+        user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="security",
+                codename="access_dashboard",
+            ),
+            Permission.objects.get(
+                content_type__app_label="gallery",
+                codename="add_galleryitem",
+            ),
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            self.batch_url,
+            {
+                "upload_action": "remove_saved",
+                "item_id": item.pk,
+                "slot": "image",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        item.refresh_from_db()
+        self.assertEqual(item.image.name, "gallery/admin/saved/main.jpg")
+
     def test_upload_batch_rejects_more_than_twenty_three_images(self):
         response = self._sign(["additional_images"] * (MAX_GALLERY_IMAGES + 1))
 
@@ -416,7 +514,15 @@ class GalleryDirectUploadTests(TestCase):
             image=public_id,
         )
 
-        with patch("gallery.upload_services.cloudinary_uploader.destroy") as destroy:
+        with (
+            patch(
+                "core.media_cleanup._cloudinary_file_fields",
+                return_value=[
+                    (GalleryItem, GalleryItem._meta.get_field("image")),
+                ],
+            ),
+            patch("gallery.upload_services.cloudinary_uploader.destroy") as destroy,
+        ):
             cleaned = _delete_gallery_assets([public_id])
 
         self.assertFalse(cleaned)

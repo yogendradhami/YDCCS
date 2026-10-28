@@ -111,6 +111,35 @@ def gallery_upload_batch(request):
             }
         )
 
+    if action == "remove_saved":
+        try:
+            item_id = _gallery_batch_item_id(request.POST.get("item_id"))
+            if item_id is None:
+                raise ValueError("The gallery item identifier is required.")
+            _require_gallery_item_permission(request, item_id)
+            item = get_object_or_404(GalleryItem, pk=item_id)
+            slot = request.POST.get("slot", "")
+            if slot in {"image", "before_image", "after_image"}:
+                if not getattr(item, slot).name:
+                    raise ValueError("This gallery image is no longer available.")
+                setattr(item, slot, None)
+                item.save(update_fields=[slot])
+            elif slot == "additional_images":
+                try:
+                    image_id = int(request.POST.get("image_id", ""))
+                except (TypeError, ValueError):
+                    raise ValueError("The additional gallery image identifier is invalid.")
+                image = get_object_or_404(
+                    item.additional_images,
+                    pk=image_id,
+                )
+                image.delete()
+            else:
+                raise ValueError("The gallery image field is invalid.")
+        except ValueError as exc:
+            return JsonResponse({"error": str(exc)}, status=400)
+        return JsonResponse({"removed": True})
+
     nonce = request.POST.get("nonce", "")
     batches, batch = _get_gallery_upload_batch(request, nonce)
     if action == "cancel":

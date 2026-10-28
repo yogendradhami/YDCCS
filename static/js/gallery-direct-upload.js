@@ -124,6 +124,30 @@
         }
     }
 
+    async function removeSavedImage(button) {
+        button.disabled = true;
+        try {
+            const slot = button.dataset.removeSavedSlot
+                ? button.dataset.removeSavedSlot
+                : "additional_images";
+            await postBatch("remove_saved", {
+                item_id: form.dataset.itemId || "",
+                slot,
+                image_id: button.dataset.removeSavedAdditional || "",
+            });
+            const card = button.closest("[data-saved-gallery-image]");
+            if (card) card.remove();
+            if (slot !== "additional_images") {
+                const clearCheckbox = form.querySelector(`[name="${slot}-clear"]`);
+                if (clearCheckbox) clearCheckbox.checked = true;
+            }
+            setStatus("Saved image removed from the gallery and scheduled for safe Cloudinary cleanup.");
+        } catch (error) {
+            button.disabled = false;
+            setStatus(error.message || "The saved image could not be removed.", true);
+        }
+    }
+
     document.addEventListener("click", (event) => {
         const selectedButton = event.target.closest("[data-remove-file-slot]");
         if (selectedButton) {
@@ -137,6 +161,13 @@
         if (stagedButton) {
             const card = stagedButton.closest("[data-staged-public-id]");
             if (card) removeStagedImage(stagedButton.dataset.removeStagedImage, card);
+            return;
+        }
+        const savedButton = event.target.closest(
+            "[data-remove-saved-slot], [data-remove-saved-additional]"
+        );
+        if (savedButton) {
+            removeSavedImage(savedButton);
         }
     });
 

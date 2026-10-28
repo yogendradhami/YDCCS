@@ -13,6 +13,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
+from core.media_cleanup import is_cloudinary_asset_referenced
 from .forms import MAX_GALLERY_BATCH_SIZE, MAX_GALLERY_IMAGE_SIZE
 from .models import GalleryImage, GalleryItem
 
@@ -70,16 +71,8 @@ def _delete_gallery_assets(public_ids):
     _configure_cloudinary()
     cleaned = True
     for public_id in public_ids:
-        if (
-            GalleryItem.objects.filter(image=public_id).exists()
-            or GalleryItem.objects.filter(before_image=public_id).exists()
-            or GalleryItem.objects.filter(after_image=public_id).exists()
-            or GalleryImage.objects.filter(image=public_id).exists()
-        ):
-            logger.warning(
-                "Skipped cleanup of gallery image %s because it is attached to a record.",
-                public_id,
-            )
+        if is_cloudinary_asset_referenced(public_id):
+            logger.warning("Skipped cleanup of attached gallery asset %s.", public_id)
             cleaned = False
             continue
         try:
