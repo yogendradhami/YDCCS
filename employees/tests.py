@@ -133,6 +133,15 @@ class EmployeePortalSecurityTests(TestCase):
 			full_name="Scoped Employee",
 			phone="0400000000",
 		)
+		employee = Employee.objects.get(user=user)
+		programme = InductionProgramme.objects.create(
+			name="Scoped booking security induction",
+		)
+		EmployeeInduction.objects.create(
+			employee=employee,
+			programme=programme,
+			status="completed",
+		)
 		other_employee = Employee.objects.create(
 			full_name="Other Employee",
 			phone="0400000001",

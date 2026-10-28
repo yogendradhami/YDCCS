@@ -1490,10 +1490,22 @@ def _save_and_sync_booking_edit(request, booking, form):
                     if isinstance(sync_result, RosterSyncPending):
                         raise sync_result.error
                     if isinstance(sync_result, RosterSyncNotConfigured):
-                        messages.info(
-                            request,
-                            "Employee Calendar sync is not configured; booking changes were saved.",
-                        )
+                        if reassignment_requested:
+                            reassignment_failed = True
+                            messages.warning(
+                                request,
+                                "Booking details and employee assignment were "
+                                "saved, but the new employee's roster Calendar "
+                                "event could not be synchronized because "
+                                "Calendar is not configured. Completion "
+                                "notifications and invoice creation were skipped.",
+                            )
+                        else:
+                            messages.info(
+                                request,
+                                "Employee Calendar sync is not configured; "
+                                "booking changes were saved.",
+                            )
                 except Exception:
                     logger.exception(
                         "Roster sync failed after editing booking %s.",

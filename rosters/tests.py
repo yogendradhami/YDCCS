@@ -7,6 +7,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from bookings.models import Booking
+from core.test_utils import grant_dashboard_permissions
 from employees.models import Employee
 
 from .models import Roster
@@ -243,6 +244,13 @@ class RosterMutationAuthorizationTests(TestCase):
             "roster-admin",
             is_staff=True,
         )
+        grant_dashboard_permissions(
+            self.admin,
+            "rosters.view_roster",
+            "rosters.add_roster",
+            "rosters.change_roster",
+            "rosters.delete_roster",
+        )
         self.employee_user = User.objects.create_user("roster-employee")
         self.other_user = User.objects.create_user("other-roster-employee")
         self.employee = Employee.objects.create(
@@ -291,11 +299,18 @@ class RosterMutationAuthorizationTests(TestCase):
             reverse("delete_roster", args=[self.roster.pk]),
         )
 
-        self.assertEqual(add_response.status_code, 403)
-        self.assertEqual(edit_response.status_code, 403)
-        self.assertEqual(delete_response.status_code, 403)
-        self.assertEqual(edit_page_response.status_code, 403)
-        self.assertEqual(delete_page_response.status_code, 403)
+        for response in (
+            add_response,
+            edit_response,
+            delete_response,
+            edit_page_response,
+            delete_page_response,
+        ):
+            self.assertRedirects(
+                response,
+                reverse("employee_dashboard"),
+                fetch_redirect_response=False,
+            )
         self.assertTrue(Roster.objects.filter(pk=self.roster.pk).exists())
         self.booking.refresh_from_db()
         self.assertEqual(self.booking.assigned_employee_id, self.employee.pk)
