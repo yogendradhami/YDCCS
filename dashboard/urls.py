@@ -52,6 +52,7 @@ from .views import (
     delete_equipment,
     delete_gallery_item,
     delete_review,
+    delete_quote_request,
     edit_booking,
     edit_customer,
     edit_employee,
@@ -211,6 +212,11 @@ urlpatterns = [
         "dashboard/update-status/<int:quote_id>/",
         update_quote_status,
         name="update_quote_status",
+    ),
+    path(
+        "dashboard/leads/<int:quote_id>/delete/",
+        delete_quote_request,
+        name="delete_quote_request",
     ),
 
     # =========================================================

@@ -1,107 +1,74 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
 {% block title %}Contract Details | YD Dashboard{% endblock %}
 {% block page_title %}Contract Details{% endblock %}
-{% block page_subtitle %}View contract details and generate recurring bookings.{% endblock %}
+{% block page_subtitle %}Review the service agreement, schedule, and generated bookings.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
 
 {% block content %}
-
-<section class="crm-quick-actions">
-    <form method="post" action="{% url 'generate_contract_bookings' contract.id %}">
-        {% csrf_token %}
-        <button type="submit">Generate Next 90 Days</button>
-    </form>
-    <a href="/dashboard/contracts/{{ contract.id }}/edit/">Edit Contract</a>
-    <a href="/dashboard/contracts/{{ contract.id }}/delete/">Delete Contract</a>
-    <a href="/dashboard/contracts/">Back to Contracts</a>
-</section>
-
-<section class="crm-panel">
-    <div class="invoice-header-row">
+<div class="records-page contracts-page">
+    <nav class="records-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'contract_list' %}">Contracts</a><span>/</span><span>{{ contract.customer.full_name }}</span></nav>
+    <section class="records-hero records-detail-hero">
         <div>
-            <h2>{{ contract.customer.full_name }}</h2>
-            <p><strong>Service:</strong> {{ contract.service_type }}</p>
-            <p><strong>Frequency:</strong> {{ contract.get_frequency_display }}</p>
-            <p><strong>Status:</strong> {{ contract.get_status_display }}</p>
-            <p><strong>Price Per Visit:</strong> ${{ contract.price_per_visit }}</p>
+            <span class="records-eyebrow"><i></i> SERVICE AGREEMENT / #{{ contract.id }}</span>
+            <h1>{{ contract.customer.full_name }}<br><strong>{{ contract.service_type }}</strong></h1>
+            <p>{{ contract.get_frequency_display }} service · ${{ contract.price_per_visit }} per visit · {{ contract.address }}, {{ contract.suburb_postcode }}</p>
         </div>
-
-        <div>
-            <h2>Schedule</h2>
-            <p><strong>Start Date:</strong> {{ contract.start_date }}</p>
-            <p><strong>End Date:</strong> {{ contract.end_date|default:"Ongoing" }}</p>
-            <p><strong>Preferred Time:</strong> {{ contract.preferred_time }}</p>
-            <p><strong>Generated Until:</strong> {{ contract.bookings_generated_until|default:"Not generated yet" }}</p>
+        <div class="records-hero-actions">
+            <span class="records-status status-{{ contract.status }}">{{ contract.get_status_display }}</span>
+            <a class="records-hero-button" href="{% url 'edit_contract' contract.id %}">Edit contract <span>↗</span></a>
         </div>
-    </div>
+    </section>
 
-    <hr>
+    <section class="records-detail-grid">
+        <article class="records-detail-card">
+            <span class="records-section-label">AGREEMENT</span><h2>Service details</h2>
+            <dl class="records-definition-list">
+                <div><dt>Customer</dt><dd>{{ contract.customer.full_name }}{% if contract.customer.email %}<small>{{ contract.customer.email }}</small>{% endif %}</dd></div>
+                <div><dt>Service</dt><dd>{{ contract.service_type }}</dd></div>
+                <div><dt>Frequency</dt><dd>{{ contract.get_frequency_display }}</dd></div>
+                <div><dt>Price per visit</dt><dd class="records-money">${{ contract.price_per_visit }}</dd></div>
+                <div><dt>Assigned employee</dt><dd>{% if contract.assigned_employee %}{{ contract.assigned_employee.full_name }}{% else %}Not assigned{% endif %}</dd></div>
+            </dl>
+        </article>
+        <article class="records-detail-card">
+            <span class="records-section-label">SCHEDULE</span><h2>Service timeline</h2>
+            <dl class="records-definition-list">
+                <div><dt>Start date</dt><dd>{{ contract.start_date|date:"d M Y" }}</dd></div>
+                <div><dt>End date</dt><dd>{{ contract.end_date|date:"d M Y"|default:"Ongoing" }}</dd></div>
+                <div><dt>Preferred time</dt><dd>{{ contract.preferred_time|time:"H:i" }}</dd></div>
+                <div><dt>Generated through</dt><dd>{{ contract.bookings_generated_until|date:"d M Y"|default:"No bookings generated" }}</dd></div>
+                <div><dt>Renewal status</dt><dd>{% if contract.days_remaining == None %}Ongoing{% elif contract.days_remaining < 0 %}<span class="records-status status-expired">Expired</span>{% elif contract.days_remaining <= 30 %}<span class="records-renewal-soon">{{ contract.days_remaining }} days remaining</span>{% else %}{{ contract.days_remaining }} days remaining{% endif %}</dd></div>
+            </dl>
+        </article>
+    </section>
 
-    <h3>Location</h3>
-    <p>{{ contract.address }}</p>
-    <p>{{ contract.suburb_postcode }}</p>
+    <section class="records-panel records-notes-panel">
+        <header class="records-panel-header"><div><span class="records-section-label">SERVICE LOCATION</span><h2>Address &amp; notes</h2></div></header>
+        <div class="records-notes-content"><p><strong>{{ contract.address }}</strong><br>{{ contract.suburb_postcode }}</p><p>{{ contract.notes|default:"No additional contract notes." }}</p></div>
+    </section>
 
-    <hr>
+    <section class="records-panel">
+        <header class="records-panel-header">
+            <div><span class="records-section-label">SCHEDULED WORK</span><h2>Generated bookings</h2><p>Recent bookings matching this contract’s customer, service, and location.</p></div>
+            <form method="post" action="{% url 'generate_contract_bookings' contract.id %}">{% csrf_token %}<button class="records-button records-button-teal" type="submit" {% if contract.status != "active" %}disabled{% endif %}>Generate next 90 days <span>→</span></button></form>
+        </header>
+        {% if bookings %}
+        <div class="records-table-wrap"><table class="records-table">
+            <thead><tr><th scope="col">Date &amp; time</th><th scope="col">Service</th><th scope="col">Status</th><th scope="col">Employee</th><th scope="col">Price</th><th scope="col">Action</th></tr></thead>
+            <tbody>{% for booking in bookings %}
+                <tr><td><strong>{{ booking.booking_date|date:"d M Y" }}</strong><small class="records-subtext">{{ booking.booking_time|time:"H:i" }}</small></td><td>{{ booking.service_type }}</td><td><span class="records-status status-{{ booking.status }}">{{ booking.get_status_display }}</span></td><td>{% if booking.assigned_employee %}{{ booking.assigned_employee.full_name }}{% else %}<span class="records-muted">Unassigned</span>{% endif %}</td><td class="records-money">${{ booking.quoted_price }}</td><td><a class="records-row-link" href="/dashboard/bookings/{{ booking.id }}/edit/">Edit booking</a></td></tr>
+            {% endfor %}</tbody>
+        </table></div>
+        {% else %}
+        <div class="records-empty-block"><strong>No generated bookings yet</strong><p>Generate bookings for the next 90 days to schedule this agreement.</p></div>
+        {% endif %}
+    </section>
 
-    <h3>Assigned Employee</h3>
-    {% if contract.assigned_employee %}
-        <p>{{ contract.assigned_employee.full_name }}</p>
-    {% else %}
-        <p>No employee assigned.</p>
-    {% endif %}
-
-    <hr>
-
-    <h3>Notes</h3>
-    <p>{{ contract.notes|default:"No notes." }}</p>
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Generated Bookings</h2>
-    </div>
-
-    {% if bookings %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Service</th>
-                        <th>Status</th>
-                        <th>Employee</th>
-                        <th>Price</th>
-                        <th>Edit</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for booking in bookings %}
-                        <tr>
-                            <td>{{ booking.booking_date }}</td>
-                            <td>{{ booking.booking_time }}</td>
-                            <td>{{ booking.service_type }}</td>
-                            <td>{{ booking.get_status_display }}</td>
-                            <td>
-                                {% if booking.assigned_employee %}
-                                    {{ booking.assigned_employee.full_name }}
-                                {% else %}
-                                    Not assigned
-                                {% endif %}
-                            </td>
-                            <td>${{ booking.quoted_price }}</td>
-                            <td>
-                                <a href="/dashboard/bookings/{{ booking.id }}/edit/" class="small-link-btn">Edit</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p>No generated bookings yet.</p>
-    {% endif %}
-</section>
-
+    <footer class="records-detail-footer">
+        <a class="records-row-link" href="{% url 'contract_list' %}">← Back to contracts</a>
+        <a class="records-danger-link" href="{% url 'delete_contract' contract.id %}">Delete contract</a>
+    </footer>
+</div>
 {% endblock %}

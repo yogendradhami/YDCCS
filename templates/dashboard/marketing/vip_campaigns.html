@@ -1,112 +1,124 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}VIP Campaign Centre{% endblock %}
+{% block title %}VIP Campaigns | YD Dashboard{% endblock %}
+{% block page_title %}VIP Campaigns{% endblock %}
+{% block page_subtitle %}Recognise your highest-value customers and plan thoughtful re-engagement.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/customer-growth.css' %}">{% endblock %}
 
 {% block content %}
+<div class="customer-growth-page">
+    <section class="growth-hero growth-campaign-hero">
+        <div>
+            <span class="growth-eyebrow"><i></i> CUSTOMER RELATIONSHIPS / CAMPAIGNS</span>
+            <h1>Make your best customers<br><strong>feel valued.</strong></h1>
+            <p>Review your high-value segments and reach eligible VIP customers with a personal thank-you.</p>
+        </div>
+        <div class="growth-campaign-action">
+            <span>VIP SEND LIST</span>
+            <strong>{{ vip_customers.count }}</strong>
+            <small>customers with an email address</small>
+            <form method="post" action="{% url 'send_vip_campaign_legacy' %}" onsubmit="return confirm('Send the VIP campaign email to all eligible VIP customers?');">
+                {% csrf_token %}
+                <button class="growth-send-button" type="submit" {% if not vip_customers %}disabled{% endif %}>Send VIP campaign <span>→</span></button>
+            </form>
+        </div>
+    </section>
 
-<div class="crm-summary-grid">
+    <section class="growth-metrics" aria-label="Campaign audience summary">
+        <article class="growth-metric growth-metric-accent">
+            <span class="growth-metric-icon icon-vip">★</span>
+            <span class="growth-metric-label">VIP CUSTOMERS</span>
+            <strong>{{ vip_count }}</strong>
+            <small>$1,000+ lifetime revenue</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-gold">◇</span>
+            <span class="growth-metric-label">GOLD CUSTOMERS</span>
+            <strong>{{ gold_count }}</strong>
+            <small>$500–$999 lifetime revenue</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-inactive">◷</span>
+            <span class="growth-metric-label">INACTIVE CUSTOMERS</span>
+            <strong>{{ inactive_count }}</strong>
+            <small>no completed jobs recorded</small>
+        </article>
+    </section>
 
-    <div class="crm-card">
-        <span>VIP Customers</span>
-        <h2>{{ vip_count }}</h2>
-    </div>
+    <section class="growth-panel">
+        <header class="growth-panel-heading growth-table-heading">
+            <div><span class="growth-section-label">PRIORITY AUDIENCE</span><h2>VIP customers</h2><p>Campaign recipients are customers with at least $1,000 in revenue and an email address.</p></div>
+            <a class="growth-text-link" href="{% url 'customer_loyalty' %}">View loyalty segments <span>→</span></a>
+        </header>
+        <div class="growth-table-tools">
+            <label class="growth-search"><span aria-hidden="true">⌕</span><input id="vipSearch" type="search" placeholder="Search VIP customers..." aria-label="Search VIP customers"></label>
+            <span class="growth-result-count"><strong id="vipVisibleCount">{{ vip_customers.count }}</strong> eligible</span>
+        </div>
+        <div class="growth-table-wrap">
+            <table class="growth-table" id="vipTable">
+                <thead><tr><th scope="col">Customer</th><th scope="col">Email</th><th scope="col">Lifetime revenue</th><th scope="col">Completed jobs</th><th scope="col">Segment</th></tr></thead>
+                <tbody>
+                    {% for customer in vip_customers %}
+                        <tr data-vip-row data-name="{{ customer.full_name|lower }}">
+                            <td><a class="growth-customer-name" href="{% url 'customer_profile_360' customer.id %}"><span class="growth-avatar">{{ customer.full_name|first|upper }}</span><strong>{{ customer.full_name }}</strong></a></td>
+                            <td><a class="growth-email" href="mailto:{{ customer.email }}">{{ customer.email }}</a></td>
+                            <td class="growth-money">${{ customer.total_revenue }}</td>
+                            <td><span class="growth-number-pill">{{ customer.jobs_completed }}</span></td>
+                            <td><span class="growth-tier tier-vip">VIP</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="growth-empty" colspan="5">No eligible VIP recipients yet. Customers need at least $1,000 lifetime revenue and a valid email address.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="growth-no-results" id="vipNoResults" hidden>No VIP customers match your search.</div>
+    </section>
 
-    <div class="crm-card">
-        <span>Gold Customers</span>
-        <h2>{{ gold_count }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Inactive Customers</span>
-        <h2>{{ inactive_count }}</h2>
-    </div>
-
+    <section class="growth-panel growth-secondary-panel">
+        <header class="growth-panel-heading growth-table-heading">
+            <div><span class="growth-section-label">GROWING RELATIONSHIPS</span><h2>Gold customers</h2><p>Customers approaching the VIP revenue threshold.</p></div>
+            <span class="growth-tier tier-gold">{{ gold_count }} customers</span>
+        </header>
+        <div class="growth-table-wrap">
+            <table class="growth-table">
+                <thead><tr><th scope="col">Customer</th><th scope="col">Email</th><th scope="col">Lifetime revenue</th><th scope="col">Completed jobs</th><th scope="col">Segment</th></tr></thead>
+                <tbody>
+                    {% for customer in gold_customers %}
+                        <tr>
+                            <td><a class="growth-customer-name" href="{% url 'customer_profile_360' customer.id %}"><span class="growth-avatar">{{ customer.full_name|first|upper }}</span><strong>{{ customer.full_name }}</strong></a></td>
+                            <td>{% if customer.email %}<a class="growth-email" href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}<span class="growth-muted">—</span>{% endif %}</td>
+                            <td class="growth-money">${{ customer.total_revenue }}</td>
+                            <td><span class="growth-number-pill">{{ customer.jobs_completed }}</span></td>
+                            <td><span class="growth-tier tier-gold">Gold</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="growth-empty" colspan="5">No Gold customers in this revenue range yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>VIP Customers</h2>
-    </div>
-
-    <div class="crm-quick-actions">
-        <a href="/dashboard/vip-campaigns/send/">
-            Send VIP Campaign
-        </a>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Revenue</th>
-                    <th>Jobs</th>
-                    <th>Tier</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for customer in vip_customers %}
-                <tr>
-                    <td>{{ customer.full_name }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>${{ customer.total_revenue }}</td>
-                    <td>{{ customer.jobs_completed }}</td>
-                    <td>VIP</td>
-                </tr>
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Gold Customers</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Revenue</th>
-                    <th>Jobs</th>
-                    <th>Tier</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for customer in gold_customers %}
-                <tr>
-                    <td>{{ customer.full_name }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>${{ customer.total_revenue }}</td>
-                    <td>{{ customer.jobs_completed }}</td>
-                    <td>Gold</td>
-                </tr>
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("vipSearch");
+    const count = document.getElementById("vipVisibleCount");
+    const empty = document.getElementById("vipNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-vip-row]"));
+    if (!search || !count || !empty) return;
+    search.addEventListener("input", function () {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.name.includes(query);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        empty.hidden = visible !== 0 || rows.length === 0;
+    });
+});
+</script>
 {% endblock %}

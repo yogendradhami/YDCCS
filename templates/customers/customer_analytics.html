@@ -1,146 +1,131 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Customer Analytics
-{% endblock %}
-
-{% block page_title %}
-Customer Analytics
-{% endblock %}
-
-{% block page_subtitle %}
-Track customer growth, retention and revenue.
-{% endblock %}
+{% block title %}Customer Analytics | YD Dashboard{% endblock %}
+{% block page_title %}Customer Analytics{% endblock %}
+{% block page_subtitle %}Understand customer growth, retention, and revenue contribution.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/customer-growth.css' %}">{% endblock %}
 
 {% block content %}
+<div class="customer-growth-page">
+    <section class="growth-hero">
+        <div>
+            <span class="growth-eyebrow"><i></i> CUSTOMER INTELLIGENCE / ANALYTICS</span>
+            <h1>Know your customers.<br><strong>Grow with confidence.</strong></h1>
+            <p>Track the signals behind your customer base and discover where long-term value is building.</p>
+        </div>
+        <a class="growth-hero-link" href="{% url 'customer_value_dashboard' %}">Explore customer value <span>→</span></a>
+    </section>
 
-<div class="crm-summary-grid">
+    <section class="growth-metrics" aria-label="Customer analytics summary">
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-customers">◎</span>
+            <span class="growth-metric-label">TOTAL CUSTOMERS</span>
+            <strong>{{ total_customers }}</strong>
+            <small>in your customer base</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-new">＋</span>
+            <span class="growth-metric-label">NEW THIS MONTH</span>
+            <strong>{{ new_customers }}</strong>
+            <small>new customer profiles</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-repeat">↻</span>
+            <span class="growth-metric-label">REPEAT CUSTOMERS</span>
+            <strong>{{ repeat_customers }}</strong>
+            <small>more than one completed job</small>
+        </article>
+        <article class="growth-metric growth-metric-accent">
+            <span class="growth-metric-icon icon-retention">↗</span>
+            <span class="growth-metric-label">RETENTION RATE</span>
+            <strong>{{ retention_rate }}<small>%</small></strong>
+            <small>repeat customers / total</small>
+        </article>
+    </section>
 
-    <div class="crm-card">
-        <span>Total Customers</span>
-        <h2>{{ total_customers }}</h2>
-    </div>
+    <section class="growth-chart-grid">
+        <article class="growth-panel growth-chart-panel">
+            <header class="growth-panel-heading">
+                <div><span class="growth-section-label">REVENUE CONTRIBUTION</span><h2>Top customers by revenue</h2></div>
+                <span class="growth-chart-key"><i class="key-revenue"></i> Revenue</span>
+            </header>
+            <div class="growth-chart-area"><canvas id="customerRevenueChart" aria-label="Revenue by customer chart" role="img"></canvas></div>
+        </article>
+        <article class="growth-panel growth-chart-panel">
+            <header class="growth-panel-heading">
+                <div><span class="growth-section-label">CUSTOMER ACTIVITY</span><h2>Completed jobs</h2></div>
+                <span class="growth-chart-key"><i class="key-jobs"></i> Jobs</span>
+            </header>
+            <div class="growth-chart-area"><canvas id="customerBookingsChart" aria-label="Completed jobs by customer chart" role="img"></canvas></div>
+        </article>
+    </section>
 
-    <div class="crm-card">
-        <span>New This Month</span>
-        <h2>{{ new_customers }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Repeat Customers</span>
-        <h2>{{ repeat_customers }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Retention Rate</span>
-        <h2>{{ retention_rate }}%</h2>
-    </div>
-
+    <section class="growth-panel">
+        <header class="growth-panel-heading growth-table-heading">
+            <div><span class="growth-section-label">RELATIONSHIP SPOTLIGHT</span><h2>Top customers</h2><p>Your highest revenue contributors across the customer base.</p></div>
+            <a class="growth-text-link" href="{% url 'customer_list' %}">Customer directory <span>→</span></a>
+        </header>
+        <div class="growth-table-wrap">
+            <table class="growth-table">
+                <thead><tr><th scope="col">Customer</th><th scope="col">Email</th><th scope="col">Property type</th><th scope="col">Completed jobs</th><th scope="col">Lifetime revenue</th></tr></thead>
+                <tbody>
+                    {% for customer in top_customers %}
+                        <tr>
+                            <td><a class="growth-customer-name" href="{% url 'customer_profile_360' customer.id %}"><span class="growth-avatar">{{ customer.full_name|first|upper }}</span><strong>{{ customer.full_name }}</strong></a></td>
+                            <td>{% if customer.email %}<a class="growth-email" href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}<span class="growth-muted">—</span>{% endif %}</td>
+                            <td>{{ customer.property_type|default:"—" }}</td>
+                            <td><span class="growth-number-pill">{{ customer.jobs_completed }}</span></td>
+                            <td class="growth-money">${{ customer.total_revenue }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="growth-empty" colspan="5">Customer revenue data will appear here as jobs are completed.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
-
-<section class="crm-two-column">
-
-    <div class="crm-panel">
-        <div class="crm-panel-header">
-            <h2>Revenue by Customer</h2>
-        </div>
-
-        <canvas id="customerRevenueChart"></canvas>
-    </div>
-
-    <div class="crm-panel">
-        <div class="crm-panel-header">
-            <h2>Bookings by Customer</h2>
-        </div>
-
-        <canvas id="customerBookingsChart"></canvas>
-    </div>
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Top Customers</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Email</th>
-                    <th>Property Type</th>
-                    <th>Jobs Completed</th>
-                    <th>Total Revenue</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for customer in top_customers %}
-                    <tr>
-                        <td>{{ customer.full_name }}</td>
-                        <td>{{ customer.email }}</td>
-                        <td>{{ customer.property_type }}</td>
-                        <td>{{ customer.jobs_completed }}</td>
-                        <td>${{ customer.total_revenue }}</td>
-                    </tr>
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
 
 {{ customer_labels|json_script:"customer-labels" }}
 {{ revenue_data|json_script:"customer-revenue" }}
 {{ booking_data|json_script:"customer-bookings" }}
-
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const labelsNode = document.getElementById("customer-labels");
+    const revenueNode = document.getElementById("customer-revenue");
+    const bookingsNode = document.getElementById("customer-bookings");
+    if (!labelsNode || !revenueNode || !bookingsNode || typeof Chart === "undefined") return;
 
-const labels =
-JSON.parse(document.getElementById("customer-labels").textContent);
-
-const revenueData =
-JSON.parse(document.getElementById("customer-revenue").textContent);
-
-const bookingData =
-JSON.parse(document.getElementById("customer-bookings").textContent);
-
-new Chart(
-    document.getElementById("customerRevenueChart"),
-    {
-        type: "bar",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "Revenue",
-                data: revenueData
-            }]
+    const labels = JSON.parse(labelsNode.textContent);
+    const revenue = JSON.parse(revenueNode.textContent);
+    const bookings = JSON.parse(bookingsNode.textContent);
+    const chartBase = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, grid: { color: "#edf1f3" }, ticks: { color: "#7d8c99" } },
+            y: { grid: { display: false }, ticks: { color: "#526679" } }
         }
+    };
+    const revenueCanvas = document.getElementById("customerRevenueChart");
+    const bookingsCanvas = document.getElementById("customerBookingsChart");
+    if (revenueCanvas) {
+        new Chart(revenueCanvas, {
+            type: "bar",
+            data: { labels: labels, datasets: [{ data: revenue, backgroundColor: "#168a83", borderRadius: 5, maxBarThickness: 18 }] },
+            options: { ...chartBase, scales: { ...chartBase.scales, x: { ...chartBase.scales.x, ticks: { color: "#7d8c99", callback: value => "$" + value } } } }
+        });
     }
-);
-
-new Chart(
-    document.getElementById("customerBookingsChart"),
-    {
-        type: "bar",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "Bookings",
-                data: bookingData
-            }]
-        }
+    if (bookingsCanvas) {
+        new Chart(bookingsCanvas, {
+            type: "bar",
+            data: { labels: labels, datasets: [{ data: bookings, backgroundColor: "#8092df", borderRadius: 5, maxBarThickness: 18 }] },
+            options: chartBase
+        });
     }
-);
-
+});
 </script>
-
 {% endblock %}

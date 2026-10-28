@@ -191,9 +191,9 @@ def delete_contract(request, contract_id):
 
     return render(
         request,
-        "shared/confirm_delete.html",
+        "contracts/contract_confirm_delete.html",
         {
-            "object_name": str(contract),
+            "contract": contract,
             "cancel_url": "/dashboard/contracts/",
         },
     )
@@ -202,6 +202,9 @@ def delete_contract(request, contract_id):
 @admin_required
 def contract_detail(request, contract_id):
     contract = get_object_or_404(CleaningContract, id=contract_id)
+    contract.days_remaining = (
+        (contract.end_date - timezone.localdate()).days if contract.end_date else None
+    )
 
     bookings = Booking.objects.filter(
         customer=contract.customer,
@@ -297,7 +300,11 @@ def contract_renewals(request):
         end_date__isnull=False,
         end_date__lte=today + timedelta(days=30),
         end_date__gte=today,
-    ).order_by("end_date")
+    ).select_related("customer").order_by("end_date")
+
+    contracts = list(contracts)
+    for contract in contracts:
+        contract.days_remaining = (contract.end_date - today).days
 
     return render(
         request,

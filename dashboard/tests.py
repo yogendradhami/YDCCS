@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from datetime import date, time
+from datetime import date, datetime, time
 
 from django.contrib.messages import get_messages
 from django.test import TestCase, Client, override_settings
@@ -18,6 +18,7 @@ from bookings.models import Booking
 from employees.models import Employee
 from rosters.models import Roster
 from quotes.models import QuoteRequest
+from quotes.models import QuoteImage
 from invoices.models import Invoice
 
 
@@ -233,6 +234,188 @@ class QuoteCompletionStateTests(TestCase):
 		self.quote.refresh_from_db()
 		self.assertEqual(self.quote.status, "completed")
 		self.assertEqual(booking.idempotency_key, f"quote:{self.quote.pk}")
+
+
+class QuoteLeadManagementTests(TestCase):
+    def setUp(self):
+        self.admin = get_user_model().objects.create_user(
+            "lead-manager",
+            password="test-password",
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(self.admin)
+
+    def make_quote(self, **overrides):
+        data = {
+            "name": "Lead Customer",
+            "email": "lead@example.com",
+            "phone": "0400000000",
+            "property_type": "House",
+            "suburb_postcode": "Adelaide 5000",
+            "message": "Please quote my home cleaning",
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "lead_source": "website",
+            "estimated_price": 260,
+            "status": "new",
+        }
+        data.update(overrides)
+        return QuoteRequest.objects.create(**data)
+
+    def test_lead_list_filters_search_and_paginates(self):
+        self.make_quote(name="Filter Match", email="match@example.com")
+        for index in range(12):
+            self.make_quote(
+                name=f"Other Lead {index}",
+                email=f"other-{index}@example.com",
+                status="contacted",
+            )
+
+        response = self.client.get(
+            reverse("lead_list"),
+            {
+                "q": "Filter Match",
+                "status": "new",
+                "page_size": "10",
+                "page": "1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["filtered_count"], 1)
+        self.assertEqual(len(response.context["quotes"]), 1)
+        self.assertEqual(response.context["quotes"][0].name, "Filter Match")
+
+    def test_lead_list_paginates_filtered_results_and_keeps_filters(self):
+        for index in range(12):
+            self.make_quote(
+                name=f"Paged Lead {index}",
+                email=f"paged-{index}@example.com",
+                status="contacted",
+            )
+        response = self.client.get(
+            reverse("lead_list"),
+            {"status": "contacted", "page_size": "10", "page": "2"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["quotes"]), 2)
+        self.assertEqual(response.context["page_obj"].number, 2)
+        self.assertContains(response, "status=contacted")
+        self.assertContains(response, "page_size=10")
+
+    def test_lead_list_filters_by_property_source_and_submission_date(self):
+        matching = self.make_quote(
+            name="Date Filter Match",
+            property_type="Office",
+            lead_source="referral",
+        )
+        outside = self.make_quote(
+            name="Date Filter Outside",
+            email="outside@example.com",
+            property_type="House",
+            lead_source="website",
+        )
+        QuoteRequest.objects.filter(pk=matching.pk).update(
+            created_at=timezone.make_aware(
+                datetime(2026, 10, 20), timezone.get_current_timezone()
+            )
+        )
+        QuoteRequest.objects.filter(pk=outside.pk).update(
+            created_at=timezone.make_aware(
+                datetime(2026, 10, 10), timezone.get_current_timezone()
+            )
+        )
+
+        response = self.client.get(
+            reverse("lead_list"),
+            {
+                "property_type": "Office",
+                "lead_source": "referral",
+                "date_from": "2026-10-15",
+                "date_to": "2026-10-25",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["filtered_count"], 1)
+        self.assertEqual(response.context["quotes"][0].pk, matching.pk)
+
+    def test_lead_list_shows_every_public_submission_field(self):
+        quote = self.make_quote(
+            name="All Fields Customer",
+            property_type="Office",
+            suburb_postcode="Norwood 5067",
+            preferred_date=date(2026, 11, 5),
+            message="Clean office and meeting rooms",
+            lead_source="referral",
+            window_cleaning=True,
+            carpet_shampooing=True,
+            grout_cleaning=True,
+            upholstery_cleaning=True,
+            laundry_service=True,
+        )
+
+        response = self.client.get(reverse("lead_list"))
+
+        self.assertEqual(response.status_code, 200)
+        for expected in (
+            quote.name,
+            quote.email,
+            quote.phone,
+            "Office",
+            "Norwood 5067",
+            "Nov",
+            "Clean office and meeting rooms",
+            "Bedrooms",
+            "Bathrooms",
+            "Referral",
+            "Window cleaning",
+            "Carpet shampooing",
+            "Grout cleaning",
+            "Upholstery cleaning",
+            "Laundry service",
+        ):
+            with self.subTest(expected=expected):
+                self.assertContains(response, expected)
+
+    def test_delete_lead_requires_post_and_removes_quote_images(self):
+        quote = self.make_quote()
+        QuoteImage.objects.create(quote=quote, image="quote_images/test-lead.jpg")
+        storage = QuoteImage._meta.get_field("image").storage
+
+        with patch.object(storage, "delete") as delete_image:
+            response = self.client.post(
+                reverse("delete_quote_request", args=[quote.pk])
+            )
+
+        self.assertRedirects(response, reverse("lead_list"))
+        self.assertFalse(QuoteRequest.objects.filter(pk=quote.pk).exists())
+        self.assertFalse(QuoteImage.objects.filter(quote_id=quote.pk).exists())
+        delete_image.assert_called_once_with("quote_images/test-lead.jpg")
+
+    def test_delete_lead_rejects_get(self):
+        quote = self.make_quote()
+        response = self.client.get(
+            reverse("delete_quote_request", args=[quote.pk])
+        )
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(QuoteRequest.objects.filter(pk=quote.pk).exists())
+
+    def test_delete_lead_requires_delete_permission(self):
+        quote = self.make_quote()
+        user = get_user_model().objects.create_user(
+            "lead-viewer", password="test-password", is_staff=True
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("delete_quote_request", args=[quote.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(QuoteRequest.objects.filter(pk=quote.pk).exists())
 
 
 

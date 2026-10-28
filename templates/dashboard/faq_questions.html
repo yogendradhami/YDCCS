@@ -1,91 +1,78 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
 {% load static %}
 
+{% block title %}Customer Questions | YD Dashboard{% endblock %}
+{% block page_title %}Customer Questions{% endblock %}
+{% block page_subtitle %}Review customer questions and publish helpful answers for everyone.{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/faq.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/customer-growth.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>FAQ Submissions</h1>
-    <div class="actions">
-        <form method="get" class="search-form">
-            <input type="search" name="q" placeholder="Search questions, email or name" value="{{ q|default:'' }}">
-            <button class="btn btn-outline" type="submit">Search</button>
+<div class="customer-growth-page faq-dashboard">
+    <section class="growth-hero">
+        <div>
+            <span class="growth-eyebrow"><i></i> CUSTOMER EXPERIENCE / KNOWLEDGE CENTRE</span>
+            <h1>Every question is a chance<br><strong>to help.</strong></h1>
+            <p>Review incoming customer questions, reply directly, and publish answers to your public FAQ.</p>
+        </div>
+        <div class="faq-hero-stat">
+            <span>SUBMISSIONS</span>
+            <strong>{{ page_obj.paginator.count }}</strong>
+            <small>{% if q %}matching your search{% else %}all customer questions{% endif %}</small>
+        </div>
+    </section>
+
+    <section class="growth-panel faq-inbox-panel">
+        <header class="growth-panel-heading growth-table-heading">
+            <div><span class="growth-section-label">CUSTOMER INBOX</span><h2>Submitted questions</h2><p>Search by question, customer name, or email address.</p></div>
+        </header>
+        <form method="get" class="growth-table-tools faq-search-form">
+            <label class="growth-search"><span aria-hidden="true">⌕</span><input type="search" name="q" placeholder="Search questions, email or name..." value="{{ q|default:'' }}" aria-label="Search questions, email, or name"></label>
+            <button type="submit" class="growth-filter-submit">Search questions</button>
+            {% if q %}<a class="growth-clear-filter" href="{% url 'faq_question_list' %}">Clear</a>{% endif %}
         </form>
-    </div>
-</div>
 
-<div class="card list-card">
-    <table class="faq-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Question</th>
-                <th>From</th>
-                <th>Submitted</th>
-                <th>Published</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for q in questions %}
-            <tr>
-                <td class="mono">#{{ q.id }}</td>
-                <td class="question-cell">
-                    <div class="question-text">{{ q.question|truncatechars:160 }}</div>
-                    <div class="muted small">{{ q.question|truncatechars:0 }}</div>
-                </td>
-                <td>
-                    <div>{{ q.name }}</div>
-                    <div class="muted small">{{ q.email }}</div>
-                </td>
-                <td class="muted small">{{ q.created_at|date:"d M Y H:i" }}</td>
-                <td>
-                    {% if q.is_published %}
-                        <span class="badge badge-success">Published</span>
-                    {% else %}
-                        <span class="badge badge-muted">Draft</span>
-                    {% endif %}
-                </td>
-                <td class="actions-col">
-                    <a class="btn btn-primary" href="{% url 'faq_question_reply' q.id %}">Reply</a>
-                </td>
-            </tr>
+        <div class="faq-question-list">
+            {% for question in questions %}
+                <article class="faq-question-card">
+                    <div class="faq-question-main">
+                        <div class="faq-question-topline">
+                            <span class="faq-question-id">QUESTION #{{ question.id }}</span>
+                            {% if question.is_published %}<span class="growth-tier tier-vip">Published</span>{% else %}<span class="growth-tier tier-standard">Needs response</span>{% endif %}
+                        </div>
+                        <h3>{{ question.question|truncatechars:180 }}</h3>
+                        <div class="faq-question-meta">
+                            <span class="faq-question-person"><i>{{ question.name|first|upper|default:"?" }}</i><strong>{{ question.name|default:"Anonymous" }}</strong></span>
+                            {% if question.email %}<a href="mailto:{{ question.email }}">{{ question.email }}</a>{% endif %}
+                            <time datetime="{{ question.created_at|date:'c' }}">{{ question.created_at|date:"d M Y · H:i" }}</time>
+                        </div>
+                        {% if question.answer %}
+                            <div class="faq-answer-preview"><span>YOUR ANSWER</span><p>{{ question.answer|truncatechars:150 }}</p></div>
+                        {% endif %}
+                    </div>
+                    <a class="faq-reply-action" href="{% url 'faq_question_reply' question.id %}">{% if question.answer %}Edit response{% else %}Reply to question{% endif %}<span>→</span></a>
+                </article>
             {% empty %}
-            <tr><td colspan="6" class="muted">No submissions yet.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    {% if page_obj.has_other_pages %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">← Prev</a>
-        {% endif %}
-
-        <div class="page-numbers">
-            {% for p in page_obj.paginator.page_range %}
-                {% if p == page_obj.number %}
-                    <span class="page current">{{ p }}</span>
-                {% elif p <= page_obj.number|add:3 and p >= page_obj.number|add:-3 %}
-                    <a href="?page={{ p }}{% if q %}&q={{ q }}{% endif %}" class="page">{{ p }}</a>
-                {% elif p == 1 %}
-                    <a href="?page=1{% if q %}&q={{ q }}{% endif %}" class="page">1</a>
-                    {% if page_obj.number > 5 %}<span class="ellipsis">…</span>{% endif %}
-                {% elif p == page_obj.paginator.num_pages %}
-                    {% if page_obj.number < page_obj.paginator.num_pages|add:-4 %}<span class="ellipsis">…</span>{% endif %}
-                    <a href="?page={{ p }}{% if q %}&q={{ q }}{% endif %}" class="page">{{ p }}</a>
-                {% endif %}
+                <div class="faq-empty-state">
+                    <span>?</span>
+                    <strong>{% if q %}No matching questions{% else %}No questions yet{% endif %}</strong>
+                    <p>{% if q %}Try a different search term or clear your search.{% else %}Customer submissions will appear here when someone sends a question.{% endif %}</p>
+                    {% if q %}<a href="{% url 'faq_question_list' %}">Clear search</a>{% endif %}
+                </div>
             {% endfor %}
         </div>
 
-        {% if page_obj.has_next %}
-            <a class="btn btn-outline" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Next →</a>
+        {% if page_obj.has_other_pages %}
+            <nav class="growth-pagination" aria-label="Question pages">
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                <div>
+                    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">← Previous</a>{% endif %}
+                    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">Next →</a>{% endif %}
+                </div>
+            </nav>
         {% endif %}
-    </div>
-    {% endif %}
-
+    </section>
 </div>
-
 {% endblock %}

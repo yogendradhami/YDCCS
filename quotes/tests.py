@@ -1,3 +1,4 @@
+import json
 from io import BytesIO
 from datetime import date, time, timedelta
 from unittest.mock import Mock, patch
@@ -143,6 +144,323 @@ class QuoteFormTests(TestCase):
         self.assertEqual(QuoteRequest.objects.count(), 1)
         self.assertEqual(_customer_email.call_count, 1)
         self.assertEqual(_admin_email.call_count, 1)
+
+
+@override_settings(
+    RECAPTCHA_SITE_KEY="",
+    RECAPTCHA_SECRET_KEY="",
+    CLOUDINARY_STORAGE={
+        "CLOUD_NAME": "test-cloud",
+        "API_KEY": "test-api-key",
+        "API_SECRET": "test-api-secret",
+    },
+)
+class QuoteImageUploadTests(TestCase):
+    def setUp(self):
+        response = self.client.get("/", HTTP_HOST="127.0.0.1")
+        self.workflow_key = response.context["form"]["workflow_key"].value()
+        mark_public_email_verified(self.client, "direct@example.com")
+
+    def sign_batch(self, count=1, workflow_key=None):
+        with patch("quotes.upload_service.api_sign_request", return_value="upload-signature"):
+            response = self.client.post(
+                "/quote/images/upload/",
+                {
+                    "upload_action": "sign",
+                    "workflow_key": workflow_key or self.workflow_key,
+                    "count": str(count),
+                },
+                HTTP_HOST="127.0.0.1",
+            )
+        return response
+
+    def quote_data(self, **overrides):
+        data = {
+            "name": "Direct Upload Customer",
+            "email": "direct@example.com",
+            "phone": "0400000000",
+            "property_type": "House",
+            "suburb_postcode": "Adelaide 5000",
+            "preferred_date": "2026-08-09",
+            "message": "Direct upload test",
+            "bedrooms": "2",
+            "bathrooms": "1",
+            "lead_source": "website",
+            "workflow_key": self.workflow_key,
+        }
+        data.update(overrides)
+        return data
+
+    @staticmethod
+    def receipt(public_id, version=123, signature="receipt-signature"):
+        return {"public_id": public_id, "version": version, "signature": signature}
+
+    @staticmethod
+    def cloudinary_resources(public_ids, *, version=123, size=1024, image_format="jpg"):
+        return {
+            "resources": [
+                {
+                    "public_id": public_id,
+                    "version": version,
+                    "bytes": size,
+                    "format": image_format,
+                    "resource_type": "image",
+                }
+                for public_id in public_ids
+            ]
+        }
+
+    @patch("core.views.send_admin_quote_email", return_value=True)
+    @patch("core.views.send_customer_quote_email", return_value=True)
+    @patch("quotes.upload_service.cloudinary_api.resources_by_ids")
+    @patch("quotes.upload_service.api_sign_request", return_value="receipt-signature")
+    def test_signed_batch_finalizes_and_links_verified_cloudinary_image(
+        self, _sign, resources_by_ids, _customer_email, _admin_email
+    ):
+        batch_response = self.sign_batch()
+        self.assertEqual(batch_response.status_code, 200)
+        batch = batch_response.json()
+        public_id = batch["uploads"][0]["public_id"]
+        upload_parameters = batch["uploads"][0]
+        self.assertTrue(public_id.startswith("quote_images/"))
+        self.assertIn("jpg", upload_parameters["allowed_formats"])
+        self.assertEqual(upload_parameters["signature"], "upload-signature")
+        self.assertNotIn("test-api-secret", batch_response.content.decode("utf-8"))
+        resources_by_ids.return_value = self.cloudinary_resources([public_id])
+
+        response = self.client.post(
+            "/",
+            self.quote_data(
+                quote_image_batch_token=batch["batch_token"],
+                quote_image_uploads=json.dumps([self.receipt(public_id)]),
+            ),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(QuoteRequest.objects.count(), 1)
+        quote_image = QuoteImage.objects.get()
+        self.assertEqual(quote_image.image.name, public_id)
+        resources_by_ids.assert_called_once_with(
+            [public_id], resource_type="image", type="upload"
+        )
+
+    def test_signing_rejects_too_many_images(self):
+        response = self.sign_batch(count=7)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+
+    @patch("quotes.upload_service.api_sign_request", return_value="valid")
+    def test_receipt_must_be_signed_and_match_the_batch(self, _sign):
+        expected = ["quote_images/workflow/first", "quote_images/workflow/second"]
+        with self.assertRaisesMessage(ValueError, "incomplete"):
+            from quotes.upload_service import verify_quote_image_uploads
+
+            verify_quote_image_uploads([], expected)
+        with self.assertRaisesMessage(ValueError, "match the signed batch"):
+            verify_quote_image_uploads(
+                [
+                    self.receipt(expected[0], signature="valid"),
+                    self.receipt(expected[0], signature="valid"),
+                ],
+                expected,
+            )
+        with self.assertRaisesMessage(ValueError, "match the signed batch"):
+            verify_quote_image_uploads(
+                [
+                    self.receipt("quote_images/another-workflow/foreign", signature="valid"),
+                    self.receipt(expected[1], signature="valid"),
+                ],
+                expected,
+            )
+        with self.assertRaisesMessage(ValueError, "signature"):
+            with patch(
+                "quotes.upload_service.api_sign_request", return_value="different"
+            ):
+                verify_quote_image_uploads(
+                    [self.receipt(expected[0], signature="invalid"), self.receipt(expected[1])],
+                    expected,
+                )
+
+    @patch("quotes.upload_service.api_sign_request", return_value="receipt-signature")
+    @patch("quotes.upload_service.cloudinary_api.resources_by_ids")
+    def test_unsupported_oversized_and_missing_cloudinary_metadata_are_rejected(
+        self, resources_by_ids, _sign
+    ):
+        from quotes.upload_service import verify_quote_image_uploads
+
+        expected = ["quote_images/workflow/photo"]
+        receipts = [self.receipt(expected[0])]
+        invalid_metadata = [
+            self.cloudinary_resources(expected, image_format="svg"),
+            self.cloudinary_resources(expected, size=15 * 1024 * 1024 + 1),
+            {"resources": []},
+        ]
+        for metadata in invalid_metadata:
+            with self.subTest(metadata=metadata):
+                resources_by_ids.return_value = metadata
+                with self.assertRaises(ValueError):
+                    verify_quote_image_uploads(receipts, expected)
+
+    @patch("quotes.upload_service.api_sign_request", return_value="receipt-signature")
+    @patch("quotes.upload_service.cloudinary_api.resources_by_ids")
+    def test_combined_actual_cloudinary_size_is_limited(self, resources_by_ids, _sign):
+        from quotes.upload_service import verify_quote_image_uploads
+
+        expected = [f"quote_images/workflow/photo-{index}" for index in range(6)]
+        receipts = [self.receipt(public_id) for public_id in expected]
+        resources_by_ids.return_value = self.cloudinary_resources(
+            expected, size=11 * 1024 * 1024
+        )
+        with self.assertRaisesMessage(ValueError, "60 MB"):
+            verify_quote_image_uploads(receipts, expected)
+
+    def test_batch_token_cannot_finalize_another_quote_workflow(self):
+        first_batch = self.sign_batch()
+        second_workflow_key = self.client.get(
+            "/", HTTP_HOST="127.0.0.1"
+        ).context["form"]["workflow_key"].value()
+        batch = first_batch.json()
+
+        with patch("quotes.upload_service.cloudinary_uploader.destroy") as destroy:
+            response = self.client.post(
+                "/",
+                self.quote_data(
+                    workflow_key=second_workflow_key,
+                    quote_image_batch_token=batch["batch_token"],
+                    quote_image_uploads=json.dumps(
+                        [self.receipt(batch["uploads"][0]["public_id"])]
+                    ),
+                ),
+                HTTP_HOST="127.0.0.1",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+        destroy.assert_not_called()
+
+    def test_invalid_finalization_cleans_only_batch_assets(self):
+        batch = self.sign_batch().json()
+        public_id = batch["uploads"][0]["public_id"]
+        with patch("quotes.upload_service.api_sign_request", return_value="expected"):
+            with patch("quotes.upload_service.cloudinary_uploader.destroy") as destroy:
+                response = self.client.post(
+                    "/",
+                    self.quote_data(
+                        quote_image_batch_token=batch["batch_token"],
+                        quote_image_uploads=json.dumps(
+                            [self.receipt(public_id, signature="invalid")]
+                        ),
+                    ),
+                    HTTP_HOST="127.0.0.1",
+                )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+        destroy.assert_called_once_with(
+            public_id, resource_type="image", invalidate=True
+        )
+
+    def test_missing_receipts_clean_the_signed_batch(self):
+        batch = self.sign_batch().json()
+        public_id = batch["uploads"][0]["public_id"]
+        with patch("quotes.upload_service.cloudinary_uploader.destroy") as destroy:
+            response = self.client.post(
+                "/",
+                self.quote_data(quote_image_batch_token=batch["batch_token"]),
+                HTTP_HOST="127.0.0.1",
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+        destroy.assert_called_once_with(
+            public_id, resource_type="image", invalidate=True
+        )
+
+    def test_cancel_removes_signed_batch_assets(self):
+        batch = self.sign_batch().json()
+        public_id = batch["uploads"][0]["public_id"]
+        with patch("quotes.upload_service.cloudinary_uploader.destroy") as destroy:
+            response = self.client.post(
+                "/quote/images/upload/",
+                {
+                    "upload_action": "cancel",
+                    "workflow_key": self.workflow_key,
+                    "batch_token": batch["batch_token"],
+                },
+                HTTP_HOST="127.0.0.1",
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"cancelled": True})
+        destroy.assert_called_once_with(
+            public_id, resource_type="image", invalidate=True
+        )
+
+    @patch("core.views.send_admin_quote_email", return_value=True)
+    @patch("core.views.send_customer_quote_email", return_value=True)
+    @patch("quotes.upload_service.cloudinary_api.resources_by_ids")
+    @patch("quotes.upload_service.api_sign_request", return_value="receipt-signature")
+    def test_repeated_direct_submission_is_idempotent(
+        self, _sign, resources_by_ids, customer_email, admin_email
+    ):
+        batch = self.sign_batch().json()
+        public_id = batch["uploads"][0]["public_id"]
+        resources_by_ids.return_value = self.cloudinary_resources([public_id])
+        data = self.quote_data(
+            quote_image_batch_token=batch["batch_token"],
+            quote_image_uploads=json.dumps([self.receipt(public_id)]),
+        )
+
+        first = self.client.post("/", data, HTTP_HOST="127.0.0.1")
+        mark_public_email_verified(self.client, "direct@example.com")
+        second = self.client.post("/", data, HTTP_HOST="127.0.0.1")
+
+        self.assertEqual(first.status_code, 302)
+        self.assertEqual(second.status_code, 302)
+        self.assertEqual(QuoteRequest.objects.count(), 1)
+        self.assertEqual(QuoteImage.objects.count(), 1)
+        self.assertEqual(resources_by_ids.call_count, 1)
+        self.assertEqual(customer_email.call_count, 1)
+        self.assertEqual(admin_email.call_count, 1)
+
+    def test_quote_upload_endpoint_requires_csrf(self):
+        client = self.client_class(enforce_csrf_checks=True)
+        response = client.get("/", HTTP_HOST="127.0.0.1")
+        workflow_key = response.context["form"]["workflow_key"].value()
+        response = client.post(
+            "/quote/images/upload/",
+            {"upload_action": "sign", "workflow_key": workflow_key, "count": "1"},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @patch("core.views.send_admin_quote_email", return_value=True)
+    @patch("core.views.send_customer_quote_email", return_value=True)
+    @patch("quotes.upload_service.cloudinary_uploader.destroy")
+    @patch("quotes.upload_service.cloudinary_api.resources_by_ids")
+    @patch("quotes.upload_service.api_sign_request", return_value="receipt-signature")
+    @patch("quotes.services.QuoteImage.objects.bulk_create", side_effect=RuntimeError("db failure"))
+    def test_database_failure_cleans_uploaded_asset(
+        self,
+        _bulk_create,
+        _sign,
+        resources_by_ids,
+        destroy,
+        _customer_email,
+        _admin_email,
+    ):
+        batch = self.sign_batch().json()
+        public_id = batch["uploads"][0]["public_id"]
+        resources_by_ids.return_value = self.cloudinary_resources([public_id])
+        response = self.client.post(
+            "/",
+            self.quote_data(
+                quote_image_batch_token=batch["batch_token"],
+                quote_image_uploads=json.dumps([self.receipt(public_id)]),
+            ),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(QuoteRequest.objects.count(), 0)
+        destroy.assert_any_call(public_id, resource_type="image", invalidate=True)
 
 
 @override_settings(RECAPTCHA_SITE_KEY="", RECAPTCHA_SECRET_KEY="")

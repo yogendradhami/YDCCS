@@ -9,6 +9,7 @@ from django.db import IntegrityError, transaction
 from bookings.models import Booking
 from bookings.services import create_booking
 from .models import QuoteImage, QuoteRequest
+from .upload_service import MAX_QUOTE_IMAGES, destroy_quote_image_assets
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,9 @@ def calculate_quote_estimate(quote):
     return Decimal(base_price)
 
 
-def create_quote_request(*, form, images=None, workflow_key=None):
+def create_quote_request(
+    *, form, images=None, workflow_key=None, uploaded_image_ids=None
+):
     if not getattr(form, "cleaned_data", None) and not form.is_valid():
         raise ValueError("Quote form is invalid.")
 
@@ -49,6 +52,17 @@ def create_quote_request(*, form, images=None, workflow_key=None):
             return existing, False
 
     image_files = list(images or [])
+    direct_image_ids = list(uploaded_image_ids or [])
+    if image_files and direct_image_ids:
+        raise ValueError("Use either uploaded files or verified direct image uploads.")
+    if len(direct_image_ids) > MAX_QUOTE_IMAGES or any(
+        not isinstance(public_id, str)
+        or not public_id.startswith("quote_images/")
+        for public_id in direct_image_ids
+    ):
+        raise ValueError("The verified property photo list is invalid.")
+    if len(set(direct_image_ids)) != len(direct_image_ids):
+        raise ValueError("The verified property photo list is invalid.")
     image_storage = QuoteImage._meta.get_field("image").storage
     stored_names = [None] * len(image_files)
 
@@ -87,21 +101,35 @@ def create_quote_request(*, form, images=None, workflow_key=None):
                 quote.idempotency_key = workflow_key
             quote.save()
             QuoteImage.objects.bulk_create(
-                [QuoteImage(quote=quote, image=name) for name in stored_names],
+                [
+                    QuoteImage(quote=quote, image=name)
+                    for name in [*stored_names, *direct_image_ids]
+                ],
                 batch_size=6,
             )
     except Exception as exc:
-        for name in filter(None, stored_names):
-            try:
-                image_storage.delete(name)
-            except Exception:
-                logger.exception("Could not clean up quote image %s", name)
         if isinstance(exc, IntegrityError) and workflow_key:
             existing = QuoteRequest.objects.filter(
                 idempotency_key=workflow_key
             ).first()
             if existing:
+                linked_names = set(
+                    existing.images.values_list("image", flat=True)
+                )
+                destroy_quote_image_assets(
+                    [
+                        public_id
+                        for public_id in direct_image_ids
+                        if public_id not in linked_names
+                    ]
+                )
                 return existing, False
+        for name in filter(None, stored_names):
+            try:
+                image_storage.delete(name)
+            except Exception:
+                logger.exception("Could not clean up quote image %s", name)
+        destroy_quote_image_assets(direct_image_ids)
         raise
 
     return quote, True

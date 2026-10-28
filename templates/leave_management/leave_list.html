@@ -1,108 +1,105 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Leave Management{% endblock %}
-
+{% block title %}Leave Management | YD Dashboard{% endblock %}
 {% block page_title %}Leave Management{% endblock %}
-
-{% block page_subtitle %}
-Manage staff leave requests for YD Commercial Cleaning Services.
+{% block page_subtitle %}Review requests, plan team coverage, and keep employee leave decisions in one place.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
+<div class="workforce-page leave-admin-page">
+    <section class="workforce-hero">
+        <div>
+            <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / LEAVE DESK</span>
+            <h1>Time away,<br><strong>managed with clarity.</strong></h1>
+            <p>Review incoming leave requests, track approved time away, and keep weekly schedules aligned with team availability.</p>
+        </div>
+        <nav class="workforce-hero-actions" aria-label="Leave management actions">
+            <a class="workforce-button workforce-button-light" href="{% url 'add_leave_request' %}">＋ Add staff leave <span>→</span></a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_schedule' %}">Weekly schedule</a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_attendance_analytics' %}">Attendance analytics</a>
+        </nav>
+    </section>
 
-<div class="crm-summary-grid">
+    <section class="workforce-metrics" aria-label="Leave summary">
+        <article class="workforce-metric workforce-metric-featured"><span>PENDING REVIEW</span><strong>{{ pending_count }}</strong><small>Requests awaiting a decision</small></article>
+        <article class="workforce-metric"><span>APPROVED REQUESTS</span><strong>{{ approved_count }}</strong><small>Approved leave on record</small></article>
+        <article class="workforce-metric"><span>ON LEAVE TODAY</span><strong>{{ currently_on_leave }}</strong><small>Employees with approved leave</small></article>
+        <article class="workforce-metric"><span>ACTIVE TEAM</span><strong>{{ employee_count }}</strong><small>Employees in the directory</small></article>
+    </section>
 
-    <div class="crm-card">
-        <span>Pending Requests</span>
-        <h2>{{ pending_count }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Approved Leave</span>
-        <h2>{{ approved_count }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Rejected Leave</span>
-        <h2>{{ rejected_count }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Currently On Leave</span>
-        <h2>{{ currently_on_leave }}</h2>
-    </div>
-
-</div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Leave Requests</h2>
-
-        <a href="/dashboard/leave/add/" class="small-link-btn">
-            Add Leave Request
-        </a>
-    </div>
-
-    {% if leave_requests %}
-
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Leave Type</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Status</th>
-                        <th>Reason</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">REQUEST REGISTER</span><h2>Staff leave requests</h2><p>Search employee and reason, or filter by request status and leave type.</p></div>
+            <a class="workforce-text-link" href="{% url 'employee_schedule' %}">Check team schedule <span>→</span></a>
+        </header>
+        <div class="workforce-toolbar">
+            <label class="workforce-search"><span aria-hidden="true">⌕</span><input id="leaveSearch" type="search" placeholder="Search employee or reason..." aria-label="Search leave requests"></label>
+            <label class="workforce-filter">Status
+                <select id="leaveStatusFilter" aria-label="Filter by leave status"><option value="">All statuses</option>{% for value, label in status_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+            </label>
+            <label class="workforce-filter">Leave type
+                <select id="leaveTypeFilter" aria-label="Filter by leave type"><option value="">All leave types</option>{% for value, label in leave_type_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+            </label>
+            <span class="workforce-count"><strong id="leaveVisibleCount">{{ leave_requests|length }}</strong> requests</span>
+        </div>
+        <div class="workforce-table-wrap">
+            <table class="workforce-table leave-request-table">
+                <thead><tr><th scope="col">Employee</th><th scope="col">Leave type</th><th scope="col">Dates</th><th scope="col">Reason</th><th scope="col">Status</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead>
                 <tbody>
                     {% for leave in leave_requests %}
-                        <tr>
-                            <td>{{ leave.employee.full_name }}</td>
-                            <td>{{ leave.get_leave_type_display }}</td>
-                            <td>{{ leave.start_date }}</td>
-                            <td>{{ leave.end_date }}</td>
-                            <td>{{ leave.get_status_display }}</td>
-                            <td>{{ leave.reason }}</td>
-                            <td>
-                                {% if leave.status == "pending" %}
-                                    <form method="POST" action="{% url 'approve_leave_request' leave.id %}" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="small-link-btn">
-                                            Approve
-                                        </button>
-                                    </form>
-
-                                    <form method="POST" action="{% url 'reject_leave_request' leave.id %}" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="small-link-btn">
-                                            Reject
-                                        </button>
-                                    </form>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                        </tr>
+                    <tr data-leave-row data-status="{{ leave.status }}" data-type="{{ leave.leave_type }}" data-search="{{ leave.employee.full_name|lower }} {{ leave.reason|lower }}">
+                        <td><span class="workforce-person"><span class="workforce-avatar">{{ leave.employee.full_name|first|upper }}</span><span><strong>{{ leave.employee.full_name }}</strong><small>{{ leave.employee.get_role_display }}</small></span></span></td>
+                        <td><span class="leave-type-tag leave-type-{{ leave.leave_type }}">{{ leave.get_leave_type_display }}</span></td>
+                        <td><strong>{{ leave.start_date|date:"d M Y" }}</strong><small class="workforce-cell-subtitle">through {{ leave.end_date|date:"d M Y" }}</small></td>
+                        <td class="leave-reason-cell">{% if leave.reason %}<span title="{{ leave.reason }}">{{ leave.reason|truncatechars:80 }}</span>{% else %}<span class="workforce-muted">No reason provided</span>{% endif %}</td>
+                        <td><span class="workforce-pill {% if leave.status == 'approved' %}workforce-pill-good{% elif leave.status == 'rejected' %}workforce-pill-neutral{% else %}workforce-pill-warn{% endif %}">{{ leave.get_status_display }}</span></td>
+                        <td>{{ leave.created_at|date:"d M Y" }}</td>
+                        <td>
+                            {% if leave.status == "pending" %}
+                                <div class="workforce-actions">
+                                    <form method="post" action="{% url 'approve_leave_request' leave.id %}">{% csrf_token %}<button class="workforce-small-action workforce-action-primary" type="submit">Approve</button></form>
+                                    <form method="post" action="{% url 'reject_leave_request' leave.id %}">{% csrf_token %}<button class="workforce-small-action workforce-small-danger" type="submit">Decline</button></form>
+                                </div>
+                            {% else %}<span class="workforce-muted">Decision recorded</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="workforce-empty" colspan="7">No leave requests have been submitted yet. Requests submitted by employees will appear here.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
-    {% else %}
-
-        <div class="empty-box">
-            <h3>No leave requests found.</h3>
-            <p>Add staff leave requests here.</p>
-        </div>
-
-    {% endif %}
-
-</section>
-
+        <p class="workforce-no-results" id="leaveNoResults" hidden>No leave requests match your search and filters.</p>
+    </section>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("leaveSearch");
+    const statusFilter = document.getElementById("leaveStatusFilter");
+    const typeFilter = document.getElementById("leaveTypeFilter");
+    const count = document.getElementById("leaveVisibleCount");
+    const noResults = document.getElementById("leaveNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-leave-row]"));
+    if (!search || !statusFilter || !typeFilter || !count || !noResults) return;
+    function update() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query)
+                && (!statusFilter.value || row.dataset.status === statusFilter.value)
+                && (!typeFilter.value || row.dataset.type === typeFilter.value);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        noResults.hidden = visible !== 0 || rows.length === 0;
+    }
+    search.addEventListener("input", update);
+    statusFilter.addEventListener("change", update);
+    typeFilter.addEventListener("change", update);
+});
+</script>
 {% endblock %}

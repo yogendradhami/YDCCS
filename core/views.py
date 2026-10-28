@@ -11,6 +11,7 @@ import logging
 import secrets
 import signal
 import json
+import time
 from mimetypes import guess_type
 from urllib.parse import urlsplit, urlunsplit
 
@@ -55,7 +56,16 @@ from quotes.email_service import (
 )
 from quotes.forms import QuoteRequestForm, QuickQuoteForm
 from quotes.services import create_quote_request
-from quotes.models import QuoteImage
+from quotes.models import QuoteImage, QuoteRequest
+from quotes.upload_service import (
+    MAX_QUOTE_IMAGES,
+    QUOTE_IMAGE_BATCH_TTL,
+    QUOTE_IMAGE_UPLOAD_SESSION_KEY,
+    create_quote_image_batch,
+    destroy_quote_image_assets,
+    load_quote_image_batch,
+    verify_quote_image_uploads,
+)
 from reviews.models import Review
 from services.models import Service
 
@@ -83,6 +93,51 @@ from customers.forms import MarketingSignupForm
 from customers.models import MarketingSubscriber
 
 logger = logging.getLogger(__name__)
+QUOTE_IMAGE_MAX_PENDING_BATCHES = 4
+
+
+def _cleanup_unclaimed_quote_images(public_ids):
+    public_ids = list(public_ids)
+    linked_ids = set(
+        QuoteImage.objects.filter(image__in=public_ids).values_list("image", flat=True)
+    )
+    destroy_quote_image_assets(
+        [public_id for public_id in public_ids if public_id not in linked_ids]
+    )
+
+
+def _active_quote_image_batches(request, *, now=None):
+    pending = request.session.get(QUOTE_IMAGE_UPLOAD_SESSION_KEY, {})
+    now = now or int(time.time())
+    active = {}
+    for nonce, batch in pending.items():
+        if batch.get("expires_at", 0) > now:
+            active[nonce] = batch
+        else:
+            _cleanup_unclaimed_quote_images(batch.get("public_ids", []))
+    if active != pending:
+        request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = active
+    return active
+
+
+def _discard_quote_batch_for_existing_request(request, batch_token, workflow_key):
+    if not batch_token:
+        return
+    try:
+        nonce = load_quote_image_batch(batch_token, workflow_key)
+    except ValueError:
+        return
+    pending = _active_quote_image_batches(request)
+    batch = pending.get(nonce)
+    if (
+        not batch
+        or batch.get("workflow_key") != workflow_key
+        or not isinstance(batch.get("public_ids"), list)
+    ):
+        return
+    _cleanup_unclaimed_quote_images(batch["public_ids"])
+    pending.pop(nonce, None)
+    request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
 
 
 def _new_quote_workflow_key():
@@ -101,6 +156,70 @@ def _quote_idempotency_key(signed_workflow_key):
     except signing.BadSignature:
         return None
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+@require_POST
+def quote_image_upload(request):
+    workflow_key = _quote_idempotency_key(request.POST.get("workflow_key"))
+    if not workflow_key:
+        return JsonResponse({"error": "Reload the quote form and try again."}, status=400)
+
+    action = request.POST.get("upload_action")
+    now = int(time.time())
+    pending = _active_quote_image_batches(request, now=now)
+
+    if action == "cancel":
+        try:
+            nonce = load_quote_image_batch(
+                request.POST.get("batch_token", ""), workflow_key
+            )
+        except ValueError as exc:
+            request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+            return JsonResponse({"error": str(exc)}, status=400)
+
+        batch = pending.get(nonce)
+        if not batch or batch.get("workflow_key") != workflow_key:
+            request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+            return JsonResponse({"error": "The property photo batch is no longer available."}, status=400)
+        destroy_quote_image_assets(batch["public_ids"])
+        pending.pop(nonce, None)
+        request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+        return JsonResponse({"cancelled": True})
+
+    if action != "sign":
+        return JsonResponse({"error": "Unsupported property photo upload action."}, status=400)
+
+    try:
+        count = int(request.POST.get("count", "0"))
+    except (TypeError, ValueError):
+        count = 0
+    if not 1 <= count <= MAX_QUOTE_IMAGES:
+        request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+        return JsonResponse(
+            {"error": f"Choose between 1 and {MAX_QUOTE_IMAGES} property photos."},
+            status=400,
+        )
+    if len(pending) >= QUOTE_IMAGE_MAX_PENDING_BATCHES:
+        request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+        return JsonResponse(
+            {"error": "Cancel an earlier photo upload before starting another batch."},
+            status=429,
+        )
+
+    batch = create_quote_image_batch(workflow_key, count)
+    pending[batch["nonce"]] = {
+        "workflow_key": workflow_key,
+        "public_ids": batch["public_ids"],
+        "expires_at": now + QUOTE_IMAGE_BATCH_TTL,
+    }
+    request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+    return JsonResponse(
+        {
+            "cloud_name": settings.CLOUDINARY_STORAGE["CLOUD_NAME"],
+            "batch_token": batch["batch_token"],
+            "uploads": batch["uploads"],
+        }
+    )
 
 
 def _new_booking_workflow_key():
@@ -353,6 +472,17 @@ def _get_faq_submissions(faq_key="generic"):
 # Homepage View
 # ====================================================
 def home(request):
+    _active_quote_image_batches(request)
+    quote_image_batch_token = (
+        request.POST.get("quote_image_batch_token", "")
+        if request.method == "POST"
+        else ""
+    )
+    quote_image_uploads = (
+        request.POST.get("quote_image_uploads", "")
+        if request.method == "POST"
+        else ""
+    )
     gallery_items = cache.get("homepage_gallery_items")
 
     if gallery_items is None:
@@ -429,12 +559,85 @@ def home(request):
                 form.add_error(None, "This quote form expired. Reload the page and try again.")
                 messages.error(request, "❌ Please check the form and try again.")
             else:
+                batch = None
+                batch_nonce = None
                 try:
-                    quote, created = create_quote_request(
-                        form=form,
-                        images=uploaded_images,
-                        workflow_key=workflow_key,
-                    )
+                    existing_quote = QuoteRequest.objects.filter(
+                        idempotency_key=workflow_key
+                    ).first()
+                    if existing_quote:
+                        quote, created = existing_quote, False
+                        _discard_quote_batch_for_existing_request(
+                            request, quote_image_batch_token, workflow_key
+                        )
+                        quote_image_batch_token = ""
+                        quote_image_uploads = ""
+                    else:
+                        direct_image_ids = []
+                        if quote_image_batch_token or quote_image_uploads:
+                            if not quote_image_batch_token:
+                                raise ValueError(
+                                    "The property photo upload batch is incomplete."
+                                )
+                            batch_nonce = load_quote_image_batch(
+                                quote_image_batch_token, workflow_key
+                            )
+                            pending = request.session.get(
+                                QUOTE_IMAGE_UPLOAD_SESSION_KEY, {}
+                            )
+                            batch = pending.get(batch_nonce)
+                            if (
+                                not batch
+                                or batch.get("workflow_key") != workflow_key
+                                or not isinstance(batch.get("public_ids"), list)
+                                or any(
+                                    not isinstance(public_id, str)
+                                    or not public_id.startswith(
+                                        f"quote_images/{workflow_key[:24]}/"
+                                    )
+                                    for public_id in batch.get("public_ids", [])
+                                )
+                            ):
+                                raise ValueError(
+                                    "The property photo batch is no longer available."
+                                )
+                            if not quote_image_uploads:
+                                raise ValueError(
+                                    "The property photo upload batch is incomplete."
+                                )
+                            if uploaded_images:
+                                raise ValueError(
+                                    "Do not submit uploaded files and photo receipts together."
+                                )
+                            if len(quote_image_uploads) > 8192:
+                                raise ValueError(
+                                    "The property photo upload receipt is too large."
+                                )
+                            supplied_uploads = json.loads(quote_image_uploads)
+                            direct_image_ids = [
+                                item["public_id"]
+                                for item in verify_quote_image_uploads(
+                                    supplied_uploads, batch["public_ids"]
+                                )
+                            ]
+
+                        quote, created = create_quote_request(
+                            form=form,
+                            images=uploaded_images,
+                            workflow_key=workflow_key,
+                            uploaded_image_ids=direct_image_ids,
+                        )
+
+                    if batch is not None:
+                        pending = request.session.get(
+                            QUOTE_IMAGE_UPLOAD_SESSION_KEY, {}
+                        )
+                        pending.pop(batch_nonce, None)
+                        request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+                        if not created:
+                            _cleanup_unclaimed_quote_images(batch["public_ids"])
+                        quote_image_batch_token = ""
+                        quote_image_uploads = ""
 
                     if created:
                         customer_email_sent = send_customer_quote_email(quote)
@@ -453,11 +656,22 @@ def home(request):
 
                     return redirect("/#quote")
 
-                except Exception:
+                except Exception as exc:
                     logger.exception("Quote submission failed")
+                    if batch is not None:
+                        _cleanup_unclaimed_quote_images(batch.get("public_ids", []))
+                        pending = request.session.get(
+                            QUOTE_IMAGE_UPLOAD_SESSION_KEY, {}
+                        )
+                        pending.pop(batch_nonce, None)
+                        request.session[QUOTE_IMAGE_UPLOAD_SESSION_KEY] = pending
+                        quote_image_batch_token = ""
+                        quote_image_uploads = ""
                     form.add_error(
                         "property_images",
-                        "One or more uploaded images could not be processed. Please try again with a valid image file.",
+                        str(exc)
+                        if isinstance(exc, ValueError)
+                        else "One or more uploaded images could not be processed. Please try again with a valid image file.",
                     )
 
         messages.error(request, "❌ Please check the form and try again.")
@@ -490,6 +704,8 @@ def home(request):
         "home.html",
         {
             "form": form,
+            "quote_image_batch_token": quote_image_batch_token,
+            "quote_image_uploads": quote_image_uploads,
             **quick_quote_context,
             "marketing_form": MarketingSignupForm(),
             "gallery_items": gallery_items,

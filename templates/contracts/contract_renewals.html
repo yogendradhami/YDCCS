@@ -1,62 +1,75 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Contract Renewals{% endblock %}
+{% block title %}Contract Renewals | YD Dashboard{% endblock %}
+{% block page_title %}Contract Renewals{% endblock %}
+{% block page_subtitle %}Prioritise upcoming contract end dates and follow up before service lapses.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
 
 {% block content %}
+<div class="records-page contracts-page">
+    <section class="records-hero records-hero-compact">
+        <div>
+            <span class="records-eyebrow"><i></i> OPERATIONS / RENEWAL CENTRE</span>
+            <h1>Keep good service<br><strong>going.</strong></h1>
+            <p>Contracts ending within the next 30 days are listed below. Send a renewal note to start the conversation.</p>
+        </div>
+        <div class="records-hero-actions"><a class="records-hero-link" href="{% url 'contract_list' %}">← All contracts</a></div>
+    </section>
 
-<div class="crm-panel">
+    <section class="records-metrics records-renewal-metrics" aria-label="Renewal summary">
+        <article class="records-metric records-metric-featured"><span>RENEWALS DUE</span><strong>{{ contracts|length }}</strong><small>within 30 days</small></article>
+        <article class="records-metric"><span>RENEWAL WINDOW</span><strong>30 days</strong><small>customer follow-up period</small></article>
+    </section>
 
-    <div class="crm-panel-header">
-        <h2>Contracts Expiring Within 30 Days</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table">
-
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Service</th>
-                    <th>End Date</th>
-                    <th>Days Left</th>
-                    <th>Email</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for contract in contracts %}
-
-                <tr>
-
-                    <td>{{ contract.customer.full_name }}</td>
-
-                    <td>{{ contract.service_type }}</td>
-
-                    <td>{{ contract.end_date }}</td>
-
-                    <td>{{ contract.days_remaining }}</td>
-
-                    <td>
-
-                        <form method="post" action="{% url 'send_contract_renewal_email' contract.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="small-link-btn">Send Renewal</button>
-                        </form>
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
+    <section class="records-panel">
+        <header class="records-panel-header">
+            <div><span class="records-section-label">CUSTOMER RETENTION</span><h2>Contracts expiring soon</h2><p>{{ contracts|length }} contract{{ contracts|length|pluralize }} require a renewal conversation.</p></div>
+            <a class="records-text-link" href="{% url 'contract_list' %}">Contract register <span>→</span></a>
+        </header>
+        <div class="records-toolbar">
+            <label class="records-search"><span aria-hidden="true">⌕</span><input id="renewalSearch" type="search" placeholder="Search customer or service..." aria-label="Search renewals"></label>
+            <span class="records-count"><strong id="renewalVisibleCount">{{ contracts|length }}</strong> renewals</span>
+        </div>
+        <div class="records-table-wrap">
+            <table class="records-table" id="renewalsTable">
+                <thead><tr><th scope="col">Customer &amp; service</th><th scope="col">End date</th><th scope="col">Days remaining</th><th scope="col">Email</th><th scope="col">Next step</th></tr></thead>
+                <tbody>
+                    {% for contract in contracts %}
+                    <tr data-renewal-row data-search="{{ contract.customer.full_name|lower }} {{ contract.service_type|lower }}">
+                        <td><a class="records-primary-cell" href="{% url 'contract_detail' contract.id %}"><span class="records-avatar">{{ contract.customer.full_name|first|upper }}</span><span><strong>{{ contract.customer.full_name }}</strong><small>{{ contract.service_type }}</small></span></a></td>
+                        <td>{{ contract.end_date|date:"d M Y" }}</td>
+                        <td><span class="records-renewal-soon">{{ contract.days_remaining }} days</span></td>
+                        <td>{% if contract.customer.email %}<a class="records-email" href="mailto:{{ contract.customer.email }}">{{ contract.customer.email }}</a>{% else %}<span class="records-muted">No email on file</span>{% endif %}</td>
+                        <td>{% if contract.customer.email %}<form method="post" action="{% url 'send_contract_renewal_email' contract.id %}">{% csrf_token %}<button class="records-button records-button-teal" type="submit">Send renewal email <span>→</span></button></form>{% else %}<a class="records-row-link" href="{% url 'contract_detail' contract.id %}">Review contract</a>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="records-empty" colspan="5">No renewals are due within the next 30 days. Your active contracts are up to date.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="records-no-results" id="renewalNoResults" hidden>No renewals match your search.</div>
+    </section>
 </div>
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("renewalSearch");
+    const count = document.getElementById("renewalVisibleCount");
+    const empty = document.getElementById("renewalNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-renewal-row]"));
+    if (!search || !count || !empty) return;
+    search.addEventListener("input", function () {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        empty.hidden = visible !== 0 || rows.length === 0;
+    });
+});
+</script>
 {% endblock %}

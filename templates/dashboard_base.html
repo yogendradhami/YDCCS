@@ -72,7 +72,7 @@
                 </button>
 
                 <div class="sidebar-submenu">
-                    <a href="/dashboard/leads/">
+                    <a href="/dashboard/leads/" {% if request.resolver_match.url_name == "lead_list" %}aria-current="page"{% endif %}>
                         <span>Leads / Quotes</span>
                         <span class="side-badge" data-notification-type="quote" {% if not notification_counts.quote %}hidden{% endif %}>{{ notification_counts.quote|default:0 }}</span>
                     </a>

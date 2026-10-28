@@ -1,86 +1,90 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Attendance Report | YD Dashboard{% endblock %}
-
-{% block page_title %}Employee Attendance Report{% endblock %}
-{% block page_subtitle %}Track employee check-ins, check-outs, GPS location and total hours worked.{% endblock %}
+{% block title %}Attendance Register | YD Dashboard{% endblock %}
+{% block page_title %}Attendance Register{% endblock %}
+{% block page_subtitle %}Review employee check-ins, check-outs, worked hours, and recorded job locations.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="workforce-page">
+    <section class="workforce-hero">
+        <div>
+            <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / TIME RECORDS</span>
+            <h1>Attendance,<br><strong>accounted for.</strong></h1>
+            <p>Explore recorded employee attendance and use the map links to check reported GPS coordinates.</p>
+        </div>
+        <nav class="workforce-hero-actions" aria-label="Attendance register actions">
+            <a class="workforce-button workforce-button-light" href="{% url 'employee_attendance_analytics' %}">Attendance analytics <span>→</span></a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_schedule' %}">Weekly schedule</a>
+            <a class="workforce-button workforce-button-outline" href="/dashboard/employees/">Employee directory</a>
+        </nav>
+    </section>
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/" class="btn-outline">Back to Dashboard</a>
-    <a href="/dashboard/employees/" class="btn-fill">Employees</a>
-    <a href="/dashboard/bookings/" class="btn-fill">Bookings</a>
-</section>
+    <section class="workforce-metrics" aria-label="Attendance summary">
+        <article class="workforce-metric workforce-metric-featured"><span>ATTENDANCE RECORDS</span><strong>{{ logs|length }}</strong><small>Matching the current register</small></article>
+        <article class="workforce-metric"><span>CHECK-OUT COMPLETE</span><strong>{{ completed_logs }}</strong><small>Records with an end time</small></article>
+        <article class="workforce-metric"><span>OPEN ATTENDANCE</span><strong>{{ open_logs }}</strong><small>Check-out not recorded</small></article>
+        <article class="workforce-metric"><span>RECORDED HOURS</span><strong>{{ total_hours|floatformat:1 }}</strong><small>Hours with a saved duration</small></article>
+    </section>
 
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Attendance Logs</h2>
-    </div>
-
-    {% if logs %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Booking Date</th>
-                        <th>Check In</th>
-                        <th>Check Out</th>
-                        <th>Total Hours</th>
-                        <th>Check-In GPS</th>
-                        <th>Check-Out GPS</th>
-                    </tr>
-                </thead>
-
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">TIME &amp; LOCATION LOG</span><h2>Employee attendance records</h2><p>Search by employee, customer, service, or booking reference.</p></div>
+        </header>
+        <div class="workforce-toolbar">
+            <label class="workforce-search"><span aria-hidden="true">⌕</span><input id="attendanceRegisterSearch" type="search" placeholder="Search attendance..." aria-label="Search attendance records"></label>
+            <label class="workforce-filter">Session
+                <select id="attendanceSessionFilter" aria-label="Filter by session completion"><option value="">All sessions</option><option value="complete">Checked out</option><option value="open">Awaiting checkout</option></select>
+            </label>
+            <span class="workforce-count"><strong id="attendanceRecordCount">{{ logs|length }}</strong> records</span>
+        </div>
+        <div class="workforce-table-wrap">
+            <table class="workforce-table">
+                <thead><tr><th scope="col">Employee</th><th scope="col">Customer &amp; service</th><th scope="col">Booking date</th><th scope="col">Check-in</th><th scope="col">Check-out</th><th scope="col">Hours</th><th scope="col">Check-in GPS</th><th scope="col">Check-out GPS</th></tr></thead>
                 <tbody>
                     {% for log in logs %}
-                        <tr>
-                            <td>{{ log.employee.full_name }}</td>
-                            <td>{{ log.booking.customer.full_name }}</td>
-                            <td>{{ log.booking.service_type }}</td>
-                            <td>{{ log.booking.booking_date }}</td>
-                            <td>{{ log.check_in_time|default:"-" }}</td>
-                            <td>{{ log.check_out_time|default:"-" }}</td>
-                            <td>{{ log.total_hours }}</td>
-
-                            <td>
-                                {% if log.check_in_latitude and log.check_in_longitude %}
-                                    <a
-                                        href="https://www.google.com/maps?q={{ log.check_in_latitude }},{{ log.check_in_longitude }}"
-                                        target="_blank"
-                                        class="small-link-btn"
-                                    >
-                                        View Map
-                                    </a>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if log.check_out_latitude and log.check_out_longitude %}
-                                    <a
-                                        href="https://www.google.com/maps?q={{ log.check_out_latitude }},{{ log.check_out_longitude }}"
-                                        target="_blank"
-                                        class="small-link-btn"
-                                    >
-                                        View Map
-                                    </a>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                        </tr>
+                    <tr data-attendance-record data-status="{% if log.check_out_time %}complete{% else %}open{% endif %}" data-search="{{ log.employee.full_name|lower }} {% if log.booking.customer %}{{ log.booking.customer.full_name|lower }}{% endif %} {{ log.booking.service_type|lower }} {{ log.booking.id }}">
+                        <td><a class="workforce-person" href="{% url 'employee_performance_detail' log.employee.id %}"><span class="workforce-avatar">{{ log.employee.full_name|first|upper }}</span><span><strong>{{ log.employee.full_name }}</strong><small>Employee profile →</small></span></a></td>
+                        <td><strong>{% if log.booking.customer %}{{ log.booking.customer.full_name }}{% else %}—{% endif %}</strong><small class="workforce-cell-subtitle">{{ log.booking.service_type }} · #{{ log.booking.id }}</small></td>
+                        <td>{{ log.booking.booking_date|date:"d M Y" }}</td>
+                        <td>{{ log.check_in_time|date:"d M Y, H:i"|default:"—" }}</td><td>{{ log.check_out_time|date:"d M Y, H:i"|default:"—" }}</td>
+                        <td>{% if log.total_hours != None %}{{ log.total_hours|floatformat:2 }}{% else %}<span class="workforce-muted">—</span>{% endif %}</td>
+                        <td>{% if log.check_in_latitude != None and log.check_in_longitude != None %}<a class="workforce-row-link" href="https://www.google.com/maps?q={{ log.check_in_latitude }},{{ log.check_in_longitude }}" target="_blank" rel="noopener noreferrer">Open map ↗</a>{% else %}<span class="workforce-muted">Not recorded</span>{% endif %}</td>
+                        <td>{% if log.check_out_latitude != None and log.check_out_longitude != None %}<a class="workforce-row-link" href="https://www.google.com/maps?q={{ log.check_out_latitude }},{{ log.check_out_longitude }}" target="_blank" rel="noopener noreferrer">Open map ↗</a>{% else %}<span class="workforce-muted">Not recorded</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="workforce-empty" colspan="8">No attendance records have been submitted yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    {% else %}
-        <p>No attendance records found.</p>
-    {% endif %}
-</section>
-
+        <p class="workforce-no-results" id="attendanceRegisterNoResults" hidden>No attendance records match your search and filter.</p>
+    </section>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("attendanceRegisterSearch");
+    const filter = document.getElementById("attendanceSessionFilter");
+    const count = document.getElementById("attendanceRecordCount");
+    const noResults = document.getElementById("attendanceRegisterNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-attendance-record]"));
+    if (!search || !filter || !count || !noResults) return;
+    function update() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query) && (!filter.value || row.dataset.status === filter.value);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        noResults.hidden = visible !== 0 || rows.length === 0;
+    }
+    search.addEventListener("input", update);
+    filter.addEventListener("change", update);
+});
+</script>
 {% endblock %}

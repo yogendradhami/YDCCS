@@ -1,645 +1,246 @@
 {% extends 'dashboard_base.html' %}
-
 {% load static %}
 
 {% block title %}Leads / Quotes | YD Dashboard{% endblock %}
 {% block page_title %}Leads / Quotes{% endblock %}
-{% block page_subtitle %}Manage quote requests and update lead status.{% endblock %}
+{% block page_subtitle %}Review every quote enquiry and manage your sales pipeline.{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/leads/leads-list.css' %}">
 {% endblock %}
 
 {% block content %}
-
 <div class="leads-page">
-
-    <!-- =========================================================
-         HERO
-    ========================================================== -->
     <section class="leads-hero">
-
         <div class="leads-hero-content">
-
-            <div class="leads-eyebrow">
-                <span></span>
-                SALES &amp; LEAD MANAGEMENT
-            </div>
-
-            <h1>
-                Lead
-                <strong>Command Centre.</strong>
-            </h1>
-
-            <p>
-                Manage quote requests, follow up with prospective customers,
-                update lead status and keep your sales pipeline moving.
-            </p>
-
+            <div class="leads-eyebrow"><span></span> SALES &amp; LEAD MANAGEMENT</div>
+            <h1>Lead <strong>Command Centre.</strong></h1>
+            <p>Review complete customer enquiries, filter your pipeline, and follow up on every opportunity.</p>
             <div class="leads-hero-actions">
-
-                <a
-                    href="/dashboard/export-quotes/"
-                    class="leads-hero-primary"
-                >
-                    <span>↓</span>
-                    Export CSV
-                </a>
-
-                <a
-                    href="/dashboard/"
-                    class="leads-hero-secondary"
-                >
-                    <span>←</span>
-                    Dashboard
-                </a>
-
+                <a href="{% url 'export_quotes_csv' %}" class="leads-hero-primary"><span>↓</span> Export CSV</a>
+                <a href="{% url 'dashboard_home' %}" class="leads-hero-secondary"><span>←</span> Dashboard</a>
             </div>
-
         </div>
-
-
-        <!-- HERO PIPELINE -->
         <div class="leads-hero-panel">
-
-            <span class="leads-panel-label">
-                LEAD PIPELINE
-            </span>
-
-            <div class="leads-panel-number">
-                {{ quotes|length }}
-            </div>
-
-            <div class="leads-panel-text">
-                Quote requests in your pipeline
-            </div>
-
+            <span class="leads-panel-label">QUOTE PIPELINE</span>
+            <div class="leads-panel-number">{{ total_count }}</div>
+            <div class="leads-panel-text">Total quote requests</div>
             <div class="leads-mini-grid">
-
-                <div>
-                    <strong>
-                        {{ quotes|length }}
-                    </strong>
-                    <span>Total</span>
-                </div>
-
-                <div>
-                    <strong>6</strong>
-                    <span>Stages</span>
-                </div>
-
-                <div>
-                    <strong>Live</strong>
-                    <span>Pipeline</span>
-                </div>
-
+                <div><strong>{{ new_count }}</strong><span>New</span></div>
+                <div><strong>{{ booked_count }}</strong><span>Booked</span></div>
+                <div><strong>{{ lost_count }}</strong><span>Lost</span></div>
             </div>
-
         </div>
-
     </section>
 
-
-    <!-- =========================================================
-         KPI CARDS
-    ========================================================== -->
-    <section class="leads-kpis">
-
-        <div class="leads-kpi">
-
-            <div class="lead-kpi-icon blue">
-                ◉
-            </div>
-
-            <div>
-                <span>Total Leads</span>
-                <strong>{{ quotes|length }}</strong>
-                <small>All quote requests</small>
-            </div>
-
-        </div>
-
-
-        <div class="leads-kpi">
-
-            <div class="lead-kpi-icon amber">
-                !
-            </div>
-
-            <div>
-                <span>New Leads</span>
-                <strong>
-                    {% with new_count=0 %}
-                        {% for quote in quotes %}
-                            {% if quote.status == "new" %}
-                                {{ forloop.counter }}
-                            {% endif %}
-                        {% endfor %}
-                    {% endwith %}
-                </strong>
-                <small>Require follow-up</small>
-            </div>
-
-        </div>
-
-
-        <div class="leads-kpi">
-
-            <div class="lead-kpi-icon green">
-                ✓
-            </div>
-
-            <div>
-                <span>Booked</span>
-                <strong>
-                    {% with booked_count=0 %}
-                        {% for quote in quotes %}
-                            {% if quote.status == "booked" %}
-                                {{ forloop.counter }}
-                            {% endif %}
-                        {% endfor %}
-                    {% endwith %}
-                </strong>
-                <small>Converted leads</small>
-            </div>
-
-        </div>
-
-
-        <div class="leads-kpi">
-
-            <div class="lead-kpi-icon red">
-                ×
-            </div>
-
-            <div>
-                <span>Lost</span>
-                <strong>
-                    {% with lost_count=0 %}
-                        {% for quote in quotes %}
-                            {% if quote.status == "lost" %}
-                                {{ forloop.counter }}
-                            {% endif %}
-                        {% endfor %}
-                    {% endwith %}
-                </strong>
-                <small>Lost opportunities</small>
-            </div>
-
-        </div>
-
+    <section class="leads-kpis" aria-label="Quote lead summary">
+        <div class="leads-kpi"><div class="lead-kpi-icon blue">◉</div><div><span>Total Leads</span><strong>{{ total_count }}</strong><small>All quote requests</small></div></div>
+        <div class="leads-kpi"><div class="lead-kpi-icon amber">!</div><div><span>New Leads</span><strong>{{ new_count }}</strong><small>Require follow-up</small></div></div>
+        <div class="leads-kpi"><div class="lead-kpi-icon green">✓</div><div><span>Booked</span><strong>{{ booked_count }}</strong><small>Converted leads</small></div></div>
+        <div class="leads-kpi"><div class="lead-kpi-icon red">×</div><div><span>Lost</span><strong>{{ lost_count }}</strong><small>Closed opportunities</small></div></div>
     </section>
 
-
-    <!-- =========================================================
-         LEADS TABLE
-    ========================================================== -->
     <section class="leads-table-card">
-
         <div class="leads-table-topbar">
-
             <div>
-
-                <span class="leads-table-kicker">
-                    SALES PIPELINE
-                </span>
-
-                <h2>
-                    All Quote Requests
-                </h2>
-
-                <p>
-                    Manage customer enquiries and move each lead through
-                    the sales process.
-                </p>
-
+                <span class="leads-table-kicker">SALES PIPELINE</span>
+                <h2>All Quote Requests</h2>
+                <p>Open a lead’s details to see every field submitted on the public quote form.</p>
             </div>
-
-
             <div class="leads-top-actions">
-
-                <a
-                    href="/dashboard/export-quotes/"
-                    class="leads-export-btn"
-                >
-                    <span>↓</span>
-                    Export CSV
-                </a>
-
+                <a href="{% url 'export_quotes_csv' %}" class="leads-export-btn"><span>↓</span> Export CSV</a>
             </div>
-
         </div>
 
+        <form method="get" class="lead-filter-form" role="search">
+            <label class="lead-search-field">
+                <span>Search leads</span>
+                <input type="search" name="q" value="{{ filter_form.q }}" placeholder="Name, email, phone, location or message">
+            </label>
+            <label>
+                <span>Status</span>
+                <select name="status">
+                    <option value="">All statuses</option>
+                    {% for value, label in status_choices %}<option value="{{ value }}" {% if filter_form.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Property</span>
+                <select name="property_type">
+                    <option value="">All property types</option>
+                    {% for value, label in property_type_choices %}<option value="{{ value }}" {% if filter_form.property_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Lead source</span>
+                <select name="lead_source">
+                    <option value="">All sources</option>
+                    {% for value, label in lead_source_choices %}<option value="{{ value }}" {% if filter_form.lead_source == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Submitted from</span>
+                <input type="date" name="date_from" value="{{ filter_form.date_from }}">
+            </label>
+            <label>
+                <span>Submitted to</span>
+                <input type="date" name="date_to" value="{{ filter_form.date_to }}">
+            </label>
+            <label>
+                <span>Sort by</span>
+                <select name="sort">
+                    <option value="newest" {% if filter_form.sort == "newest" %}selected{% endif %}>Newest first</option>
+                    <option value="oldest" {% if filter_form.sort == "oldest" %}selected{% endif %}>Oldest first</option>
+                    <option value="preferred_date" {% if filter_form.sort == "preferred_date" %}selected{% endif %}>Preferred date</option>
+                    <option value="estimate_high" {% if filter_form.sort == "estimate_high" %}selected{% endif %}>Estimate: high to low</option>
+                    <option value="estimate_low" {% if filter_form.sort == "estimate_low" %}selected{% endif %}>Estimate: low to high</option>
+                </select>
+            </label>
+            <label>
+                <span>Rows</span>
+                <select name="page_size">
+                    <option value="10" {% if filter_form.page_size == "10" %}selected{% endif %}>10</option>
+                    <option value="25" {% if filter_form.page_size == "25" %}selected{% endif %}>25</option>
+                    <option value="50" {% if filter_form.page_size == "50" %}selected{% endif %}>50</option>
+                </select>
+            </label>
+            <div class="lead-filter-actions">
+                <button type="submit" class="lead-filter-submit">Apply filters</button>
+                <a href="{% url 'lead_list' %}" class="lead-filter-reset">Reset</a>
+            </div>
+        </form>
 
         {% if quotes %}
-
             <div class="leads-table-wrapper">
-
                 <table class="premium-leads-table">
-
                     <thead>
-
                         <tr>
-
-                            <th>Lead</th>
+                            <th>Customer / Submitted</th>
                             <th>Contact</th>
-                            <th>Property</th>
-                            <th>Location</th>
-                            <th>Preferred Date</th>
+                            <th>Property &amp; Location</th>
+                            <th>Estimate</th>
                             <th>Status</th>
-                            <th>Admin Notes</th>
-                            <th>Action</th>
-
+                            <th>Manage</th>
                         </tr>
-
                     </thead>
-
-
                     <tbody>
-
                         {% for quote in quotes %}
-
-                            <tr>
-
-                                <!-- =================================================
-                                     LEAD
-                                ================================================== -->
-                                <td>
-
-                                    <div class="lead-profile">
-
-                                        <div class="lead-avatar">
-                                            {{ quote.name|slice:":1"|upper }}
-                                        </div>
-
-                                        <div class="lead-details">
-
-                                            <strong>
-                                                {{ quote.name }}
-                                            </strong>
-
-                                            <span>
-                                                Lead #{{ quote.id }}
-                                            </span>
-
-                                        </div>
-
+                        <tr class="lead-data-row">
+                            <td data-label="Customer / Submitted">
+                                <div class="lead-profile">
+                                    <div class="lead-avatar">{{ quote.name|slice:":1"|upper }}</div>
+                                    <div class="lead-details">
+                                        <strong>{{ quote.name }}</strong>
+                                        <span>Lead #{{ quote.id }} · {{ quote.created_at|date:"M j, Y" }}</span>
                                     </div>
-
-                                </td>
-
-
-                                <!-- =================================================
-                                     CONTACT
-                                ================================================== -->
-                                <td>
-
-                                    <div class="lead-contact">
-
-                                        <a
-                                            href="tel:{{ quote.phone }}"
-                                            class="lead-phone"
-                                        >
-                                            <span>☎</span>
-                                            {{ quote.phone }}
-                                        </a>
-
-                                        <a
-                                            href="mailto:{{ quote.email }}"
-                                            class="lead-email"
-                                        >
-                                            <span>✉</span>
-                                            {{ quote.email }}
-                                        </a>
-
-                                    </div>
-
-                                </td>
-
-
-                                <!-- =================================================
-                                     PROPERTY
-                                ================================================== -->
-                                <td>
-
-                                    <div class="property-cell">
-
-                                        <div class="property-icon">
-                                            ◆
+                                </div>
+                            </td>
+                            <td data-label="Contact">
+                                <div class="lead-contact">
+                                    <a href="tel:{{ quote.phone }}" class="lead-phone"><span>☎</span>{{ quote.phone }}</a>
+                                    <a href="mailto:{{ quote.email }}" class="lead-email"><span>✉</span>{{ quote.email }}</a>
+                                </div>
+                            </td>
+                            <td data-label="Property &amp; Location">
+                                <div class="property-summary"><strong>{{ quote.get_property_type_display }}</strong><span>{{ quote.suburb_postcode }}</span></div>
+                                <details class="lead-details-disclosure">
+                                    <summary>Full submission <span aria-hidden="true">⌄</span></summary>
+                                    <div class="lead-submission-details">
+                                        <dl>
+                                            <div><dt>Customer</dt><dd>{{ quote.name }}</dd></div>
+                                            <div><dt>Email</dt><dd><a href="mailto:{{ quote.email }}">{{ quote.email }}</a></dd></div>
+                                            <div><dt>Phone</dt><dd><a href="tel:{{ quote.phone }}">{{ quote.phone }}</a></dd></div>
+                                            <div><dt>Property type</dt><dd>{{ quote.get_property_type_display }}</dd></div>
+                                            <div><dt>Suburb / postcode</dt><dd>{{ quote.suburb_postcode }}</dd></div>
+                                            <div><dt>Preferred date</dt><dd>{{ quote.preferred_date|date:"M j, Y"|default:"Not specified" }}</dd></div>
+                                            <div><dt>Bedrooms</dt><dd>{{ quote.bedrooms }}</dd></div>
+                                            <div><dt>Bathrooms</dt><dd>{{ quote.bathrooms }}</dd></div>
+                                            <div><dt>Lead source</dt><dd>{{ quote.get_lead_source_display }}</dd></div>
+                                            <div><dt>Estimated price</dt><dd>${{ quote.estimated_price|floatformat:2 }}</dd></div>
+                                            <div><dt>Submitted</dt><dd>{{ quote.created_at|date:"M j, Y g:i A" }}</dd></div>
+                                            <div><dt>Cleaning add-ons</dt><dd>
+                                                {% if quote.window_cleaning %}Window cleaning{% endif %}
+                                                {% if quote.carpet_shampooing %}{% if quote.window_cleaning %}, {% endif %}Carpet shampooing{% endif %}
+                                                {% if quote.grout_cleaning %}{% if quote.window_cleaning or quote.carpet_shampooing %}, {% endif %}Grout cleaning{% endif %}
+                                                {% if quote.upholstery_cleaning %}{% if quote.window_cleaning or quote.carpet_shampooing or quote.grout_cleaning %}, {% endif %}Upholstery cleaning{% endif %}
+                                                {% if quote.laundry_service %}{% if quote.window_cleaning or quote.carpet_shampooing or quote.grout_cleaning or quote.upholstery_cleaning %}, {% endif %}Laundry service{% endif %}
+                                                {% if not quote.window_cleaning and not quote.carpet_shampooing and not quote.grout_cleaning and not quote.upholstery_cleaning and not quote.laundry_service %}None selected{% endif %}
+                                            </dd></div>
+                                            <div class="lead-message"><dt>Customer message</dt><dd>{{ quote.message|default:"No additional details provided."|linebreaksbr }}</dd></div>
+                                        </dl>
+                                        {% if quote.images.all %}
+                                        <div class="lead-submission-images">
+                                            <strong>Property photos</strong>
+                                            <div>
+                                                {% for image in quote.images.all %}
+                                                <a href="{{ image.image.url }}" target="_blank" rel="noopener noreferrer">
+                                                    <img src="{{ image.image.url }}" alt="Property photo {{ forloop.counter }} for {{ quote.name }}" loading="lazy">
+                                                </a>
+                                                {% endfor %}
+                                            </div>
                                         </div>
-
-                                        <div>
-
-                                            <strong>
-                                                {{ quote.property_type }}
-                                            </strong>
-
-                                            <span>
-                                                Property type
-                                            </span>
-
-                                        </div>
-
+                                        {% endif %}
                                     </div>
-
-                                </td>
-
-
-                                <!-- =================================================
-                                     LOCATION
-                                ================================================== -->
-                                <td>
-
-                                    <div class="lead-location">
-
-                                        <span class="location-icon">
-                                            ⌖
-                                        </span>
-
-                                        <div>
-
-                                            <strong>
-                                                {{ quote.suburb_postcode }}
-                                            </strong>
-
-                                            <span>
-                                                Service location
-                                            </span>
-
-                                        </div>
-
-                                    </div>
-
-                                </td>
-
-
-                                <!-- =================================================
-                                     DATE
-                                ================================================== -->
-                                <td>
-
-                                    <div class="lead-date">
-
-                                        <strong>
-                                            {{ quote.preferred_date }}
-                                        </strong>
-
-                                        <span>
-                                            Preferred date
-                                        </span>
-
-                                    </div>
-
-                                </td>
-
-
-                                <!-- =================================================
-                                     STATUS
-                                ================================================== -->
-                                <td>
-
-                                    {% if quote.status == "new" %}
-
-                                        <span class="lead-status status-new">
-                                            <span></span>
-                                            {{ quote.get_status_display }}
-                                        </span>
-
-                                    {% elif quote.status == "contacted" %}
-
-                                        <span class="lead-status status-contacted">
-                                            <span></span>
-                                            {{ quote.get_status_display }}
-                                        </span>
-
-                                    {% elif quote.status == "quoted" %}
-
-                                        <span class="lead-status status-quoted">
-                                            <span></span>
-                                            {{ quote.get_status_display }}
-                                        </span>
-
-                                    {% elif quote.status == "booked" %}
-
-                                        <span class="lead-status status-booked">
-                                            <span></span>
-                                            {{ quote.get_status_display }}
-                                        </span>
-
-                                    {% elif quote.status == "completed" %}
-
-                                        <span class="lead-status status-completed">
-                                            <span></span>
-                                            {{ quote.get_status_display }}
-                                        </span>
-
-                                    {% elif quote.status == "lost" %}
-
-                                        <span class="lead-status status-lost">
-                                            <span></span>
-                                            {{ quote.get_status_display }}
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="lead-status status-default">
-                                            <span></span>
-                                            {{ quote.get_status_display }}
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- =================================================
-                                     NOTES
-                                ================================================== -->
-                                <td>
-
-                                    <form
-                                        method="POST"
-                                        action="{% url 'update_quote_status' quote.id %}"
-                                        class="lead-update-form"
-                                    >
-
-                                        {% csrf_token %}
-
-                                        <textarea
-                                            name="admin_notes"
-                                            class="lead-note-input"
-                                            placeholder="Add internal note..."
-                                            rows="2"
-                                        >{{ quote.admin_notes }}</textarea>
-
-                                </td>
-
-
-                                <!-- =================================================
-                                     ACTION
-                                ================================================== -->
-                                <td>
-
-                                        <div class="lead-action-panel">
-
-                                            <select
-                                                name="status"
-                                                class="lead-status-select"
-                                                aria-label="Lead status"
-                                            >
-
-                                                <option
-                                                    value="new"
-                                                    {% if quote.status == "new" %}selected{% endif %}
-                                                >
-                                                    New
-                                                </option>
-
-                                                <option
-                                                    value="contacted"
-                                                    {% if quote.status == "contacted" %}selected{% endif %}
-                                                >
-                                                    Contacted
-                                                </option>
-
-                                                <option
-                                                    value="quoted"
-                                                    {% if quote.status == "quoted" %}selected{% endif %}
-                                                >
-                                                    Quoted
-                                                </option>
-
-                                                <option
-                                                    value="booked"
-                                                    {% if quote.status == "booked" %}selected{% endif %}
-                                                >
-                                                    Booked
-                                                </option>
-
-                                                <option
-                                                    value="completed"
-                                                    {% if quote.status == "completed" %}selected{% endif %}
-                                                >
-                                                    Completed
-                                                </option>
-
-                                                <option
-                                                    value="lost"
-                                                    {% if quote.status == "lost" %}selected{% endif %}
-                                                >
-                                                    Lost
-                                                </option>
-
-                                            </select>
-
-
-                                            <button
-                                                type="submit"
-                                                class="lead-save-btn"
-                                            >
-                                                <span>✓</span>
-                                                Save
-                                            </button>
-
-                                        </div>
-
-                                    </form>
-
-                                </td>
-
-                            </tr>
-
+                                </details>
+                            </td>
+                            <td data-label="Estimate"><span class="lead-estimate">${{ quote.estimated_price|floatformat:2 }}</span></td>
+                            <td data-label="Status">
+                                <span class="lead-status status-{{ quote.status }}"><span></span>{{ quote.get_status_display }}</span>
+                            </td>
+                            <td data-label="Manage">
+                                <form method="post" action="{% url 'update_quote_status' quote.id %}" class="lead-update-form">
+                                    {% csrf_token %}
+                                    <textarea name="admin_notes" class="lead-note-input" placeholder="Internal note…" rows="2" aria-label="Internal note for {{ quote.name }}">{{ quote.admin_notes }}</textarea>
+                                    <select name="status" class="lead-status-select" aria-label="Update status for {{ quote.name }}">
+                                        {% for value, label in status_choices %}<option value="{{ value }}" {% if quote.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                                    </select>
+                                    <button type="submit" class="lead-save-btn">Save changes</button>
+                                </form>
+                                {% if perms.quotes.delete_quoterequest %}
+                                <form method="post" action="{% url 'delete_quote_request' quote.id %}" class="lead-delete-form" onsubmit="return confirm('Delete this quote request? This cannot be undone.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="lead-delete-btn">Delete lead</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
                         {% endfor %}
-
                     </tbody>
-
                 </table>
-
             </div>
 
-
-            <!-- =====================================================
-                 TABLE FOOTER
-            ====================================================== -->
             <div class="leads-table-footer">
-
                 <div class="leads-footer-info">
-
                     <span class="footer-status-dot"></span>
-
-                    <span>
-                        Showing
-                        <strong>{{ quotes|length }}</strong>
-                        quote request{{ quotes|length|pluralize }}
-                    </span>
-
+                    <span>Showing <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> of <strong>{{ filtered_count }}</strong> matching lead{{ filtered_count|pluralize }} · {{ total_count }} total</span>
                 </div>
-
-                <div class="leads-footer-note">
-                    Lead status changes are saved individually.
-                </div>
-
+                {% if page_obj.paginator.num_pages > 1 %}
+                <nav class="lead-pagination" aria-label="Lead pages">
+                    {% if page_obj.has_previous %}
+                    <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous page">← Previous</a>
+                    {% else %}<span class="disabled">← Previous</span>{% endif %}
+                    <span>Page <strong>{{ page_obj.number }}</strong> of {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                    <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next page">Next →</a>
+                    {% else %}<span class="disabled">Next →</span>{% endif %}
+                </nav>
+                {% endif %}
             </div>
-
-
         {% else %}
-
-            <!-- =====================================================
-                 EMPTY STATE
-            ====================================================== -->
             <div class="leads-empty">
-
-                <div class="leads-empty-icon">
-                    ◇
-                </div>
-
-                <span class="empty-kicker">
-                    SALES PIPELINE
-                </span>
-
-                <h2>
-                    No quote requests yet
-                </h2>
-
-                <p>
-                    When customers submit quote requests through your
-                    website, they will appear here for follow-up and
-                    conversion.
-                </p>
-
-                <a
-                    href="/dashboard/export-quotes/"
-                    class="leads-empty-btn"
-                >
-                    Export Quote Data
-                </a>
-
+                <div class="leads-empty-icon">◇</div>
+                <span class="empty-kicker">QUOTE PIPELINE</span>
+                <h2>{% if filtered_count == 0 and total_count %}No leads match these filters{% else %}No quote requests yet{% endif %}</h2>
+                <p>{% if filtered_count == 0 and total_count %}Try changing your search or filters to see more quote requests.{% else %}Public website quote requests will appear here with their complete submission details.{% endif %}</p>
+                {% if filtered_count == 0 and total_count %}<a href="{% url 'lead_list' %}" class="leads-empty-btn">Clear filters</a>{% endif %}
             </div>
-
         {% endif %}
-
     </section>
 
-
-    <!-- =========================================================
-         FOOTER
-    ========================================================== -->
     <footer class="leads-footer">
-
-        <a href="/dashboard/">
-            Dashboard
-        </a>
-
-        <a href="/dashboard/export-quotes/">
-            Export Quotes
-        </a>
-
-        <span>
-            YD Commercial Cleaning · Lead Management
-        </span>
-
+        <a href="{% url 'dashboard_home' %}">Dashboard</a>
+        <a href="{% url 'export_quotes_csv' %}">Export Quotes</a>
+        <span>YD Commercial Cleaning · Lead Management</span>
     </footer>
-
 </div>
-
 {% endblock %}

@@ -64,7 +64,7 @@ Send invoice reminders, booking reminders and quote follow-up emails.
                             <td>{{ invoice.booking.customer.full_name }}</td>
                             <td>{{ invoice.booking.customer.email }}</td>
                             <td>{{ invoice.due_date }}</td>
-                            <td>${{ invoice.total_amount }}</td>
+                            <td>${{ invoice.total_amount|floatformat:2 }}</td>
                             <td>
                                 <form method="POST" action="{% url 'send_invoice_reminder' invoice.id %}">
                                     {% csrf_token %}

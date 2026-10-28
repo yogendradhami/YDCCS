@@ -1,77 +1,50 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Create Shift | YD Dashboard
-{% endblock %}
-
-{% block page_title %}
-Create Shift
-{% endblock %}
-
-{% block page_subtitle %}
-Select employee, booking, date and shift time.
+{% block title %}{% if editing %}Edit Shift{% else %}Add Shift{% endif %} | YD Dashboard{% endblock %}
+{% block page_title %}{% if editing %}Edit Roster Shift{% else %}Create Roster Shift{% endif %}{% endblock %}
+{% block page_subtitle %}Assign the confirmed booking to an employee and set the shift details.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-
-    <form method="POST">
+<div class="workforce-page workforce-form-page">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'roster_list' %}">Roster management</a><span>/</span><span>{% if editing %}Edit shift{% else %}Add shift{% endif %}</span></nav>
+    <section class="workforce-form-intro">
+        <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / SHIFT SETUP</span>
+        <h1>{% if editing %}Update this shift.{% else %}Build a clear shift plan.{% endif %}</h1>
+        <p>Employee and booking assignments must stay aligned with the booking record.</p>
+    </section>
+    <form method="post" class="workforce-form-card">
         {% csrf_token %}
-
-        <div class="auth-grid">
-            <div class="form-group">
-                <label>Employee</label>
-                {{ form.employee }}
-                <div class="text-danger">{{ form.employee.errors }}</div>
+        {% if form.non_field_errors %}<div class="workforce-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <section class="workforce-form-section">
+            <header><span>01</span><div><h2>Assignment</h2><p>Select the employee and booking for this shift.</p></div></header>
+            <div class="workforce-form-grid">
+                {% for field in form %}
+                    {% if field.name == "employee" or field.name == "booking" %}
+                    <div class="workforce-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
             </div>
-
-            <div class="form-group">
-                <label>Booking</label>
-                {{ form.booking }}
-                <div class="text-danger">{{ form.booking.errors }}</div>
+        </section>
+        <section class="workforce-form-section">
+            <header><span>02</span><div><h2>Shift timing &amp; status</h2><p>Set the planned date, working hours, and roster status.</p></div></header>
+            <div class="workforce-form-grid">
+                {% for field in form %}
+                    {% if field.name == "shift_date" or field.name == "start_time" or field.name == "end_time" or field.name == "status" %}
+                    <div class="workforce-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
+                {% for field in form %}
+                    {% if field.name == "notes" %}
+                    <div class="workforce-field workforce-field-wide"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
             </div>
-
-            <div class="form-group">
-                <label>Shift Date</label>
-                {{ form.shift_date }}
-                <div class="text-danger">{{ form.shift_date.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Start Time</label>
-                {{ form.start_time }}
-                <div class="text-danger">{{ form.start_time.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>End Time</label>
-                {{ form.end_time }}
-                <div class="text-danger">{{ form.end_time.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Status</label>
-                {{ form.status }}
-                <div class="text-danger">{{ form.status.errors }}</div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Notes</label>
-            {{ form.notes }}
-            <div class="text-danger">{{ form.notes.errors }}</div>
-        </div>
-
-        <button type="submit" class="btn-fill">
-            Save Shift
-        </button>
-
-        <a href="/dashboard/rosters/" class="btn-outline">
-            Back to Rosters
-        </a>
+        </section>
+        <div class="workforce-form-actions"><a class="workforce-button workforce-button-muted" href="{% url 'roster_list' %}">Cancel</a><button type="submit" class="workforce-button workforce-button-primary">{% if editing %}Save changes{% else %}Create shift{% endif %} <span>→</span></button></div>
     </form>
-
-</section>
-
+</div>
 {% endblock %}

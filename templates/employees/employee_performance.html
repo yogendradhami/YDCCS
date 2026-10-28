@@ -1,287 +1,84 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Employee Performance
-{% endblock %}
-
-{% block page_title %}
-Employee Performance
-{% endblock %}
-
-{% block page_subtitle %}
-Track employee jobs, hours, payroll, revenue, ranking and efficiency.
+{% block title %}Employee Performance | YD Dashboard{% endblock %}
+{% block page_title %}Employee Performance{% endblock %}
+{% block page_subtitle %}A practical scorecard for team delivery, productivity, and financial contribution.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
+<div class="workforce-page">
+    <section class="workforce-hero">
+        <div>
+            <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / PERFORMANCE</span>
+            <h1>Team performance,<br><strong>made actionable.</strong></h1>
+            <p>Review completed work, attendance hours, payroll, revenue, and efficiency across your active team.</p>
+        </div>
+        <nav class="workforce-hero-actions" aria-label="Performance actions">
+            <a class="workforce-button workforce-button-light" href="{% url 'employee_performance_centre' %}">Performance centre <span>→</span></a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_kpi_dashboard' %}">Employee KPIs</a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_bonuses' %}">Bonus guide</a>
+        </nav>
+    </section>
 
-<!-- ===================================================== -->
-<!-- KPI Summary Cards -->
-<!-- ===================================================== -->
+    <section class="workforce-metrics" aria-label="Performance highlights">
+        <article class="workforce-metric workforce-metric-featured"><span>TOP EFFICIENCY</span>{% if top_performer %}<strong>{{ top_performer.employee.full_name }}</strong><small>{{ top_performer.efficiency }}% revenue-to-payroll ratio</small>{% else %}<strong>—</strong><small>No employee data yet</small>{% endif %}</article>
+        <article class="workforce-metric"><span>HIGHEST REVENUE</span>{% if highest_revenue %}<strong>${{ highest_revenue.revenue_generated|floatformat:2 }}</strong><small>{{ highest_revenue.employee.full_name }}</small>{% else %}<strong>$0.00</strong><small>No completed-job revenue</small>{% endif %}</article>
+        <article class="workforce-metric"><span>MOST COMPLETED JOBS</span>{% if most_jobs_completed %}<strong>{{ most_jobs_completed.jobs_completed }}</strong><small>{{ most_jobs_completed.employee.full_name }}</small>{% else %}<strong>0</strong><small>No completed jobs yet</small>{% endif %}</article>
+        <article class="workforce-metric"><span>TEAM MEMBERS</span><strong>{{ performance_rows|length }}</strong><small>Active employees in this scorecard</small></article>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>🏆 Top Performer</span>
-
-        {% if top_performer %}
-            <h2>{{ top_performer.employee.full_name }}</h2>
-            <p>{{ top_performer.efficiency }}% Efficiency</p>
-        {% else %}
-            <h2>N/A</h2>
-            <p>No performance data yet</p>
-        {% endif %}
-    </div>
-
-    <div class="crm-card">
-        <span>💰 Highest Revenue</span>
-
-        {% if highest_revenue %}
-            <h2>${{ highest_revenue.revenue_generated }}</h2>
-            <p>{{ highest_revenue.employee.full_name }}</p>
-        {% else %}
-            <h2>$0</h2>
-            <p>No revenue data yet</p>
-        {% endif %}
-    </div>
-
-    <div class="crm-card">
-        <span>🧹 Most Jobs Completed</span>
-
-        {% if most_jobs_completed %}
-            <h2>{{ most_jobs_completed.jobs_completed }}</h2>
-            <p>{{ most_jobs_completed.employee.full_name }}</p>
-        {% else %}
-            <h2>0</h2>
-            <p>No job data yet</p>
-        {% endif %}
-    </div>
-
-    <div class="crm-card">
-        <span>⚡ Highest Efficiency</span>
-
-        {% if highest_efficiency %}
-            <h2>{{ highest_efficiency.efficiency }}%</h2>
-            <p>{{ highest_efficiency.employee.full_name }}</p>
-        {% else %}
-            <h2>0%</h2>
-            <p>No efficiency data yet</p>
-        {% endif %}
-    </div>
-
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">TEAM SCORECARD</span><h2>Employee performance</h2><p>Search the roster and open an employee profile for their detailed work and pay history.</p></div>
+            <a class="workforce-text-link" href="/dashboard/employees/">Employee directory <span>→</span></a>
+        </header>
+        <div class="workforce-toolbar">
+            <label class="workforce-search"><span aria-hidden="true">⌕</span><input id="performanceSearch" type="search" placeholder="Search employee..." aria-label="Search performance records"></label>
+            <span class="workforce-count"><strong id="performanceCount">{{ performance_rows|length }}</strong> team members</span>
+        </div>
+        <div class="workforce-table-wrap">
+            <table class="workforce-table" id="performanceTable">
+                <thead><tr><th scope="col">Rank</th><th scope="col">Employee</th><th scope="col">Assigned jobs</th><th scope="col">Completed</th><th scope="col">Hours</th><th scope="col">Revenue</th><th scope="col">Payroll</th><th scope="col">Revenue / hour</th><th scope="col">Efficiency</th><th scope="col">Profile</th></tr></thead>
+                <tbody>
+                    {% for row in performance_rows %}
+                    <tr data-performance-row data-search="{{ row.employee.full_name|lower }}">
+                        <td><span class="workforce-rank">{{ forloop.counter|stringformat:"02d" }}</span></td>
+                        <td><a class="workforce-person" href="{% url 'employee_performance_detail' row.employee.id %}"><span class="workforce-avatar">{{ row.employee.full_name|first|upper }}</span><span><strong>{{ row.employee.full_name }}</strong><small>{{ row.employee.get_role_display }}</small></span></a></td>
+                        <td>{{ row.assigned_jobs }}</td><td><strong>{{ row.jobs_completed }}</strong></td><td>{{ row.total_hours|floatformat:1 }}</td>
+                        <td class="workforce-positive">${{ row.revenue_generated|floatformat:2 }}</td><td>${{ row.payroll_total|floatformat:2 }}</td><td>${{ row.revenue_per_hour|floatformat:2 }}</td>
+                        <td><span class="workforce-pill {% if row.efficiency >= 150 %}workforce-pill-good{% elif row.efficiency >= 100 %}workforce-pill-warn{% else %}workforce-pill-neutral{% endif %}">{{ row.efficiency|floatformat:1 }}%</span></td>
+                        <td><a class="workforce-row-link" href="{% url 'employee_performance_detail' row.employee.id %}">View profile →</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="workforce-empty" colspan="10">No active employees found. Add an employee to start building the performance scorecard.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="workforce-no-results" id="performanceNoResults" hidden>No employees match your search.</p>
+    </section>
 </div>
-
-<!-- ===================================================== -->
-<!-- Performance Charts -->
-<!-- ===================================================== -->
-
-<section class="crm-two-column">
-
-    <div class="crm-panel chart-panel">
-        <div class="crm-panel-header">
-            <h2>Revenue by Employee</h2>
-        </div>
-
-        <canvas id="revenueChart"></canvas>
-    </div>
-
-    <div class="crm-panel chart-panel">
-        <div class="crm-panel-header">
-            <h2>Jobs Completed</h2>
-        </div>
-
-        <canvas id="jobsChart"></canvas>
-    </div>
-
-</section>
-
-<section class="crm-panel chart-panel">
-
-    <div class="crm-panel-header">
-        <h2>Employee Efficiency</h2>
-    </div>
-
-    <canvas id="efficiencyChart"></canvas>
-
-</section>
-
-<!-- ===================================================== -->
-<!-- Employee Performance Dashboard Table -->
-<!-- ===================================================== -->
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Employee Performance Dashboard</h2>
-
-        <a href="/dashboard/employees/" class="small-link-btn">
-            View Employees
-        </a>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Employee</th>
-                    <th>Assigned Jobs</th>
-                    <th>Completed Jobs</th>
-                    <th>Total Hours</th>
-                    <th>Revenue</th>
-                    <th>Payroll</th>
-                    <th>Revenue/Hour</th>
-                    <th>Efficiency</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for row in performance_rows %}
-
-                    <tr>
-                        <td>
-                            #{{ forloop.counter }}
-                        </td>
-
-                        <td>
-                            <strong>{{ row.employee.full_name }}</strong>
-                        </td>
-
-                        <td>{{ row.assigned_jobs }}</td>
-
-                        <td>{{ row.jobs_completed }}</td>
-
-                        <td>{{ row.total_hours }}</td>
-
-                        <td>${{ row.revenue_generated }}</td>
-
-                        <td>${{ row.payroll_total }}</td>
-
-                        <td>${{ row.revenue_per_hour }}</td>
-
-                        <td>
-                            {% if row.efficiency >= 250 %}
-                                <span class="status-badge success">
-                                    {{ row.efficiency }}%
-                                </span>
-                            {% elif row.efficiency >= 150 %}
-                                <span class="status-badge primary">
-                                    {{ row.efficiency }}%
-                                </span>
-                            {% elif row.efficiency >= 100 %}
-                                <span class="status-badge warning">
-                                    {{ row.efficiency }}%
-                                </span>
-                            {% else %}
-                                <span class="status-badge warning">
-                                    {{ row.efficiency }}%
-                                </span>
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            {% if row.efficiency >= 250 %}
-                                <span class="status-badge success">
-                                    Excellent
-                                </span>
-                            {% elif row.efficiency >= 150 %}
-                                <span class="status-badge primary">
-                                    Good
-                                </span>
-                            {% elif row.efficiency >= 100 %}
-                                <span class="status-badge warning">
-                                    Average
-                                </span>
-                            {% else %}
-                                <span class="status-badge warning">
-                                    Needs Review
-                                </span>
-                            {% endif %}
-                        </td>
-                    </tr>
-
-                {% empty %}
-
-                    <tr>
-                        <td colspan="10">
-                            No active employees found.
-                        </td>
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-{{ employee_labels|json_script:"employee-labels" }}
-{{ revenue_data|json_script:"revenue-data" }}
-{{ jobs_data|json_script:"jobs-data" }}
-{{ efficiency_data|json_script:"efficiency-data" }}
-
 <script>
-
-const employeeLabels =
-JSON.parse(document.getElementById("employee-labels").textContent);
-
-const revenueData =
-JSON.parse(document.getElementById("revenue-data").textContent);
-
-const jobsData =
-JSON.parse(document.getElementById("jobs-data").textContent);
-
-const efficiencyData =
-JSON.parse(document.getElementById("efficiency-data").textContent);
-
-new Chart(
-    document.getElementById("revenueChart"),
-    {
-        type: "bar",
-        data: {
-            labels: employeeLabels,
-            datasets: [{
-                label: "Revenue",
-                data: revenueData
-            }]
-        }
-    }
-);
-
-new Chart(
-    document.getElementById("jobsChart"),
-    {
-        type: "bar",
-        data: {
-            labels: employeeLabels,
-            datasets: [{
-                label: "Jobs Completed",
-                data: jobsData
-            }]
-        }
-    }
-);
-
-new Chart(
-    document.getElementById("efficiencyChart"),
-    {
-        type: "bar",
-        data: {
-            labels: employeeLabels,
-            datasets: [{
-                label: "Efficiency %",
-                data: efficiencyData
-            }]
-        }
-    }
-);
-
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("performanceSearch");
+    const count = document.getElementById("performanceCount");
+    const noResults = document.getElementById("performanceNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-performance-row]"));
+    if (!search || !count || !noResults) return;
+    search.addEventListener("input", function () {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        noResults.hidden = visible !== 0 || rows.length === 0;
+    });
+});
 </script>
-
 {% endblock %}

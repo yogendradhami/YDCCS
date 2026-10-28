@@ -56,10 +56,25 @@ def report_list(request):
         Booking.objects.select_related(
             "cleaning_report", "customer", "assigned_employee"
         )
+        .prefetch_related("job_photos")
         .all()
         .order_by("-booking_date", "-booking_time")
     )
-    return render(request, "reports/report_list.html", {"bookings": bookings})
+    emailed_reports = bookings.filter(
+        cleaning_report__emailed_to_customer=True
+    ).count()
+    pending_reports = bookings.filter(
+        cleaning_report__emailed_to_customer=False
+    ).count() + bookings.filter(cleaning_report__isnull=True).count()
+    return render(
+        request,
+        "reports/report_list.html",
+        {
+            "bookings": bookings,
+            "emailed_reports": emailed_reports,
+            "pending_reports": pending_reports,
+        },
+    )
 
 
 @login_required

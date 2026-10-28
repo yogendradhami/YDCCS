@@ -1,45 +1,155 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}{{ employee.full_name }} | Employee Performance{% endblock %}
+{% block page_title %}Employee Performance{% endblock %}
+{% block page_subtitle %}Individual work, financial contribution, payroll, and leave at a glance.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/employee-performance.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="employee-performance-page performance-detail">
+    <nav class="performance-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'employee_performance_centre' %}">Performance centre</a>
+        <span>/</span>
+        <span>{{ employee.full_name }}</span>
+    </nav>
 
-<h1>{{ employee.full_name }}</h1>
+    <section class="employee-profile-hero">
+        <div class="employee-profile-identity">
+            {% if employee.image %}
+                <img class="employee-profile-avatar" src="{{ employee.image.url }}" alt="{{ employee.full_name }}">
+            {% else %}
+                <span class="employee-profile-avatar employee-profile-initial">{{ employee.full_name|first|upper }}</span>
+            {% endif %}
+            <div class="employee-profile-copy">
+                <span class="performance-eyebrow"><i></i> TEAM MEMBER / PERFORMANCE PROFILE</span>
+                <h1>{{ employee.full_name }}</h1>
+                <div class="employee-profile-tags">
+                    <span class="employee-role-tag">{{ employee.get_role_display }}</span>
+                    <span class="employee-state-tag {% if employee.active %}is-active{% else %}is-inactive{% endif %}">
+                        <i></i>{% if employee.active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="employee-profile-actions">
+            <a href="{% url 'employee_performance_centre' %}" class="performance-action performance-action-light">← Performance centre</a>
+            <a href="/dashboard/employees/" class="performance-action performance-action-outline">Employee directory <span>↗</span></a>
+        </div>
+        <div class="employee-contact-strip">
+            <div><span>EMAIL</span><strong>{% if employee.email %}<a href="mailto:{{ employee.email }}">{{ employee.email }}</a>{% else %}Not provided{% endif %}</strong></div>
+            <div><span>PHONE</span><strong>{% if employee.phone %}<a href="tel:{{ employee.phone }}">{{ employee.phone }}</a>{% else %}Not provided{% endif %}</strong></div>
+            <div><span>AVAILABILITY</span><strong>{{ employee.get_availability_display }}</strong></div>
+            <div><span>HOURLY RATE</span><strong>${{ employee.hourly_rate }}/hr</strong></div>
+        </div>
+    </section>
 
-<div class="crm-summary-grid">
+    <section class="employee-metric-grid" aria-label="Performance summary">
+        <article class="employee-metric-card metric-jobs">
+            <span class="employee-metric-icon">✓</span>
+            <span class="employee-metric-label">COMPLETED JOBS</span>
+            <strong>{{ completed_jobs }}</strong>
+            <small>of {{ bookings.count }} assigned jobs</small>
+        </article>
+        <article class="employee-metric-card metric-revenue">
+            <span class="employee-metric-icon">$</span>
+            <span class="employee-metric-label">REVENUE GENERATED</span>
+            <strong>${{ revenue_generated }}</strong>
+            <small>from completed work</small>
+        </article>
+        <article class="employee-metric-card metric-payroll">
+            <span class="employee-metric-icon">↗</span>
+            <span class="employee-metric-label">PAYROLL COST</span>
+            <strong>${{ payroll_total }}</strong>
+            <small>{{ payrolls.count }} payroll record{{ payrolls.count|pluralize }}</small>
+        </article>
+        <article class="employee-metric-card {% if profit_contribution >= 0 %}metric-positive{% else %}metric-negative{% endif %}">
+            <span class="employee-metric-icon">◎</span>
+            <span class="employee-metric-label">PROFIT CONTRIBUTION</span>
+            <strong>${{ profit_contribution }}</strong>
+            <small>revenue less payroll cost</small>
+        </article>
+    </section>
 
-    <div class="crm-card">
-        <span>Email</span>
-        <h2>{{ employee.email }}</h2>
+    <section class="performance-record-panel">
+        <header class="performance-panel-header">
+            <div>
+                <span class="performance-section-label">DELIVERY</span>
+                <h2>Job history</h2>
+                <p>Bookings assigned to {{ employee.full_name }}.</p>
+            </div>
+            <span class="performance-panel-count">{{ bookings.count }} record{{ bookings.count|pluralize }}</span>
+        </header>
+        <div class="performance-table-wrap">
+            <table class="performance-table">
+                <thead><tr><th scope="col">Service</th><th scope="col">Customer</th><th scope="col">Date &amp; time</th><th scope="col">Value</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td><strong>{{ booking.service_type }}</strong></td>
+                            <td>{% if booking.customer %}{{ booking.customer.full_name }}{% else %}—{% endif %}</td>
+                            <td>{{ booking.booking_date|date:"d M Y" }} <span class="performance-subvalue">{{ booking.booking_time|time:"H:i" }}</span></td>
+                            <td>${{ booking.quoted_price }}</td>
+                            <td><span class="performance-status status-{{ booking.status }}">{{ booking.get_status_display }}</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="performance-empty-cell" colspan="5">No bookings have been assigned to this employee.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="employee-record-grid">
+        <section class="performance-record-panel">
+            <header class="performance-panel-header">
+                <div><span class="performance-section-label">PAYROLL</span><h2>Pay records</h2><p>Payroll periods and payment status.</p></div>
+                <span class="performance-panel-count">{{ payrolls.count }}</span>
+            </header>
+            <div class="performance-table-wrap">
+                <table class="performance-table">
+                    <thead><tr><th scope="col">Period</th><th scope="col">Hours</th><th scope="col">Gross pay</th><th scope="col">Status</th></tr></thead>
+                    <tbody>
+                        {% for payroll in payrolls %}
+                            <tr>
+                                <td>{{ payroll.period_start|date:"d M" }} – {{ payroll.period_end|date:"d M Y" }}</td>
+                                <td>{{ payroll.total_hours }}</td>
+                                <td>${{ payroll.gross_pay }}</td>
+                                <td><span class="performance-status status-{{ payroll.status }}">{{ payroll.get_status_display }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td class="performance-empty-cell" colspan="4">No payroll records available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="performance-record-panel">
+            <header class="performance-panel-header">
+                <div><span class="performance-section-label">TIME AWAY</span><h2>Leave requests</h2><p>Leave history and current request status.</p></div>
+                <span class="performance-panel-count">{{ leave_requests.count }}</span>
+            </header>
+            <div class="performance-table-wrap">
+                <table class="performance-table">
+                    <thead><tr><th scope="col">Leave type</th><th scope="col">Dates</th><th scope="col">Status</th></tr></thead>
+                    <tbody>
+                        {% for leave in leave_requests %}
+                            <tr>
+                                <td><strong>{{ leave.get_leave_type_display }}</strong></td>
+                                <td>{{ leave.start_date|date:"d M Y" }} – {{ leave.end_date|date:"d M Y" }}</td>
+                                <td><span class="performance-status status-{{ leave.status }}">{{ leave.get_status_display }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td class="performance-empty-cell" colspan="3">No leave requests available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
-
-    <div class="crm-card">
-        <span>Phone</span>
-        <h2>{{ employee.phone }}</h2>
-    </div>
-
 </div>
-
-<div class="dashboard-card">
-
-    <h2>Recent Jobs</h2>
-
-    <p>{{ bookings.count }}</p>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Payroll Records</h2>
-
-    <p>{{ payrolls.count }}</p>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Leave Requests</h2>
-
-    <p>{{ leave_requests.count }}</p>
-
-</div>
-
 {% endblock %}

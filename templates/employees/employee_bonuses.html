@@ -1,139 +1,89 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Employee Bonuses
-{% endblock %}
-
-{% block page_title %}
-Employee Bonuses
-{% endblock %}
-
-{% block page_subtitle %}
-Bonus calculations for YD Commercial Cleaning Services employees.
+{% block title %}Employee Bonuses | YD Dashboard{% endblock %}
+{% block page_title %}Employee Bonuses{% endblock %}
+{% block page_subtitle %}Review the current estimate based on completed work and the existing bonus rules.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
+<div class="workforce-page">
+    <section class="workforce-hero">
+        <div>
+            <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / RECOGNITION</span>
+            <h1>Reward great work<br><strong>with clear numbers.</strong></h1>
+            <p>These estimates use completed job revenue and job count. They are an operational guide, not a payroll approval.</p>
+        </div>
+        <nav class="workforce-hero-actions" aria-label="Bonus actions">
+            <a class="workforce-button workforce-button-light" href="{% url 'employee_performance' %}">Performance overview <span>→</span></a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_performance_centre' %}">Performance centre</a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'payroll_list' %}">Payroll register</a>
+        </nav>
+    </section>
 
-<div class="crm-summary-grid">
+    <section class="workforce-metrics" aria-label="Bonus summary">
+        <article class="workforce-metric workforce-metric-featured"><span>ESTIMATED TOTAL BONUS</span><strong>${{ total_bonus|floatformat:2 }}</strong><small>Based on current completed jobs</small></article>
+        <article class="workforce-metric"><span>REVENUE BONUS</span><strong>{{ bonus_rate }}%</strong><small>Of completed job revenue</small></article>
+        <article class="workforce-metric"><span>PER-COMPLETED-JOB BONUS</span><strong>${{ job_bonus_amount|floatformat:2 }}</strong><small>Added for each completed job</small></article>
+        <article class="workforce-metric"><span>TOP BONUS ESTIMATE</span>{% if top_bonus_employee %}<strong>${{ top_bonus_employee.total_bonus|floatformat:2 }}</strong><small>{{ top_bonus_employee.employee.full_name }}</small>{% else %}<strong>—</strong><small>No bonus data available</small>{% endif %}</article>
+    </section>
 
-    <div class="crm-card">
-        <span>Total Bonus Cost</span>
-        <h2>${{ total_bonus }}</h2>
-        <p>Estimated bonus payable</p>
-    </div>
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">ESTIMATED ALLOCATION</span><h2>Bonus by employee</h2><p>Search employee estimates and review the source figures used in each calculation.</p></div>
+            <span class="workforce-count">{{ bonus_rows|length }} employee{{ bonus_rows|length|pluralize }}</span>
+        </header>
+        <div class="workforce-toolbar">
+            <label class="workforce-search"><span aria-hidden="true">⌕</span><input id="bonusSearch" type="search" placeholder="Search employee..." aria-label="Search bonus estimates"></label>
+            <span class="workforce-count"><strong id="bonusCount">{{ bonus_rows|length }}</strong> results</span>
+        </div>
+        <div class="workforce-table-wrap">
+            <table class="workforce-table">
+                <thead><tr><th scope="col">Rank</th><th scope="col">Employee</th><th scope="col">Completed jobs</th><th scope="col">Completed revenue</th><th scope="col">Revenue bonus</th><th scope="col">Job bonus</th><th scope="col">Estimated total</th><th scope="col">Profile</th></tr></thead>
+                <tbody>
+                    {% for row in bonus_rows %}
+                    <tr data-bonus-row data-search="{{ row.employee.full_name|lower }}">
+                        <td><span class="workforce-rank">{{ forloop.counter|stringformat:"02d" }}</span></td>
+                        <td><a class="workforce-person" href="{% url 'employee_performance_detail' row.employee.id %}"><span class="workforce-avatar">{{ row.employee.full_name|first|upper }}</span><span><strong>{{ row.employee.full_name }}</strong><small>{{ row.employee.get_role_display }}</small></span></a></td>
+                        <td>{{ row.jobs_completed }}</td><td>${{ row.revenue_generated|floatformat:2 }}</td><td>${{ row.revenue_bonus|floatformat:2 }}</td><td>${{ row.job_bonus|floatformat:2 }}</td><td><strong class="workforce-positive">${{ row.total_bonus|floatformat:2 }}</strong></td>
+                        <td><a class="workforce-row-link" href="{% url 'employee_performance_detail' row.employee.id %}">View profile →</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="workforce-empty" colspan="8">No employees are available to calculate bonuses.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="workforce-no-results" id="bonusNoResults" hidden>No employees match your search.</p>
+    </section>
 
-    <div class="crm-card">
-        <span>Revenue Bonus Rate</span>
-        <h2>{{ bonus_rate }}%</h2>
-        <p>Of completed job revenue</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Job Bonus</span>
-        <h2>${{ job_bonus_amount }}</h2>
-        <p>Per completed job</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Top Bonus Earner</span>
-        {% if top_bonus_employee %}
-            <h2>{{ top_bonus_employee.employee.full_name }}</h2>
-            <p>${{ top_bonus_employee.total_bonus }}</p>
-        {% else %}
-            <h2>N/A</h2>
-            <p>No bonus data</p>
-        {% endif %}
-    </div>
-
+    <aside class="workforce-rule-card">
+        <span class="workforce-section-label">CURRENT BONUS RULE</span>
+        <h2>How estimates are calculated</h2>
+        <p><strong>{{ bonus_rate }}% of completed-job revenue</strong> plus <strong>${{ job_bonus_amount|floatformat:2 }} for each completed job</strong>.</p>
+        <p class="workforce-rule-note">This page displays estimates only. Confirm eligibility and approve any payment through the appropriate payroll process.</p>
+    </aside>
 </div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Employee Bonus Calculation</h2>
-        <a href="/dashboard/performance/" class="small-link-btn">
-            Performance
-        </a>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Employee</th>
-                    <th>Completed Jobs</th>
-                    <th>Revenue Generated</th>
-                    <th>Revenue Bonus</th>
-                    <th>Job Bonus</th>
-                    <th>Total Bonus</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for row in bonus_rows %}
-
-                    <tr>
-                        <td>#{{ forloop.counter }}</td>
-
-                        <td>
-                            <strong>{{ row.employee.full_name }}</strong>
-                        </td>
-
-                        <td>{{ row.jobs_completed }}</td>
-
-                        <td>${{ row.revenue_generated }}</td>
-
-                        <td>${{ row.revenue_bonus }}</td>
-
-                        <td>${{ row.job_bonus }}</td>
-
-                        <td>
-                            <span class="status-badge success">
-                                ${{ row.total_bonus }}
-                            </span>
-                        </td>
-                    </tr>
-
-                {% empty %}
-
-                    <tr>
-                        <td colspan="7">
-                            No active employees found.
-                        </td>
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Bonus Rules</h2>
-    </div>
-
-    <p>
-        Bonus is calculated as:
-        <strong>{{ bonus_rate }}% of completed job revenue</strong>
-        plus
-        <strong>${{ job_bonus_amount }} per completed job</strong>.
-    </p>
-
-    <p>
-        Example: If an employee completes $1,000 of jobs and 5 completed jobs,
-        their bonus is $50 revenue bonus + $50 job bonus = $100.
-    </p>
-
-</section>
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("bonusSearch");
+    const count = document.getElementById("bonusCount");
+    const noResults = document.getElementById("bonusNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-bonus-row]"));
+    if (!search || !count || !noResults) return;
+    search.addEventListener("input", function () {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        noResults.hidden = visible !== 0 || rows.length === 0;
+    });
+});
+</script>
 {% endblock %}

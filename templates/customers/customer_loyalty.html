@@ -1,115 +1,109 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Customer Loyalty{% endblock %}
-
+{% block title %}Customer Loyalty | YD Dashboard{% endblock %}
 {% block page_title %}Customer Loyalty{% endblock %}
-
-{% block page_subtitle %}
-Identify VIP, repeat and new customers.
-{% endblock %}
+{% block page_subtitle %}Recognise the repeat customers and VIPs who keep your business moving.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/customer-growth.css' %}">{% endblock %}
 
 {% block content %}
+<div class="customer-growth-page">
+    <section class="growth-hero">
+        <div>
+            <span class="growth-eyebrow"><i></i> CUSTOMER INTELLIGENCE / LOYALTY</span>
+            <h1>Reward the relationships<br><strong>that last.</strong></h1>
+            <p>See who is returning, who is ready to become a regular, and who deserves VIP attention.</p>
+        </div>
+        <a class="growth-hero-link" href="{% url 'vip_campaigns' %}">Open VIP campaigns <span>→</span></a>
+    </section>
 
-<div class="crm-summary-grid">
+    <section class="growth-metrics" aria-label="Customer loyalty summary">
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-customers">◎</span>
+            <span class="growth-metric-label">TOTAL CUSTOMERS</span>
+            <strong>{{ total_customers }}</strong>
+            <small>across all loyalty levels</small>
+        </article>
+        <article class="growth-metric growth-metric-accent">
+            <span class="growth-metric-icon icon-vip">★</span>
+            <span class="growth-metric-label">VIP CUSTOMERS</span>
+            <strong>{{ vip_count }}</strong>
+            <small>highest-value relationships</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-repeat">↻</span>
+            <span class="growth-metric-label">REPEAT CUSTOMERS</span>
+            <strong>{{ repeat_count }}</strong>
+            <small>two or more completed jobs</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-new">＋</span>
+            <span class="growth-metric-label">NEW CUSTOMERS</span>
+            <strong>{{ new_count }}</strong>
+            <small>opportunity to build loyalty</small>
+        </article>
+    </section>
 
-    <div class="crm-card">
-        <span>Total Customers</span>
-        <h2>{{ total_customers }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>VIP Customers</span>
-        <h2>{{ vip_count }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Repeat Customers</span>
-        <h2>{{ repeat_count }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>New Customers</span>
-        <h2>{{ new_count }}</h2>
-    </div>
-
+    <section class="growth-panel">
+        <header class="growth-panel-heading growth-table-heading">
+            <div><span class="growth-section-label">RELATIONSHIP HEALTH</span><h2>Loyalty ranking</h2><p>Customer segments are based on completed jobs and lifetime revenue.</p></div>
+            <a class="growth-text-link" href="{% url 'customer_analytics' %}">View analytics <span>→</span></a>
+        </header>
+        <div class="growth-table-tools">
+            <label class="growth-search"><span aria-hidden="true">⌕</span><input id="loyaltySearch" type="search" placeholder="Search customers..." aria-label="Search customers"></label>
+            <label class="growth-filter-label">Segment
+                <select id="loyaltyFilter" aria-label="Filter loyalty segment">
+                    <option value="">All segments</option>
+                    <option value="vip">VIP</option>
+                    <option value="repeat">Repeat</option>
+                    <option value="new">New</option>
+                </select>
+            </label>
+            <span class="growth-result-count"><strong id="loyaltyVisibleCount">{{ loyalty_rows|length }}</strong> customers</span>
+        </div>
+        <div class="growth-table-wrap">
+            <table class="growth-table" id="loyaltyTable">
+                <thead><tr><th scope="col">Customer</th><th scope="col">Email</th><th scope="col">Completed jobs</th><th scope="col">Lifetime revenue</th><th scope="col">Loyalty level</th></tr></thead>
+                <tbody>
+                    {% for row in loyalty_rows %}
+                        <tr data-loyalty-row data-name="{{ row.customer.full_name|lower }}" data-level="{{ row.level|lower }}">
+                            <td><a class="growth-customer-name" href="{% url 'customer_profile_360' row.customer.id %}"><span class="growth-avatar">{{ row.customer.full_name|first|upper }}</span><strong>{{ row.customer.full_name }}</strong></a></td>
+                            <td>{% if row.customer.email %}<a class="growth-email" href="mailto:{{ row.customer.email }}">{{ row.customer.email }}</a>{% else %}<span class="growth-muted">—</span>{% endif %}</td>
+                            <td><span class="growth-number-pill">{{ row.customer.jobs_completed }}</span></td>
+                            <td class="growth-money">${{ row.customer.total_revenue }}</td>
+                            <td><span class="growth-tier tier-{{ row.level|lower }}">{{ row.level }}</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="growth-empty" colspan="5">No customer loyalty data to display yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="growth-no-results" id="loyaltyNoResults" hidden>No customers match these filters.</div>
+    </section>
 </div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Customer Loyalty Ranking</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Email</th>
-                    <th>Jobs Completed</th>
-                    <th>Total Revenue</th>
-                    <th>Loyalty Level</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for row in loyalty_rows %}
-
-                <tr>
-
-                    <td>
-                        {{ row.customer.full_name }}
-                    </td>
-
-                    <td>
-                        {{ row.customer.email }}
-                    </td>
-
-                    <td>
-                        {{ row.customer.jobs_completed }}
-                    </td>
-
-                    <td>
-                        ${{ row.customer.total_revenue }}
-                    </td>
-
-                    <td>
-
-                        {% if row.level == "VIP" %}
-
-                            <span class="status-badge success">
-                                VIP
-                            </span>
-
-                        {% elif row.level == "Repeat" %}
-
-                            <span class="status-badge primary">
-                                Repeat
-                            </span>
-
-                        {% else %}
-
-                            <span class="status-badge warning">
-                                New
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("loyaltySearch");
+    const filter = document.getElementById("loyaltyFilter");
+    const count = document.getElementById("loyaltyVisibleCount");
+    const empty = document.getElementById("loyaltyNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-loyalty-row]"));
+    if (!search || !filter || !count || !empty) return;
+    function updateRows() {
+        const query = search.value.trim().toLocaleLowerCase();
+        const selectedLevel = filter.value;
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.name.includes(query) && (!selectedLevel || row.dataset.level === selectedLevel);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        empty.hidden = visible !== 0 || rows.length === 0;
+    }
+    search.addEventListener("input", updateRows);
+    filter.addEventListener("change", updateRows);
+});
+</script>
 {% endblock %}

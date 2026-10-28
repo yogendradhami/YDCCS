@@ -1,0 +1,524 @@
+.employee-leave-hero {
+    background:
+        radial-gradient(circle at 85% 12%, rgba(86, 196, 176, .17), transparent 30%),
+        linear-gradient(125deg, #102d43 0%, #164859 58%, #0c696c 100%);
+}
+
+.employee-leave-hero .employee-hero-box h1,
+.employee-leave-hero .employee-hero-box p {
+    color: #fff;
+}
+
+.employee-leave-hero .employee-hero-box p {
+    color: #d3e2e8;
+}
+
+.employee-leave-eyebrow,
+.employee-leave-section-label {
+    display: block;
+    color: #708997;
+    font-size: .62rem;
+    font-weight: 850;
+    letter-spacing: .13em;
+}
+
+.employee-leave-eyebrow {
+    margin-bottom: 8px;
+    color: #b7d7dc;
+}
+
+.employee-leave-content {
+    padding-bottom: 44px;
+    background: #f5f8f9;
+}
+
+.employee-leave-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-bottom: 15px;
+}
+
+.employee-leave-primary,
+.employee-leave-secondary {
+    display: inline-flex;
+    min-height: 39px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 13px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-size: .72rem;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .16s ease, transform .16s ease;
+}
+
+.employee-leave-primary {
+    border-color: #10566a;
+    color: #fff !important;
+    background: #10566a;
+}
+
+.employee-leave-primary:hover {
+    color: #fff !important;
+    background: #0c4556;
+    transform: translateY(-1px);
+}
+
+.employee-leave-secondary {
+    border-color: #dce5e9;
+    color: #3e6172 !important;
+    background: #fff;
+}
+
+.employee-leave-secondary:hover {
+    border-color: #b9d8d8;
+    color: #087a7e !important;
+    background: #f0faf8;
+}
+
+.employee-leave-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.employee-leave-metrics article {
+    display: grid;
+    min-width: 0;
+    min-height: 105px;
+    align-content: start;
+    padding: 14px;
+    border: 1px solid #e3eaee;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 17px rgba(16, 43, 70, .035);
+}
+
+.employee-leave-metrics article > span {
+    color: #81919d;
+    font-size: .56rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+}
+
+.employee-leave-metrics article > strong {
+    margin-top: 10px;
+    color: #102b46;
+    font-size: 1.55rem;
+    font-weight: 780;
+    letter-spacing: -.04em;
+}
+
+.employee-leave-metrics article > small {
+    margin-top: 4px;
+    color: #84929d;
+    font-size: .63rem;
+}
+
+.employee-leave-metrics .leave-metric-pending {
+    border-color: #f1dfb7;
+    background: linear-gradient(130deg, #fffaf0, #fff 80%);
+}
+
+.employee-leave-metrics .leave-metric-approved {
+    border-color: #cfe7d7;
+}
+
+.employee-leave-metrics .leave-metric-declined {
+    border-color: #eadbdb;
+}
+
+.employee-leave-panel {
+    overflow: hidden;
+    border: 1px solid #e2e9ed;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(16, 43, 70, .045);
+}
+
+.employee-leave-panel > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 19px 21px 16px;
+    border-bottom: 1px solid #edf1f4;
+}
+
+.employee-leave-panel h2,
+.employee-leave-form-panel h2 {
+    margin: 5px 0 4px;
+    color: #102b46;
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: -.025em;
+}
+
+.employee-leave-panel header p,
+.employee-leave-form-panel header p {
+    margin: 0;
+    color: #748596;
+    font-size: .71rem;
+    line-height: 1.5;
+}
+
+.employee-leave-count {
+    flex: 0 0 auto;
+    color: #748596;
+    font-size: .65rem;
+}
+
+.employee-leave-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.employee-leave-table {
+    width: 100%;
+    min-width: 730px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.employee-leave-table th {
+    padding: 11px 13px;
+    color: #7d8c99;
+    background: #f8fafb;
+    font-size: .56rem;
+    font-weight: 850;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.employee-leave-table th:first-child,
+.employee-leave-table td:first-child {
+    padding-left: 19px;
+}
+
+.employee-leave-table td {
+    padding: 13px;
+    border-top: 1px solid #edf1f4;
+    color: #40566a;
+    font-size: .71rem;
+    vertical-align: top;
+}
+
+.employee-leave-table td strong {
+    color: #334e60;
+}
+
+.employee-leave-table td small {
+    display: block;
+    margin-top: 4px;
+    color: #8493a0;
+    font-size: .62rem;
+}
+
+.employee-leave-status {
+    display: inline-flex;
+    padding: 5px 8px;
+    border-radius: 7px;
+    font-size: .62rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.leave-status-pending {
+    color: #91651d;
+    background: #fff4df;
+}
+
+.leave-status-approved {
+    color: #23744f;
+    background: #e5f4eb;
+}
+
+.leave-status-rejected {
+    color: #a54747;
+    background: #f9eaea;
+}
+
+.employee-leave-muted {
+    color: #8997a2;
+}
+
+.employee-leave-manager-note {
+    max-width: 260px;
+    color: #5b7180 !important;
+}
+
+.employee-leave-empty {
+    display: grid;
+    justify-items: center;
+    padding: 42px 18px;
+    text-align: center;
+}
+
+.employee-leave-empty > span {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border-radius: 13px;
+    color: #167a79;
+    background: #e9f6f3;
+    font-size: 1.2rem;
+}
+
+.employee-leave-empty h3 {
+    margin: 12px 0 5px;
+    color: #102b46;
+    font-size: .95rem;
+}
+
+.employee-leave-empty p {
+    max-width: 390px;
+    margin: 0 0 14px;
+    color: #748596;
+    font-size: .72rem;
+    line-height: 1.55;
+}
+
+.employee-leave-form-container {
+    display: grid;
+    grid-template-columns: minmax(220px, .75fr) minmax(0, 1.5fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.employee-leave-form-aside,
+.employee-leave-form-panel {
+    border: 1px solid #e2e9ed;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(16, 43, 70, .045);
+}
+
+.employee-leave-form-aside {
+    padding: 20px;
+    background:
+        radial-gradient(circle at 100% 0, rgba(86, 196, 176, .12), transparent 36%),
+        #fff;
+}
+
+.employee-leave-form-aside h2 {
+    margin: 9px 0 7px;
+    color: #102b46;
+    font-size: 1.15rem;
+    letter-spacing: -.035em;
+}
+
+.employee-leave-form-aside > p {
+    margin: 0 0 18px;
+    color: #748596;
+    font-size: .73rem;
+    line-height: 1.6;
+}
+
+.employee-leave-steps {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid #edf1f4;
+}
+
+.employee-leave-steps > span {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    place-items: center;
+    border-radius: 8px;
+    color: #126d70;
+    background: #eaf7f4;
+    font-size: .61rem;
+    font-weight: 850;
+}
+
+.employee-leave-steps p {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+}
+
+.employee-leave-steps strong {
+    color: #40566a;
+    font-size: .69rem;
+}
+
+.employee-leave-steps small {
+    color: #8493a0;
+    font-size: .62rem;
+    line-height: 1.45;
+}
+
+.employee-leave-form-panel {
+    overflow: hidden;
+}
+
+.employee-leave-form-panel > header {
+    padding: 19px 21px 15px;
+    border-bottom: 1px solid #edf1f4;
+}
+
+.employee-leave-form {
+    display: grid;
+    gap: 15px;
+    padding: 20px 21px;
+}
+
+.employee-leave-field {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+}
+
+.employee-leave-field label {
+    color: #40566a;
+    font-size: .72rem;
+    font-weight: 750;
+}
+
+.employee-leave-field label > span,
+.employee-leave-field label > small {
+    margin-left: 5px;
+    color: #8997a2;
+    font-size: .6rem;
+    font-weight: 600;
+}
+
+.employee-leave-field input,
+.employee-leave-field select,
+.employee-leave-field textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 41px;
+    padding: 9px 11px;
+    border: 1px solid #dce5ea;
+    border-radius: 8px;
+    color: #334c60;
+    background: #fff;
+    font: inherit;
+    font-size: .74rem;
+}
+
+.employee-leave-field textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.employee-leave-field input:focus,
+.employee-leave-field select:focus,
+.employee-leave-field textarea:focus {
+    border-color: #70bdb5;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(8, 127, 130, .09);
+}
+
+.employee-leave-help {
+    color: #81909d;
+    font-size: .63rem;
+}
+
+.employee-leave-date-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.employee-leave-field-error,
+.employee-leave-errors {
+    color: #b14242;
+    font-size: .67rem;
+}
+
+.employee-leave-errors {
+    padding: 11px;
+    border: 1px solid #f1cece;
+    border-radius: 8px;
+    background: #fff5f5;
+}
+
+.employee-leave-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 14px;
+    border-top: 1px solid #edf1f4;
+}
+
+@media (max-width: 760px) {
+    .employee-leave-form-container {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-leave-form-aside {
+        order: 2;
+    }
+
+    .employee-leave-form-panel {
+        order: 1;
+    }
+}
+
+@media (max-width: 560px) {
+    .employee-leave-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .employee-leave-metrics article {
+        min-height: 94px;
+        padding: 11px;
+    }
+
+    .employee-leave-metrics article > span {
+        font-size: .51rem;
+    }
+
+    .employee-leave-panel > header {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .employee-leave-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .employee-leave-actions > a {
+        width: 100%;
+    }
+
+    .employee-leave-date-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-leave-form-panel > header {
+        padding: 16px 15px;
+    }
+
+    .employee-leave-form {
+        padding: 16px 15px;
+    }
+
+    .employee-leave-form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .employee-leave-form-actions > a,
+    .employee-leave-form-actions > button {
+        width: 100%;
+    }
+}

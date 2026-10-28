@@ -53,7 +53,7 @@ Daily action list for invoices, bookings, quotes and unassigned jobs.
         {% if overdue_invoices %}
             {% for invoice in overdue_invoices %}
                 <div class="crm-list-item">
-                    <strong>{{ invoice.invoice_number }} — ${{ invoice.total_amount }}</strong>
+                    <strong>{{ invoice.invoice_number }} — ${{ invoice.total_amount|floatformat:2 }}</strong>
                     <span>
                         {{ invoice.booking.customer.full_name }}
                         — Due {{ invoice.due_date }}

@@ -1,0 +1,426 @@
+.clean-report-page {
+    padding: 28px 0 22px;
+    background:
+        radial-gradient(circle at 88% 0, rgba(42, 154, 143, .12), transparent 31%),
+        linear-gradient(135deg, #f3f8f8, #fff 70%);
+}
+
+.clean-report-page .container,
+.clean-report-body .container {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+}
+
+.clean-report-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 20px;
+    color: #8a9aa5;
+    font-size: .73rem;
+}
+
+.clean-report-breadcrumb a {
+    color: #087c7e;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.clean-report-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.clean-report-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 22px;
+    padding: 24px 28px;
+    border: 1px solid #e0eceb;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(20, 58, 67, .06);
+}
+
+.clean-report-eyebrow,
+.clean-report-section-label {
+    color: #64818a;
+    font-size: .62rem;
+    font-weight: 850;
+    letter-spacing: .12em;
+}
+
+.clean-report-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.clean-report-eyebrow i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #29a88f;
+    box-shadow: 0 0 0 4px #e6f5f0;
+}
+
+.clean-report-hero h1 {
+    margin: 11px 0 6px;
+    color: #18384c;
+    font-size: clamp(1.7rem, 3.5vw, 2.45rem);
+    font-weight: 760;
+    letter-spacing: -.05em;
+    line-height: 1.1;
+}
+
+.clean-report-hero p {
+    margin: 0;
+    color: #748895;
+    font-size: .8rem;
+}
+
+.clean-report-status {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 8px;
+    color: #26734f;
+    background: #e7f5eb;
+    font-size: .66rem;
+    font-weight: 800;
+}
+
+.clean-report-status.status-cancelled,
+.clean-report-status.status-canceled {
+    color: #a54747;
+    background: #faebeb;
+}
+
+.clean-report-body {
+    padding: 23px 0 42px;
+    background: #f7f9fa;
+}
+
+.clean-report-card {
+    overflow: hidden;
+    border: 1px solid #e4eaed;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(25, 50, 67, .05);
+}
+
+.clean-report-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf1f3;
+    background: #fbfcfc;
+}
+
+.clean-report-actions a {
+    display: inline-flex;
+    min-height: 37px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0 12px;
+    border: 1px solid #dce7e9;
+    border-radius: 8px;
+    color: #38586a;
+    background: #fff;
+    font-size: .69rem;
+    font-weight: 750;
+    text-decoration: none;
+    transition: background .15s ease, transform .15s ease;
+}
+
+.clean-report-actions a:hover {
+    transform: translateY(-1px);
+    background: #f1f8f7;
+}
+
+.clean-report-actions a.clean-report-primary {
+    border-color: #145d68;
+    color: #fff;
+    background: #145d68;
+}
+
+.clean-report-actions a.clean-report-primary:hover {
+    background: #104c57;
+}
+
+.clean-report-actions a.clean-report-back {
+    margin-left: auto;
+    border-color: transparent;
+    color: #5e7481;
+    background: transparent;
+}
+
+.clean-report-overview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf1f3;
+}
+
+.clean-report-overview article {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #edf1f3;
+    border-radius: 10px;
+    background: #fcfdfd;
+}
+
+.clean-report-overview article > span,
+.clean-report-people article > div > span {
+    color: #81919b;
+    font-size: .57rem;
+    font-weight: 850;
+    letter-spacing: .09em;
+}
+
+.clean-report-overview article strong {
+    color: #334e60;
+    font-size: .74rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.clean-report-people {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #edf1f3;
+}
+
+.clean-report-people article {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #edf1f3;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.clean-report-card-icon {
+    display: grid;
+    width: 33px;
+    height: 33px;
+    flex: 0 0 33px;
+    place-items: center;
+    border-radius: 10px;
+    color: #167a79;
+    background: #e9f6f3;
+    font-size: 1rem;
+}
+
+.clean-report-people article > div {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.clean-report-people article strong {
+    color: #304b5e;
+    font-size: .78rem;
+}
+
+.clean-report-people article small {
+    color: #80909b;
+    font-size: .66rem;
+    overflow-wrap: anywhere;
+}
+
+.clean-report-notes {
+    margin: 17px 20px;
+    padding: 16px;
+    border-left: 3px solid #79bfb1;
+    border-radius: 0 9px 9px 0;
+    background: #f5faf8;
+}
+
+.clean-report-notes p {
+    margin: 8px 0 0;
+    color: #526977;
+    font-size: .76rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.clean-report-photo-section {
+    padding: 19px 20px 21px;
+    border-top: 1px solid #edf1f3;
+}
+
+.clean-report-photo-section > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 13px;
+}
+
+.clean-report-photo-section h2 {
+    margin: 5px 0 0;
+    color: #1c3d50;
+    font-size: 1rem;
+    font-weight: 750;
+    letter-spacing: -.02em;
+}
+
+.clean-report-photo-section > header > span {
+    padding: 5px 8px;
+    border-radius: 7px;
+    color: #55707c;
+    background: #eff4f5;
+    font-size: .62rem;
+    font-weight: 750;
+}
+
+.clean-report-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.job-photo-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #e6ecef;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.job-photo-card > img {
+    display: block;
+    width: 100%;
+    height: 205px;
+    object-fit: cover;
+    background: #edf2f3;
+}
+
+.job-photo-info {
+    padding: 11px 12px 12px;
+}
+
+.photo-type {
+    display: inline-flex;
+    padding: 4px 7px;
+    border-radius: 6px;
+    color: #446678;
+    background: #edf4f6;
+    font-size: .59rem;
+    font-weight: 800;
+}
+
+.photo-type.photo-before {
+    color: #986822;
+    background: #fff5e3;
+}
+
+.photo-type.photo-after {
+    color: #28714f;
+    background: #e8f5eb;
+}
+
+.job-photo-info p {
+    margin: 8px 0 5px;
+    color: #4e6574;
+    font-size: .69rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.job-photo-info small {
+    color: #86949d;
+    font-size: .6rem;
+}
+
+.clean-report-photo-empty {
+    grid-column: 1 / -1;
+    padding: 24px 15px;
+    border: 1px dashed #dce5e8;
+    border-radius: 10px;
+    color: #82919a;
+    background: #fbfcfc;
+    font-size: .72rem;
+    text-align: center;
+}
+
+@media (max-width: 760px) {
+    .clean-report-hero {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 21px;
+    }
+
+    .clean-report-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .clean-report-photo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .clean-report-page {
+        padding-top: 18px;
+    }
+
+    .clean-report-page .container,
+    .clean-report-body .container {
+        width: min(100% - 22px, 1120px);
+    }
+
+    .clean-report-hero {
+        padding: 18px;
+    }
+
+    .clean-report-hero h1 {
+        font-size: 1.65rem;
+    }
+
+    .clean-report-actions {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 14px;
+    }
+
+    .clean-report-actions a {
+        width: 100%;
+    }
+
+    .clean-report-actions a.clean-report-back {
+        margin-left: 0;
+    }
+
+    .clean-report-people,
+    .clean-report-photo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .clean-report-overview,
+    .clean-report-people,
+    .clean-report-photo-section {
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+
+    .clean-report-notes {
+        margin-right: 14px;
+        margin-left: 14px;
+    }
+
+    .job-photo-card > img {
+        height: 230px;
+    }
+}

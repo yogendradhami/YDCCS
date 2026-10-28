@@ -28,7 +28,7 @@ Documents Center
                 <tr>
                     <td>{{ invoice.invoice_number }}</td>
                     <td>{{ invoice.issue_date }}</td>
-                    <td>${{ invoice.total_amount }}</td>
+                    <td>${{ invoice.total_amount|floatformat:2 }}</td>
 
                     <td>
                         <a href="/dashboard/invoices/{{ invoice.id }}/download/">

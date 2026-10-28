@@ -1,381 +1,108 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
 {% load static %}
 
 {% block title %}Gallery Management | YD Dashboard{% endblock %}
-{% block page_title %}📷 Gallery Management{% endblock %}
-{% block page_subtitle %}Manage website gallery images from all sources (admin, job photos, bookings, uploads).{% endblock %}
-
-{% block extra_css %}
-<style>
-    .gallery-management-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-
-    .gallery-management-header h2 {
-        margin: 0;
-        font-size: 1.5rem;
-    }
-
-    .gallery-info-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-bottom: 25px;
-        padding: 15px;
-        background: #f9f9f9;
-        border-radius: 8px;
-    }
-
-    .stat-card {
-        text-align: center;
-        padding: 10px;
-    }
-
-    .stat-number {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #667eea;
-    }
-
-    .stat-label {
-        font-size: 0.85rem;
-        color: #666;
-        margin-top: 5px;
-    }
-
-    .gallery-filter-section {
-        margin-bottom: 25px;
-        padding: 15px;
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-    }
-
-    .filter-row {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .filter-control {
-        flex: 1;
-        min-width: 200px;
-    }
-
-    .filter-control label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    .filter-control select {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.9rem;
-    }
-
-    .dashboard-gallery-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-        margin-top: 25px;
-    }
-
-    .dashboard-gallery-card {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .dashboard-gallery-card:hover {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-    }
-
-    .dashboard-gallery-media-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-        gap: 8px;
-        padding: 12px;
-        background: #f8f9fb;
-        border-bottom: 1px solid #eee;
-    }
-
-    .dashboard-gallery-media-grid img {
-        width: 100%;
-        height: 100px;
-        object-fit: cover;
-        background: #f0f0f0;
-        border-radius: 6px;
-        border: 1px solid #e5e7eb;
-    }
-
-    .dashboard-gallery-file {
-        min-height: 100px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 8px;
-        border-radius: 6px;
-        background: #eef2ff;
-        color: #334155;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border: 1px dashed #94a3b8;
-    }
-
-    .dashboard-gallery-info {
-        padding: 15px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .dashboard-gallery-info h3 {
-        margin: 0 0 8px 0;
-        font-size: 1.05rem;
-        color: #333;
-    }
-
-    .gallery-source-badge {
-        display: inline-block;
-        background: #667eea;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        margin-bottom: 8px;
-        width: fit-content;
-    }
-
-    .gallery-source-badge.job_photo {
-        background: #4CAF50;
-    }
-
-    .gallery-source-badge.customer {
-        background: #2196F3;
-    }
-
-    .gallery-source-badge.employee {
-        background: #FF9800;
-    }
-
-    .gallery-source-badge.booking {
-        background: #9C27B0;
-    }
-
-    .dashboard-gallery-info p {
-        margin: 0 0 10px 0;
-        font-size: 0.9rem;
-        color: #666;
-        line-height: 1.4;
-    }
-
-    .gallery-meta {
-        font-size: 0.85rem;
-        color: #999;
-        margin-top: auto;
-        padding-top: 10px;
-        border-top: 1px solid #eee;
-    }
-
-    .dashboard-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    .dashboard-actions.compact {
-        margin: 12px 0 0 0;
-    }
-
-    .dashboard-actions a {
-        flex: 1;
-        padding: 8px 12px;
-        text-align: center;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .small-link-btn {
-        background: #667eea;
-        color: white;
-    }
-
-    .small-link-btn:hover {
-        background: #5568d3;
-    }
-
-    .small-delete-btn {
-        background: #ff5252;
-        color: white;
-    }
-
-    .small-delete-btn:hover {
-        background: #ff1744;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        border-radius: 8px;
-        margin: 25px 0;
-    }
-
-    .empty-state h3 {
-        color: #333;
-        margin-bottom: 10px;
-    }
-
-    .empty-state p {
-        color: #666;
-        margin-bottom: 20px;
-    }
-
-    .crm-quick-actions {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-
-    .crm-quick-actions a {
-        padding: 10px 16px;
-        background: #667eea;
-        color: white;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .crm-quick-actions a:hover {
-        background: #5568d3;
-    }
-
-    @media (max-width: 768px) {
-        .dashboard-gallery-grid {
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .gallery-management-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-    }
-</style>
-{% endblock %}
+{% block page_title %}Gallery Management{% endblock %}
+{% block page_subtitle %}Curate the images and project stories displayed across your website.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
 
 {% block content %}
+<div class="records-page gallery-management-page">
+    <section class="records-hero">
+        <div>
+            <span class="records-eyebrow"><i></i> BRAND &amp; CONTENT / PROJECT GALLERY</span>
+            <h1>Show the work.<br><strong>Build trust.</strong></h1>
+            <p>Manage project imagery and before-and-after stories from one central gallery workspace.</p>
+        </div>
+        <div class="records-hero-actions">
+            <a class="records-hero-button" href="{% url 'add_gallery_item' %}">＋ Add gallery item</a>
+            <a class="records-hero-link" href="/gallery/">View public gallery <span>↗</span></a>
+        </div>
+    </section>
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/gallery/add/">➕ Add Manual Item</a>
-    <a href="/gallery/">👁️ View Public Gallery</a>
-    <a href="/dashboard/">← Back to Dashboard</a>
-</section>
+    <section class="records-metrics gallery-metrics" aria-label="Gallery overview">
+        <article class="records-metric records-metric-featured"><span>GALLERY ITEMS</span><strong>{{ items.count }}</strong><small>images and project stories</small></article>
+        <article class="records-metric"><span>CONTENT SOURCES</span><strong>{{ source_count }}</strong><small>represented in the gallery</small></article>
+        <article class="records-metric"><span>PUBLIC SHOWCASE</span><strong>Live</strong><small>content available on your website</small></article>
+    </section>
 
-<!-- Stats Section -->
-{% if items %}
-<div class="gallery-info-stats">
-    <div class="stat-card">
-        <div class="stat-number">{{ items.count }}</div>
-        <div class="stat-label">Total Images</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ source_count }}</div>
-        <div class="stat-label">Sources</div>
-    </div>
-</div>
-{% endif %}
+    <section class="records-panel">
+        <header class="records-panel-header">
+            <div><span class="records-section-label">VISUAL LIBRARY</span><h2>All gallery items</h2><p>Search and filter the content in your website gallery.</p></div>
+        </header>
+        <div class="records-toolbar">
+            <label class="records-search"><span aria-hidden="true">⌕</span><input id="gallerySearch" type="search" placeholder="Search title, service, or location..." aria-label="Search gallery"></label>
+            <label class="records-filter">Source
+                <select id="gallerySourceFilter" aria-label="Filter gallery source">
+                    <option value="">All sources</option>
+                    <option value="manual">Manual</option><option value="admin">Admin upload</option><option value="job_photo">Job photo</option><option value="customer">Customer</option><option value="employee">Employee</option><option value="booking">Booking</option>
+                </select>
+            </label>
+            <span class="records-count"><strong id="galleryVisibleCount">{{ items.count }}</strong> items</span>
+        </div>
 
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>📷 All Gallery Images</h2>
-        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">
-            Manage images uploaded from admin, job photos, booking forms, customers, and employees.
-        </p>
-    </div>
-
-    {% if items %}
-        <div class="dashboard-gallery-grid">
-            {% for item in items %}
-                <div class="dashboard-gallery-card">
-                    {% if item.gallery_media %}
-                        <div class="dashboard-gallery-media-grid">
-                            {% for media in item.gallery_media %}
-                                {% if media.is_image %}
-                                    <img src="{{ media.url }}" alt="{{ item.title }}" loading="lazy">
-                                {% else %}
-                                    <div class="dashboard-gallery-file">{{ media.name }}</div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <img
-                            src="{% static 'images/services/placeholder.svg' %}"
-                            alt="No gallery image available"
-                            style="width:100%;height:200px;object-fit:cover;background:#f0f0f0;"
-                        >
-                    {% endif %}
-
-                    <div class="dashboard-gallery-info">
-                        <span class="gallery-source-badge {{ item.source }}">
-                            {{ item.get_source_display }}
-                        </span>
-                        
-                        <h3>{{ item.title|default:"Gallery Item" }}</h3>
-                        
-                        <p><strong>{{ item.service_type }}</strong></p>
-                        
-                        {% if item.description %}
-                            <p>{{ item.description|truncatewords:15 }}</p>
-                        {% endif %}
-
-                        <div class="gallery-meta">
-                            📍 {% if item.suburb %}{{ item.suburb }}{% else %}No location{% endif %}<br>
-                            📅 {{ item.created_at|date:"M d, Y" }}
-                            {% if item.job_photo %}
-                                <br>🔗 <em>Linked to Job Photo</em>
+        {% if items %}
+            <div class="records-gallery-grid">
+                {% for item in items %}
+                    <article class="records-gallery-card" data-gallery-item data-source="{{ item.source|lower }}" data-search="{{ item.title|default:'Gallery item'|lower }} {{ item.service_type|lower }} {{ item.suburb|lower }} {{ item.description|lower }}">
+                        <div class="records-gallery-media">
+                            {% if item.gallery_media %}
+                                {% for media in item.gallery_media %}
+                                    {% if forloop.counter <= 4 %}
+                                        {% if media.is_image %}
+                                            <img src="{{ media.url }}" alt="{{ item.title|default:'Gallery project' }}" loading="lazy">
+                                        {% else %}
+                                            <div class="records-gallery-file">▧<small>{{ media.name }}</small></div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if item.gallery_media|length > 4 %}<span class="records-gallery-more">+{{ item.gallery_media|length|add:"-4" }}</span>{% endif %}
+                            {% else %}
+                                <img src="{% static 'images/services/placeholder.svg' %}" alt="No gallery image available" loading="lazy">
                             {% endif %}
                         </div>
-
-                        <div class="dashboard-actions">
-                            <a href="/dashboard/gallery/{{ item.id }}/edit/" class="small-link-btn">✏️ Edit</a>
-                            <a href="/dashboard/gallery/{{ item.id }}/delete/" class="small-delete-btn">🗑️ Delete</a>
+                        <div class="records-gallery-content">
+                            <div class="records-gallery-tags">
+                                <span class="records-source source-{{ item.source|lower }}">{{ item.get_source_display }}</span>
+                                {% if item.featured %}<span class="records-featured-tag">Featured</span>{% endif %}
+                            </div>
+                            <h3>{{ item.title|default:"Gallery item" }}</h3>
+                            <p class="records-gallery-service">{{ item.service_type }}</p>
+                            {% if item.description %}<p class="records-gallery-description">{{ item.description|truncatewords:18 }}</p>{% endif %}
+                            <div class="records-gallery-meta"><span>⌖ {% if item.suburb %}{{ item.suburb }}{% else %}No location{% endif %}</span><span>{{ item.created_at|date:"d M Y" }}</span></div>
+                            {% if item.job_photo %}<span class="records-linked-photo">Linked to a job photo</span>{% endif %}
+                            <div class="records-gallery-actions"><a href="{% url 'edit_gallery_item' item.id %}">Edit item <span>↗</span></a><form method="post" action="{% url 'delete_gallery_item' item.id %}" onsubmit="return confirm('Delete this gallery item? This cannot be undone.');">{% csrf_token %}<button class="records-gallery-delete" type="submit">Delete</button></form></div>
                         </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <h3>📷 No Gallery Images Yet</h3>
-            <p>Upload images from the admin panel, job photos, or add them manually here.</p>
-            <a href="/dashboard/gallery/add/" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; border-radius: 6px; text-decoration: none; font-weight: 500;">
-                ➕ Add First Image
-            </a>
-        </div>
-    {% endif %}
-</section>
-
+                    </article>
+                {% endfor %}
+            </div>
+            <div class="records-no-results" id="galleryNoResults" hidden>No gallery items match your search.</div>
+        {% else %}
+            <div class="records-empty-block"><strong>Your gallery is ready for its first project</strong><p>Add before-and-after photos and service details to create a compelling showcase.</p><a class="records-button records-button-teal" href="{% url 'add_gallery_item' %}">Add first gallery item <span>→</span></a></div>
+        {% endif %}
+    </section>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("gallerySearch");
+    const filter = document.getElementById("gallerySourceFilter");
+    const count = document.getElementById("galleryVisibleCount");
+    const empty = document.getElementById("galleryNoResults");
+    const cards = Array.from(document.querySelectorAll("[data-gallery-item]"));
+    if (!search || !filter || !count || !empty) return;
+    function update() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        cards.forEach(function (card) {
+            const matches = card.dataset.search.includes(query) && (!filter.value || card.dataset.source === filter.value);
+            card.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        empty.hidden = visible !== 0 || cards.length === 0;
+    }
+    search.addEventListener("input", update);
+    filter.addEventListener("change", update);
+});
+</script>
 {% endblock %}

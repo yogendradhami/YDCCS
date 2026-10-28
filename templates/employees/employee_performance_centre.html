@@ -1,165 +1,153 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Employee Performance Centre | YD Dashboard{% endblock %}
+{% block page_title %}Employee Performance Centre{% endblock %}
+{% block page_subtitle %}A clear, data-led view of team performance, attendance, and contribution.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/employee-performance.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="employee-performance-page performance-centre">
+    <section class="performance-hero">
+        <div class="performance-hero-copy">
+            <span class="performance-eyebrow"><i></i> PEOPLE ANALYTICS / TEAM OVERVIEW</span>
+            <h1>Performance, <strong>in perspective.</strong></h1>
+            <p>Recognise great work and understand the key signals shaping team performance.</p>
+        </div>
+        <div class="performance-hero-actions">
+            <a class="performance-action performance-action-light" href="{% url 'export_employee_performance_pdf' %}">Export report <span>↗</span></a>
+            <a class="performance-action performance-action-outline" href="{% url 'email_employee_performance_report' %}">Email report <span>→</span></a>
+        </div>
+    </section>
 
-<style>
-.responsive-table-wrap {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.responsive-table-wrap table {
-    width: 100%;
-    min-width: 950px;
-    border-collapse: collapse;
-}
-
-.responsive-table-wrap th,
-.responsive-table-wrap td {
-    white-space: nowrap;
-}
-</style>
-
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Top Performer</span>
-        <h2>
+    <section class="performance-podium" aria-label="Top performers">
+        <article class="podium-card podium-first">
+            <div class="podium-rank"><span>01</span><i>★</i></div>
+            <span class="podium-label">TOP PERFORMER</span>
             {% if top_performer %}
-                {{ top_performer.employee.full_name }}
+                <a class="podium-name" href="{% url 'employee_performance_detail' top_performer.employee.id %}">{{ top_performer.employee.full_name }}</a>
+                <div class="podium-stats"><span>KPI score</span><strong>{{ top_performer.kpi_score }}<small>/100</small></strong></div>
+                <div class="podium-progress"><i style="width: {{ top_performer.kpi_score }}%"></i></div>
+                <span class="podium-footnote">${{ top_performer.revenue_generated }} revenue generated</span>
             {% else %}
-                N/A
+                <strong class="podium-empty">No performance data yet</strong>
+                <span class="podium-footnote">Active team members will appear here.</span>
             {% endif %}
-        </h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Second Performer</span>
-        <h2>
+        </article>
+        <article class="podium-card podium-second">
+            <div class="podium-rank"><span>02</span><i>↗</i></div>
+            <span class="podium-label">SECOND PLACE</span>
             {% if second_performer %}
-                {{ second_performer.employee.full_name }}
+                <a class="podium-name" href="{% url 'employee_performance_detail' second_performer.employee.id %}">{{ second_performer.employee.full_name }}</a>
+                <div class="podium-stats"><span>KPI score</span><strong>{{ second_performer.kpi_score }}<small>/100</small></strong></div>
+                <div class="podium-progress"><i style="width: {{ second_performer.kpi_score }}%"></i></div>
+                <span class="podium-footnote">${{ second_performer.revenue_generated }} revenue generated</span>
             {% else %}
-                N/A
+                <strong class="podium-empty">—</strong>
+                <span class="podium-footnote">More team data is needed to rank.</span>
             {% endif %}
-        </h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Third Performer</span>
-        <h2>
+        </article>
+        <article class="podium-card podium-third">
+            <div class="podium-rank"><span>03</span><i>↗</i></div>
+            <span class="podium-label">THIRD PLACE</span>
             {% if third_performer %}
-                {{ third_performer.employee.full_name }}
+                <a class="podium-name" href="{% url 'employee_performance_detail' third_performer.employee.id %}">{{ third_performer.employee.full_name }}</a>
+                <div class="podium-stats"><span>KPI score</span><strong>{{ third_performer.kpi_score }}<small>/100</small></strong></div>
+                <div class="podium-progress"><i style="width: {{ third_performer.kpi_score }}%"></i></div>
+                <span class="podium-footnote">${{ third_performer.revenue_generated }} revenue generated</span>
             {% else %}
-                N/A
+                <strong class="podium-empty">—</strong>
+                <span class="podium-footnote">More team data is needed to rank.</span>
             {% endif %}
-        </h2>
-    </div>
+        </article>
+    </section>
 
+    <section class="performance-roster-panel">
+        <header class="performance-panel-header">
+            <div>
+                <span class="performance-section-label">TEAM SCORECARD</span>
+                <h2>Employee performance</h2>
+                <p>Compare jobs, financial contribution, KPI, and attendance.</p>
+            </div>
+            <a class="performance-directory-link" href="/dashboard/employees/">Employee directory <span>→</span></a>
+        </header>
+
+        <div class="performance-table-tools">
+            <label class="performance-search">
+                <span aria-hidden="true">⌕</span>
+                <input type="search" id="employeeSearchInput" placeholder="Search by employee name..." autocomplete="off" aria-label="Search employees">
+            </label>
+            <span class="performance-result-count"><strong id="visibleEmployeeCount">{{ employee_rows|length }}</strong> team members</span>
+        </div>
+
+        <div class="performance-table-wrap">
+            <table class="performance-table" id="employeePerformanceTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Employee</th>
+                        <th scope="col">Jobs</th>
+                        <th scope="col">Revenue</th>
+                        <th scope="col">Payroll</th>
+                        <th scope="col">Contribution</th>
+                        <th scope="col">KPI score</th>
+                        <th scope="col">Attendance</th>
+                        <th scope="col">Bonus guide</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in employee_rows %}
+                        <tr data-employee-row>
+                            <td>
+                                <a class="performance-employee-cell" href="{% url 'employee_performance_detail' row.employee.id %}">
+                                    <span class="performance-avatar">{{ row.employee.full_name|first|upper }}</span>
+                                    <span><strong>{{ row.employee.full_name }}</strong><small>{{ row.employee.get_role_display }}</small></span>
+                                </a>
+                            </td>
+                            <td><strong>{{ row.completed_jobs }}</strong><span class="performance-subvalue">of {{ row.total_jobs }} total</span></td>
+                            <td>${{ row.revenue_generated }}</td>
+                            <td>${{ row.payroll_total }}</td>
+                            <td class="{% if row.profit_contribution >= 0 %}performance-positive{% else %}performance-negative{% endif %}">${{ row.profit_contribution }}</td>
+                            <td>
+                                <span class="performance-score">{{ row.kpi_score }}<small>/100</small></span>
+                                <span class="performance-mini-track"><i style="width: {{ row.kpi_score }}%"></i></span>
+                            </td>
+                            <td><span class="performance-attendance">{{ row.attendance_score }}%</span></td>
+                            <td><span class="performance-bonus">${{ row.bonus_recommendation }}</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="performance-empty-cell" colspan="8">No active employee performance data is available yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="performance-no-match" id="employeeNoMatch" hidden>No employees match your search. Try another name.</div>
+    </section>
 </div>
-
-<div class="dashboard-card">
-
-    <h1>Employee Performance Centre</h1>
-    <a href="/dashboard/employee-performance/export-pdf/" class="btn-fill">
-    Export PDF
-    </a>
-    <a
-    href="/dashboard/employee-performance/email-report/"
-    class="btn-fill"
-    >
-        Email PDF Report
-    </a>
-    <input
-        type="text"
-        id="employeeSearchInput"
-        placeholder="Search employee..."
-        style="width:100%; max-width:100%; box-sizing:border-box; padding:12px; margin:15px 0; border:1px solid #ddd; border-radius:8px;"
-    >
-    <div class="responsive-table-wrap">
-    <table class="dashboard-table" id="employeePerformanceTable">
-
-        <thead>
-            <tr>
-                <th>Employee</th>
-                <th>Total Jobs</th>
-                <th>Completed Jobs</th>
-                <th>Revenue Generated</th>
-                <th>Payroll Cost</th>
-                <th>Profit Contribution</th>
-                <th>KPI Score</th>
-                <th>Attendance Score</th>
-                <th>Bonus Recommendation</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-        {% for row in employee_rows %}
-
-            <tr>
-                <td>
-                    <a href="/dashboard/employee-performance/{{ row.employee.id }}/">
-                        {{ row.employee.full_name }}
-                    </a>
-                </td>
-                <td>{{ row.total_jobs }}</td>
-                <td>{{ row.completed_jobs }}</td>
-                <td>${{ row.revenue_generated }}</td>
-                <td>${{ row.payroll_total }}</td>
-                <td>${{ row.profit_contribution }}</td>
-                <td>${{ row.profit_contribution }}</td>
-                <td>{{ row.kpi_score }}/100</td>
-                <td>{{ row.attendance_score }}%</td>
-                <td>
-                    ${{ row.bonus_recommendation }}
-                </td>
-            </tr>
-
-        {% empty %}
-
-            <tr>
-                <td colspan="9">No employee data found.</td>
-            </tr>
-
-        {% endfor %}
-
-        </tbody>
-
-    </table>
-    </div>
-
-</div>
-
-
-
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("employeeSearchInput");
     const table = document.getElementById("employeePerformanceTable");
+    const visibleCount = document.getElementById("visibleEmployeeCount");
+    const noMatch = document.getElementById("employeeNoMatch");
 
-    if (!searchInput || !table) {
-        return;
-    }
+    if (!searchInput || !table || !visibleCount || !noMatch) return;
 
-    searchInput.addEventListener("keyup", function () {
-        const searchText = searchInput.value.toLowerCase();
-        const rows = table.querySelectorAll("tbody tr");
-
+    const rows = Array.from(table.querySelectorAll("[data-employee-row]"));
+    searchInput.addEventListener("input", function () {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        let visible = 0;
         rows.forEach(function (row) {
-            const rowText = row.textContent.toLowerCase();
-
-            if (rowText.includes(searchText)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
+            const matches = row.textContent.toLocaleLowerCase().includes(query);
+            row.hidden = !matches;
+            if (matches) visible += 1;
         });
+        visibleCount.textContent = visible;
+        noMatch.hidden = visible !== 0 || rows.length === 0;
     });
 });
 </script>
-
 {% endblock %}

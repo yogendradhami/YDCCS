@@ -1,185 +1,100 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
 {% block title %}Recurring Contracts | YD Dashboard{% endblock %}
-{% block page_title %}Recurring Cleaning Contracts{% endblock %}
-{% block page_subtitle %}Manage weekly, fortnightly and monthly cleaning agreements.{% endblock %}
+{% block page_title %}Recurring Contracts{% endblock %}
+{% block page_subtitle %}Manage service agreements, recurring revenue, and upcoming renewals.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
 
 {% block content %}
+<div class="records-page contracts-page">
+    <section class="records-hero">
+        <div>
+            <span class="records-eyebrow"><i></i> OPERATIONS / CONTRACTS</span>
+            <h1>Reliable service.<br><strong>Recurring growth.</strong></h1>
+            <p>Keep agreements current, plan recurring work, and stay ahead of upcoming renewals.</p>
+        </div>
+        <div class="records-hero-actions">
+            <a class="records-hero-button" href="{% url 'add_contract' %}">＋ Create contract</a>
+            <a class="records-hero-link" href="{% url 'contract_renewals' %}">Review renewals <span>→</span></a>
+        </div>
+    </section>
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/contracts/add/">+ Add Contract</a>
-    <a href="/dashboard/bookings/">Bookings</a>
-    
-    <a href="/dashboard/">Back to Dashboard</a>
-</section>
+    <section class="records-metrics" aria-label="Contract overview">
+        <article class="records-metric records-metric-featured"><span>ACTIVE CONTRACTS</span><strong>{{ active_contracts }}</strong><small>currently in service</small></article>
+        <article class="records-metric"><span>RENEWALS · 7 DAYS</span><strong>{{ contracts_expiring_7 }}</strong><small>need attention this week</small></article>
+        <article class="records-metric"><span>RENEWALS · 14 DAYS</span><strong>{{ contracts_expiring_14 }}</strong><small>priority follow-up window</small></article>
+        <article class="records-metric"><span>RENEWALS · 30 DAYS</span><strong>{{ contracts_expiring_30 }}</strong><small>upcoming renewal window</small></article>
+        <article class="records-metric"><span>EXPIRED</span><strong>{{ expired_contracts }}</strong><small>past contract end date</small></article>
+        <article class="records-metric"><span>COMPLETED</span><strong>{{ completed_contracts }}</strong><small>finished agreements</small></article>
+        <article class="records-metric"><span>CANCELLED</span><strong>{{ cancelled_contracts }}</strong><small>cancelled agreements</small></article>
+        <article class="records-metric"><span>EST. VISIT REVENUE</span><strong>${{ monthly_contract_value }}</strong><small>active contract visit value</small></article>
+        <article class="records-metric"><span>ACTIVE CONTRACT VALUE</span><strong>${{ active_contract_value }}</strong><small>combined active agreement value</small></article>
+        <article class="records-metric"><span>EST. WEEKLY REVENUE</span><strong>${{ weekly_revenue }}</strong><small>active weekly agreements</small></article>
+        <article class="records-metric"><span>EST. MONTHLY REVENUE</span><strong>${{ monthly_revenue }}</strong><small>based on weekly contracts</small></article>
+        <article class="records-metric"><span>EST. ANNUAL REVENUE</span><strong>${{ annual_revenue }}</strong><small>based on weekly contracts</small></article>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>30 Day Renewals</span>
-        <h2>{{ contracts_expiring_30 }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>14 Day Renewals</span>
-        <h2>{{ contracts_expiring_14 }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>7 Day Renewals</span>
-        <h2>{{ contracts_expiring_7 }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Expired Contracts</span>
-        <h2>{{ expired_contracts }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Active Contracts</span>
-        <h2>{{ active_contracts }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Expiring Soon</span>
-        <h2>{{ expiring_contracts }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Renewals Due</span>
-        <h2>{{ expiring_contracts }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Completed</span>
-        <h2>{{ completed_contracts }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Cancelled</span>
-        <h2>{{ cancelled_contracts }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Estimated Visit Revenue</span>
-        <h2>${{ monthly_contract_value }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Weekly Revenue</span>
-        <h2>${{ weekly_revenue }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Monthly Revenue</span>
-        <h2>${{ monthly_revenue }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Annual Revenue</span>
-        <h2>${{ annual_revenue }}</h2>
-    </div>
-
-
-
-</div>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>All Contracts</h2>
-    </div>
-
-    {% if contracts %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Frequency</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Time</th>
-                        <th>Price/Visit</th>
-                        <th>Status</th>
-                        <th>Days Left</th>
-                        <th>View</th>
-                        <th>Generate</th>
-                        <th>Edit</th>
-                    </tr>
-                </thead>
-
+    <section class="records-panel">
+        <header class="records-panel-header">
+            <div><span class="records-section-label">AGREEMENT REGISTER</span><h2>All contracts</h2><p>{{ contracts.count }} contract{{ contracts.count|pluralize }} · manage service schedules and generated jobs.</p></div>
+            <a class="records-text-link" href="{% url 'contract_renewals' %}">Renewal centre <span>→</span></a>
+        </header>
+        <div class="records-toolbar">
+            <label class="records-search"><span aria-hidden="true">⌕</span><input id="contractSearch" type="search" placeholder="Search customer, service, or location..." aria-label="Search contracts"></label>
+            <label class="records-filter">Status
+                <select id="contractStatusFilter" aria-label="Filter contract status">
+                    <option value="">All statuses</option>
+                    <option value="active">Active</option><option value="paused">Paused</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
+                </select>
+            </label>
+            <span class="records-count"><strong id="contractVisibleCount">{{ contracts.count }}</strong> contracts</span>
+        </div>
+        <div class="records-table-wrap">
+            <table class="records-table" id="contractsTable">
+                <thead><tr><th scope="col">Customer &amp; service</th><th scope="col">Frequency</th><th scope="col">Term</th><th scope="col">Employee</th><th scope="col">Price / visit</th><th scope="col">Status</th><th scope="col">Renewal</th><th scope="col">Actions</th></tr></thead>
                 <tbody>
                     {% for contract in contracts %}
-                        <tr>
-                            <td>{{ contract.customer.full_name }}</td>
-                            <td>{{ contract.service_type }}</td>
-                            <td>{{ contract.get_frequency_display }}</td>
-                            <td>{{ contract.start_date }}</td>
-
-
-                            <td>
-                                {% if contract.end_date %}
-                                    {{ contract.end_date }}
-
-                                    {% if contract.status == "active" %}
-                                        <span style="color:#dc2626;font-weight:700;">
-                                            Check expiry
-                                        </span>
-                                    {% endif %}
-                                {% else %}
-                                    Ongoing
-                                {% endif %}
-                            </td>
-
-                            <td>{{ contract.preferred_time }}</td>
-                            <td>${{ contract.price_per_visit }}</td>
-                            <td>{{ contract.get_status_display }}</td>
-                            <td>
-
-                                {% if contract.days_remaining == None %}
-
-                                    Ongoing
-
-                                {% elif contract.days_remaining < 0 %}
-
-                                    <span style="color:red;font-weight:700;">
-                                        Expired
-                                    </span>
-
-                                {% elif contract.days_remaining <= 30 %}
-
-                                    <span style="color:#dc2626;font-weight:700;">
-                                        {{ contract.days_remaining }} Days
-                                    </span>
-
-                                {% else %}
-
-                                    {{ contract.days_remaining }} Days
-
-                                {% endif %}
-
-                            </td>
-                            <td>
-                                <a href="/dashboard/contracts/{{ contract.id }}/" class="small-link-btn">View</a>
-                            </td>
-                            <td> 
-                                <form method="post" action="{% url 'generate_contract_bookings' contract.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="small-link-btn">Generate</button>
-                                </form>
-                            </td>
-                            <td>
-                                <a href="/dashboard/contracts/{{ contract.id }}/edit/" class="small-link-btn">Edit</a>
-                            </td>
-                        </tr>
+                    <tr data-contract-row data-search="{{ contract.customer.full_name|lower }} {{ contract.service_type|lower }} {{ contract.address|lower }} {{ contract.suburb_postcode|lower }}" data-status="{{ contract.status|lower }}">
+                        <td><a class="records-primary-cell" href="{% url 'contract_detail' contract.id %}"><span class="records-avatar">{{ contract.customer.full_name|first|upper }}</span><span><strong>{{ contract.customer.full_name }}</strong><small>{{ contract.service_type }}</small></span></a></td>
+                        <td>{{ contract.get_frequency_display }}</td>
+                        <td><strong>{{ contract.start_date|date:"d M Y" }}</strong><small class="records-subtext">{% if contract.end_date %}to {{ contract.end_date|date:"d M Y" }}{% else %}Ongoing{% endif %}</small></td>
+                        <td>{% if contract.assigned_employee %}{{ contract.assigned_employee.full_name }}{% else %}<span class="records-muted">Unassigned</span>{% endif %}</td>
+                        <td class="records-money">${{ contract.price_per_visit }}</td>
+                        <td><span class="records-status status-{{ contract.status }}">{{ contract.get_status_display }}</span></td>
+                        <td>{% if contract.days_remaining == None %}<span class="records-muted">Ongoing</span>{% elif contract.days_remaining < 0 %}<span class="records-status status-expired">Expired</span>{% elif contract.days_remaining <= 30 %}<span class="records-renewal-soon">{{ contract.days_remaining }} days left</span>{% else %}<span class="records-muted">{{ contract.days_remaining }} days</span>{% endif %}</td>
+                        <td><div class="records-row-actions"><a href="{% url 'contract_detail' contract.id %}">View</a><a href="{% url 'edit_contract' contract.id %}">Edit</a><form method="post" action="{% url 'generate_contract_bookings' contract.id %}">{% csrf_token %}<button type="submit" {% if contract.status != "active" %}disabled title="Only active contracts can generate bookings"{% endif %}>Generate</button></form></div></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="records-empty" colspan="8">No recurring contracts yet. Create a contract to schedule repeat cleaning services.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    {% else %}
-        <p>No recurring contracts created yet.</p>
-    {% endif %}
-</section>
-
+        <div class="records-no-results" id="contractNoResults" hidden>No contracts match these filters.</div>
+    </section>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("contractSearch");
+    const filter = document.getElementById("contractStatusFilter");
+    const count = document.getElementById("contractVisibleCount");
+    const empty = document.getElementById("contractNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-contract-row]"));
+    if (!search || !filter || !count || !empty) return;
+    function update() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query) && (!filter.value || row.dataset.status === filter.value);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        empty.hidden = visible !== 0 || rows.length === 0;
+    }
+    search.addEventListener("input", update);
+    filter.addEventListener("change", update);
+});
+</script>
 {% endblock %}

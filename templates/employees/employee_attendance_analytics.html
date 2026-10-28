@@ -1,49 +1,82 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Attendance Analytics | YD Dashboard{% endblock %}
+{% block page_title %}Attendance Analytics{% endblock %}
+{% block page_subtitle %}Review check-in completion and leave patterns across the team.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="workforce-page">
+    <section class="workforce-hero">
+        <div>
+            <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / ATTENDANCE INSIGHTS</span>
+            <h1>Reliable coverage<br><strong>starts with visibility.</strong></h1>
+            <p>Compare submitted attendance records, completed check-outs, and approved leave for each employee.</p>
+        </div>
+        <nav class="workforce-hero-actions" aria-label="Attendance actions">
+            <a class="workforce-button workforce-button-light" href="{% url 'attendance_report' %}">Attendance register <span>→</span></a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_schedule' %}">Weekly schedule</a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'roster_list' %}">Roster management</a>
+        </nav>
+    </section>
 
-<h1>Employee Attendance Analytics</h1>
+    <section class="workforce-metrics" aria-label="Attendance analytics summary">
+        <article class="workforce-metric workforce-metric-featured"><span>TEAM MEMBERS</span><strong>{{ analytics_rows|length }}</strong><small>Active employee records</small></article>
+        <article class="workforce-metric"><span>ATTENDANCE RECORDS</span><strong>{{ attendance_total }}</strong><small>Across all team members</small></article>
+        <article class="workforce-metric"><span>CHECK-OUTS RECORDED</span><strong>{{ attendance_completed }}</strong><small>Attendance sessions completed</small></article>
+        <article class="workforce-metric"><span>APPROVED LEAVE</span><strong>{{ approved_leave_total }}</strong><small>Approved leave requests</small></article>
+    </section>
 
-<div class="responsive-table-wrap">
-
-<table class="dashboard-table">
-
-    <thead>
-        <tr>
-            <th>Employee</th>
-            <th>Attendance Records</th>
-            <th>Attendance %</th>
-            <th>Total Leave</th>
-            <th>Approved Leave</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-    {% for row in analytics_rows %}
-
-        <tr>
-            <td>{{ row.employee.full_name }}</td>
-            <td>{{ row.attendance_count }}</td>
-            <td>{{ row.attendance_percentage }}%</td>
-            <td>{{ row.leave_count }}</td>
-            <td>{{ row.approved_leave_count }}</td>
-        </tr>
-
-    {% empty %}
-
-        <tr>
-            <td colspan="5">
-                No attendance data found.
-            </td>
-        </tr>
-
-    {% endfor %}
-
-    </tbody>
-
-</table>
-
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">TEAM ATTENDANCE</span><h2>Attendance by employee</h2><p>Completion rate is the share of attendance records with a check-out time.</p></div>
+        </header>
+        <div class="workforce-toolbar">
+            <label class="workforce-search"><span aria-hidden="true">⌕</span><input id="attendanceSearch" type="search" placeholder="Search employee..." aria-label="Search attendance analytics"></label>
+            <span class="workforce-count"><strong id="attendanceCount">{{ analytics_rows|length }}</strong> employees</span>
+        </div>
+        <div class="workforce-table-wrap">
+            <table class="workforce-table">
+                <thead><tr><th scope="col">Employee</th><th scope="col">Attendance records</th><th scope="col">Check-out completion</th><th scope="col">Leave requests</th><th scope="col">Approved leave</th><th scope="col">Details</th></tr></thead>
+                <tbody>
+                    {% for row in analytics_rows %}
+                    <tr data-attendance-row data-search="{{ row.employee.full_name|lower }}">
+                        <td><a class="workforce-person" href="{% url 'employee_performance_detail' row.employee.id %}"><span class="workforce-avatar">{{ row.employee.full_name|first|upper }}</span><span><strong>{{ row.employee.full_name }}</strong><small>{{ row.employee.get_role_display }}</small></span></a></td>
+                        <td>{{ row.attendance_count }}</td>
+                        <td><span class="workforce-pill {% if row.attendance_percentage >= 90 %}workforce-pill-good{% elif row.attendance_percentage >= 70 %}workforce-pill-warn{% else %}workforce-pill-neutral{% endif %}">{{ row.attendance_percentage|floatformat:1 }}%</span></td>
+                        <td>{{ row.leave_count }}</td><td>{{ row.approved_leave_count }}</td>
+                        <td><a class="workforce-row-link" href="{% url 'employee_performance_detail' row.employee.id %}">Employee profile →</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="workforce-empty" colspan="6">No attendance data is available yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="workforce-no-results" id="attendanceNoResults" hidden>No employees match your search.</p>
+    </section>
 </div>
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("attendanceSearch");
+    const count = document.getElementById("attendanceCount");
+    const noResults = document.getElementById("attendanceNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-attendance-row]"));
+    if (!search || !count || !noResults) return;
+    search.addEventListener("input", function () {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        noResults.hidden = visible !== 0 || rows.length === 0;
+    });
+});
+</script>
 {% endblock %}

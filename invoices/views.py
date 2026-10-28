@@ -238,10 +238,27 @@ def create_invoice(request):
 
             invoice = form.save()
 
-            messages.success(
-                request,
-                f"✅ Invoice {invoice.invoice_number} created successfully.",
-            )
+            # Keep manual invoices on the same PDF-email workflow as
+            # automatically generated invoices.
+            from dashboard.views import send_invoice_email
+
+            if send_invoice_email(request, invoice):
+                messages.success(
+                    request,
+                    (
+                        f"Invoice {invoice.invoice_number} created and emailed "
+                        f"to {invoice.booking.customer.email}."
+                    ),
+                )
+            else:
+                messages.warning(
+                    request,
+                    (
+                        f"Invoice {invoice.invoice_number} was created, but the "
+                        "customer email could not be sent. Check the customer's "
+                        "email address and mail service settings."
+                    ),
+                )
 
             return redirect(
                 "invoice_detail",
@@ -1271,13 +1288,13 @@ def download_invoice_pdf(request, invoice_id):
     pdf.drawRightString(
         470,
         row_y,
-        f"${invoice.amount}",
+        f"${invoice.amount:.2f}",
     )
 
     pdf.drawRightString(
         width - 55,
         row_y,
-        f"${invoice.amount}",
+        f"${invoice.amount:.2f}",
     )
 
     pdf.line(

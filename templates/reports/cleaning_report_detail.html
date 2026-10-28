@@ -1,88 +1,82 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load seo_tags %}
 
 {% block title %}
 Cleaning Report | YD Commercial Cleaning
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/cleaning-report.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<section class="page-hero">
+<section class="clean-report-page">
     <div class="container">
-        <h1>Cleaning Completion Report</h1>
-        <p>View job details, cleaner information and before/after photos.</p>
+        <nav class="clean-report-breadcrumb" aria-label="Breadcrumb">
+            {% if request.user.is_staff or request.user.is_superuser %}
+                <a href="{% url 'report_list' %}">Reports</a><span>/</span>
+            {% endif %}
+            <span>Booking #{{ booking.id }}</span>
+        </nav>
+        <header class="clean-report-hero">
+            <div>
+                <span class="clean-report-eyebrow"><i></i> JOB COMPLETION REPORT</span>
+                <h1>{{ booking.service_type }}</h1>
+                <p>Service completed on {{ booking.booking_date|date:"l, d F Y" }}{% if booking.customer %} · {{ booking.customer.full_name }}{% endif %}</p>
+            </div>
+            <span class="clean-report-status status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+        </header>
     </div>
 </section>
 
-<section class="section">
+<section class="section clean-report-body">
     <div class="container">
 
-        <div class="invoice-detail-card">
+        <div class="clean-report-card">
 
-            <div class="dashboard-actions">
-                <a href="/reports/booking/{{ booking.id }}/download/" class="btn-fill">
-                    Download Report PDF
-                </a>
+            <div class="clean-report-actions">
+                <a href="{% url 'download_cleaning_report_pdf' booking.id %}" class="clean-report-primary">Download PDF <span>↓</span></a>
 
                 {% if request.user.is_staff or request.user.is_superuser %}
-                    <a href="/reports/booking/{{ booking.id }}/email/" class="btn-fill">
-                        Email Report To Customer
+                    <a href="{% url 'email_cleaning_report' booking.id %}" class="clean-report-secondary">
+                        Email report to customer <span>→</span>
                     </a>
                 {% endif %}
 
                 {% if request.user.employee_profile %}
-                    <a href="/employee/jobs/{{ booking.id }}/" class="btn-outline">
-                        Back to Job
-                    </a>
+                    <a href="/employee/jobs/{{ booking.id }}/" class="clean-report-back">← Back to job</a>
                 {% elif request.user.customer_profile %}
-                    <a href="/portal/bookings/" class="btn-outline">
-                        Back to My Bookings
-                    </a>
+                    <a href="/portal/bookings/" class="clean-report-back">← My bookings</a>
+                {% elif request.user.is_staff or request.user.is_superuser %}
+                    <a href="{% url 'report_list' %}" class="clean-report-back">← All reports</a>
                 {% else %}
-                    <a href="/dashboard/" class="btn-outline">
-                        Back to Dashboard
-                    </a>
+                    <a href="/dashboard/" class="clean-report-back">← Dashboard</a>
                 {% endif %}
             </div>
 
-            <hr>
-
-            <div class="invoice-header-row">
-                <div>
-                    <h2>{{ booking.service_type }}</h2>
-                    <p><strong>Date:</strong> {{ booking.booking_date }}</p>
-                    <p><strong>Time:</strong> {{ booking.booking_time }}</p>
-                    <p><strong>Status:</strong> {{ booking.get_status_display }}</p>
-                    <p><strong>Address:</strong> {{ booking.address }}</p>
-                    <p><strong>Suburb:</strong> {{ booking.suburb_postcode }}</p>
-                </div>
-
-                <div>
-                    <h2>Customer</h2>
-                    <p><strong>Name:</strong> {{ booking.customer.full_name }}</p>
-                    <p><strong>Phone:</strong> {{ booking.customer.phone }}</p>
-                    <p><strong>Email:</strong> {{ booking.customer.email }}</p>
-
-                    <h2 style="margin-top:20px;">Cleaner</h2>
-                    {% if booking.assigned_employee %}
-                        <p><strong>Name:</strong> {{ booking.assigned_employee.full_name }}</p>
-                        <p><strong>Phone:</strong> {{ booking.assigned_employee.phone }}</p>
-                    {% else %}
-                        <p>Not assigned</p>
-                    {% endif %}
-                </div>
+            <div class="clean-report-overview">
+                <article><span>BOOKING</span><strong>#{{ booking.id }}</strong></article>
+                <article><span>DATE &amp; TIME</span><strong>{{ booking.booking_date|date:"d M Y" }} · {{ booking.booking_time|time:"H:i" }}</strong></article>
+                <article><span>LOCATION</span><strong>{{ booking.address }}{% if booking.suburb_postcode %}, {{ booking.suburb_postcode }}{% endif %}</strong></article>
             </div>
 
-            <hr>
+            <div class="clean-report-people">
+                {% if booking.customer %}
+                    <article><span class="clean-report-card-icon">◎</span><div><span>CUSTOMER</span><strong>{{ booking.customer.full_name }}</strong><small>{% if booking.customer.phone %}{{ booking.customer.phone }}{% endif %}{% if booking.customer.phone and booking.customer.email %} · {% endif %}{% if booking.customer.email %}{{ booking.customer.email }}{% endif %}</small></div></article>
+                {% endif %}
+                <article><span class="clean-report-card-icon">✦</span><div><span>CLEANING PROFESSIONAL</span>{% if booking.assigned_employee %}<strong>{{ booking.assigned_employee.full_name }}</strong><small>{{ booking.assigned_employee.phone }}</small>{% else %}<strong>Not assigned</strong><small>No employee was assigned to this booking.</small>{% endif %}</div></article>
+            </div>
 
-            <h3>Completion Notes</h3>
-            <p>{{ booking.notes|default:"No completion notes provided." }}</p>
+            <section class="clean-report-notes">
+                <span class="clean-report-section-label">COMPLETION NOTES</span>
+                <p>{{ booking.notes|default:"No completion notes were provided."|linebreaksbr }}</p>
+            </section>
 
-            <hr>
-
-            <h3>Before Photos</h3>
-
-            <div class="job-photo-grid">
+            <section class="clean-report-photo-section">
+                <header><div><span class="clean-report-section-label">JOB DOCUMENTATION</span><h2>Before photos</h2></div><span>{{ before_photos|length }} photo{{ before_photos|length|pluralize }}</span></header>
+                <div class="clean-report-photo-grid">
                 {% for photo in before_photos %}
                     <div class="job-photo-card">
                         <img src="{{ photo.image.url|cloudinary_optimize:'1200' }}" alt="Before photo" loading="lazy">
@@ -94,15 +88,14 @@ Cleaning Report | YD Commercial Cleaning
                         </div>
                     </div>
                 {% empty %}
-                    <p>No before photos uploaded.</p>
+                    <div class="clean-report-photo-empty">No before photos were uploaded for this job.</div>
                 {% endfor %}
-            </div>
+                </div>
+            </section>
 
-            <hr>
-
-            <h3>After Photos</h3>
-
-            <div class="job-photo-grid">
+            <section class="clean-report-photo-section">
+                <header><div><span class="clean-report-section-label">JOB DOCUMENTATION</span><h2>After photos</h2></div><span>{{ after_photos|length }} photo{{ after_photos|length|pluralize }}</span></header>
+                <div class="clean-report-photo-grid">
                 {% for photo in after_photos %}
                     <div class="job-photo-card">
                         <img src="{{ photo.image.url|cloudinary_optimize:'1200' }}" alt="After photo" loading="lazy">
@@ -114,9 +107,10 @@ Cleaning Report | YD Commercial Cleaning
                         </div>
                     </div>
                 {% empty %}
-                    <p>No after photos uploaded.</p>
+                    <div class="clean-report-photo-empty">No after photos were uploaded for this job.</div>
                 {% endfor %}
-            </div>
+                </div>
+            </section>
 
         </div>
 

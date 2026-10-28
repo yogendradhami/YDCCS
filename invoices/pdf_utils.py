@@ -94,8 +94,8 @@ def generate_invoice_pdf(invoice):
     pdf.setFont("Helvetica", 10)
     pdf.drawString(55, row_y, booking.service_type[:45])
     pdf.drawRightString(385, row_y, "1")
-    pdf.drawRightString(470, row_y, f"${invoice.amount}")
-    pdf.drawRightString(width - 55, row_y, f"${invoice.amount}")
+    pdf.drawRightString(470, row_y, f"${invoice.amount:.2f}")
+    pdf.drawRightString(width - 55, row_y, f"${invoice.amount:.2f}")
 
     pdf.line(45, row_y - 18, width - 45, row_y - 18)
 
@@ -115,17 +115,17 @@ def generate_invoice_pdf(invoice):
 
     pdf.setFont("Helvetica", 11)
     pdf.drawString(360, 190, "Subtotal:")
-    pdf.drawRightString(width - 55, 190, f"${invoice.amount}")
+    pdf.drawRightString(width - 55, 190, f"${invoice.amount:.2f}")
 
     pdf.drawString(360, 168, "Discount:")
-    pdf.drawRightString(width - 55, 168, f"-${discount_value}")
+    pdf.drawRightString(width - 55, 168, f"-${discount_value:.2f}")
 
     pdf.drawString(360, 146, "GST 10%:")
-    pdf.drawRightString(width - 55, 146, f"${invoice.gst_amount}")
+    pdf.drawRightString(width - 55, 146, f"${invoice.gst_amount:.2f}")
 
     pdf.setFont("Helvetica-Bold", 16)
     pdf.drawString(360, 112, "Total:")
-    pdf.drawRightString(width - 55, 112, f"${invoice.total_amount}")
+    pdf.drawRightString(width - 55, 112, f"${invoice.total_amount:.2f}")
 
     pdf.line(45, 85, width - 45, 85)
 

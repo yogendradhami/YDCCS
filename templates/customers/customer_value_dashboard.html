@@ -1,90 +1,123 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Customer Value Dashboard{% endblock %}
+{% block title %}Customer Value | YD Dashboard{% endblock %}
+{% block page_title %}Customer Value{% endblock %}
+{% block page_subtitle %}Understand customer lifetime value and the relationships driving revenue.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/customer-growth.css' %}">{% endblock %}
 
 {% block content %}
+<div class="customer-growth-page">
+    <section class="growth-hero">
+        <div>
+            <span class="growth-eyebrow"><i></i> CUSTOMER INTELLIGENCE / LIFETIME VALUE</span>
+            <h1>Value that builds<br><strong>over time.</strong></h1>
+            <p>Explore lifetime revenue across your customer base and focus on relationships with room to grow.</p>
+        </div>
+        <a class="growth-hero-link" href="{% url 'customer_analytics' %}">Back to analytics <span>→</span></a>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Customer Revenue</span>
-        <h2>${{ total_customer_revenue }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Average Customer Value</span>
-        <h2>${{ average_customer_value|floatformat:2 }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Top Customer</span>
-        <h2>
+    <section class="growth-metrics" aria-label="Customer value summary">
+        <article class="growth-metric growth-metric-accent">
+            <span class="growth-metric-icon icon-revenue">$</span>
+            <span class="growth-metric-label">TOTAL CUSTOMER REVENUE</span>
+            <strong>${{ total_customer_revenue }}</strong>
+            <small>recorded customer lifetime revenue</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-value">◈</span>
+            <span class="growth-metric-label">AVERAGE CUSTOMER VALUE</span>
+            <strong>${{ average_customer_value|floatformat:2 }}</strong>
+            <small>average revenue per customer</small>
+        </article>
+        <article class="growth-metric">
+            <span class="growth-metric-icon icon-customers">◎</span>
+            <span class="growth-metric-label">CUSTOMERS TRACKED</span>
+            <strong>{{ customers.count }}</strong>
+            <small>profiles in your customer base</small>
+        </article>
+        <article class="growth-metric growth-featured-customer">
+            <span class="growth-metric-label">HIGHEST CUSTOMER VALUE</span>
             {% if top_customer %}
-                {{ top_customer.full_name }}
+                <a href="{% url 'customer_profile_360' top_customer.id %}">{{ top_customer.full_name }}</a>
+                <strong>${{ top_customer.total_revenue }}</strong>
+                <small>{{ top_customer.jobs_completed }} completed jobs</small>
             {% else %}
-                None
+                <strong>—</strong><small>No customer value data available yet</small>
             {% endif %}
-        </h2>
-    </div>
+        </article>
+    </section>
 
+    <section class="growth-panel">
+        <header class="growth-panel-heading growth-table-heading">
+            <div><span class="growth-section-label">CUSTOMER PORTFOLIO</span><h2>Lifetime value ranking</h2><p>Customers ranked by recorded lifetime revenue.</p></div>
+            <a class="growth-text-link" href="{% url 'customer_list' %}">Customer directory <span>→</span></a>
+        </header>
+        <div class="growth-table-tools">
+            <label class="growth-search"><span aria-hidden="true">⌕</span><input id="valueSearch" type="search" placeholder="Search customers..." aria-label="Search customers"></label>
+            <label class="growth-filter-label">Value tier
+                <select id="valueTierFilter" aria-label="Filter by value tier">
+                    <option value="">All tiers</option>
+                    <option value="vip">VIP · $1,000+</option>
+                    <option value="gold">Gold · $500–$999</option>
+                    <option value="standard">Standard · under $500</option>
+                </select>
+            </label>
+            <span class="growth-result-count"><strong id="valueVisibleCount">{{ customers.count }}</strong> customers</span>
+        </div>
+        <div class="growth-table-wrap">
+            <table class="growth-table" id="valueTable">
+                <thead><tr><th scope="col">Customer</th><th scope="col">Email</th><th scope="col">Completed jobs</th><th scope="col">Lifetime revenue</th><th scope="col">Value tier</th></tr></thead>
+                <tbody>
+                    {% for customer in customers %}
+                        <tr data-value-row data-name="{{ customer.full_name|lower }}" data-revenue="{{ customer.total_revenue }}">
+                            <td><a class="growth-customer-name" href="{% url 'customer_profile_360' customer.id %}"><span class="growth-avatar">{{ customer.full_name|first|upper }}</span><strong>{{ customer.full_name }}</strong></a></td>
+                            <td>{% if customer.email %}<a class="growth-email" href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}<span class="growth-muted">—</span>{% endif %}</td>
+                            <td><span class="growth-number-pill">{{ customer.jobs_completed }}</span></td>
+                            <td class="growth-money">${{ customer.total_revenue }}</td>
+                            <td>
+                                {% if customer.total_revenue >= 1000 %}
+                                    <span class="growth-tier tier-vip">VIP</span>
+                                {% elif customer.total_revenue >= 500 %}
+                                    <span class="growth-tier tier-gold">Gold</span>
+                                {% else %}
+                                    <span class="growth-tier tier-standard">Standard</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="growth-empty" colspan="5">Lifetime value will appear when customer revenue is recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="growth-no-results" id="valueNoResults" hidden>No customers match these filters.</div>
+    </section>
 </div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Customer Lifetime Value</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Email</th>
-                    <th>Jobs Completed</th>
-                    <th>Total Revenue</th>
-                    <th>Value Tier</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for customer in customers %}
-
-                <tr>
-
-                    <td>{{ customer.full_name }}</td>
-
-                    <td>{{ customer.email }}</td>
-
-                    <td>{{ customer.jobs_completed }}</td>
-
-                    <td>${{ customer.total_revenue }}</td>
-
-                    <td>
-
-                        {% if customer.total_revenue >= 1000 %}
-                            VIP
-                        {% elif customer.total_revenue >= 500 %}
-                            Gold
-                        {% else %}
-                            Standard
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("valueSearch");
+    const filter = document.getElementById("valueTierFilter");
+    const count = document.getElementById("valueVisibleCount");
+    const empty = document.getElementById("valueNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-value-row]"));
+    if (!search || !filter || !count || !empty) return;
+    function updateRows() {
+        const query = search.value.trim().toLocaleLowerCase();
+        const tier = filter.value;
+        let visible = 0;
+        rows.forEach(function (row) {
+            const revenue = Number(row.dataset.revenue);
+            const matchesTier = !tier || (tier === "vip" && revenue >= 1000) || (tier === "gold" && revenue >= 500 && revenue < 1000) || (tier === "standard" && revenue < 500);
+            const matches = row.dataset.name.includes(query) && matchesTier;
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        empty.hidden = visible !== 0 || rows.length === 0;
+    }
+    search.addEventListener("input", updateRows);
+    filter.addEventListener("change", updateRows);
+});
+</script>
 {% endblock %}

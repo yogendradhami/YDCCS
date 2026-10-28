@@ -1,39 +1,47 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-{{ page_title }}
-{% endblock %}
-
-{% block page_title %}
-{{ page_title }}
-{% endblock %}
-
-{% block page_subtitle %}
-Create staff leave records for YD Commercial Cleaning Services.
+{% block title %}{{ page_title }} | YD Dashboard{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}Record staff leave so managers can coordinate coverage and schedules.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>{{ page_title }}</h2>
-
-        <a href="/dashboard/leave/" class="small-link-btn">
-            Back to Leave Management
-        </a>
-    </div>
-
-    <form method="POST" class="crm-form">
+<div class="workforce-page workforce-form-page">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'leave_list' %}">Leave management</a><span>/</span><span>Add leave request</span></nav>
+    <section class="workforce-form-intro">
+        <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / STAFF LEAVE</span>
+        <h1>Record time away.</h1>
+        <p>Select the employee, leave dates, and type. Review requests from this record after saving.</p>
+    </section>
+    <form method="post" class="workforce-form-card leave-admin-form">
         {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit" class="small-link-btn">
-            {{ button_text }}
-        </button>
+        {% if form.non_field_errors %}<div class="workforce-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <section class="workforce-form-section">
+            <header><span>01</span><div><h2>Employee &amp; leave type</h2><p>Choose the team member and category for this leave record.</p></div></header>
+            <div class="workforce-form-grid">
+                {% for field in form %}
+                    {% if field.name == "employee" or field.name == "leave_type" %}
+                    <div class="workforce-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+        <section class="workforce-form-section">
+            <header><span>02</span><div><h2>Dates &amp; notes</h2><p>Enter the requested period and any supporting context.</p></div></header>
+            <div class="workforce-form-grid">
+                {% for field in form %}
+                    {% if field.name == "start_date" or field.name == "end_date" %}
+                    <div class="workforce-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% elif field.name == "reason" %}
+                    <div class="workforce-field workforce-field-wide"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+        <div class="workforce-form-actions"><a class="workforce-button workforce-button-muted" href="{% url 'leave_list' %}">Cancel</a><button type="submit" class="workforce-button workforce-button-primary">{{ button_text }} <span>→</span></button></div>
     </form>
-
-</section>
-
+</div>
 {% endblock %}

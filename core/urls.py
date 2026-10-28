@@ -28,6 +28,7 @@ from .views import (
     local_area_index,
     local_services,
     pricing,
+    quote_image_upload,
     referral_program,
     resources,
     testimonials,
@@ -77,6 +78,11 @@ urlpatterns = [
     
     # Main pages
     path("", home, name="home"),
+    path(
+        "quote/images/upload/",
+        quote_image_upload,
+        name="quote_image_upload",
+    ),
     path(
         "newsletter/subscribe/",
         marketing_signup,

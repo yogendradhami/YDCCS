@@ -1,11 +1,17 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Job Scheduling Calendar{% endblock %}
+{% block title %}Operations Calendar | YD Dashboard{% endblock %}
 
-{% block page_title %}Job Scheduling Calendar{% endblock %}
+{% block page_title %}Operations Calendar{% endblock %}
 
 {% block page_subtitle %}
-Bookings, employee roster shifts and leave in one weekly schedule.
+Plan bookings, employee coverage and approved leave across the week.
+{% endblock %}
+
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/calendar.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -14,93 +20,54 @@ Bookings, employee roster shifts and leave in one weekly schedule.
      SUMMARY
 ========================================================= -->
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Today's Jobs</span>
-        <h2>{{ today_jobs }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Tomorrow's Jobs</span>
-        <h2>{{ tomorrow_jobs }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>This Week's Jobs</span>
-        <h2>{{ week_jobs }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Unassigned Jobs</span>
-        <h2>{{ unassigned_jobs }}</h2>
-    </div>
-
-</div>
+<div class="operations-calendar">
+    <section class="calendar-overview" aria-label="Schedule overview">
+        <div class="calendar-overview-copy">
+            <span class="calendar-eyebrow"><i></i> OPERATIONS / WEEKLY PLANNER</span>
+            <h1>Schedule with <strong>clarity.</strong></h1>
+            <p>Your weekly view of cleaning jobs, employee coverage, and approved leave.</p>
+            <div class="calendar-overview-actions">
+                <a href="/dashboard/bookings/add/" class="calendar-primary-action"><span>＋</span> Create booking</a>
+                <a href="/dashboard/rosters/add/" class="calendar-secondary-action"><span>＋</span> Add roster shift</a>
+            </div>
+        </div>
+        <div class="calendar-overview-side">
+            <span class="calendar-side-label">WEEK AT A GLANCE</span>
+            <strong class="calendar-week-total">{{ week_jobs }}</strong>
+            <span class="calendar-side-caption">scheduled jobs this week</span>
+            <div class="calendar-side-metrics">
+                <div><strong>{{ today_jobs }}</strong><span>Today</span></div>
+                <div><strong>{{ tomorrow_jobs }}</strong><span>Tomorrow</span></div>
+                <div><strong>{{ unassigned_jobs }}</strong><span>Unassigned</span></div>
+            </div>
+        </div>
+    </section>
 
 
 <!-- =========================================================
      WEEK NAVIGATION
 ========================================================= -->
 
-<section class="crm-panel calendar-toolbar">
-
-    <div class="crm-panel-header">
-
+<section class="calendar-toolbar" aria-label="Calendar navigation">
+    <div class="calendar-period">
         <div>
-            <h2>
-                {{ week_start|date:"d M Y" }}
-                -
-                {{ week_end|date:"d M Y" }}
-            </h2>
-
-            <p class="calendar-toolbar-subtitle">
-                Weekly job and employee schedule
-            </p>
+            <span class="calendar-period-label">WEEK OF</span>
+            <h2>{{ week_start|date:"d M" }} <span>—</span> {{ week_end|date:"d M Y" }}</h2>
+            <p>Weekly job and employee schedule</p>
         </div>
-
         <div class="calendar-navigation">
-
-            <a
-                href="/dashboard/calendar/?start={{ previous_week|date:'Y-m-d' }}"
-                class="small-link-btn"
-            >
-                ← Previous
-            </a>
-
-            <a
-                href="/dashboard/calendar/"
-                class="small-link-btn"
-            >
-                Today
-            </a>
-
-            <a
-                href="/dashboard/calendar/?start={{ next_week|date:'Y-m-d' }}"
-                class="small-link-btn"
-            >
-                Next →
-            </a>
-
-            <a
-                href="/dashboard/bookings/add/"
-                class="small-link-btn calendar-add-btn"
-            >
-                + Add Booking
-            </a>
-
-            <a
-                href="/dashboard/rosters/add/"
-                class="small-link-btn calendar-roster-btn"
-            >
-                + Add Roster
-            </a>
-
+            <a href="/dashboard/calendar/?start={{ previous_week|date:'Y-m-d' }}" class="calendar-nav-arrow" aria-label="Previous week">←</a>
+            <a href="/dashboard/calendar/" class="calendar-today-btn">Today</a>
+            <a href="/dashboard/calendar/?start={{ next_week|date:'Y-m-d' }}" class="calendar-nav-arrow" aria-label="Next week">→</a>
         </div>
-
     </div>
-
 </section>
+
+<div class="calendar-legend" aria-label="Schedule key">
+    <span><i class="legend-booking"></i> Bookings</span>
+    <span><i class="legend-roster"></i> Roster shifts</span>
+    <span><i class="legend-leave"></i> Approved leave</span>
+</div>
 
 
 <!-- =========================================================
@@ -109,24 +76,25 @@ Bookings, employee roster shifts and leave in one weekly schedule.
 
 {% for day in week_days %}
 
-<section class="crm-panel calendar-day-panel">
+<section class="calendar-day-panel {% if day.date == today %}calendar-day-today{% endif %}">
 
     <!-- DAY HEADER -->
 
     <div class="calendar-day-header">
 
-        <div>
-            <h2>
-                {{ day.date|date:"l" }}
-            </h2>
-
-            <span>
-                {{ day.date|date:"d M Y" }}
-            </span>
+        <div class="calendar-day-heading">
+            <span class="calendar-day-name">{{ day.date|date:"D" }}</span>
+            <strong class="calendar-day-number">{{ day.date|date:"j" }}</strong>
+            <span class="calendar-day-month">{{ day.date|date:"M Y" }}</span>
+            {% if day.date == today %}<span class="calendar-today-tag">TODAY</span>{% endif %}
         </div>
 
-        <div class="calendar-day-count">
-            {{ day.bookings|length }} job{{ day.bookings|length|pluralize }}
+        <div class="calendar-day-summary">
+            <span class="calendar-day-count"><strong>{{ day.bookings|length }}</strong> job{{ day.bookings|length|pluralize }}</span>
+            <span class="calendar-day-meta">
+                {{ day.rosters|length }} shift{{ day.rosters|length|pluralize }} ·
+                {{ day.leave_requests|length }} leave
+            </span>
         </div>
 
     </div>
@@ -558,5 +526,7 @@ Bookings, employee roster shifts and leave in one weekly schedule.
 </section>
 
 {% endfor %}
+
+</div>
 
 {% endblock %}

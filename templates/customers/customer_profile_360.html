@@ -1,343 +1,102 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Customer 360 Profile{% endblock %}
-
-{% block page_title %}{{ customer.full_name }}{% endblock %}
-
-{% block page_subtitle %}
-Complete customer profile for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}{{ customer.full_name }} | Customer Profile{% endblock %}
+{% block page_title %}Customer Profile{% endblock %}
+{% block page_subtitle %}A complete view of {{ customer.full_name }}’s service history and relationship.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-
-    <a href="/dashboard/customers/" class="btn-fill">
-        Back to Customers
-    </a>
-
-    <a href="/dashboard/customers/{{ customer.id }}/edit/" class="btn-fill">
-        Edit Customer
-    </a>
-
-    <a href="/dashboard/bookings/" class="btn-fill">
-        View Bookings
-    </a>
-
-    <a href="/dashboard/invoices/" class="btn-fill">
-        View Invoices
-    </a>
-
-    <a
-        href="/dashboard/customer/{{ customer.id }}/followup/"
-        class="btn-fill"
-    >
-        Send Follow-Up Email
-    </a>
-
-</div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Revenue</span>
-        <h2>${{ total_spent }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Total Bookings</span>
-        <h2>{{ total_bookings }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Completed Jobs</span>
-        <h2>{{ completed_bookings }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Outstanding Invoices</span>
-        <h2>{{ outstanding_invoices }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Total Quotes</span>
-        <h2>{{ total_quotes }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Customer Lifetime Value</span>
-        <h2>${{ customer_lifetime_value }}</h2>
-    </div>
-
-
-    <div class="crm-card">
-        <span>Customer Risk</span>
-        <h2>{{ customer_risk }}</h2>
-        <p>
-            {% if days_since_last_booking %}
-                Last booking {{ days_since_last_booking }} days ago
-            {% else %}
-                No booking history
-            {% endif %}
-        </p>
-    </div>
-
-
-
-
-</div>
-
-<div class="crm-summary-grid">
-    <div class="crm-card">
-        <span>Total Revenue</span>
-        <h2>${{ total_spent }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Jobs Completed</span>
-        <h2>{{ customer.jobs_completed }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Total Bookings</span>
-        <h2>{{ total_bookings }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Loyalty Level</span>
-        <h2>{{ loyalty_level }}</h2>
-    </div>
-</div>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Customer Details</h2>
-        <a href="/dashboard/customers/{{ customer.id }}/edit/" class="small-link-btn">
-            Edit Customer
-        </a>
-    </div>
-
-    <div class="table-wrapper">
-        <table class="dashboard-table advanced-table">
-            <tbody>
-                <tr><th>Email</th><td>{{ customer.email }}</td></tr>
-                <tr><th>Phone</th><td>{{ customer.phone }}</td></tr>
-                <tr><th>Address</th><td>{{ customer.address }}</td></tr>
-                <tr><th>Property Type</th><td>{{ customer.property_type }}</td></tr>
-                <tr><th>Suburb/Postcode</th><td>{{ customer.suburb_postcode }}</td></tr>
-                <tr><th>Notes</th><td>{{ customer.notes }}</td></tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Customer Timeline</h2>
-    </div>
-
-    {% if timeline_events %}
-        <div class="crm-activity-feed">
-            {% for event in timeline_events %}
-                <div class="crm-list-item">
-                    <strong>
-                        {% if event.type == "Booking" %}
-                            🟦 {{ event.title }}
-                        {% elif event.type == "Job" %}
-                            🟩 {{ event.title }}
-                        {% elif event.type == "Invoice" %}
-                            🟨 {{ event.title }}
-                        {% elif event.type == "Payment" %}
-                            💰 {{ event.title }}
-                        {% elif event.type == "Review" %}
-                            ⭐ {{ event.title }}
-                        {% elif event.type == "Email" %}
-                            📧 {{ event.title }}
-                        {% else %}
-                            🔔 {{ event.title }}
-                        {% endif %}
-                    </strong>
-
-                    <span>{{ event.description }}</span>
-
-                    <small>
-                        {{ event.date|date:"d M Y H:i" }} · {{ event.type }}
-                    </small>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-box">
-            <h3>No customer timeline found.</h3>
-            <p>Bookings, invoices, emails and reviews will appear here.</p>
-        </div>
-    {% endif %}
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Booking History</h2>
-        <a href="/dashboard/bookings/add/" class="small-link-btn">
-            Add Booking
-        </a>
-    </div>
-
-    {% if bookings %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Service</th>
-                        <th>Status</th>
-                        <th>Amount</th>
-                        <th>Employee</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for booking in bookings %}
-                        <tr>
-                            <td>{{ booking.booking_date }}</td>
-                            <td>{{ booking.booking_time }}</td>
-                            <td>{{ booking.service_type }}</td>
-                            <td>{{ booking.get_status_display }}</td>
-                            <td>${{ booking.quoted_price }}</td>
-                            <td>
-                                {% if booking.assigned_employee %}
-                                    {{ booking.assigned_employee.full_name }}
-                                {% else %}
-                                    Not assigned
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="empty-box">
-            <h3>No bookings found.</h3>
-            <p>This customer does not have any bookings yet.</p>
-        </div>
-    {% endif %}
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Invoice History</h2>
-        <a href="/dashboard/invoices/create/" class="small-link-btn">
-            Create Invoice
-        </a>
-    </div>
-
-    {% if invoices %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Invoice</th>
-                        <th>Issue Date</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
-                        <th>Total</th>
-                        <th>View</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for invoice in invoices %}
-                        <tr>
-                            <td>{{ invoice.invoice_number }}</td>
-                            <td>{{ invoice.issue_date }}</td>
-                            <td>{{ invoice.due_date }}</td>
-                            <td>{{ invoice.get_status_display }}</td>
-                            <td>${{ invoice.total_amount }}</td>
-                            <td>
-                                <a href="/dashboard/invoices/{{ invoice.id }}/" class="small-link-btn">
-                                    View
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="empty-box">
-            <h3>No invoices found.</h3>
-            <p>This customer does not have any invoices yet.</p>
-        </div>
-    {% endif %}
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Reviews</h2>
-        <a href="/dashboard/reviews/add/?customer_name={{ customer.full_name }}&suburb={{ customer.suburb_postcode }}" class="small-link-btn">
-            Add Review
-        </a>
-    </div>
-
-    {% if reviews %}
-        {% for review in reviews %}
-            <div class="crm-list-item">
-                <strong>{{ review.rating }} ⭐ - {{ review.customer_name }}</strong>
-                <span>{{ review.review_text }}</span>
+<div class="records-page customer-profile-page">
+    <nav class="records-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'customer_list' %}">Customers</a><span>/</span><span>{{ customer.full_name }}</span></nav>
+    <section class="customer-profile-hero">
+        <div class="customer-profile-identity">
+            <span class="records-avatar records-avatar-large">{{ customer.full_name|first|upper }}</span>
+            <div><span class="records-eyebrow"><i></i> CUSTOMER RELATIONSHIP / #{{ customer.id }}</span><h1>{{ customer.full_name }}</h1><p>{% if customer.property_type %}{{ customer.property_type }}{% else %}Customer profile{% endif %}{% if customer.suburb_postcode %} · {{ customer.suburb_postcode }}{% endif %}</p>
+                <div class="customer-profile-tags"><span class="records-tier tier-{{ loyalty_level|lower }}">{{ loyalty_level }} customer</span><span class="records-risk risk-{{ customer_risk|slugify }}">{{ customer_risk }}</span></div>
             </div>
-        {% endfor %}
-    {% else %}
-        <div class="empty-box">
-            <h3>No reviews found.</h3>
-            <p>No review has been added for this customer yet.</p>
         </div>
-    {% endif %}
-</section>
+        <div class="customer-profile-actions">
+            <a class="records-button records-button-light" href="{% url 'customer_list' %}">← Customers</a>
+            <a class="records-button records-button-light" href="{% url 'edit_customer' customer.id %}">Edit profile <span>↗</span></a>
+            {% if customer.email %}<a class="records-button records-button-teal" href="{% url 'send_customer_followup' customer.id %}" onclick="return confirm('Send a follow-up email to {{ customer.full_name|escapejs }}?');">Send follow-up <span>→</span></a>{% endif %}
+        </div>
+        <div class="customer-contact-strip">
+            <div><span>EMAIL</span><strong>{% if customer.email %}<a href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}Not provided{% endif %}</strong></div>
+            <div><span>PHONE</span><strong>{% if customer.phone %}<a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>{% else %}Not provided{% endif %}</strong></div>
+            <div><span>PROPERTY TYPE</span><strong>{{ customer.property_type|default:"Not specified" }}</strong></div>
+            <div><span>LOCATION</span><strong>{{ customer.suburb_postcode|default:"Not specified" }}</strong></div>
+        </div>
+    </section>
 
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Email History</h2>
-        <a href="/dashboard/email-logs/" class="small-link-btn">
-            View All Emails
-        </a>
+    <section class="customer-value-metrics" aria-label="Customer relationship summary">
+        <article class="records-metric records-metric-featured"><span>LIFETIME REVENUE</span><strong>${{ total_spent }}</strong><small>recorded customer spend</small></article>
+        <article class="records-metric"><span>COMPLETED JOBS</span><strong>{{ completed_bookings }}</strong><small>of {{ total_bookings }} total bookings</small></article>
+        <article class="records-metric"><span>AVG. BOOKING VALUE</span><strong>${{ customer_lifetime_value }}</strong><small>revenue per booking</small></article>
+        <article class="records-metric"><span>OUTSTANDING INVOICES</span><strong>{{ outstanding_invoices }}</strong><small>require payment follow-up</small></article>
+        <article class="records-metric"><span>QUOTES</span><strong>{{ total_quotes }}</strong><small>requests on record</small></article>
+    </section>
+
+    <section class="records-detail-grid customer-profile-grid">
+        <article class="records-detail-card">
+            <span class="records-section-label">CUSTOMER DETAILS</span><h2>Profile information</h2>
+            <dl class="records-definition-list">
+                <div><dt>Email</dt><dd>{% if customer.email %}<a href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}—{% endif %}</dd></div>
+                <div><dt>Phone</dt><dd>{% if customer.phone %}<a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>{% else %}—{% endif %}</dd></div>
+                <div><dt>Address</dt><dd>{{ customer.address|default:"—" }}</dd></div>
+                <div><dt>Property type</dt><dd>{{ customer.property_type|default:"—" }}</dd></div>
+                <div><dt>Suburb / postcode</dt><dd>{{ customer.suburb_postcode|default:"—" }}</dd></div>
+            </dl>
+            {% if customer.notes %}<div class="customer-internal-notes"><span>INTERNAL NOTES</span><p>{{ customer.notes|linebreaksbr }}</p></div>{% endif %}
+        </article>
+        <article class="records-detail-card customer-risk-card">
+            <span class="records-section-label">RETENTION SIGNAL</span><h2>Relationship health</h2>
+            <div class="customer-risk-summary"><span class="records-risk risk-{{ customer_risk|slugify }}">{{ customer_risk }}</span><p>{% if days_since_last_booking != None %}Last booking was {{ days_since_last_booking }} day{{ days_since_last_booking|pluralize }} ago.{% else %}No booking history is available for this customer yet.{% endif %}</p></div>
+            <div class="customer-risk-links"><a href="{% url 'customer_loyalty' %}">View loyalty segments <span>→</span></a><a href="{% url 'customer_value_dashboard' %}">Customer value dashboard <span>→</span></a></div>
+        </article>
+    </section>
+
+    <section class="records-panel">
+        <header class="records-panel-header"><div><span class="records-section-label">CUSTOMER JOURNEY</span><h2>Recent activity</h2><p>Bookings, invoices, payments, reviews, and emails in chronological order.</p></div></header>
+        {% if timeline_events %}
+            <div class="customer-timeline">{% for event in timeline_events %}
+                <article class="customer-timeline-event">
+                    <span class="customer-timeline-marker marker-{{ event.type|slugify }}"></span>
+                    <div><div class="customer-timeline-heading"><strong>{{ event.title }}</strong><span>{{ event.type }}</span></div><p>{{ event.description }}</p><time>{{ event.date|date:"d M Y · H:i" }}</time></div>
+                </article>
+            {% endfor %}</div>
+        {% else %}
+            <div class="records-empty-block"><strong>No activity recorded yet</strong><p>Bookings, invoices, emails, and reviews will appear here.</p></div>
+        {% endif %}
+    </section>
+
+    <section class="records-panel">
+        <header class="records-panel-header"><div><span class="records-section-label">SERVICE HISTORY</span><h2>Bookings</h2><p>{{ total_bookings }} booking{{ total_bookings|pluralize }} on record.</p></div><a class="records-button records-button-teal" href="/dashboard/bookings/add/">＋ Add booking</a></header>
+        {% if bookings %}
+        <div class="records-table-wrap"><table class="records-table"><thead><tr><th scope="col">Date &amp; time</th><th scope="col">Service</th><th scope="col">Status</th><th scope="col">Amount</th><th scope="col">Employee</th></tr></thead><tbody>
+            {% for booking in bookings %}<tr><td><strong>{{ booking.booking_date|date:"d M Y" }}</strong><small class="records-subtext">{{ booking.booking_time|time:"H:i" }}</small></td><td>{{ booking.service_type }}</td><td><span class="records-status status-{{ booking.status }}">{{ booking.get_status_display }}</span></td><td class="records-money">${{ booking.quoted_price }}</td><td>{% if booking.assigned_employee %}{{ booking.assigned_employee.full_name }}{% else %}<span class="records-muted">Unassigned</span>{% endif %}</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% else %}<div class="records-empty-block"><strong>No bookings yet</strong><p>Start a new booking for this customer to build their service history.</p></div>{% endif %}
+    </section>
+
+    <section class="records-panel">
+        <header class="records-panel-header"><div><span class="records-section-label">BILLING</span><h2>Invoices</h2><p>{{ invoices.count }} invoice{{ invoices.count|pluralize }} associated with this customer.</p></div><a class="records-button records-button-teal" href="/dashboard/invoices/create/">＋ Create invoice</a></header>
+        {% if invoices %}
+        <div class="records-table-wrap"><table class="records-table"><thead><tr><th scope="col">Invoice</th><th scope="col">Issue date</th><th scope="col">Due date</th><th scope="col">Status</th><th scope="col">Total</th><th scope="col"></th></tr></thead><tbody>
+            {% for invoice in invoices %}<tr><td><strong>{{ invoice.invoice_number }}</strong></td><td>{{ invoice.issue_date|date:"d M Y" }}</td><td>{{ invoice.due_date|date:"d M Y" }}</td><td><span class="records-status status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td><td class="records-money">${{ invoice.total_amount|floatformat:2 }}</td><td><a class="records-row-link" href="/dashboard/invoices/{{ invoice.id }}/">View invoice →</a></td></tr>{% endfor %}
+        </tbody></table></div>
+        {% else %}<div class="records-empty-block"><strong>No invoices yet</strong><p>Invoices connected to this customer will appear here.</p></div>{% endif %}
+    </section>
+
+    <div class="customer-history-grid">
+        <section class="records-panel">
+            <header class="records-panel-header"><div><span class="records-section-label">FEEDBACK</span><h2>Reviews</h2></div><a class="records-row-link" href="/dashboard/reviews/add/?customer_name={{ customer.full_name|urlencode }}&amp;suburb={{ customer.suburb_postcode|urlencode }}">＋ Add review</a></header>
+            {% for review in reviews %}<article class="customer-review-item"><strong>{{ review.rating }} / 5 <span aria-label="stars">★</span> · {{ review.customer_name }}</strong><p>{{ review.review_text }}</p></article>{% empty %}<div class="records-empty-block records-empty-compact"><p>No reviews are linked to this customer.</p></div>{% endfor %}
+        </section>
+        <section class="records-panel">
+            <header class="records-panel-header"><div><span class="records-section-label">COMMUNICATION</span><h2>Email history</h2></div><a class="records-row-link" href="/dashboard/email-logs/">View all emails →</a></header>
+            {% if email_logs %}<div class="records-email-list">{% for email in email_logs %}<article><span>{{ email.get_email_type_display }}</span><strong>{{ email.subject }}</strong><small>{{ email.sent_at|date:"d M Y · H:i" }} · {% if email.sent_by %}{{ email.sent_by.username }}{% else %}System{% endif %}</small></article>{% endfor %}</div>{% else %}<div class="records-empty-block records-empty-compact"><p>No emails have been sent to this customer yet.</p></div>{% endif %}
+        </section>
     </div>
-
-    {% if email_logs %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Sent At</th>
-                        <th>Type</th>
-                        <th>Subject</th>
-                        <th>Sent By</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for email in email_logs %}
-                        <tr>
-                            <td>{{ email.sent_at|date:"d M Y H:i" }}</td>
-                            <td>{{ email.get_email_type_display }}</td>
-                            <td>{{ email.subject }}</td>
-                            <td>
-                                {% if email.sent_by %}
-                                    {{ email.sent_by.username }}
-                                {% else %}
-                                    System
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="empty-box">
-            <h3>No email history found.</h3>
-            <p>No emails have been sent to this customer yet.</p>
-        </div>
-    {% endif %}
-</section>
-
+</div>
 {% endblock %}

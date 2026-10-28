@@ -287,8 +287,8 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
                         <small>{{ invoice.description }}</small>
                     </td>
                     <td class="text-right">1</td>
-                    <td class="text-right">${{ invoice.amount }}</td>
-                    <td class="text-right">${{ invoice.amount }}</td>
+                    <td class="text-right">${{ invoice.amount|floatformat:2 }}</td>
+                    <td class="text-right">${{ invoice.amount|floatformat:2 }}</td>
                 </tr>
             </tbody>
         </table>
@@ -311,22 +311,22 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             <div class="invoice-total-box">
                 <div class="invoice-total-row">
                     <span>Subtotal:</span>
-                    <strong>${{ invoice.amount }}</strong>
+                    <strong>${{ invoice.amount|floatformat:2 }}</strong>
                 </div>
 
                 <div class="invoice-total-row">
                     <span>Discount:</span>
-                    <strong>${{ invoice.discount_amount }}</strong>
+                    <strong>${{ invoice.discount_amount|floatformat:2 }}</strong>
                 </div>  
 
                 <div class="invoice-total-row">
                     <span>GST 10%:</span>
-                    <strong>${{ invoice.gst_amount }}</strong>
+                    <strong>${{ invoice.gst_amount|floatformat:2 }}</strong>
                 </div>
 
                 <div class="invoice-total-row invoice-grand-total">
                     <span>Total:</span>
-                    <strong>${{ invoice.total_amount }}</strong>
+                    <strong>${{ invoice.total_amount|floatformat:2 }}</strong>
                 </div>
             </div>
         </div>

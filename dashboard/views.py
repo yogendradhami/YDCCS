@@ -30,13 +30,14 @@ from django.utils.html import format_html
 import requests
 from django.http import StreamingHttpResponse
 import mimetypes
-from urllib.parse import quote as urlquote
+from urllib.parse import quote as urlquote, urlencode
 from django.db.models import Avg, Count, DecimalField, ExpressionWrapper, F, Max, Q, Sum
 from django.core.paginator import Paginator
 from django.db.models.functions import TruncDate, TruncMonth
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
@@ -66,7 +67,7 @@ from invoices.pdf_utils import generate_invoice_pdf
 from leave_management.models import LeaveRequest
 from notifications.models import Notification
 from payroll.models import PayrollRecord
-from quotes.models import QuoteRequest
+from quotes.models import QuoteImage, QuoteRequest
 from quotes.services import convert_quote_to_booking as convert_quote_service
 from reviews.forms import ReviewForm
 from reviews.models import Review
@@ -548,8 +549,131 @@ def preview_resume(request, application_id):
 
 @login_required
 def lead_list(request):
-    quotes = QuoteRequest.objects.all().order_by("-created_at")
-    return render(request, "dashboard/leads/lead_list.html", {"quotes": quotes})
+    all_quotes = QuoteRequest.objects.all()
+    status = request.GET.get("status", "").strip()
+    property_type = request.GET.get("property_type", "").strip()
+    lead_source = request.GET.get("lead_source", "").strip()
+    search = request.GET.get("q", "").strip()[:100]
+    date_from_raw = request.GET.get("date_from", "").strip()
+    date_to_raw = request.GET.get("date_to", "").strip()
+    date_from = parse_date(date_from_raw) if date_from_raw else None
+    date_to = parse_date(date_to_raw) if date_to_raw else None
+    sort = request.GET.get("sort", "newest").strip()
+    page_size = request.GET.get("page_size", "25").strip()
+
+    filter_form = {
+        "status": status if status in dict(QuoteRequest.STATUS_CHOICES) else "",
+        "property_type": (
+            property_type
+            if property_type in dict(QuoteRequest.PROPERTY_TYPES)
+            else ""
+        ),
+        "lead_source": (
+            lead_source
+            if lead_source in dict(QuoteRequest.LEAD_SOURCE_CHOICES)
+            else ""
+        ),
+        "q": search,
+        "date_from": date_from.isoformat() if date_from else "",
+        "date_to": date_to.isoformat() if date_to else "",
+        "sort": sort
+        if sort in {"newest", "oldest", "preferred_date", "estimate_high", "estimate_low"}
+        else "newest",
+        "page_size": page_size if page_size in {"10", "25", "50"} else "25",
+    }
+
+    quotes = all_quotes
+    if filter_form["status"]:
+        quotes = quotes.filter(status=filter_form["status"])
+    if filter_form["property_type"]:
+        quotes = quotes.filter(property_type=filter_form["property_type"])
+    if filter_form["lead_source"]:
+        quotes = quotes.filter(lead_source=filter_form["lead_source"])
+    if search:
+        quotes = quotes.filter(
+            Q(name__icontains=search)
+            | Q(email__icontains=search)
+            | Q(phone__icontains=search)
+            | Q(suburb_postcode__icontains=search)
+            | Q(message__icontains=search)
+        )
+    if date_from:
+        quotes = quotes.filter(created_at__date__gte=date_from)
+    if date_to:
+        quotes = quotes.filter(created_at__date__lte=date_to)
+
+    ordering = {
+        "newest": ("-created_at", "-pk"),
+        "oldest": ("created_at", "pk"),
+        "preferred_date": ("preferred_date", "-created_at"),
+        "estimate_high": ("-estimated_price", "-created_at"),
+        "estimate_low": ("estimated_price", "-created_at"),
+    }
+    quotes = quotes.prefetch_related("images").order_by(
+        *ordering[filter_form["sort"]]
+    )
+    paginator = Paginator(quotes, int(filter_form["page_size"]))
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    pagination_query = urlencode(query_params, doseq=True)
+
+    return render(
+        request,
+        "dashboard/leads/lead_list.html",
+        {
+            "quotes": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "filter_form": filter_form,
+            "pagination_query": pagination_query,
+            "filtered_count": paginator.count,
+            "total_count": all_quotes.count(),
+            "new_count": all_quotes.filter(status="new").count(),
+            "booked_count": all_quotes.filter(status="booked").count(),
+            "lost_count": all_quotes.filter(status="lost").count(),
+            "status_choices": QuoteRequest.STATUS_CHOICES,
+            "property_type_choices": [
+                choice
+                for choice in QuoteRequest.PROPERTY_TYPES
+                if choice[0]
+            ],
+            "lead_source_choices": QuoteRequest.LEAD_SOURCE_CHOICES,
+        },
+    )
+
+
+@login_required
+@require_POST
+@permission_required("quotes.delete_quoterequest", raise_exception=True)
+def delete_quote_request(request, quote_id):
+    quote = get_object_or_404(QuoteRequest, pk=quote_id)
+    quote_name = quote.name
+    image_names = list(quote.images.values_list("image", flat=True))
+    quote.delete()
+
+    image_storage = QuoteImage._meta.get_field("image").storage
+    cleanup_failed = False
+    for image_name in image_names:
+        try:
+            image_storage.delete(image_name)
+        except Exception:
+            cleanup_failed = True
+            logger.exception(
+                "Could not delete Cloudinary image %s after deleting quote %s.",
+                image_name,
+                quote_id,
+            )
+
+    if cleanup_failed:
+        messages.warning(
+            request,
+            f'Quote request for "{quote_name}" was deleted, but one or more property photos could not be removed.',
+        )
+    else:
+        messages.success(request, f'Quote request for "{quote_name}" was deleted.')
+    return redirect("lead_list")
 
 
 @login_required
@@ -1801,6 +1925,7 @@ def booking_calendar(request):
         "bookings/booking_calendar.html",
         {
             "week_days": week_days,
+            "today": today,
             "week_start": week_start,
             "week_end": week_end,
             "previous_week": previous_week,
@@ -1816,11 +1941,7 @@ def booking_calendar(request):
 
 def send_invoice_email(request, invoice):
     """
-    Send a newly created invoice to the customer with the invoice PDF
-    attached.
-
-    This is intended for automatically generated invoices.
-    Manual invoice creation remains a separate workflow.
+    Send a newly created invoice to the customer with the invoice PDF attached.
     """
 
     booking = invoice.booking
@@ -1931,15 +2052,16 @@ def send_invoice_email(request, invoice):
     # Mark invoice as sent only after successful email send
     # --------------------------------------------------
 
-    try:
-        invoice.status = "sent"
-        invoice.save(update_fields=["status", "updated_at"])
-    except Exception:
-        logger.exception(
-            "Invoice email was sent but invoice status could not "
-            "be changed to sent: invoice=%s",
-            invoice.invoice_number,
-        )
+    if invoice.status not in {"paid", "cancelled"}:
+        try:
+            invoice.status = "sent"
+            invoice.save(update_fields=["status", "updated_at"])
+        except Exception:
+            logger.exception(
+                "Invoice email was sent but invoice status could not "
+                "be changed to sent: invoice=%s",
+                invoice.invoice_number,
+            )
 
     # --------------------------------------------------
     # Email log
@@ -2148,6 +2270,7 @@ def gallery_list(request):
         "dashboard/gallery/dashboard_gallery_list.html",
         {
             "items": items,
+            "source_count": items.values("source").distinct().count(),
         },
     )
 
@@ -2460,7 +2583,22 @@ def attendance_report(request):
         "employee", "booking", "booking__customer"
     ).order_by("-check_in_time", "-created_at")
 
-    return render(request, "attendance/attendance_report.html", {"logs": logs})
+    completed_logs = logs.filter(check_out_time__isnull=False).count()
+    open_logs = logs.filter(check_out_time__isnull=True).count()
+    total_hours = (
+        logs.aggregate(total=Sum("total_hours"))["total"]
+        or 0
+    )
+    return render(
+        request,
+        "attendance/attendance_report.html",
+        {
+            "logs": logs,
+            "completed_logs": completed_logs,
+            "open_logs": open_logs,
+            "total_hours": total_hours,
+        },
+    )
 
 
 @login_required
@@ -2560,17 +2698,6 @@ def employee_performance(request):
                 (float(revenue_generated) / float(payroll_total)) * 100, 2
             )
 
-        revenue_per_hour = 0
-        efficiency = 0
-
-        if total_hours > 0:
-            revenue_per_hour = round(float(revenue_generated) / total_hours, 2)
-
-        if payroll_total > 0:
-            efficiency = round(
-                (float(revenue_generated) / float(payroll_total)) * 100, 2
-            )
-
         performance_rows.append(
             {
                 "employee": employee,
@@ -2585,7 +2712,9 @@ def employee_performance(request):
         )
 
 
-    top_performer = performance_rows[0] if performance_rows else None
+    top_performer = max(
+        performance_rows, key=lambda row: row["efficiency"], default=None
+    )
 
     highest_revenue = max(
         performance_rows, key=lambda row: row["revenue_generated"], default=None
@@ -3916,7 +4045,9 @@ def customer_profile_360(request, customer_id):
                 "date": invoice.created_at,
                 "type": "Invoice",
                 "title": "Invoice Created",
-                "description": f"{invoice.invoice_number} - ${invoice.total_amount}",
+                "description": (
+                    f"{invoice.invoice_number} - ${invoice.total_amount:.2f}"
+                ),
             }
         )
 
@@ -5074,25 +5205,26 @@ def employee_schedule(request):
         total_jobs = 0
 
         for day in week_days:
-            jobs = (
+            jobs = list(
                 Booking.objects.filter(assigned_employee=employee, booking_date=day)
                 .exclude(status="cancelled")
                 .select_related("customer")
                 .order_by("booking_time")
             )
-
-            total_jobs += jobs.count()
-        approved_leave = LeaveRequest.objects.filter(
-            employee=employee, status="approved", start_date__lte=day, end_date__gte=day
-        ).first()
-
-        employee_days.append(
-            {
-                "date": day,
-                "jobs": jobs,
-                "approved_leave": approved_leave,
-            }
-        )
+            total_jobs += len(jobs)
+            approved_leave = LeaveRequest.objects.filter(
+                employee=employee,
+                status="approved",
+                start_date__lte=day,
+                end_date__gte=day,
+            ).first()
+            employee_days.append(
+                {
+                    "date": day,
+                    "jobs": jobs,
+                    "approved_leave": approved_leave,
+                }
+            )
 
         schedule_rows.append(
           
@@ -6379,17 +6511,6 @@ def employee_performance_centre(request):
         profit_contribution = revenue_generated - payroll_total
         kpi_score = 0
 
-        bonus_recommendation = 0
-
-        if kpi_score >= 90:
-            bonus_recommendation = 500
-
-        elif kpi_score >= 80:
-            bonus_recommendation = 300
-
-        elif kpi_score >= 70:
-            bonus_recommendation = 150
-
         # Completed Jobs (40 points)
 
         if completed_jobs >= 50:
@@ -6422,6 +6543,15 @@ def employee_performance_centre(request):
 
         elif profit_contribution >= 2500:
             kpi_score += 10
+
+        if kpi_score >= 90:
+            bonus_recommendation = 500
+        elif kpi_score >= 80:
+            bonus_recommendation = 300
+        elif kpi_score >= 70:
+            bonus_recommendation = 150
+        else:
+            bonus_recommendation = 0
 
         profit_contribution = revenue_generated - payroll_total
 
@@ -6477,8 +6607,10 @@ def employee_performance_detail(request, employee_id):
 
     employee = get_object_or_404(Employee, id=employee_id)
 
-    bookings = Booking.objects.filter(assigned_employee=employee).order_by(
-        "-booking_date"
+    bookings = (
+        Booking.objects.filter(assigned_employee=employee)
+        .select_related("customer")
+        .order_by("-booking_date")
     )
 
     payrolls = PayrollRecord.objects.filter(employee=employee).order_by("-created_at")
@@ -6758,6 +6890,7 @@ def employee_attendance_analytics(request):
             {
                 "employee": employee,
                 "attendance_count": attendance_count,
+                "completed_attendance_count": completed_attendance,
                 "attendance_percentage": attendance_percentage,
                 "leave_count": leave_count,
                 "approved_leave_count": approved_leave_count,
@@ -6767,7 +6900,18 @@ def employee_attendance_analytics(request):
     return render(
         request,
         "employees/employee_attendance_analytics.html",
-        {"analytics_rows": analytics_rows},
+        {
+            "analytics_rows": analytics_rows,
+            "attendance_total": sum(
+                row["attendance_count"] for row in analytics_rows
+            ),
+            "attendance_completed": sum(
+                row["completed_attendance_count"] for row in analytics_rows
+            ),
+            "approved_leave_total": sum(
+                row["approved_leave_count"] for row in analytics_rows
+            ),
+        },
     )
 
 
@@ -7391,16 +7535,33 @@ def employee_kpi_dashboard(request):
                 "booking_count": booking_count,
                 "revenue": revenue,
                 "hours_worked": hours_worked,
+                "revenue_per_hour": (
+                    round(float(revenue) / float(hours_worked), 2)
+                    if hours_worked
+                    else 0
+                ),
             }
         )
 
     employee_rows = sorted(employee_rows, key=lambda x: x["revenue"], reverse=True)
+    total_employee_revenue = sum(
+        (row["revenue"] for row in employee_rows), 0
+    )
+    total_employee_hours = sum(
+        (row["hours_worked"] for row in employee_rows), 0
+    )
+    total_employee_bookings = sum(
+        row["booking_count"] for row in employee_rows
+    )
 
     return render(
         request,
         "employees/employee_kpi_dashboard.html",
         {
             "employee_rows": employee_rows,
+            "total_employee_revenue": total_employee_revenue,
+            "total_employee_hours": total_employee_hours,
+            "total_employee_bookings": total_employee_bookings,
         },
     )
 

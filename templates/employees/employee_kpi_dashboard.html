@@ -1,52 +1,83 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Employee KPI{% endblock %}
+{% block title %}Employee KPIs | YD Dashboard{% endblock %}
+{% block page_title %}Employee KPI Dashboard{% endblock %}
+{% block page_subtitle %}Compare booking volume, generated revenue, and recorded attendance hours by employee.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="workforce-page">
+    <section class="workforce-hero">
+        <div>
+            <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / KPI OVERVIEW</span>
+            <h1>Measure the work<br><strong>that moves us forward.</strong></h1>
+            <p>Use a consistent view of assigned bookings, revenue, and recorded hours to guide team conversations.</p>
+        </div>
+        <nav class="workforce-hero-actions" aria-label="Employee KPI actions">
+            <a class="workforce-button workforce-button-light" href="{% url 'employee_performance_centre' %}">Performance centre <span>→</span></a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_performance' %}">Performance overview</a>
+            <a class="workforce-button workforce-button-outline" href="{% url 'employee_attendance_analytics' %}">Attendance analytics</a>
+        </nav>
+    </section>
 
-<section class="crm-panel">
+    <section class="workforce-metrics" aria-label="Employee KPI totals">
+        <article class="workforce-metric workforce-metric-featured"><span>EMPLOYEES TRACKED</span><strong>{{ employee_rows|length }}</strong><small>Across all employee records</small></article>
+        <article class="workforce-metric"><span>BOOKINGS ASSIGNED</span><strong>{{ total_employee_bookings }}</strong><small>All statuses included</small></article>
+        <article class="workforce-metric"><span>REVENUE GENERATED</span><strong>${{ total_employee_revenue|floatformat:2 }}</strong><small>Quoted value of assigned bookings</small></article>
+        <article class="workforce-metric"><span>RECORDED HOURS</span><strong>{{ total_employee_hours|floatformat:1 }}</strong><small>From attendance logs</small></article>
+    </section>
 
-    <div class="crm-panel-header">
-        <h2>Employee Performance Ranking</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Employee</th>
-                    <th>Completed Jobs</th>
-                    <th>Revenue Generated</th>
-                    <th>Total Hours Worked</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for row in employee_rows %}
-
-                <tr>
-
-                    <td>{{ row.employee.full_name }}</td>
-
-                    <td>{{ row.booking_count }}</td>
-
-                    <td>${{ row.revenue }}</td>
-
-                   <td>{{ row.hours_worked }}</td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">EMPLOYEE SCORECARD</span><h2>Performance ranking</h2><p>Ranked by assigned booking revenue. Select a team member for their detailed performance profile.</p></div>
+            <a class="workforce-text-link" href="{% url 'payroll_list' %}">Payroll register <span>→</span></a>
+        </header>
+        <div class="workforce-toolbar">
+            <label class="workforce-search"><span aria-hidden="true">⌕</span><input id="kpiSearch" type="search" placeholder="Search employee..." aria-label="Search employees"></label>
+            <span class="workforce-count"><strong id="kpiCount">{{ employee_rows|length }}</strong> employees</span>
+        </div>
+        <div class="workforce-table-wrap">
+            <table class="workforce-table">
+                <thead><tr><th scope="col">Rank</th><th scope="col">Employee</th><th scope="col">Bookings</th><th scope="col">Revenue generated</th><th scope="col">Hours worked</th><th scope="col">Revenue / hour</th><th scope="col">Profile</th></tr></thead>
+                <tbody>
+                    {% for row in employee_rows %}
+                    <tr data-kpi-row data-search="{{ row.employee.full_name|lower }}">
+                        <td><span class="workforce-rank">{{ forloop.counter|stringformat:"02d" }}</span></td>
+                        <td><a class="workforce-person" href="{% url 'employee_performance_detail' row.employee.id %}"><span class="workforce-avatar">{{ row.employee.full_name|first|upper }}</span><span><strong>{{ row.employee.full_name }}</strong><small>{{ row.employee.get_role_display }}</small></span></a></td>
+                        <td><strong>{{ row.booking_count }}</strong></td><td class="workforce-positive">${{ row.revenue|floatformat:2 }}</td><td>{{ row.hours_worked|floatformat:1 }}</td>
+                        <td>{% if row.hours_worked %}${{ row.revenue_per_hour|floatformat:2 }}{% else %}<span class="workforce-muted">—</span>{% endif %}</td>
+                        <td><a class="workforce-row-link" href="{% url 'employee_performance_detail' row.employee.id %}">View details →</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="workforce-empty" colspan="7">No employee records are available yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="workforce-no-results" id="kpiNoResults" hidden>No employees match your search.</p>
+    </section>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("kpiSearch");
+    const count = document.getElementById("kpiCount");
+    const noResults = document.getElementById("kpiNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-kpi-row]"));
+    if (!search || !count || !noResults) return;
+    search.addEventListener("input", function () {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        noResults.hidden = visible !== 0 || rows.length === 0;
+    });
+});
+</script>
 {% endblock %}

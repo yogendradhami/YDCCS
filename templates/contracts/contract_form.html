@@ -1,95 +1,54 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
 {% block title %}{{ page_title }} | YD Dashboard{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
-{% block page_subtitle %}Create or update recurring cleaning contracts.{% endblock %}
+{% block page_subtitle %}Set the customer, recurring schedule, service location, and agreement details.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
 
 {% block content %}
+<div class="records-page contracts-page">
+    <nav class="records-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'contract_list' %}">Contracts</a><span>/</span><span>{{ page_title }}</span></nav>
+    <section class="records-form-intro">
+        <span class="records-eyebrow"><i></i> OPERATIONS / AGREEMENT SETUP</span>
+        <h1>{{ page_title }}</h1>
+        <p>Complete the agreement details below. You can generate the recurring bookings after saving.</p>
+    </section>
 
-<section class="crm-panel">
-
-
-    <form method="POST">
+    <form method="post" class="records-form-card">
         {% csrf_token %}
-
-        <div class="auth-grid">
-            <div class="form-group">
-                <label>Customer</label>
-                {{ form.customer }}
-                <div class="text-danger">{{ form.customer.errors }}</div>
+        {% if form.non_field_errors %}<div class="records-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <section class="records-form-section">
+            <header><span>01</span><div><h2>Customer &amp; service</h2><p>Choose who the agreement is for and what service they receive.</p></div></header>
+            <div class="records-form-grid">
+                {% for field in form %}
+                    {% if field.name == "customer" or field.name == "service_type" or field.name == "frequency" or field.name == "status" %}
+                        <div class="records-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="records-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
             </div>
-
-            <div class="form-group">
-                <label>Service Type</label>
-                {{ form.service_type }}
-                <div class="text-danger">{{ form.service_type.errors }}</div>
+        </section>
+        <section class="records-form-section">
+            <header><span>02</span><div><h2>Schedule &amp; pricing</h2><p>Set the service term, preferred time, assigned employee, and visit price.</p></div></header>
+            <div class="records-form-grid">
+                {% for field in form %}
+                    {% if field.name == "start_date" or field.name == "end_date" or field.name == "preferred_time" or field.name == "assigned_employee" or field.name == "price_per_visit" %}
+                        <div class="records-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="records-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
             </div>
-
-            <div class="form-group">
-                <label>Frequency</label>
-                {{ form.frequency }}
-                <div class="text-danger">{{ form.frequency.errors }}</div>
+        </section>
+        <section class="records-form-section">
+            <header><span>03</span><div><h2>Service location &amp; notes</h2><p>Confirm where the work takes place and add internal context.</p></div></header>
+            <div class="records-form-grid">
+                {% for field in form %}
+                    {% if field.name == "address" or field.name == "suburb_postcode" or field.name == "notes" %}
+                        <div class="records-field {% if field.name == 'notes' or field.name == 'address' %}records-field-wide{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="records-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
             </div>
-
-            <div class="form-group">
-                <label>Start Date</label>
-                {{ form.start_date }}
-                <div class="text-danger">{{ form.start_date.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>End Date</label>
-                {{ form.end_date }}
-                <div class="text-danger">{{ form.end_date.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Preferred Time</label>
-                {{ form.preferred_time }}
-                <div class="text-danger">{{ form.preferred_time.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Assigned Employee</label>
-                {{ form.assigned_employee }}
-                <div class="text-danger">{{ form.assigned_employee.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Price Per Visit</label>
-                {{ form.price_per_visit }}
-                <div class="text-danger">{{ form.price_per_visit.errors }}</div>
-            </div>
-
-            <div class="form-group">
-                <label>Status</label>
-                {{ form.status }}
-                <div class="text-danger">{{ form.status.errors }}</div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Address</label>
-            {{ form.address }}
-            <div class="text-danger">{{ form.address.errors }}</div>
-        </div>
-
-        <div class="form-group">
-            <label>Suburb/Postcode</label>
-            {{ form.suburb_postcode }}
-            <div class="text-danger">{{ form.suburb_postcode.errors }}</div>
-        </div>
-
-        <div class="form-group">
-            <label>Notes</label>
-            {{ form.notes }}
-            <div class="text-danger">{{ form.notes.errors }}</div>
-        </div>
-
-        <button type="submit" class="btn-fill">{{ button_text }}</button>
-        <a href="/dashboard/contracts/" class="btn-outline">Back to Contracts</a>
+        </section>
+        <div class="records-form-actions"><a class="records-button records-button-light" href="{% if form.instance.pk %}{% url 'contract_detail' form.instance.pk %}{% else %}{% url 'contract_list' %}{% endif %}">Cancel</a><button type="submit" class="records-button records-button-teal">{{ button_text }} <span>→</span></button></div>
     </form>
-
-</section>
-
+</div>
 {% endblock %}

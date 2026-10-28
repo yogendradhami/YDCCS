@@ -404,7 +404,7 @@ Customer Dashboard | YD Commercial Cleaning
                                 <tr>
                                     <td>{{ invoice.invoice_number }}</td>
                                     <td>{{ invoice.issue_date }}</td>
-                                    <td>${{ invoice.total_amount }}</td>
+                                    <td>${{ invoice.total_amount|floatformat:2 }}</td>
                                     <td>{{ invoice.get_status_display }}</td>
                                     <td>
                                         <a href="/portal/invoices/{{ invoice.id }}/"

@@ -1,72 +1,60 @@
-{% extends 'employees/employee_portal_base.html' %}
+{% extends "employees/employee_portal_base.html" %}
+{% load static %}
 
-{% block title %}
-Leave History | Employee Portal
+{% block title %}My Leave | Employee Portal{% endblock %}
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/portal/employee-leave.css' %}">
 {% endblock %}
 
 {% block content %}
-
-<section class="employee-portal-hero">
+<section class="employee-portal-hero employee-leave-hero">
     <div class="container">
         <div class="employee-hero-box">
-            <div>
-                <h1>Leave History</h1>
-                <p>Track your leave requests for YD Commercial Cleaning Services.</p>
-            </div>
-
-            <a href="/employee/leave/request/" class="employee-back-btn">
-                Apply Leave
-            </a>
+            <div><span class="employee-leave-eyebrow">EMPLOYEE SELF-SERVICE / TIME AWAY</span><h1>My leave</h1><p>Review your requests and keep track of their approval status.</p></div>
+            <a href="{% url 'employee_apply_leave' %}" class="employee-back-btn">＋ Apply for leave</a>
         </div>
     </div>
 </section>
 
-<section class="section employee-dashboard-section">
+<section class="section employee-dashboard-section employee-leave-content">
     <div class="container">
+        <nav class="employee-leave-actions" aria-label="Leave navigation">
+            <a href="{% url 'employee_apply_leave' %}" class="employee-leave-primary">Submit a request <span>→</span></a>
+            <a href="/employee/roster/" class="employee-leave-secondary">My schedule</a>
+            <a href="/employee/dashboard/" class="employee-leave-secondary">Employee dashboard</a>
+        </nav>
 
-        <div class="employee-panel">
+        <section class="employee-leave-metrics" aria-label="My leave summary">
+            <article><span>ALL REQUESTS</span><strong>{{ leave_requests|length }}</strong><small>Leave records on file</small></article>
+            <article class="leave-metric-pending"><span>PENDING</span><strong>{{ pending_count }}</strong><small>Waiting for a decision</small></article>
+            <article class="leave-metric-approved"><span>APPROVED</span><strong>{{ approved_count }}</strong><small>Approved requests</small></article>
+            <article class="leave-metric-declined"><span>DECLINED</span><strong>{{ rejected_count }}</strong><small>Requests not approved</small></article>
+        </section>
 
-            <div class="employee-panel-header">
-                <h2>My Leave Requests</h2>
-                <a href="/employee/dashboard/">Back to Dashboard</a>
-            </div>
-
+        <section class="employee-leave-panel">
+            <header><div><span class="employee-leave-section-label">REQUEST HISTORY</span><h2>Leave requests</h2><p>Your newest requests appear first. Contact your manager if a decision needs clarification.</p></div><span class="employee-leave-count">{{ leave_requests|length }} record{{ leave_requests|length|pluralize }}</span></header>
             {% if leave_requests %}
-                <div class="table-wrapper">
-                    <table class="dashboard-table advanced-table">
-                        <thead>
-                            <tr>
-                                <th>Leave Type</th>
-                                <th>Start</th>
-                                <th>End</th>
-                                <th>Status</th>
-                                <th>Reason</th>
-                            </tr>
-                        </thead>
-
+                <div class="employee-leave-table-wrap">
+                    <table class="employee-leave-table">
+                        <thead><tr><th scope="col">Leave type</th><th scope="col">Dates</th><th scope="col">Status</th><th scope="col">Reason</th><th scope="col">Submitted</th></tr></thead>
                         <tbody>
                             {% for leave in leave_requests %}
-                                <tr>
-                                    <td>{{ leave.get_leave_type_display }}</td>
-                                    <td>{{ leave.start_date }}</td>
-                                    <td>{{ leave.end_date }}</td>
-                                    <td>{{ leave.get_status_display }}</td>
-                                    <td>{{ leave.reason }}</td>
-                                </tr>
+                            <tr>
+                                <td><strong>{{ leave.get_leave_type_display }}</strong></td>
+                                <td><strong>{{ leave.start_date|date:"d M Y" }}</strong><small>through {{ leave.end_date|date:"d M Y" }}</small></td>
+                                <td><span class="employee-leave-status leave-status-{{ leave.status }}">{{ leave.get_status_display }}</span></td>
+                                <td>{% if leave.reason %}{{ leave.reason|truncatechars:100 }}{% else %}<span class="employee-leave-muted">No reason provided</span>{% endif %}{% if leave.admin_notes %}<small class="employee-leave-manager-note">Manager note: {{ leave.admin_notes|truncatechars:100 }}</small>{% endif %}</td>
+                                <td>{{ leave.created_at|date:"d M Y" }}</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             {% else %}
-                <div class="empty-box">
-                    <h3>No leave requests yet.</h3>
-                    <p>Your submitted leave requests will appear here.</p>
-                </div>
+                <div class="employee-leave-empty"><span aria-hidden="true">◷</span><h3>No leave requests yet</h3><p>When you need time away, submit a request and its progress will appear here.</p><a href="{% url 'employee_apply_leave' %}" class="employee-leave-primary">Apply for leave <span>→</span></a></div>
             {% endif %}
-
-        </div>
-
+        </section>
     </div>
 </section>
-
 {% endblock %}

@@ -1912,10 +1912,21 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
                     action="#quote"
                     class="quote-form"
                     id="quoteForm"
+                    data-image-upload-url="{% url 'quote_image_upload' %}"
                 >
 
                     {% csrf_token %}
                     {{ form.workflow_key }}
+                    <input
+                        type="hidden"
+                        name="quote_image_batch_token"
+                        value="{{ quote_image_batch_token }}"
+                    >
+                    <input
+                        type="hidden"
+                        name="quote_image_uploads"
+                        value="{{ quote_image_uploads }}"
+                    >
 
 
                     <div class="form-row">
@@ -2094,6 +2105,13 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
                             understand the property and cleaning requirements.
                         </small>
                         <div id="quoteImageLimitError" class="field-error" role="alert" hidden></div>
+                        <div id="quoteImageUploadStatus" role="status" aria-live="polite"></div>
+                        <div id="quoteImageUploadFiles" aria-live="polite"></div>
+                        <progress id="quoteImageUploadProgress" max="100" value="0" hidden></progress>
+                        <div>
+                            <button id="quoteImageUploadRetry" type="button" hidden>Retry photo uploads</button>
+                            <button id="quoteImageUploadCancel" type="button" hidden>Cancel photo uploads</button>
+                        </div>
                         <div class="field-error">{{ form.property_images.errors }}</div>
 
                     </div>
@@ -2599,6 +2617,9 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 {% endif %}
+
+<script src="{% static 'js/fast-image-upload.js' %}" defer></script>
+<script src="{% static 'js/quote-image-upload.js' %}" defer></script>
 
 <script
     src="{% static 'js/pages/home-page.js' %}"

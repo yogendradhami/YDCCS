@@ -217,7 +217,7 @@ Your invoice {{ invoice.invoice_number }} from YD Commercial Cleaning Services.
                         font-weight: 700;
                         color: #173c32;
                     ">
-                        ${{ invoice.total_amount }}
+                        ${{ invoice.total_amount|floatformat:2 }}
                     </td>
                 </tr>
 

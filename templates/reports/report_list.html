@@ -1,139 +1,81 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
 {% block title %}Cleaning Reports | YD Dashboard{% endblock %}
 {% block page_title %}Cleaning Reports{% endblock %}
-{% block page_subtitle %}View and download completion reports for all bookings.{% endblock %}
+{% block page_subtitle %}Review job completion records, photos, and customer-ready reports.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
 
 {% block content %}
-
-<section class="crm-quick-actions">
-    <a href="/dashboard/calendar/">Booking Calendar</a>
-    <a href="/dashboard/">Back to Dashboard</a>
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>All Booking Reports</h2>
-    </div>
-
-    {% if bookings %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Booking</th>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Date</th>
-                        <th>Employee</th>
-                        <th>Status</th>
-                        <th>Photos</th>
-                        <th>Report</th>
-                        <th>View</th>
-                        <th>PDF</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for booking in bookings %}
-                        <tr>
-                            <td>#{{ booking.id }}</td>
-                            <td>{{ booking.customer.full_name }}</td>
-                            <td>{{ booking.service_type }}</td>
-                            <td>{{ booking.booking_date }}</td>
-                            <td>
-                                {% if booking.assigned_employee %}
-                                    {{ booking.assigned_employee.full_name }}
-                                {% else %}
-                                    Not assigned
-                                {% endif %}
-                            </td>
-                            <td>{{ booking.get_status_display }}</td>
-                            <td>{{ booking.job_photos.count }}</td>
-
-                            <td>
-
-                            {% if booking.cleaning_report %}
-
-                                {% if booking.cleaning_report.emailed_to_customer %}
-                                    <span class="report-sent">
-                                        ✅ Emailed
-                                    </span>
-                                {% else %}
-                                    <span class="report-pending">
-                                        ⏳ Not Sent
-                                    </span>
-                                {% endif %}
-
-                            {% else %}
-
-                                <span class="report-missing">
-                                    ❌ No Report
-                                </span>
-
-                            {% endif %}
-
-                            </td>
-
-                            <td>
-                                <a href="/reports/booking/{{ booking.id }}/"
-                                class="small-link-btn">
-                                    View
-                                </a>
-                            </td>
-
-                            <td>
-                                <a href="/reports/booking/{{ booking.id }}/download/"
-                                class="small-link-btn">
-                                    PDF
-                                </a>
-                            </td>
-
-
-
-
-
-
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="records-page reports-page">
+    <section class="records-hero records-hero-compact">
+        <div>
+            <span class="records-eyebrow"><i></i> QUALITY &amp; DELIVERY / JOB REPORTS</span>
+            <h1>Proof of work.<br><strong>Ready to share.</strong></h1>
+            <p>Find each booking’s completion report, review uploaded job photos, and download a PDF for the customer.</p>
         </div>
-    {% else %}
-        <p>No bookings found.</p>
-    {% endif %}
-</section>
+        <div class="records-hero-actions"><a class="records-hero-link" href="/dashboard/calendar/">← Booking calendar</a></div>
+    </section>
 
+    <section class="records-metrics reports-metrics" aria-label="Report register summary">
+        <article class="records-metric records-metric-featured"><span>BOOKINGS IN REGISTER</span><strong>{{ bookings.count }}</strong><small>all booking records</small></article>
+        <article class="records-metric"><span>REPORTS EMAILED</span><strong>{{ emailed_reports }}</strong><small>customer report delivery</small></article>
+        <article class="records-metric"><span>REPORTS TO REVIEW</span><strong>{{ pending_reports }}</strong><small>not sent or report missing</small></article>
+    </section>
 
-<style>
-
-.report-sent{
-    background:#dcfce7;
-    color:#166534;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:600;
-}
-
-.report-pending{
-    background:#fef3c7;
-    color:#92400e;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:600;
-}
-
-.report-missing{
-    background:#fee2e2;
-    color:#991b1b;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:600;
-}
-
-</style>
-
+    <section class="records-panel">
+        <header class="records-panel-header"><div><span class="records-section-label">COMPLETION REGISTER</span><h2>Booking reports</h2><p>Open a report to review job notes, cleaner details, and before-and-after photos.</p></div></header>
+        <div class="records-toolbar">
+            <label class="records-search"><span aria-hidden="true">⌕</span><input id="reportSearch" type="search" placeholder="Search customer, service, employee, or booking..." aria-label="Search booking reports"></label>
+            <label class="records-filter">Report status
+                <select id="reportStatusFilter" aria-label="Filter report status"><option value="">All reports</option><option value="emailed">Emailed</option><option value="pending">Not sent</option><option value="missing">No report</option></select>
+            </label>
+            <span class="records-count"><strong id="reportVisibleCount">{{ bookings.count }}</strong> bookings</span>
+        </div>
+        {% if bookings %}
+        <div class="records-table-wrap"><table class="records-table" id="reportsTable">
+            <thead><tr><th scope="col">Booking</th><th scope="col">Customer &amp; service</th><th scope="col">Date</th><th scope="col">Employee</th><th scope="col">Photos</th><th scope="col">Report status</th><th scope="col">Actions</th></tr></thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr data-report-row data-status="{% if booking.cleaning_report %}{% if booking.cleaning_report.emailed_to_customer %}emailed{% else %}pending{% endif %}{% else %}missing{% endif %}" data-search="{{ booking.id }} {% if booking.customer %}{{ booking.customer.full_name|lower }}{% endif %} {{ booking.service_type|lower }} {% if booking.assigned_employee %}{{ booking.assigned_employee.full_name|lower }}{% endif %}">
+                        <td><span class="records-booking-id">#{{ booking.id }}</span><small class="records-subtext">{{ booking.get_status_display }}</small></td>
+                        <td><strong>{% if booking.customer %}{{ booking.customer.full_name }}{% else %}No customer{% endif %}</strong><small class="records-subtext">{{ booking.service_type }}</small></td>
+                        <td>{{ booking.booking_date|date:"d M Y" }}<small class="records-subtext">{{ booking.booking_time|time:"H:i" }}</small></td>
+                        <td>{% if booking.assigned_employee %}{{ booking.assigned_employee.full_name }}{% else %}<span class="records-muted">Unassigned</span>{% endif %}</td>
+                        <td><span class="records-number-pill">{{ booking.job_photos.count }}</span></td>
+                        <td>{% if booking.cleaning_report %}{% if booking.cleaning_report.emailed_to_customer %}<span class="records-status status-completed">Emailed</span>{% else %}<span class="records-status status-pending">Not sent</span>{% endif %}{% else %}<span class="records-status status-expired">No report</span>{% endif %}</td>
+                        <td><div class="records-row-actions"><a href="{% url 'cleaning_report_detail' booking.id %}">Review report</a><a href="{% url 'download_cleaning_report_pdf' booking.id %}">Download PDF</a></div></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table></div>
+        <div class="records-no-results" id="reportNoResults" hidden>No reports match these filters.</div>
+        {% else %}
+        <div class="records-empty-block"><strong>No bookings in the report register</strong><p>Job completion reports will appear here when bookings are created.</p></div>
+        {% endif %}
+    </section>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("reportSearch");
+    const filter = document.getElementById("reportStatusFilter");
+    const count = document.getElementById("reportVisibleCount");
+    const empty = document.getElementById("reportNoResults");
+    const rows = Array.from(document.querySelectorAll("[data-report-row]"));
+    if (!search || !filter || !count || !empty) return;
+    function update() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(function (row) {
+            const matches = row.dataset.search.includes(query) && (!filter.value || row.dataset.status === filter.value);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = visible;
+        empty.hidden = visible !== 0 || rows.length === 0;
+    }
+    search.addEventListener("input", update);
+    filter.addEventListener("change", update);
+});
+</script>
 {% endblock %}

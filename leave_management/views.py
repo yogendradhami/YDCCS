@@ -33,6 +33,9 @@ def leave_list(request):
             "currently_on_leave": leave_requests.filter(
                 status="approved", start_date__lte=today, end_date__gte=today
             ).count(),
+            "employee_count": Employee.objects.filter(active=True).count(),
+            "leave_type_choices": LeaveRequest.LEAVE_TYPES,
+            "status_choices": LeaveRequest.STATUS_CHOICES,
         },
     )
 
@@ -76,6 +79,21 @@ def employee_leave_history(request):
         {
             "employee": employee,
             "leave_requests": leave_requests,
+            "pending_count": (
+                leave_requests.filter(status="pending").count()
+                if employee
+                else 0
+            ),
+            "approved_count": (
+                leave_requests.filter(status="approved").count()
+                if employee
+                else 0
+            ),
+            "rejected_count": (
+                leave_requests.filter(status="rejected").count()
+                if employee
+                else 0
+            ),
         },
     )
 

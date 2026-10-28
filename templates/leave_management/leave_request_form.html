@@ -1,75 +1,66 @@
-{% extends 'employees/employee_portal_base.html' %}
+{% extends "employees/employee_portal_base.html" %}
+{% load static %}
 
-{% block title %}
-Apply Leave | Employee Portal
+{% block title %}Request Leave | Employee Portal{% endblock %}
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/portal/employee-leave.css' %}">
 {% endblock %}
 
 {% block content %}
-
-<section class="employee-portal-hero">
+<section class="employee-portal-hero employee-leave-hero">
     <div class="container">
         <div class="employee-hero-box">
-            <div>
-                <h1>Apply Leave</h1>
-                <p>Select leave type, dates and reason.</p>
-            </div>
-
-            <a href="/employee/leave/" class="employee-back-btn">
-                Leave History
-            </a>
+            <div><span class="employee-leave-eyebrow">EMPLOYEE SELF-SERVICE / TIME AWAY</span><h1>Request leave</h1><p>Submit your dates and request details for manager review.</p></div>
+            <a href="{% url 'employee_leave_history' %}" class="employee-back-btn">View my leave</a>
         </div>
     </div>
 </section>
 
-<section class="section employee-dashboard-section">
-    <div class="container">
-
-        <div class="employee-form-card">
-
-
-            <form method="POST">
+<section class="section employee-dashboard-section employee-leave-content">
+    <div class="container employee-leave-form-container">
+        <div class="employee-leave-form-aside">
+            <span class="employee-leave-section-label">BEFORE YOU SUBMIT</span>
+            <h2>Give your manager the details they need.</h2>
+            <p>Choose the type of leave and the full date range. Your request will remain pending until it has been reviewed.</p>
+            <div class="employee-leave-steps"><span>01</span><p><strong>Choose leave type</strong><small>Select the category that best fits your request.</small></p></div>
+            <div class="employee-leave-steps"><span>02</span><p><strong>Enter your dates</strong><small>Include the first and last day you will be away.</small></p></div>
+            <div class="employee-leave-steps"><span>03</span><p><strong>Add context</strong><small>A short note can help with planning coverage.</small></p></div>
+        </div>
+        <section class="employee-leave-form-panel">
+            <header><span class="employee-leave-section-label">NEW REQUEST</span><h2>Leave details</h2><p>All requests are submitted to your manager for review.</p></header>
+            <form method="post" class="employee-leave-form">
                 {% csrf_token %}
-
-                <div class="auth-grid">
-                    <div class="form-group">
-                        <label>Leave Type</label>
-                        {{ form.leave_type }}
-                        <div class="text-danger">{{ form.leave_type.errors }}</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Start Date</label>
+                {% if form.non_field_errors %}<div class="employee-leave-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="employee-leave-field">
+                    <label for="{{ form.leave_type.id_for_label }}">Leave type <span>Required</span></label>
+                    {{ form.leave_type }}
+                    {% if form.leave_type.errors %}<div class="employee-leave-field-error">{{ form.leave_type.errors }}</div>{% endif %}
+                </div>
+                <div class="employee-leave-date-grid">
+                    <div class="employee-leave-field">
+                        <label for="{{ form.start_date.id_for_label }}">First day away <span>Required</span></label>
                         {{ form.start_date }}
-                        <div class="text-danger">{{ form.start_date.errors }}</div>
+                        {% if form.start_date.errors %}<div class="employee-leave-field-error">{{ form.start_date.errors }}</div>{% endif %}
                     </div>
-
-                    <div class="form-group">
-                        <label>End Date</label>
+                    <div class="employee-leave-field">
+                        <label for="{{ form.end_date.id_for_label }}">Last day away <span>Required</span></label>
                         {{ form.end_date }}
-                        <div class="text-danger">{{ form.end_date.errors }}</div>
+                        {% if form.end_date.errors %}<div class="employee-leave-field-error">{{ form.end_date.errors }}</div>{% endif %}
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Reason</label>
+                <div class="employee-leave-field">
+                    <label for="{{ form.reason.id_for_label }}">Reason <small>Optional</small></label>
                     {{ form.reason }}
-                    <div class="text-danger">{{ form.reason.errors }}</div>
+                    <small class="employee-leave-help">Share only the information needed to review and plan your request.</small>
+                    {% if form.reason.errors %}<div class="employee-leave-field-error">{{ form.reason.errors }}</div>{% endif %}
                 </div>
-
-                <div class="employee-form-actions">
-                    <button type="submit" class="btn-fill">
-                        Submit Leave Request
-                    </button>
-
-                    <a href="/employee/leave/" class="btn-outline">
-                        Cancel
-                    </a>
+                <div class="employee-leave-form-actions">
+                    <a href="{% url 'employee_leave_history' %}" class="employee-leave-secondary">Cancel</a>
+                    <button type="submit" class="employee-leave-primary">Submit request <span>→</span></button>
                 </div>
             </form>
-
-        </div>
-
+        </section>
     </div>
 </section>
-
 {% endblock %}

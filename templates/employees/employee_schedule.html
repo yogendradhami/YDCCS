@@ -1,90 +1,65 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Employee Schedule{% endblock %}
-
-{% block page_title %}Employee Weekly Schedule{% endblock %}
-
-{% block page_subtitle %}
-Weekly staff schedule for YD Commercial Cleaning Services.
+{% block title %}Employee Schedule | YD Dashboard{% endblock %}
+{% block page_title %}Employee Schedule{% endblock %}
+{% block page_subtitle %}Plan the team’s bookings and approved leave across the selected week.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>
-            {{ week_start|date:"d M Y" }} - {{ week_end|date:"d M Y" }}
-        </h2>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a href="/dashboard/employee-schedule/?start={{ previous_week|date:'Y-m-d' }}" class="small-link-btn">
-                Previous
-            </a>
-
-            <a href="/dashboard/employee-schedule/" class="small-link-btn">
-                This Week
-            </a>
-
-            <a href="/dashboard/employee-schedule/?start={{ next_week|date:'Y-m-d' }}" class="small-link-btn">
-                Next
-            </a>
-
-            <a href="/dashboard/calendar/" class="small-link-btn">
-                Job Calendar
-            </a>
+<div class="workforce-page">
+    <section class="workforce-hero">
+        <div>
+            <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / WEEKLY PLANNER</span>
+            <h1>One week.<br><strong>One clear plan.</strong></h1>
+            <p>{{ week_start|date:"d M Y" }} – {{ week_end|date:"d M Y" }} · See scheduled jobs and approved leave by employee.</p>
         </div>
-    </div>
-</section>
+        <nav class="workforce-hero-actions" aria-label="Schedule actions">
+            <a class="workforce-button workforce-button-light" href="{% url 'roster_list' %}">Manage rosters <span>→</span></a>
+            <a class="workforce-button workforce-button-outline" href="/dashboard/calendar/">Job calendar</a>
+        </nav>
+    </section>
 
-{% for row in schedule_rows %}
+    <section class="workforce-week-controls" aria-label="Choose a week">
+        <a class="workforce-control-button" href="{% url 'employee_schedule' %}?start={{ previous_week|date:'Y-m-d' }}">← Previous week</a>
+        <a class="workforce-control-button workforce-control-current" href="{% url 'employee_schedule' %}">This week</a>
+        <a class="workforce-control-button" href="{% url 'employee_schedule' %}?start={{ next_week|date:'Y-m-d' }}">Next week →</a>
+        <span>{{ week_start|date:"F Y" }}</span>
+    </section>
 
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>{{ row.employee.full_name }}</h2>
-        <span>{{ row.total_jobs }} jobs this week</span>
-    </div>
-
-    {% if row.total_jobs > 0 %}
-
-        {% for day in row.days %}
-
-            {% if day.jobs or day.approved_leave %}
-                <div class="crm-list-item">
-
-                    <strong>{{ day.date|date:"l, d M" }}</strong>
-
-                    {% if day.approved_leave %}
-                        <span class="status-badge warning">
-                            ⚠ On Leave — {{ day.approved_leave.get_leave_type_display }}
-                        </span>
-                    {% endif %}
-
-                    {% for job in day.jobs %}
-                        <span>
-                            {{ job.booking_time|time:"H:i" }}
-                            —
-                            {{ job.service_type }}
-                            —
-                            {{ job.customer.full_name }}
-                        </span>
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">TEAM COVERAGE</span><h2>Weekly schedule</h2><p>Each cell shows that team member’s bookings or approved leave for the day.</p></div>
+            <span class="workforce-count">{{ schedule_rows|length }} team member{{ schedule_rows|length|pluralize }}</span>
+        </header>
+        <div class="workforce-schedule-wrap">
+            <table class="workforce-schedule-table">
+                <thead><tr><th scope="col">Employee</th>{% for day in week_days %}<th scope="col"><span>{{ day|date:"D" }}</span><strong>{{ day|date:"d M" }}</strong></th>{% endfor %}</tr></thead>
+                <tbody>
+                    {% for row in schedule_rows %}
+                    <tr>
+                        <th scope="row"><span class="workforce-person"><span class="workforce-avatar">{{ row.employee.full_name|first|upper }}</span><span><strong>{{ row.employee.full_name }}</strong><small>{{ row.total_jobs }} job{{ row.total_jobs|pluralize }}</small></span></span></th>
+                        {% for day in row.days %}
+                        <td data-label="{{ day.date|date:'l, d M' }}">
+                            {% if day.approved_leave %}<span class="workforce-schedule-leave">{{ day.approved_leave.get_leave_type_display }} leave</span>{% endif %}
+                            {% for job in day.jobs %}
+                                <div class="workforce-schedule-job">
+                                    <strong>{{ job.booking_time|time:"H:i" }}</strong><span>{{ job.service_type }}</span><small>{% if job.customer %}{{ job.customer.full_name }}{% else %}Customer unavailable{% endif %}</small>
+                                </div>
+                            {% empty %}
+                                {% if not day.approved_leave %}<span class="workforce-schedule-empty">—</span>{% endif %}
+                            {% endfor %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr><td class="workforce-empty" colspan="8">No active employees are available for this schedule.</td></tr>
                     {% endfor %}
-
-                </div>
-            {% endif %}
-
-        {% endfor %}
-
-    {% else %}
-
-        <div class="empty-box">
-            <p>No jobs assigned this week.</p>
+                </tbody>
+            </table>
         </div>
-
-    {% endif %}
-
-</section>
-
-{% endfor %}
-
+    </section>
+</div>
 {% endblock %}

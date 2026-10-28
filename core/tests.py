@@ -43,14 +43,16 @@ class SmokeTest(TestCase):
         STORAGES={
             "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
             "staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
             },
         },
-        WHITENOISE_MANIFEST_STRICT=False,
     )
-    def test_home_page_renders_without_missing_manifest_entries(self):
+    def test_home_page_renders_with_quote_upload_scripts(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
+        body = response.content.decode("utf-8")
+        self.assertIn("js/fast-image-upload.js", body)
+        self.assertIn("js/quote-image-upload.js", body)
 
     def test_public_resource_pages(self):
         public_urls = [

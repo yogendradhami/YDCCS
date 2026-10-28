@@ -1,50 +1,31 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Delete Roster Shift | YD Dashboard{% endblock %}
+{% block page_title %}Delete Roster Shift{% endblock %}
+{% block page_subtitle %}Confirm whether to remove this shift from the roster.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+{% endblock %}
 
 {% block content %}
-
-<h2>Delete Roster Shift</h2>
-
-<p>
-    Are you sure you want to delete this roster shift?
-</p>
-
-<div>
-    <strong>Employee:</strong>
-    {{ roster.employee.full_name }}
+<div class="workforce-page workforce-form-page">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'roster_list' %}">Roster management</a><span>/</span><span>Delete shift</span></nav>
+    <section class="workforce-delete-card">
+        <span class="workforce-delete-icon" aria-hidden="true">!</span>
+        <span class="workforce-section-label">SHIFT REMOVAL</span>
+        <h1>Delete this roster shift?</h1>
+        <p>The shift will be removed from the roster. If a Google Calendar event is linked, the system will attempt to remove it before deleting the shift.</p>
+        <dl class="workforce-delete-summary">
+            <div><dt>Employee</dt><dd>{{ roster.employee.full_name }}</dd></div>
+            <div><dt>Booking</dt><dd>{{ roster.booking.service_type }}{% if roster.booking.customer %} · {{ roster.booking.customer.full_name }}{% endif %}</dd></div>
+            <div><dt>Date</dt><dd>{{ roster.shift_date|date:"l, d F Y" }}</dd></div>
+            <div><dt>Shift</dt><dd>{{ roster.start_time|time:"g:i A" }} – {{ roster.end_time|time:"g:i A" }}</dd></div>
+        </dl>
+        <form method="post">
+            {% csrf_token %}
+            <div class="workforce-form-actions"><a class="workforce-button workforce-button-muted" href="{% url 'roster_list' %}">Keep shift</a><button type="submit" class="workforce-button workforce-button-danger">Delete shift</button></div>
+        </form>
+    </section>
 </div>
-
-<div>
-    <strong>Booking:</strong>
-    {{ roster.booking.service_type }}
-</div>
-
-<div>
-    <strong>Date:</strong>
-    {{ roster.shift_date }}
-</div>
-
-<div>
-    <strong>Time:</strong>
-    {{ roster.start_time|time:"g:i A" }}
-    -
-    {{ roster.end_time|time:"g:i A" }}
-</div>
-
-<br>
-
-<form method="post">
-    {% csrf_token %}
-
-    <button type="submit" class="btn-fill">
-        Yes, Delete Shift
-    </button>
-
-    <a
-        href="{% url 'roster_list' %}"
-        class="btn-fill"
-    >
-        Cancel
-    </a>
-</form>
-
 {% endblock %}

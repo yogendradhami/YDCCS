@@ -238,7 +238,7 @@ Revenue, invoices, payroll and profit overview.
 
                 <tr
                     data-status="{{ invoice.status }}"
-                    data-amount="{{ invoice.total_amount }}"
+                    data-amount="{{ invoice.total_amount|floatformat:2 }}"
                 >
                     <td>
                         <strong>{{ invoice.invoice_number }}</strong>
@@ -267,7 +267,7 @@ Revenue, invoices, payroll and profit overview.
                     </td>
 
                     <td class="invoice-total">
-                        ${{ invoice.total_amount }}
+                        ${{ invoice.total_amount|floatformat:2 }}
                     </td>
 
 
