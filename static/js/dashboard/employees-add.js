@@ -117,7 +117,9 @@
             photoInput.files = transfer.files;
             displayPhoto(file);
         });
-        removePhotoButton.addEventListener("click", () => {
+        removePhotoButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
             photoInput.value = "";
             photoPreview.hidden = true;
             photoPlaceholder.hidden = false;

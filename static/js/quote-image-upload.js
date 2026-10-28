@@ -72,12 +72,22 @@
                 const row = document.createElement("div");
                 row.className = "quote-image-upload-file";
 
+                const preview = document.createElement("span");
+                preview.className = "media-preview-card";
                 const image = document.createElement("img");
                 image.alt = `Preview of ${file.name}`;
                 image.width = 64;
                 image.height = 64;
                 image.src = URL.createObjectURL(file);
                 previewUrls.push(image.src);
+                const removeButton = document.createElement("button");
+                removeButton.type = "button";
+                removeButton.className = "media-preview-remove";
+                removeButton.textContent = "×";
+                removeButton.setAttribute("aria-label", `Remove ${file.name}`);
+                removeButton.dataset.removeFile = String(index);
+                removeButton.disabled = busy || submissionPending || input.disabled;
+                preview.append(image, removeButton);
 
                 const details = document.createElement("div");
                 const name = document.createElement("span");
@@ -91,10 +101,25 @@
                 itemProgress.dataset.uploadProgress = String(index);
 
                 details.append(name, document.createElement("br"), itemStatus, itemProgress);
-                row.append(image, details);
+                row.append(preview, details);
                 filesElement.append(row);
             });
         }
+
+        filesElement.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-remove-file]");
+            if (!button || busy) return;
+            const removeIndex = Number(button.dataset.removeFile);
+            const transfer = new DataTransfer();
+            Array.from(input.files || []).forEach((file, index) => {
+                if (index !== removeIndex) transfer.items.add(file);
+            });
+            input.files = transfer.files;
+            renderFiles(input.files);
+            retryButton.hidden = true;
+            const error = validate(input.files);
+            setStatus(error || "", Boolean(error));
+        });
 
         function updateProgress(index, loaded, total) {
             const itemProgress = filesElement.querySelector(
@@ -262,6 +287,7 @@
             if (!originalFiles.length) return;
 
             busy = true;
+            renderFiles(input.files);
             cancelled = false;
             retryButton.hidden = true;
             cancelButton.hidden = false;
@@ -333,6 +359,7 @@
             } finally {
                 busy = false;
                 activeRequests = new Set();
+                renderFiles(input.files);
                 cancelButton.hidden = true;
                 submitButton.removeAttribute("aria-disabled");
             }

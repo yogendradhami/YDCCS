@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/employees-add.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/media-upload-controls.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -55,6 +56,7 @@
                                 <input class="employee-photo-input" id="{{ form.image.id_for_label }}" name="{{ form.image.html_name }}" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="employee-photo-help employee-photo-error">
                                 <span class="employee-photo-preview" id="employeePhotoPreview" hidden>
                                     <img id="employeePhotoImage" alt="Selected employee photo preview">
+                                    <button class="employee-text-button media-preview-remove" type="button" id="removeEmployeePhoto" aria-label="Remove selected employee photo" hidden>×</button>
                                 </span>
                                 <span class="employee-photo-placeholder" id="employeePhotoPlaceholder">
                                     <span class="employee-photo-icon" aria-hidden="true">＋</span>
@@ -64,7 +66,6 @@
                             </label>
                             <div class="employee-photo-actions">
                                 <span id="employeePhotoFilename">JPG, PNG or WebP · up to 5 MB</span>
-                                <button class="employee-text-button" type="button" id="removeEmployeePhoto" hidden>Remove</button>
                             </div>
                             <p class="employee-field-error" id="employee-photo-error" aria-live="polite">{{ form.image.errors }}</p>
                             <p class="employee-help" id="employee-photo-help">A clear, professional headshot helps customers recognise your team.</p>

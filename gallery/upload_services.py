@@ -66,20 +66,37 @@ def _validate_gallery_slots(slots, item_id=None):
 def _delete_gallery_assets(public_ids):
     public_ids = list(dict.fromkeys(public_ids))
     if not public_ids:
-        return
+        return True
     _configure_cloudinary()
+    cleaned = True
     for public_id in public_ids:
+        if (
+            GalleryItem.objects.filter(image=public_id).exists()
+            or GalleryItem.objects.filter(before_image=public_id).exists()
+            or GalleryItem.objects.filter(after_image=public_id).exists()
+            or GalleryImage.objects.filter(image=public_id).exists()
+        ):
+            logger.warning(
+                "Skipped cleanup of gallery image %s because it is attached to a record.",
+                public_id,
+            )
+            cleaned = False
+            continue
         try:
-            cloudinary_uploader.destroy(
+            result = cloudinary_uploader.destroy(
                 public_id,
                 resource_type="image",
                 invalidate=True,
             )
+            if result.get("result") not in {"ok", "not found"}:
+                cleaned = False
         except Exception:
+            cleaned = False
             logger.exception(
                 "Could not clean up unclaimed gallery image %s.",
                 public_id,
             )
+    return cleaned
 
 
 def create_gallery_upload_batch(slots, *, user_id, item_id=None):

@@ -62,6 +62,7 @@
 
             Array.from(input.files || []).forEach((file, index) => {
                 const card = document.createElement("figure");
+                card.classList.add("media-preview-card");
                 const image = document.createElement("img");
                 const caption = document.createElement("figcaption");
                 caption.textContent = `${file.name} · ${formatBytes(file.size)}`;
@@ -72,11 +73,72 @@
                     image.alt = file.name;
                     card.appendChild(image);
                 }
+                const removeButton = document.createElement("button");
+                removeButton.type = "button";
+                removeButton.className = "media-preview-remove";
+                removeButton.textContent = "×";
+                removeButton.setAttribute("aria-label", `Remove ${file.name}`);
+                removeButton.dataset.removeFileSlot = slot;
+                removeButton.dataset.removeFileIndex = String(index);
+                removeButton.disabled = busy || Boolean(nonceInput.value);
+                card.appendChild(removeButton);
                 card.appendChild(caption);
                 container.appendChild(card);
             });
         });
     }
+
+    function removeSelectedFile(slot, index) {
+        const input = inputs.find((candidate) => candidate.name === slot);
+        if (!input || busy || nonceInput.value) return;
+        const transfer = new DataTransfer();
+        Array.from(input.files || []).forEach((file, fileIndex) => {
+            if (fileIndex !== index) transfer.items.add(file);
+        });
+        input.files = transfer.files;
+        showFilePreviews();
+    }
+
+    async function removeStagedImage(publicId, card) {
+        if (busy || !nonceInput.value) return;
+        const button = card.querySelector("[data-remove-staged-image]");
+        if (button) button.disabled = true;
+        try {
+            const result = await postBatch("remove", {
+                nonce: nonceInput.value,
+                item_id: form.dataset.itemId || "",
+                public_id: publicId,
+            });
+            card.remove();
+            if (!result.remaining) {
+                nonceInput.value = "";
+                document.querySelector(".gallery-staged-batch")?.remove();
+                cancelButton.hidden = true;
+                setStatus("All staged images were removed. Choose new images or save the gallery item.");
+            } else {
+                setStatus("Staged image removed. Save to attach the remaining images.");
+            }
+        } catch (error) {
+            if (button) button.disabled = false;
+            setStatus(error.message || "The staged image could not be removed.", true);
+        }
+    }
+
+    document.addEventListener("click", (event) => {
+        const selectedButton = event.target.closest("[data-remove-file-slot]");
+        if (selectedButton) {
+            removeSelectedFile(
+                selectedButton.dataset.removeFileSlot,
+                Number(selectedButton.dataset.removeFileIndex)
+            );
+            return;
+        }
+        const stagedButton = event.target.closest("[data-remove-staged-image]");
+        if (stagedButton) {
+            const card = stagedButton.closest("[data-staged-public-id]");
+            if (card) removeStagedImage(stagedButton.dataset.removeStagedImage, card);
+        }
+    });
 
     function setStatus(message, isError) {
         status.textContent = message;
@@ -337,6 +399,7 @@
 
         busy = true;
         cancelled = false;
+        showFilePreviews();
         submitButton.disabled = true;
         cancelButton.hidden = false;
         cancelButton.textContent = "Cancel upload";
@@ -410,6 +473,7 @@
             cancelButton.hidden = true;
             busy = false;
             progressSection.hidden = true;
+            showFilePreviews();
             setStatus(
                 `${error.message || "Image upload failed."} Your selected files are still available; correct the issue or retry.`,
                 true

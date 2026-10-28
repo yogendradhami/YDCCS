@@ -5,6 +5,10 @@
 Upload Job Photo | Employee Portal
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/components/media-upload-controls.css' %}">
+{% endblock %}
+
 {% block content %}
 
 <section class="page-hero">
@@ -57,6 +61,7 @@ Upload Job Photo | Employee Portal
                         class="form-control"
                     />
                     <small>Select up to 12 photos per batch. Large batches upload directly to secure cloud storage.</small>
+                    <div id="job-photo-previews" class="media-preview-list" aria-live="polite"></div>
                     <div id="job-photo-upload-status" role="status" aria-live="polite" hidden></div>
                     <progress id="job-photo-upload-progress" max="100" value="0" hidden style="width:100%;margin-top:0.5rem"></progress>
                     <button type="button" id="job-photo-upload-cancel" class="btn-outline" hidden>Cancel upload</button>
@@ -113,6 +118,48 @@ Upload Job Photo | Employee Portal
     let signedNonce = "";
     let cancelled = false;
     let submissionInProgress = false;
+
+    function renderPreviews() {
+        const container = document.getElementById("job-photo-previews");
+        container.replaceChildren();
+        Array.from(input.files || []).forEach((file, index) => {
+            const card = document.createElement("figure");
+            card.className = "media-preview-card";
+            const image = document.createElement("img");
+            if (/^image\//i.test(file.type) && !/heic|heif/i.test(file.type)) {
+                image.src = URL.createObjectURL(file);
+                image.alt = `Preview of ${file.name}`;
+                image.width = 88;
+                image.height = 72;
+                card.appendChild(image);
+                image.addEventListener("load", () => URL.revokeObjectURL(image.src), { once: true });
+            }
+            const caption = document.createElement("figcaption");
+            caption.textContent = `${file.name} (${window.YDImageUpload?.formatBytes(file.size) || `${Math.ceil(file.size / 1024)} KB`})`;
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.className = "media-preview-remove";
+            removeButton.textContent = "×";
+            removeButton.setAttribute("aria-label", `Remove ${file.name}`);
+            removeButton.dataset.removeFileIndex = String(index);
+            removeButton.disabled = submissionInProgress;
+            card.append(removeButton, caption);
+            container.appendChild(card);
+        });
+    }
+
+    input.addEventListener("change", renderPreviews);
+    document.getElementById("job-photo-previews").addEventListener("click", (event) => {
+        const removeButton = event.target.closest("[data-remove-file-index]");
+        if (!removeButton || submissionInProgress) return;
+        const removeIndex = Number(removeButton.dataset.removeFileIndex);
+        const transfer = new DataTransfer();
+        Array.from(input.files || []).forEach((file, index) => {
+            if (index !== removeIndex) transfer.items.add(file);
+        });
+        input.files = transfer.files;
+        renderPreviews();
+    });
 
     function setStatus(message) {
         status.hidden = false;
@@ -232,6 +279,7 @@ Upload Job Photo | Employee Portal
             }
             submissionInProgress = true;
             button.disabled = true;
+            renderPreviews();
             return;
         }
 
@@ -346,6 +394,7 @@ Upload Job Photo | Employee Portal
             submissionInProgress = false;
             button.disabled = false;
             cancelButton.hidden = true;
+            renderPreviews();
         }
     });
 })();

@@ -4,7 +4,7 @@
 {% block title %}{{ page_title }} | YD Dashboard{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
 {% block page_subtitle %}Add project imagery and details to your company gallery.{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard/gallery-admin.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard/gallery-admin.css' %}"><link rel="stylesheet" href="{% static 'css/components/media-upload-controls.css' %}">{% endblock %}
 
 {% block content %}
 <div class="records-page gallery-form-page">
@@ -24,7 +24,7 @@
                 <div><h2 id="galleryStagedTitle">Images uploaded and verified</h2><p>These images are safely staged for this gallery item. Save the form to attach them, or cancel the staged batch before choosing a different set.</p></div>
                 <div class="gallery-staged-grid">
                     {% for staged in staged_gallery_images %}
-                        <figure><img src="{{ staged.url }}" alt="Staged {{ staged.slot|cut:'_' }} image"><figcaption>{{ staged.slot|cut:"_"|title }}</figcaption></figure>
+                        <figure class="media-preview-card" data-staged-public-id="{{ staged.public_id }}"><img src="{{ staged.url }}" alt="Staged {{ staged.slot|cut:'_' }} image"><button type="button" class="media-preview-remove" data-remove-staged-image="{{ staged.public_id }}" aria-label="Remove staged {{ staged.slot|cut:'_' }} image">×</button><figcaption>{{ staged.slot|cut:"_"|title }}</figcaption></figure>
                     {% endfor %}
                 </div>
             </section>

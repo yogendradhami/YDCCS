@@ -258,7 +258,11 @@
 
             removePhotoButton.addEventListener(
                 "click",
-                resetPhotoSelection
+                function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    resetPhotoSelection();
+                }
             );
 
         }

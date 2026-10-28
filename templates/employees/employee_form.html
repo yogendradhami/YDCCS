@@ -6,6 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/employees-add.css' %}">
 <link rel="stylesheet" href="{% static 'css/dashboard/employees-edit.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/media-upload-controls.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -200,6 +201,13 @@
                                         id="employeePhotoImage"
                                         alt="Selected employee photo preview"
                                     >
+                                    <button
+                                        class="employee-text-button media-preview-remove"
+                                        type="button"
+                                        id="removeEmployeePhoto"
+                                        aria-label="Remove selected employee photo"
+                                        hidden
+                                    >×</button>
 
                                 </span>
 
@@ -234,15 +242,6 @@
                                 <span id="employeePhotoFilename">
                                     JPG, PNG or WebP · up to 5 MB
                                 </span>
-
-                                <button
-                                    class="employee-text-button"
-                                    type="button"
-                                    id="removeEmployeePhoto"
-                                    hidden
-                                >
-                                    Remove
-                                </button>
 
                             </div>
 

@@ -17,6 +17,7 @@ from gallery.upload_services import (
     ALLOWED_GALLERY_FORMATS,
     GALLERY_UPLOAD_SESSION_KEY,
     MAX_GALLERY_IMAGES,
+    _delete_gallery_assets,
     save_gallery_uploads,
     save_verified_gallery_uploads,
     verify_gallery_upload_receipts,
@@ -321,6 +322,107 @@ class GalleryDirectUploadTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["finalized"])
         self.assertEqual(len(self.client.session[GALLERY_UPLOAD_SESSION_KEY][nonce]["verified_assets"]), 1)
+
+    def test_removing_staged_image_cleans_only_that_verified_batch_asset(self):
+        sign_response = self._sign(["image", "additional_images"])
+        nonce = sign_response.json()["nonce"]
+        expected = self.client.session[GALLERY_UPLOAD_SESSION_KEY][nonce]["expected"]
+        public_id = expected[0]["public_id"]
+        finalize_response = self._finalize(
+            nonce,
+            [
+                {"public_id": entry["public_id"], "version": 1, "signature": "signed"}
+                for entry in expected
+            ],
+            [self._resource(entry["public_id"]) for entry in expected],
+        )
+        self.assertEqual(finalize_response.status_code, 200)
+
+        with patch("gallery.views._delete_gallery_assets", return_value=True) as cleanup:
+            response = self.client.post(
+                self.batch_url,
+                {
+                    "upload_action": "remove",
+                    "nonce": nonce,
+                    "item_id": "",
+                    "public_id": public_id,
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["remaining"], 1)
+        cleanup.assert_called_once_with([public_id])
+        remaining = self.client.session[GALLERY_UPLOAD_SESSION_KEY][nonce]
+        self.assertEqual(
+            [asset["public_id"] for asset in remaining["verified_assets"]],
+            [expected[1]["public_id"]],
+        )
+
+    def test_staged_image_removal_rejects_cross_batch_public_id(self):
+        sign_response = self._sign(["image"])
+        nonce = sign_response.json()["nonce"]
+        expected = self.client.session[GALLERY_UPLOAD_SESSION_KEY][nonce]["expected"]
+        self._finalize(
+            nonce,
+            [{"public_id": expected[0]["public_id"], "version": 1, "signature": "signed"}],
+            [self._resource(expected[0]["public_id"])],
+        )
+
+        with patch("gallery.views._delete_gallery_assets") as cleanup:
+            response = self.client.post(
+                self.batch_url,
+                {
+                    "upload_action": "remove",
+                    "nonce": nonce,
+                    "item_id": "",
+                    "public_id": "gallery/admin/another-batch/asset",
+                },
+            )
+
+        self.assertEqual(response.status_code, 400)
+        cleanup.assert_not_called()
+
+    def test_failed_staged_image_cleanup_keeps_the_batch_attached_to_the_session(self):
+        sign_response = self._sign(["image"])
+        nonce = sign_response.json()["nonce"]
+        expected = self.client.session[GALLERY_UPLOAD_SESSION_KEY][nonce]["expected"]
+        public_id = expected[0]["public_id"]
+        self._finalize(
+            nonce,
+            [{"public_id": public_id, "version": 1, "signature": "signed"}],
+            [self._resource(public_id)],
+        )
+
+        with patch("gallery.views._delete_gallery_assets", return_value=False):
+            response = self.client.post(
+                self.batch_url,
+                {
+                    "upload_action": "remove",
+                    "nonce": nonce,
+                    "item_id": "",
+                    "public_id": public_id,
+                },
+            )
+
+        self.assertEqual(response.status_code, 502)
+        self.assertIn(nonce, self.client.session[GALLERY_UPLOAD_SESSION_KEY])
+
+    def test_gallery_cleanup_never_deletes_an_asset_attached_to_a_record(self):
+        public_id = "gallery/admin/owned-batch/attached"
+        item = GalleryItem.objects.create(
+            title="Existing gallery",
+            service_type="House Cleaning",
+            source="manual",
+            image=public_id,
+        )
+
+        with patch("gallery.upload_services.cloudinary_uploader.destroy") as destroy:
+            cleaned = _delete_gallery_assets([public_id])
+
+        self.assertFalse(cleaned)
+        destroy.assert_not_called()
+        item.refresh_from_db()
+        self.assertEqual(item.image.name, public_id)
 
     def test_invalid_signature_rejects_and_cleans_only_the_signed_asset(self):
         sign_response = self._sign(["image"])

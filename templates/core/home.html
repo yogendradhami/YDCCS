@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load static seo_tags %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/components/media-upload-controls.css' %}">
+{% endblock %}
+
 {% block title %}
 YD Commercial Cleaning Services Adelaide
 {% endblock %}
@@ -303,6 +307,7 @@ YD Commercial Cleaning Services Adelaide
                     <label for="{{ form.property_images.id_for_label }}">Upload Property Images (Optional)</label>
                     {{ form.property_images }}
                     <small>Add up to 6 images, 15 MB each, 60 MB total.</small>
+                    <div id="core-quote-image-previews" class="media-preview-list" aria-live="polite"></div>
                     <div class="text-danger">{{ form.property_images.errors }}</div>
                 </div>
 
@@ -432,6 +437,59 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
     updateEstimate();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("id_property_images");
+    const previews = document.getElementById("core-quote-image-previews");
+    if (!input || !previews) return;
+
+    let previewUrls = [];
+
+    function renderPreviews() {
+        previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        previewUrls = [];
+        previews.replaceChildren();
+
+        Array.from(input.files || []).forEach((file, index) => {
+            const card = document.createElement("figure");
+            card.className = "media-preview-card";
+            if (/^image\//i.test(file.type) && !/heic|heif/i.test(file.type)) {
+                const image = document.createElement("img");
+                image.src = URL.createObjectURL(file);
+                image.alt = `Preview of ${file.name}`;
+                previewUrls.push(image.src);
+                card.appendChild(image);
+            }
+            const caption = document.createElement("figcaption");
+            caption.textContent = file.name;
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.className = "media-preview-remove";
+            removeButton.textContent = "×";
+            removeButton.setAttribute("aria-label", `Remove ${file.name}`);
+            removeButton.dataset.removeFileIndex = String(index);
+            card.append(removeButton, caption);
+            previews.appendChild(card);
+        });
+    }
+
+    input.addEventListener("change", renderPreviews);
+    previews.addEventListener("click", function (event) {
+        const button = event.target.closest("[data-remove-file-index]");
+        if (!button) return;
+        const removeIndex = Number(button.dataset.removeFileIndex);
+        const transfer = new DataTransfer();
+        Array.from(input.files || []).forEach((file, index) => {
+            if (index !== removeIndex) transfer.items.add(file);
+        });
+        input.files = transfer.files;
+        renderPreviews();
+    });
+
+    renderPreviews();
 });
 </script>
 

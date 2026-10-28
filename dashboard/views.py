@@ -2348,6 +2348,7 @@ def _gallery_upload_context(request, form, item_id=None):
                 {
                     "slot": asset["slot"],
                     "name": public_id.rsplit("/", 1)[-1],
+                    "public_id": public_id,
                     "url": storage.url(public_id),
                 }
             )

@@ -133,6 +133,63 @@ def gallery_upload_batch(request):
         request.session[GALLERY_UPLOAD_SESSION_KEY] = batches
         return JsonResponse({"cancelled": True})
 
+    if action == "remove":
+        if not batch:
+            return JsonResponse(
+                {"error": "The gallery upload batch expired or is unavailable."},
+                status=400,
+            )
+        try:
+            item_id = _gallery_batch_item_id(request.POST.get("item_id"))
+            _require_gallery_item_permission(request, batch["item_id"])
+            if item_id != batch["item_id"]:
+                raise ValueError("The upload batch belongs to another gallery item.")
+            if not batch.get("finalized"):
+                raise ValueError("Images can only be removed after upload verification.")
+            public_id = request.POST.get("public_id", "")
+            expected_ids = {
+                entry.get("public_id")
+                for entry in batch.get("expected", [])
+                if isinstance(entry, dict)
+            }
+            verified_ids = {
+                entry.get("public_id")
+                for entry in batch.get("verified_assets", [])
+                if isinstance(entry, dict)
+            }
+            if (
+                not isinstance(public_id, str)
+                or public_id not in expected_ids
+                or public_id not in verified_ids
+                or not public_id.startswith(f"gallery/admin/{nonce}/")
+            ):
+                raise ValueError("The image does not belong to this upload batch.")
+        except ValueError as exc:
+            request.session[GALLERY_UPLOAD_SESSION_KEY] = batches
+            return JsonResponse({"error": str(exc)}, status=400)
+
+        if not _delete_gallery_assets([public_id]):
+            request.session[GALLERY_UPLOAD_SESSION_KEY] = batches
+            return JsonResponse(
+                {"error": "The staged image could not be safely removed. Please retry."},
+                status=502,
+            )
+        batch["expected"] = [
+            entry for entry in batch["expected"] if entry["public_id"] != public_id
+        ]
+        batch["verified_assets"] = [
+            entry
+            for entry in batch["verified_assets"]
+            if entry["public_id"] != public_id
+        ]
+        remaining = len(batch["verified_assets"])
+        if remaining:
+            batches[nonce] = batch
+        else:
+            batches.pop(nonce, None)
+        request.session[GALLERY_UPLOAD_SESSION_KEY] = batches
+        return JsonResponse({"removed": True, "remaining": remaining})
+
     if action != "finalize":
         request.session[GALLERY_UPLOAD_SESSION_KEY] = batches
         return JsonResponse({"error": "Unsupported gallery upload action."}, status=400)

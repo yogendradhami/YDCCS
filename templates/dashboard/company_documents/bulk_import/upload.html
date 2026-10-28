@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/company-documents/bulk-import.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/media-upload-controls.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -79,10 +80,7 @@
             </label>
 
 
-            <div
-                id="bulk-file-list"
-                class="bulk-selected-files"
-            ></div>
+            <div id="bulk-file-list" class="bulk-selected-files"></div>
 
 
             <div class="bulk-upload-rules">
@@ -233,15 +231,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    input.addEventListener("change", function () {
-
-        list.textContent = "";
+    function renderFiles() {
+        list.replaceChildren();
         const files = Array.from(input.files);
 
-        files.forEach(function (file) {
-
+        files.forEach(function (file, index) {
             const item = document.createElement("div");
-
             item.className = "bulk-selected-file";
 
             const size = file.size / (1024 * 1024);
@@ -253,10 +248,15 @@ document.addEventListener("DOMContentLoaded", function () {
             filesize.textContent = size < 1
                 ? Math.round(file.size / 1024) + " KB"
                 : size.toFixed(2) + " MB";
-            item.append(filename, filesize);
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.className = "media-preview-remove";
+            removeButton.textContent = "×";
+            removeButton.setAttribute("aria-label", `Remove ${file.name}`);
+            removeButton.dataset.removeFileIndex = String(index);
+            item.append(filename, filesize, removeButton);
 
             list.appendChild(item);
-
         });
 
         const totalBytes = files.reduce((total, file) => total + file.size, 0);
@@ -271,7 +271,19 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             delete list.dataset.error;
         }
+    }
 
+    input.addEventListener("change", renderFiles);
+    list.addEventListener("click", function (event) {
+        const button = event.target.closest("[data-remove-file-index]");
+        if (!button) return;
+        const removeIndex = Number(button.dataset.removeFileIndex);
+        const transfer = new DataTransfer();
+        Array.from(input.files || []).forEach((file, index) => {
+            if (index !== removeIndex) transfer.items.add(file);
+        });
+        input.files = transfer.files;
+        renderFiles();
     });
 
     form?.addEventListener("submit", function (event) {
