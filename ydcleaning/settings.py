@@ -918,6 +918,13 @@ REST_FRAMEWORK = {
     },
 }
 
+# JWTs use a dedicated test-only key so test runs do not inherit a short
+# development fallback or require any production signing secret.
+if any(arg == "test" for arg in sys.argv):
+    SIMPLE_JWT = {
+        "SIGNING_KEY": "ydccs-test-only-jwt-signing-key-with-adequate-length",
+    }
+
 
 # Local development only: Expo web preview
 CORS_ALLOWED_ORIGINS = [

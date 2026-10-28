@@ -161,6 +161,15 @@ class DashboardPermissionMappingTests(SimpleTestCase):
             ("invoices.view_invoice",),
         )
 
+    def test_quote_deletion_requires_delete_permission_on_post_only(self):
+        path = "/dashboard/leads/12/delete/"
+
+        self.assertIsNone(dashboard_required_permissions(path, "GET"))
+        self.assertEqual(
+            dashboard_required_permissions(path, "POST"),
+            ("quotes.delete_quoterequest",),
+        )
+
     def test_every_dashboard_url_name_is_explicitly_mapped(self):
         def walk(patterns, prefix=""):
             for pattern in patterns:
@@ -249,6 +258,18 @@ class DashboardAuthorizationTests(TestCase):
         self.grant("security.access_dashboard", "customers.view_customer")
         with self.assertRaises(PermissionDenied):
             self.middleware("/dashboard/customers/not-a-real-route/")
+
+    def test_quote_deletion_is_restricted_to_users_with_delete_permission(self):
+        path = "/dashboard/leads/1/delete/"
+        self.grant(
+            "security.access_dashboard",
+            "quotes.view_quoterequest",
+        )
+        with self.assertRaises(PermissionDenied):
+            self.middleware(path, "POST")
+
+        self.grant("quotes.delete_quoterequest")
+        self.assertEqual(self.middleware(path, "POST").status_code, 200)
 
     def test_read_only_security_role_cannot_post_audit_or_update_findings(self):
         from security.views import security_center

@@ -1,10 +1,12 @@
 
 from datetime import time, timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.settings import api_settings
 
 from bookings.models import Booking
 from customers.models import Customer
@@ -70,6 +72,10 @@ class MobileApiCustomerTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
         self.assertIn("refresh", response.data)
+
+    def test_test_jwt_signing_key_has_minimum_hs256_length(self):
+        self.assertEqual(api_settings.SIGNING_KEY, settings.SIMPLE_JWT["SIGNING_KEY"])
+        self.assertGreaterEqual(len(api_settings.SIGNING_KEY.encode("utf-8")), 32)
 
     def test_invalid_password_cannot_obtain_token(self):
         response = self.client.post(

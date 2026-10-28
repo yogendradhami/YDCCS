@@ -137,7 +137,7 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     customer_analytics customer_behaviour customer_list customer_loyalty customer_profile_360 customer_value_dashboard
     dashboard dashboard_home dashboard_newsletter_subscribe delete delete_booking delete_campaign_history
     delete_contract delete_customer delete_employee delete_equipment delete_expense delete_gallery_item
-    delete_invoice delete_newsletter_subscriber delete_review delete_roster detail download
+    delete_invoice delete_newsletter_subscriber delete_quote_request delete_review delete_roster detail download
     download_invoice_pdf download_payslip_pdf edit edit_booking edit_campaign_history edit_contract
     edit_customer edit_employee edit_equipment edit_expense edit_gallery_item edit_invoice
     edit_newsletter_subscriber edit_review edit_roster edit_supplier edit_supply edit_vehicle
@@ -190,6 +190,7 @@ DASHBOARD_PERMISSION_ROUTE_OVERRIDES = {
     "send_customer_followup": {"POST": ("customers.change_customer",)},
     "create_invoice_from_booking": {"POST": ("bookings.view_booking", "invoices.add_invoice")},
     "update_quote_status": {"POST": ("quotes.change_quoterequest", "bookings.add_booking")},
+    "delete_quote_request": {"POST": ("quotes.delete_quoterequest",)},
     "business_health": {"GET": ("bookings.view_booking", "payroll.view_payrollrecord", "quotes.view_quoterequest"), "HEAD": ("bookings.view_booking", "payroll.view_payrollrecord", "quotes.view_quoterequest")},
     "business_intelligence": {"GET": ("bookings.view_booking", "dashboard.view_cleaningsupply", "customers.view_customer", "employees.view_employee", "dashboard.view_equipment", "expenses.view_expense", "invoices.view_invoice", "quotes.view_quoterequest", "dashboard.view_vehicle"), "HEAD": ("bookings.view_booking", "dashboard.view_cleaningsupply", "customers.view_customer", "employees.view_employee", "dashboard.view_equipment", "expenses.view_expense", "invoices.view_invoice", "quotes.view_quoterequest", "dashboard.view_vehicle")},
     "business_kpis": {"GET": ("bookings.view_booking", "dashboard.view_campaignlog", "customers.view_customer", "employees.view_employee", "invoices.view_invoice", "payroll.view_payrollrecord", "reviews.view_review"), "HEAD": ("bookings.view_booking", "dashboard.view_campaignlog", "customers.view_customer", "employees.view_employee", "invoices.view_invoice", "payroll.view_payrollrecord", "reviews.view_review")},
@@ -272,6 +273,7 @@ DASHBOARD_POST_ROUTE_NAMES = frozenset(
         "security_user_create", "security_user_edit", "security_user_access_action",
         "career_detail", "company_settings", "update_quote_status",
         "corporate_lead_update", "add_customer", "edit_customer", "delete_customer",
+        "delete_quote_request",
         "add_booking", "edit_booking", "delete_booking", "update_booking_quick_status",
         "create_invoice_from_booking", "add_employee", "edit_employee", "delete_employee",
         "add_gallery_item", "edit_gallery_item", "delete_gallery_item", "add_review",
