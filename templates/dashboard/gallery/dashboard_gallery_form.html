@@ -4,7 +4,7 @@
 {% block title %}{{ page_title }} | YD Dashboard{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
 {% block page_subtitle %}Add project imagery and details to your company gallery.{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard/gallery-admin.css' %}">{% endblock %}
 
 {% block content %}
 <div class="records-page gallery-form-page">
@@ -15,9 +15,20 @@
         <p>Upload before-and-after photos, set service details, and choose what appears in your public gallery.</p>
     </section>
 
-    <form method="post" enctype="multipart/form-data" class="records-form-card gallery-admin-form" id="galleryForm">
+    <form method="post" enctype="multipart/form-data" class="records-form-card gallery-admin-form" id="galleryForm" data-upload-url="{% url 'gallery_upload_batch' %}" data-item-id="{{ form.instance.pk|default:'' }}">
         {% csrf_token %}
+        <input type="hidden" name="gallery_upload_nonce" id="galleryUploadNonce" value="{{ gallery_upload_nonce }}">
         {% if form.non_field_errors %}<div class="records-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        {% if staged_gallery_images %}
+            <section class="gallery-staged-batch" aria-labelledby="galleryStagedTitle">
+                <div><h2 id="galleryStagedTitle">Images uploaded and verified</h2><p>These images are safely staged for this gallery item. Save the form to attach them, or cancel the staged batch before choosing a different set.</p></div>
+                <div class="gallery-staged-grid">
+                    {% for staged in staged_gallery_images %}
+                        <figure><img src="{{ staged.url }}" alt="Staged {{ staged.slot|cut:'_' }} image"><figcaption>{{ staged.slot|cut:"_"|title }}</figcaption></figure>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
         <section class="records-form-section">
             <header><span>01</span><div><h2>Project information</h2><p>Give the work a clear title and add the service and location details.</p></div></header>
             <div class="records-form-grid">
@@ -32,8 +43,8 @@
         <section class="records-form-section">
             <header><span>02</span><div><h2>Before &amp; after</h2><p>Show the impact of the cleaning work with a before-and-after pair.</p></div></header>
             <div class="gallery-before-after">
-                <div class="gallery-upload-field gallery-before-field"><label for="{{ form.before_image.id_for_label }}">Before image</label>{{ form.before_image }}<small>Before cleaning</small>{% if form.before_image.errors %}<div class="records-field-error">{{ form.before_image.errors }}</div>{% endif %}</div>
-                <div class="gallery-upload-field gallery-after-field"><label for="{{ form.after_image.id_for_label }}">After image</label>{{ form.after_image }}<small>After cleaning</small>{% if form.after_image.errors %}<div class="records-field-error">{{ form.after_image.errors }}</div>{% endif %}</div>
+                <div class="gallery-upload-field gallery-before-field gallery-dropzone" data-slot="before_image"><label for="{{ form.before_image.id_for_label }}">Before image</label>{{ form.before_image }}<small>Before cleaning · JPG, PNG, WEBP, GIF or HEIC/HEIF · up to 20 MB</small><div class="gallery-image-preview" data-preview-for="before_image"></div>{% if form.before_image.errors %}<div class="records-field-error">{{ form.before_image.errors }}</div>{% endif %}</div>
+                <div class="gallery-upload-field gallery-after-field gallery-dropzone" data-slot="after_image"><label for="{{ form.after_image.id_for_label }}">After image</label>{{ form.after_image }}<small>After cleaning · JPG, PNG, WEBP, GIF or HEIC/HEIF · up to 20 MB</small><div class="gallery-image-preview" data-preview-for="after_image"></div>{% if form.after_image.errors %}<div class="records-field-error">{{ form.after_image.errors }}</div>{% endif %}</div>
             </div>
         </section>
 
@@ -41,12 +52,11 @@
             <header><span>03</span><div><h2>Gallery imagery</h2><p>Select the primary image and any additional photos for this project.</p></div></header>
             <div class="records-field">
                 <label for="{{ form.image.id_for_label }}">Primary gallery image <span>Optional</span></label>
-                {{ form.image }}<small>Used as the main gallery image when a before-and-after pair is not shown.</small>{% if form.image.errors %}<div class="records-field-error">{{ form.image.errors }}</div>{% endif %}
+                <div class="gallery-dropzone" data-slot="image">{{ form.image }}<small>Used as the main gallery image when a before-and-after pair is not shown. JPG, PNG, WEBP, GIF or HEIC/HEIF · up to 20 MB</small><div class="gallery-image-preview" data-preview-for="image"></div></div>{% if form.image.errors %}<div class="records-field-error">{{ form.image.errors }}</div>{% endif %}
             </div>
             <div class="records-field gallery-additional-field">
                 <label for="{{ form.additional_images.id_for_label }}">Additional gallery images <span>Optional</span></label>
-                {{ form.additional_images }}<small>Up to 20 additional images per save, each up to 20 MB. JPG, PNG, WEBP, HEIC and HEIF are supported.</small>
-                <div class="gallery-selected-files" id="selectedFiles" hidden></div>
+                <div class="gallery-dropzone" data-slot="additional_images">{{ form.additional_images }}<small>Drop or select up to 20 additional images, each up to 20 MB. JPG, PNG, WEBP, GIF, HEIC and HEIF are supported.</small><div class="gallery-image-preview" data-preview-for="additional_images"></div></div>
                 {% if form.additional_images.errors %}<div class="records-field-error">{{ form.additional_images.errors }}</div>{% endif %}
                 {% if form.instance.pk %}
                     {% with existing=form.instance.additional_images.all %}
@@ -77,23 +87,16 @@
                 {% endfor %}
             </div>
         </section>
-        <div class="records-form-actions"><a class="records-button records-button-light" href="{% url 'gallery_list' %}">Cancel</a><button type="submit" class="records-button records-button-teal">{{ button_text }} <span>→</span></button></div>
+        <section class="gallery-upload-progress" id="galleryUploadProgress" aria-live="polite" hidden>
+            <div class="gallery-upload-progress-heading"><strong>Uploading and verifying images</strong><span id="galleryUploadSummary"></span></div>
+            <progress id="galleryBatchProgress" max="100" value="0">0%</progress>
+            <div id="galleryUploadItems"></div>
+        </section>
+        <button type="button" class="records-button records-button-light" id="cancelStagedUploads" {% if not staged_gallery_images %}hidden{% endif %}>Cancel staged uploads</button>
+        <p class="gallery-upload-status" id="galleryUploadStatus" role="status" aria-live="polite"></p>
+        <div class="records-form-actions"><a class="records-button records-button-light" href="{% url 'gallery_list' %}">Cancel</a><button type="submit" class="records-button records-button-teal" id="gallerySubmit">{{ button_text }} <span>→</span></button></div>
     </form>
 </div>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const input = document.getElementById("{{ form.additional_images.id_for_label }}");
-    const display = document.getElementById("selectedFiles");
-    if (!input || !display) return;
-    input.addEventListener("change", function () {
-        const files = Array.from(input.files || []);
-        display.hidden = files.length === 0;
-        if (!files.length) {
-            display.textContent = "";
-            return;
-        }
-        display.textContent = files.length + " image" + (files.length === 1 ? "" : "s") + " selected to add.";
-    });
-});
-</script>
+<script src="{% static 'js/fast-image-upload.js' %}" defer></script>
+<script src="{% static 'js/gallery-direct-upload.js' %}" defer></script>
 {% endblock %}

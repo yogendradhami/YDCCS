@@ -145,7 +145,7 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     employee_bonuses employee_compliance employee_compliance_matrix employee_kpi_dashboard employee_list employee_performance
     employee_performance_centre employee_performance_detail employee_schedule employee_training_dashboard equipment_list executive_bi_dashboard
     executive_dashboard expense_list export_business_report export_employee_performance_pdf export_quotes_csv faq_question_list
-    faq_question_reply finance_trends financial_dashboard gallery_list generate_contract_bookings generate_payroll
+    faq_question_reply finance_trends financial_dashboard gallery_list gallery_upload_batch generate_contract_bookings generate_payroll
     gst_report induction_cancel induction_completion_pdf induction_dashboard induction_detail induction_setup
     induction_start_record_pdf invoice_detail invoice_list job_profitability_dashboard lead_list leave_list
     list live_chat_assign live_chat_close live_chat_counts live_chat_detail live_chat_list live_chat_takeover maintenance_list
@@ -191,6 +191,7 @@ DASHBOARD_PERMISSION_ROUTE_OVERRIDES = {
     "create_invoice_from_booking": {"POST": ("bookings.view_booking", "invoices.add_invoice")},
     "update_quote_status": {"POST": ("quotes.change_quoterequest", "bookings.add_booking")},
     "delete_quote_request": {"POST": ("quotes.delete_quoterequest",)},
+    "gallery_upload_batch": {"POST": ()},
     "business_health": {"GET": ("bookings.view_booking", "payroll.view_payrollrecord", "quotes.view_quoterequest"), "HEAD": ("bookings.view_booking", "payroll.view_payrollrecord", "quotes.view_quoterequest")},
     "business_intelligence": {"GET": ("bookings.view_booking", "dashboard.view_cleaningsupply", "customers.view_customer", "employees.view_employee", "dashboard.view_equipment", "expenses.view_expense", "invoices.view_invoice", "quotes.view_quoterequest", "dashboard.view_vehicle"), "HEAD": ("bookings.view_booking", "dashboard.view_cleaningsupply", "customers.view_customer", "employees.view_employee", "dashboard.view_equipment", "expenses.view_expense", "invoices.view_invoice", "quotes.view_quoterequest", "dashboard.view_vehicle")},
     "business_kpis": {"GET": ("bookings.view_booking", "dashboard.view_campaignlog", "customers.view_customer", "employees.view_employee", "invoices.view_invoice", "payroll.view_payrollrecord", "reviews.view_review"), "HEAD": ("bookings.view_booking", "dashboard.view_campaignlog", "customers.view_customer", "employees.view_employee", "invoices.view_invoice", "payroll.view_payrollrecord", "reviews.view_review")},
@@ -280,6 +281,7 @@ DASHBOARD_POST_ROUTE_NAMES = frozenset(
         "edit_review", "delete_review", "send_customer_followup", "send_review_request",
         "dashboard_newsletter_subscribe", "edit_newsletter_subscriber",
         "delete_newsletter_subscriber", "add_equipment", "edit_equipment",
+        "gallery_upload_batch",
         "delete_equipment", "add_supply", "edit_supply", "add_purchase_order",
         "receive_purchase_order", "add_supplier", "edit_supplier", "add_vehicle",
         "edit_vehicle", "add_maintenance", "send_quote_followup_email",

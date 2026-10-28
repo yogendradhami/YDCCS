@@ -6,6 +6,7 @@ from corporate.dashboard_views import (
     corporate_lead_detail,
     corporate_lead_update,
 )
+from gallery.views import gallery_upload_batch
 
 from .views import (
     activity_log_list,
@@ -387,6 +388,11 @@ urlpatterns = [
         "dashboard/gallery/<int:item_id>/delete/",
         delete_gallery_item,
         name="delete_gallery_item",
+    ),
+    path(
+        "dashboard/gallery/upload-batch/",
+        gallery_upload_batch,
+        name="gallery_upload_batch",
     ),
 
     # =========================================================

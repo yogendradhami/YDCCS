@@ -55,7 +55,11 @@ from employees.services import create_employee_from_form
 from expenses.models import Expense
 from gallery.forms import GalleryItemForm
 from gallery.models import GalleryItem, GalleryImage
-from gallery.upload_services import save_gallery_uploads
+from gallery.upload_services import (
+    GALLERY_UPLOAD_SESSION_KEY,
+    save_gallery_uploads,
+    save_verified_gallery_uploads,
+)
 from google_reviews.calendar_utils import (
     create_or_update_booking_event,
     delete_booking_event,
@@ -2287,6 +2291,75 @@ def gallery_list(request):
     )
 
 
+def _persist_gallery_form_uploads(request, form, gallery_item, item_id=None):
+    nonce = request.POST.get("gallery_upload_nonce", "").strip()
+    if not nonce:
+        primary_files = {
+            name: form.cleaned_data.get(name)
+            for name in ("image", "before_image", "after_image")
+        }
+        return save_gallery_uploads(
+            gallery_item,
+            primary_files,
+            form.cleaned_data.get("additional_images", []),
+        )
+
+    if request.FILES:
+        raise ValueError("Choose either direct-uploaded or form-uploaded images, not both.")
+
+    batches = request.session.get(GALLERY_UPLOAD_SESSION_KEY, {})
+    batch = batches.get(nonce)
+    if (
+        not batch
+        or batch.get("user_id") != request.user.pk
+        or batch.get("item_id") != item_id
+        or batch.get("expires_at", 0) <= int(timezone.now().timestamp())
+        or not batch.get("finalized")
+        or not batch.get("verified_assets")
+    ):
+        raise ValueError("The uploaded gallery images expired. Please upload them again.")
+
+    try:
+        return save_verified_gallery_uploads(
+            gallery_item,
+            batch["verified_assets"],
+        )
+    finally:
+        batches.pop(nonce, None)
+        request.session[GALLERY_UPLOAD_SESSION_KEY] = batches
+
+
+def _gallery_upload_context(request, form, item_id=None):
+    nonce = request.POST.get("gallery_upload_nonce", "").strip()
+    batches = request.session.get(GALLERY_UPLOAD_SESSION_KEY, {})
+    batch = batches.get(nonce)
+    staged_images = []
+    if (
+        batch
+        and batch.get("user_id") == request.user.pk
+        and batch.get("item_id") == item_id
+        and batch.get("expires_at", 0) > int(timezone.now().timestamp())
+        and batch.get("finalized")
+    ):
+        storage = GalleryItem._meta.get_field("image").storage
+        for asset in batch.get("verified_assets", []):
+            public_id = asset["public_id"]
+            staged_images.append(
+                {
+                    "slot": asset["slot"],
+                    "name": public_id.rsplit("/", 1)[-1],
+                    "url": storage.url(public_id),
+                }
+            )
+    else:
+        nonce = ""
+    return {
+        "form": form,
+        "gallery_upload_nonce": nonce,
+        "staged_gallery_images": staged_images,
+    }
+
+
 @login_required
 def add_gallery_item(request):
 
@@ -2299,16 +2372,8 @@ def add_gallery_item(request):
 
         if form.is_valid():
             gallery_item = form.save(commit=False)
-            primary_files = {
-                name: form.cleaned_data.get(name)
-                for name in ("image", "before_image", "after_image")
-            }
             try:
-                save_gallery_uploads(
-                    gallery_item,
-                    primary_files,
-                    form.cleaned_data.get("additional_images", []),
-                )
+                _persist_gallery_form_uploads(request, form, gallery_item)
             except Exception:
                 logger.exception("Gallery upload failed while adding an item")
                 form.add_error(None, "The gallery images could not be saved. Please try again.")
@@ -2326,15 +2391,14 @@ def add_gallery_item(request):
         form = GalleryItemForm()
 
 
-    return render(
-        request,
-        "dashboard/gallery/dashboard_gallery_form.html",
+    context = _gallery_upload_context(request, form)
+    context.update(
         {
-            "form": form,
             "page_title": "Add Gallery Item",
             "button_text": "Save Gallery Item",
-        },
+        }
     )
+    return render(request, "dashboard/gallery/dashboard_gallery_form.html", context)
 
 
 @login_required
@@ -2359,16 +2423,8 @@ def edit_gallery_item(
 
         if form.is_valid():
             gallery_item = form.save(commit=False)
-            primary_files = {
-                name: form.cleaned_data.get(name)
-                for name in ("image", "before_image", "after_image")
-            }
             try:
-                save_gallery_uploads(
-                    gallery_item,
-                    primary_files,
-                    form.cleaned_data.get("additional_images", []),
-                )
+                _persist_gallery_form_uploads(request, form, gallery_item, item.pk)
             except Exception:
                 logger.exception("Gallery upload failed while editing item %s", item.pk)
                 form.add_error(None, "The gallery images could not be saved. Please try again.")
@@ -2388,15 +2444,14 @@ def edit_gallery_item(
         )
 
 
-    return render(
-        request,
-        "dashboard/gallery/dashboard_gallery_form.html",
+    context = _gallery_upload_context(request, form, item.pk)
+    context.update(
         {
-            "form": form,
             "page_title": "Edit Gallery Item",
             "button_text": "Update Gallery Item",
-        },
+        }
     )
+    return render(request, "dashboard/gallery/dashboard_gallery_form.html", context)
 
 
 @require_POST

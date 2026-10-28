@@ -1,7 +1,7 @@
 from io import BytesIO
 
 from django import forms
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
 from PIL import Image
 
 # Optional HEIC/HEIF support
@@ -15,6 +15,7 @@ except Exception:
 from .models import GalleryItem
 
 MAX_GALLERY_IMAGE_SIZE = 20 * 1024 * 1024
+MAX_GALLERY_BATCH_SIZE = 200 * 1024 * 1024
 
 
 class HEICImageField(forms.ImageField):
@@ -25,10 +26,10 @@ class HEICImageField(forms.ImageField):
     def clean(self, data, initial=None):
         file = super().clean(data, initial)
 
-        if file and getattr(file, "size", 0) > MAX_GALLERY_IMAGE_SIZE:
+        if isinstance(file, UploadedFile) and file.size > MAX_GALLERY_IMAGE_SIZE:
             raise forms.ValidationError("Each gallery image must be 20 MB or smaller.")
 
-        if file and hasattr(file, "name"):
+        if isinstance(file, UploadedFile) and hasattr(file, "name"):
             filename = file.name.lower()
 
             if filename.endswith((".heic", ".heif")):
@@ -200,8 +201,8 @@ class GalleryItemForm(forms.ModelForm):
         required=False,
         label="Additional Gallery Images",
         help_text=(
-            "Select multiple images at once. "
-            "JPG, PNG, WEBP, HEIC and HEIF are supported."
+            "Select up to 20 images, each no larger than 20 MB. "
+            "JPG, PNG, WEBP, GIF, HEIC and HEIF are supported."
         ),
     )
     MAX_IMAGE_SIZE = MAX_GALLERY_IMAGE_SIZE
@@ -231,19 +232,47 @@ class GalleryItemForm(forms.ModelForm):
                     "class",
                     "form-control",
                 )
+                if field_name in {"image", "before_image", "after_image"}:
+                    field.widget.attrs.setdefault(
+                        "accept",
+                        "image/jpeg,image/png,image/webp,image/gif,.heic,.heif",
+                    )
 
     def clean(self):
         cleaned_data = super().clean()
+        submitted_uploads = []
         for field_name in ("image", "before_image", "after_image"):
             uploaded = cleaned_data.get(field_name)
-            if uploaded and getattr(uploaded, "size", 0) > self.MAX_IMAGE_SIZE:
+            if isinstance(uploaded, UploadedFile) and uploaded.size > self.MAX_IMAGE_SIZE:
                 self.add_error(field_name, "Each gallery image must be 20 MB or smaller.")
+            submitted = self.files.get(field_name)
+            if isinstance(submitted, UploadedFile):
+                submitted_uploads.append(submitted)
 
         additional_images = cleaned_data.get("additional_images", [])
-        if len(additional_images) > self.MAX_ADDITIONAL_IMAGES:
+        submitted_uploads.extend(
+            uploaded
+            for uploaded in self.files.getlist("additional_images")
+            if isinstance(uploaded, UploadedFile)
+        )
+        if len(submitted_uploads) > 23:
+            self.add_error(None, "A gallery item can contain no more than 23 images.")
+        if sum(uploaded.size for uploaded in submitted_uploads) > MAX_GALLERY_BATCH_SIZE:
+            self.add_error(None, "Gallery images must total no more than 200 MB per upload batch.")
+
+        existing_additional_count = (
+            self.instance.additional_images.count()
+            if self.instance and self.instance.pk
+            else 0
+        )
+        if (
+            len(additional_images) + existing_additional_count
+            > self.MAX_ADDITIONAL_IMAGES
+        ):
             self.add_error(
                 "additional_images",
-                f"Choose no more than {self.MAX_ADDITIONAL_IMAGES} additional images at once.",
+                f"A gallery item can contain no more than "
+                f"{self.MAX_ADDITIONAL_IMAGES} additional images.",
             )
         for uploaded in additional_images:
             if getattr(uploaded, "size", 0) > self.MAX_IMAGE_SIZE:
@@ -253,4 +282,3 @@ class GalleryItemForm(forms.ModelForm):
                 )
                 break
         return cleaned_data
-
