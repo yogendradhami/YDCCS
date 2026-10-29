@@ -1071,14 +1071,17 @@ def _finish_new_booking(request, booking):
         if isinstance(roster_sync, RosterSyncNotConfigured):
             messages.info(
                 request,
-                "Booking saved. Employee Calendar sync is not configured.",
+                "Booking saved, but this employee has not connected Google "
+                "Calendar or needs to reconnect it. Connect it from the "
+                "employee portal to sync the schedule.",
             )
     except Exception:
         roster_sync_succeeded = False
         logger.exception("Roster sync failed for new booking %s.", booking.pk)
         messages.warning(
             request,
-            "Booking saved, but the employee schedule could not be synced automatically.",
+            "Booking saved, but the employee schedule could not be synced. "
+            "Check the employee's Google Calendar connection and application logs.",
         )
 
     try:
@@ -1088,6 +1091,27 @@ def _finish_new_booking(request, booking):
         messages.warning(
             request,
             "Booking saved, but Google Calendar could not be synced automatically.",
+        )
+
+    if send_booking_confirmation_email(request, booking):
+        messages.success(
+            request,
+            f"Booking confirmation emailed to {booking.customer.email}.",
+        )
+    else:
+        messages.warning(
+            request,
+            "Booking was created, but the customer confirmation email could not "
+            "be sent. Check the customer email address and email provider logs.",
+        )
+
+    if send_company_booking_created_email(request, booking):
+        messages.success(request, "Booking details emailed to the company.")
+    else:
+        messages.warning(
+            request,
+            "Booking was created, but the company notification email could not "
+            "be sent. Check ADMIN_EMAIL and the email provider logs.",
         )
 
     if (
@@ -1153,11 +1177,15 @@ def send_booking_confirmation_email(request, booking, old_status=None):
 
     status_display = booking.get_status_display()
 
-    subject = (
-        f"Booking confirmed — YD-B-{booking.id:05d}"
-        if booking.status == "confirmed"
-        else f"Booking status updated to {status_display} — YD-B-{booking.id:05d}"
-    )
+    if booking.status == "pending" and old_status is None:
+        subject = f"Booking request received — YD-B-{booking.id:05d}"
+    elif booking.status == "confirmed":
+        subject = f"Booking confirmed — YD-B-{booking.id:05d}"
+    else:
+        subject = (
+            f"Booking status updated to {status_display} "
+            f"— YD-B-{booking.id:05d}"
+        )
 
     try:
         # --------------------------------------------------
@@ -1371,6 +1399,84 @@ def send_booking_confirmation_email(request, booking, old_status=None):
 
     return True
 
+
+def send_company_booking_created_email(request, booking):
+    """Email the configured company inbox when a dashboard booking is created."""
+    company_email = getattr(settings, "ADMIN_EMAIL", "").strip()
+    if not company_email:
+        logger.warning(
+            "Company booking notification not sent: ADMIN_EMAIL is not configured. "
+            "Booking=%s",
+            booking.pk,
+        )
+        return False
+
+    customer = booking.customer
+    work_orders = list(booking.work_orders.all())
+    services = (
+        "\n".join(
+            f"{position}. {work_order.service_type} — ${work_order.price:.2f}"
+            for position, work_order in enumerate(work_orders, start=1)
+        )
+        if work_orders
+        else f"1. {booking.service_type} — ${booking.quoted_price:.2f}"
+    )
+    subject = f"New booking created — YD-B-{booking.pk:05d}"
+    body = (
+        "A new booking was created in the YD Commercial Cleaning dashboard.\n\n"
+        f"Booking: YD-B-{booking.pk:05d}\n"
+        f"Customer: {customer.full_name if customer else 'No customer'}\n"
+        f"Customer email: {customer.email if customer and customer.email else 'Not provided'}\n"
+        f"Customer phone: {customer.phone if customer else 'Not provided'}\n"
+        f"Date: {booking.booking_date}\n"
+        f"Time: {booking.booking_time}\n"
+        f"Address: {booking.address}, {booking.suburb_postcode}\n"
+        f"Assigned employee: {booking.assigned_employee or 'Unassigned'}\n\n"
+        f"Work orders:\n{services}\n"
+        f"Total before GST: ${booking.quoted_price:.2f}\n"
+    )
+
+    try:
+        sent_count = send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [company_email],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception(
+            "Company booking notification email failed for booking %s.",
+            booking.pk,
+        )
+        return False
+
+    if not sent_count:
+        logger.error(
+            "Company booking notification returned no successful sends. Booking=%s",
+            booking.pk,
+        )
+        return False
+
+    try:
+        EmailLog.objects.create(
+            sent_by=request.user,
+            email_type="system",
+            recipient_name="YD Commercial Cleaning Services",
+            recipient_email=company_email,
+            subject=subject,
+            related_object=f"Booking #{booking.pk}",
+        )
+    except Exception:
+        logger.exception(
+            "Company booking notification was sent, but EmailLog creation failed "
+            "for booking %s.",
+            booking.pk,
+        )
+
+    return True
+
+
 def _booking_work_order_initial(booking):
     work_orders = list(booking.work_orders.all())
     if work_orders:
@@ -1582,16 +1688,17 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                             messages.warning(
                                 request,
                                 "Booking details and employee assignment were "
-                                "saved, but the new employee's roster Calendar "
-                                "event could not be synchronized because "
-                                "Calendar is not configured. Completion "
+                                "saved, but the new employee has not connected "
+                                "Google Calendar or needs to reconnect it. "
+                                "Completion "
                                 "notifications and invoice creation were skipped.",
                             )
                         else:
                             messages.info(
                                 request,
-                                "Employee Calendar sync is not configured; "
-                                "booking changes were saved.",
+                                "Booking changes were saved, but this employee "
+                                "has not connected Google Calendar or needs to "
+                                "reconnect it from the employee portal.",
                             )
                 except Exception:
                     logger.exception(
@@ -1662,7 +1769,9 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                     else:
                         messages.warning(
                             request,
-                            "Booking updated, but the employee schedule could not be synced automatically.",
+                            "Booking updated, but the employee schedule could "
+                            "not be synced. Check the employee's Google Calendar "
+                            "connection and application logs.",
                         )
 
             return {

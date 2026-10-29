@@ -56,6 +56,14 @@ Employee Dashboard | YD Commercial Cleaning
                             View Schedule
                         </a>
 
+                        <a href="{% url 'employee_google_connect' %}" class="portal-secondary-btn">
+                            {% if calendar_connected %}
+                                Reconnect Google Calendar
+                            {% else %}
+                                Connect Google Calendar
+                            {% endif %}
+                        </a>
+
                     </div>
 
                 </div>

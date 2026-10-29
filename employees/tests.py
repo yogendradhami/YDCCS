@@ -19,6 +19,7 @@ from notifications.models import Notification
 
 from .models import (
 	Employee,
+	EmployeeGoogleAccount,
 	PropertyDamageImage,
 	PropertyDamageReport,
 	PropertyDamageReportReply,
@@ -154,6 +155,72 @@ class EmployeeDamageReportTests(TestCase):
 		self.assertEqual(employee_response.status_code, 200)
 		self.assertContains(employee_response, "Thank you for reporting this.")
 
+	def test_employee_can_respond_to_own_report_and_notifies_dashboard(self):
+		report = PropertyDamageReport.objects.create(
+			employee=self.employee,
+			booking=self.booking,
+			description="A tile was cracked near the kitchen sink.",
+		)
+		staff_user = User.objects.create_user(
+			username="damage-report-response-staff",
+			password="test-password",
+			is_staff=True,
+		)
+
+		response = self.client.post(
+			reverse(
+				"employee_property_damage_report_reply",
+				args=[report.pk],
+			),
+			{"message": "I have added a close-up photo for clarity."},
+		)
+
+		self.assertRedirects(
+			response,
+			f"{reverse('employee_damage_report')}#report-{report.pk}",
+			fetch_redirect_response=False,
+		)
+		reply = PropertyDamageReportReply.objects.get(report=report)
+		self.assertEqual(reply.responder, self.user)
+		self.assertEqual(
+			reply.message,
+			"I have added a close-up photo for clarity.",
+		)
+		notification = Notification.objects.get(
+			user=staff_user,
+			notification_type="damage_report",
+		)
+		self.assertEqual(
+			notification.link,
+			f"/dashboard/property-damage-reports/#report-{report.pk}",
+		)
+
+		portal_response = self.client.get(reverse("employee_damage_report"))
+		self.assertContains(portal_response, "I have added a close-up photo for clarity.")
+		self.assertContains(portal_response, ">You</strong>")
+
+	def test_employee_cannot_respond_to_another_employees_report(self):
+		other_employee = Employee.objects.create(
+			full_name="Other Damage Report Employee",
+			phone="0400000002",
+		)
+		report = PropertyDamageReport.objects.create(
+			employee=other_employee,
+			booking=self.booking,
+			description="A report belonging to another employee.",
+		)
+
+		response = self.client.post(
+			reverse(
+				"employee_property_damage_report_reply",
+				args=[report.pk],
+			),
+			{"message": "I should not be able to respond to this report."},
+		)
+
+		self.assertEqual(response.status_code, 404)
+		self.assertFalse(PropertyDamageReportReply.objects.filter(report=report).exists())
+
 	def test_employee_cannot_report_against_another_employees_booking(self):
 		other_employee = Employee.objects.create(
 			full_name="Another Employee",
@@ -257,6 +324,25 @@ class EmployeePortalLayoutTests(TestCase):
 		self.assertNotContains(response, 'id="offerBanner"')
 		self.assertNotContains(response, 'class="yd-why-choose-section"')
 		self.assertNotContains(response, 'id="yd-faq-section"')
+
+	def test_employee_dashboard_offers_google_calendar_connection(self):
+		self.client.force_login(self.user)
+
+		response = self.client.get(reverse("employee_dashboard"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Connect Google Calendar")
+		self.assertContains(
+			response,
+			f'href="{reverse("employee_google_connect")}"',
+		)
+
+		EmployeeGoogleAccount.objects.create(
+			employee=self.employee,
+			access_token="connected-token",
+		)
+		connected_response = self.client.get(reverse("employee_dashboard"))
+		self.assertContains(connected_response, "Reconnect Google Calendar")
 
 	def test_employee_login_keeps_public_header_without_duplicate_brand(self):
 		response = self.client.get("/employee/login/")

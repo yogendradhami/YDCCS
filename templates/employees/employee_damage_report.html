@@ -109,17 +109,33 @@
                             </div>
                         {% endif %}
                         <div class="damage-report-history-replies">
-                            <h3>Team updates</h3>
+                            <h3>Report conversation</h3>
                             {% for reply in report.replies.all %}
                                 <article>
-                                    <strong>{% if reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
+                                    <strong>{% if reply.responder_id == request.user.pk %}You{% elif reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
                                     <time datetime="{{ reply.created_at|date:'c' }}">{{ reply.created_at|date:"d M Y, g:i A" }}</time>
                                     <p>{{ reply.message|linebreaksbr }}</p>
                                 </article>
                             {% empty %}
-                                <p>No team updates yet.</p>
+                                <p>No messages yet. Use the form below if you need to add information to your report.</p>
                             {% endfor %}
                         </div>
+                        <form
+                            class="employee-damage-report-reply-form"
+                            method="post"
+                            action="{% url 'employee_property_damage_report_reply' report.pk %}"
+                        >
+                            {% csrf_token %}
+                            <label for="response-{{ report.pk }}">Your response</label>
+                            <textarea
+                                id="response-{{ report.pk }}"
+                                name="message"
+                                rows="3"
+                                required
+                                placeholder="Write a response or follow-up for the dashboard team."
+                            ></textarea>
+                            <button type="submit" class="portal-primary-btn">Send response</button>
+                        </form>
                     </article>
                 {% empty %}
                     <div class="damage-report-notice">Your submitted reports and any team updates will be saved here.</div>

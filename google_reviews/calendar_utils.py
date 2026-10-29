@@ -92,17 +92,25 @@ def get_employee_google_calendar_service(employee):
         client_id=settings.GOOGLE_CLIENT_ID,
         client_secret=settings.GOOGLE_CLIENT_SECRET,
         scopes=EMPLOYEE_GOOGLE_SCOPES,
+        expiry=google_account.updated_at + timedelta(minutes=55),
     )
 
     # Refresh expired access token automatically.
-    if credentials.expired and credentials.refresh_token:
-
+    if credentials.expired:
+        if not credentials.refresh_token:
+            raise CalendarNotConfigured(
+                f"Employee {employee.pk}'s Google Calendar access expired "
+                "without a refresh token. Reconnect Google Calendar."
+            )
         credentials.refresh(Request())
 
         google_account.access_token = credentials.token
+        if credentials.refresh_token:
+            google_account.refresh_token = credentials.refresh_token
         google_account.save(
             update_fields=[
                 "access_token",
+                "refresh_token",
                 "updated_at",
             ]
         )

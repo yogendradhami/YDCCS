@@ -115,6 +115,15 @@ class PropertyDamageReportReplyForm(forms.ModelForm):
         labels = {"message": "Reply to employee"}
 
 
+class EmployeePropertyDamageReportReplyForm(PropertyDamageReportReplyForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["message"].label = "Your response"
+        self.fields["message"].widget.attrs["placeholder"] = (
+            "Write a response or follow-up for the dashboard team."
+        )
+
+
 class EmployeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -43,7 +43,9 @@ from .decorators import employee_required
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from bookings.forms import JobPhotoForm
 from bookings.models import Booking, JobPhoto
@@ -51,6 +53,7 @@ from bookings.models import Booking, JobPhoto
 from .forms import (
     EmployeeJobStatusForm,
     EmployeeLoginForm,
+    EmployeePropertyDamageReportReplyForm,
     PropertyDamageReportForm,
     PropertyDamageReportReplyForm,
 )
@@ -418,18 +421,18 @@ def employee_google_callback(request):
         # Save Google account
         # ---------------------------------------------------------
 
-        EmployeeGoogleAccount.objects.update_or_create(
+        google_account, _ = EmployeeGoogleAccount.objects.get_or_create(
             employee=employee,
-            defaults={
-                "email": (
-                    credentials.id_token.get("email", "")
-                    if credentials.id_token
-                    else ""
-                ),
-                "access_token": credentials.token,
-                "refresh_token": credentials.refresh_token or "",
-            },
         )
+        google_account.email = (
+            credentials.id_token.get("email", "")
+            if credentials.id_token
+            else google_account.email
+        )
+        google_account.access_token = credentials.token
+        if credentials.refresh_token:
+            google_account.refresh_token = credentials.refresh_token
+        google_account.save()
 
         # ---------------------------------------------------------
         # Clear OAuth session data
@@ -552,6 +555,9 @@ def employee_dashboard(request):
             "today_jobs": today_jobs,
             "upcoming_jobs": upcoming_jobs,
             "completed_jobs": completed_jobs,
+            "calendar_connected": EmployeeGoogleAccount.objects.filter(
+                employee=employee,
+            ).exists(),
         },
     )
 
@@ -670,6 +676,38 @@ def employee_damage_report(request):
             "reports": reports,
         },
     )
+
+
+@employee_required
+@require_POST
+def employee_property_damage_report_reply(request, report_id):
+    employee = get_object_or_404(Employee, user=request.user)
+    report = get_object_or_404(
+        PropertyDamageReport,
+        pk=report_id,
+        employee=employee,
+    )
+    form = EmployeePropertyDamageReportReplyForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Please enter a response before sending it.")
+        return redirect(f"{reverse('employee_damage_report')}#report-{report.pk}")
+
+    reply = form.save(commit=False)
+    reply.report = report
+    reply.responder = request.user
+    reply.save()
+
+    notify_admins(
+        f"Employee response to property damage report #{report.pk}",
+        (
+            f"{employee.full_name} responded to property damage report "
+            f"#{report.pk}: {reply.message[:180]}"
+        ),
+        notification_type="damage_report",
+        link=f"/dashboard/property-damage-reports/#report-{report.pk}",
+    )
+    messages.success(request, "Your response has been sent to the dashboard team.")
+    return redirect(f"{reverse('employee_damage_report')}#report-{report.pk}")
 
 
 # ==========================================================

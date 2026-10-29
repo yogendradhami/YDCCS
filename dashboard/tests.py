@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 
 from django.contrib.messages import get_messages
 from django.test import TestCase, Client, override_settings
@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from core.test_utils import grant_dashboard_permissions, mark_public_email_verified
 from bookings.forms import BookingForm
+from customers.models import Customer
 from dashboard.models import CareerApplication
 from bookings.models import Booking
 from employees.models import Employee
@@ -234,6 +235,66 @@ class QuoteCompletionStateTests(TestCase):
 		self.quote.refresh_from_db()
 		self.assertEqual(self.quote.status, "completed")
 		self.assertEqual(booking.idempotency_key, f"quote:{self.quote.pk}")
+
+
+@override_settings(
+	EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+	ADMIN_EMAIL="company@example.com",
+)
+class DashboardBookingEmailTests(TestCase):
+	def setUp(self):
+		mail.outbox.clear()
+		self.admin = get_user_model().objects.create_user(
+			"booking-email-admin",
+			email="booking-admin@example.com",
+			password="test-password",
+			is_staff=True,
+		)
+		grant_dashboard_permissions(self.admin, "bookings.add_booking")
+		self.client.force_login(self.admin)
+		self.customer = Customer.objects.create(
+			full_name="Booking Email Customer",
+			email="booking-customer@example.com",
+			phone="0400000000",
+		)
+
+	@patch("dashboard.views.create_or_update_booking_event")
+	@patch("rosters.services.sync_booking_roster", return_value=None)
+	def test_new_booking_emails_customer_and_company(
+		self,
+		_sync_roster,
+		_sync_company_calendar,
+	):
+		response = self.client.post(
+			reverse("add_booking"),
+			{
+				"customer": self.customer.pk,
+				"service_type": "Office Cleaning",
+				"quoted_price": "125.00",
+				"booking_date": (date.today() + timedelta(days=3)).isoformat(),
+				"booking_time": "10:00",
+				"address": "1 King Street",
+				"suburb_postcode": "Adelaide 5000",
+				"assigned_employee": "",
+				"status": "pending",
+				"notes": "",
+				"work_orders-TOTAL_FORMS": "1",
+				"work_orders-INITIAL_FORMS": "0",
+				"work_orders-MIN_NUM_FORMS": "1",
+				"work_orders-MAX_NUM_FORMS": "1000",
+				"work_orders-0-service_type": "Office Cleaning",
+				"work_orders-0-price": "125.00",
+			},
+		)
+
+		self.assertEqual(response.status_code, 302)
+		self.assertEqual(len(mail.outbox), 2)
+		customer_email, company_email = mail.outbox
+		self.assertEqual(customer_email.to, ["booking-customer@example.com"])
+		self.assertIn("Booking request received", customer_email.subject)
+		self.assertEqual(company_email.to, ["company@example.com"])
+		self.assertIn("New booking created", company_email.subject)
+		self.assertIn("Office Cleaning", company_email.body)
 
 
 class QuoteLeadManagementTests(TestCase):
@@ -861,7 +922,7 @@ class BookingReassignmentFailureTests(TestCase):
         messages = list(response.wsgi_request._messages)
         self.assertTrue(
             any(
-                "new employee's roster Calendar event could not be synchronized"
+                "new employee has not connected Google Calendar"
                 in str(message)
                 for message in messages
             )

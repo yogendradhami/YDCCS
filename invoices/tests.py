@@ -3,7 +3,8 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core import mail
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from bookings.models import Booking, BookingWorkOrder
@@ -29,17 +30,17 @@ class ManualInvoiceEmailTests(TestCase):
             suburb_postcode="Adelaide 5000",
             quoted_price="250.00",
         )
-        user = get_user_model().objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username="manual-invoice-admin",
             password="test-password",
             is_staff=True,
         )
         grant_dashboard_permissions(
-            user,
+            self.user,
             "invoices.add_invoice",
             "invoices.view_invoice",
         )
-        self.client.force_login(user)
+        self.client.force_login(self.user)
         self.form_data = {
             "booking": self.booking.pk,
             "issue_date": date.today().isoformat(),
@@ -74,6 +75,27 @@ class ManualInvoiceEmailTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Work orders")
         self.assertContains(response, 'id="id_work_orders-TOTAL_FORMS"')
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    )
+    def test_invoice_email_sends_customer_pdf(self):
+        invoice = Invoice.objects.create(
+            booking=self.booking,
+            description="Office cleaning",
+            amount=Decimal("250.00"),
+        )
+        request = RequestFactory().get("/")
+        request.user = self.user
+
+        from dashboard.views import send_invoice_email
+
+        self.assertTrue(send_invoice_email(request, invoice))
+        self.assertEqual(len(mail.outbox), 1)
+        sent_email = mail.outbox[0]
+        self.assertEqual(sent_email.to, ["recipient@example.com"])
+        self.assertEqual(sent_email.attachments[0][0], f"{invoice.invoice_number}.pdf")
+        self.assertEqual(sent_email.attachments[0][2], "application/pdf")
 
     @patch("dashboard.views.send_invoice_email", return_value=True)
     def test_manual_invoice_creation_does_not_duplicate_a_booking_invoice(

@@ -1,10 +1,11 @@
+from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 from django.utils import timezone
 
 from bookings.models import Booking
-from employees.models import Employee
+from employees.models import Employee, EmployeeGoogleAccount
 from rosters.models import Roster
 
 from .models import GoogleAccount, GoogleReview
@@ -103,6 +104,42 @@ class CalendarDeleteRetryTests(TestCase):
         ):
             with self.assertRaises(CalendarNotConfigured):
                 create_or_update_booking_event(self.booking)
+
+    @patch("google_reviews.calendar_utils.Request")
+    @patch("google_reviews.calendar_utils.build")
+    @patch("google_reviews.calendar_utils.Credentials")
+    def test_employee_calendar_refreshes_expired_access_token(
+        self,
+        credentials_factory,
+        build_calendar,
+        google_request,
+    ):
+        account = EmployeeGoogleAccount.objects.create(
+            employee=self.employee,
+            access_token="expired-access-token",
+            refresh_token="existing-refresh-token",
+        )
+        credentials = MagicMock()
+        credentials.expired = True
+        credentials.refresh_token = "rotated-refresh-token"
+        credentials.token = "new-access-token"
+        credentials_factory.return_value = credentials
+
+        from google_reviews.calendar_utils import get_employee_google_calendar_service
+
+        result = get_employee_google_calendar_service(self.employee)
+
+        self.assertEqual(result, build_calendar.return_value)
+        credentials_factory.assert_called_once()
+        self.assertEqual(
+            credentials_factory.call_args.kwargs["expiry"],
+            account.updated_at + timedelta(minutes=55),
+        )
+        credentials.refresh.assert_called_once_with(google_request.return_value)
+        build_calendar.assert_called_once()
+        account.refresh_from_db()
+        self.assertEqual(account.access_token, "new-access-token")
+        self.assertEqual(account.refresh_token, "rotated-refresh-token")
 
     def test_company_calendar_sync_creates_event_for_unassigned_booking(self):
         self.booking.status = "cancelled"
