@@ -1,0 +1,60 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Testimonials | YD Dashboard{% endblock %}
+{% block page_title %}Testimonials{% endblock %}
+{% block page_subtitle %}Manage the customer testimonial videos shown on your website.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard/testimonial-dashboard.css' %}">{% endblock %}
+
+{% block content %}
+<div class="records-page testimonial-management-page">
+    <section class="records-hero">
+        <div>
+            <span class="records-eyebrow"><i></i> BRAND &amp; CONTENT / CUSTOMER TESTIMONIALS</span>
+            <h1>Let customers<br><strong>tell your story.</strong></h1>
+            <p>Upload and manage customer videos that build trust and showcase your service.</p>
+        </div>
+        <div class="records-hero-actions">
+            <a class="records-hero-button" href="{% url 'add_testimonial_videos' %}">＋ Add testimonial videos</a>
+            <a class="records-hero-link" href="{% url 'testimonials' %}">View public page <span>↗</span></a>
+        </div>
+    </section>
+
+    <section class="records-metrics" aria-label="Testimonial overview">
+        <article class="records-metric records-metric-featured"><span>ALL VIDEOS</span><strong>{{ total_count }}</strong><small>customer testimonials</small></article>
+        <article class="records-metric"><span>ON WEBSITE</span><strong>{{ active_count }}</strong><small>currently visible to visitors</small></article>
+        <article class="records-metric"><span>HIDDEN</span><strong>{{ inactive_count }}</strong><small>saved but not published</small></article>
+    </section>
+
+    <section class="records-panel">
+        <header class="records-panel-header">
+            <div><span class="records-section-label">VIDEO LIBRARY</span><h2>Customer testimonials</h2><p>Each uploaded video is managed as a separate testimonial.</p></div>
+        </header>
+        {% if videos %}
+            <div class="records-gallery-grid">
+                {% for video in videos %}
+                    <article class="records-gallery-card">
+                        <div class="records-gallery-media testimonial-video-media">
+                            {% if video.video %}<video src="{{ video.video.url }}" controls preload="metadata" aria-label="Video testimonial: {{ video.title }}"></video>{% endif %}
+                        </div>
+                        <div class="records-gallery-content">
+                            <div class="records-gallery-tags">
+                                {% if video.active %}<span class="records-source">On website</span>{% else %}<span class="records-source testimonial-hidden-tag">Hidden</span>{% endif %}
+                            </div>
+                            <h3 title="{{ video.title }}">{{ video.title }}</h3>
+                            {% if video.description %}<p class="records-gallery-description">{{ video.description|truncatewords:24 }}</p>{% endif %}
+                            <div class="records-gallery-meta"><span>{{ video.created_at|date:"d M Y" }}</span></div>
+                            <div class="records-gallery-actions">
+                                <a href="{% url 'edit_testimonial_video' video.pk %}">Edit testimonial <span>↗</span></a>
+                                <form method="post" action="{% url 'delete_testimonial_video' video.pk %}" onsubmit="return confirm('Delete this testimonial and its video from cloud storage? This cannot be undone.');">{% csrf_token %}<button class="records-gallery-delete" type="submit">Delete</button></form>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="records-empty-block"><strong>No testimonial videos yet</strong><p>Upload one or more customer videos to add them to your testimonial library.</p><a class="records-button records-button-teal" href="{% url 'add_testimonial_videos' %}">Add testimonial videos <span>→</span></a></div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

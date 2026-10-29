@@ -7,6 +7,12 @@ from corporate.dashboard_views import (
     corporate_lead_update,
 )
 from gallery.views import gallery_upload_batch
+from .testimonial_views import (
+    add_testimonial_videos,
+    delete_testimonial_video,
+    edit_testimonial_video,
+    testimonial_video_list,
+)
 
 from .views import (
     activity_log_list,
@@ -393,6 +399,30 @@ urlpatterns = [
         "dashboard/gallery/upload-batch/",
         gallery_upload_batch,
         name="gallery_upload_batch",
+    ),
+
+    # =========================================================
+    # TESTIMONIAL VIDEOS
+    # =========================================================
+    path(
+        "dashboard/testimonials/",
+        testimonial_video_list,
+        name="testimonial_video_list",
+    ),
+    path(
+        "dashboard/testimonials/add/",
+        add_testimonial_videos,
+        name="add_testimonial_videos",
+    ),
+    path(
+        "dashboard/testimonials/<int:video_id>/edit/",
+        edit_testimonial_video,
+        name="edit_testimonial_video",
+    ),
+    path(
+        "dashboard/testimonials/<int:video_id>/delete/",
+        delete_testimonial_video,
+        name="delete_testimonial_video",
     ),
 
     # =========================================================

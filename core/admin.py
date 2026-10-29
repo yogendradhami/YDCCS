@@ -1,8 +1,6 @@
 import json
 import logging
 import time
-from pathlib import Path
-
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -13,11 +11,10 @@ from django.urls import path, reverse
 
 from .models import FAQQuestion, TestimonialVideo
 from .testimonial_uploads import (
-    ALLOWED_TESTIMONIAL_VIDEO_FORMATS,
-    MAX_TESTIMONIAL_VIDEO_BYTES,
     TESTIMONIAL_UPLOAD_SESSION_KEY,
     cleanup_testimonial_upload,
     create_testimonial_upload,
+    validate_testimonial_video_file,
     verify_testimonial_upload_receipt,
 )
 
@@ -46,10 +43,10 @@ class TestimonialVideoAdminForm(forms.ModelForm):
         video = self.cleaned_data.get("video")
         if not isinstance(video, UploadedFile):
             return video
-        if video.size > MAX_TESTIMONIAL_VIDEO_BYTES:
-            raise forms.ValidationError("Testimonial videos must be 100 MB or smaller.")
-        if Path(video.name).suffix.lower().lstrip(".") not in ALLOWED_TESTIMONIAL_VIDEO_FORMATS:
-            raise forms.ValidationError("Upload a supported video file such as MP4, MOV, or WebM.")
+        try:
+            validate_testimonial_video_file(video)
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
         return video
 
     def clean(self):

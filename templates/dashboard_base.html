@@ -178,6 +178,9 @@
                         <span>Gallery</span>
                         <span class="side-badge" data-notification-type="gallery" {% if not notification_counts.gallery %}hidden{% endif %}>{{ notification_counts.gallery|default:0 }}</span>
                     </a>
+                    <a href="{% url 'testimonial_video_list' %}" {% if request.resolver_match.url_name == "testimonial_video_list" or request.resolver_match.url_name == "add_testimonial_videos" or request.resolver_match.url_name == "edit_testimonial_video" %}aria-current="page"{% endif %}>
+                        <span>Testimonials</span>
+                    </a>
                 </div>
             </div>
 

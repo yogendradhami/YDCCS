@@ -7,6 +7,11 @@
 
 from django import forms
 from django.core.files.uploadedfile import UploadedFile
+from core.models import TestimonialVideo
+from core.testimonial_uploads import (
+    MAX_TESTIMONIAL_UPLOAD_COUNT,
+    validate_testimonial_video_file,
+)
 from customers.models import MarketingSubscriber
 from .models import (
     CampaignLog,
@@ -20,6 +25,72 @@ from .models import (
 )
 
 
+class MultipleVideoInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleVideoField(forms.FileField):
+    widget = MultipleVideoInput
+
+    def clean(self, data, initial=None):
+        if not data:
+            if self.required:
+                raise forms.ValidationError(self.error_messages["required"], code="required")
+            return []
+        files = data if isinstance(data, (list, tuple)) else [data]
+        return [forms.FileField.clean(self, upload, initial) for upload in files]
+
+
+class TestimonialVideoUploadForm(forms.Form):
+    videos = MultipleVideoField(
+        label="Video files",
+        help_text="Select up to 10 videos. Each video can be up to 100 MB.",
+        widget=MultipleVideoInput(attrs={"accept": "video/*"}),
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="This description will be applied to each uploaded video.",
+    )
+    active = forms.BooleanField(required=False, initial=True, label="Show on website")
+
+    def clean_videos(self):
+        videos = self.cleaned_data["videos"]
+        if len(videos) > MAX_TESTIMONIAL_UPLOAD_COUNT:
+            raise forms.ValidationError(
+                f"Upload no more than {MAX_TESTIMONIAL_UPLOAD_COUNT} videos at a time."
+            )
+        for video in videos:
+            try:
+                validate_testimonial_video_file(video)
+            except ValueError as exc:
+                raise forms.ValidationError(f"{video.name}: {exc}") from exc
+        return videos
+
+
+class TestimonialVideoEditForm(forms.ModelForm):
+    replacement_video = forms.FileField(
+        required=False,
+        label="Replace video",
+        help_text="Optional. Upload a new video to replace the current one.",
+        widget=forms.ClearableFileInput(attrs={"accept": "video/*"}),
+    )
+
+    class Meta:
+        model = TestimonialVideo
+        fields = ["title", "description", "active"]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 4}),
+        }
+
+    def clean_replacement_video(self):
+        video = self.cleaned_data.get("replacement_video")
+        if video:
+            try:
+                validate_testimonial_video_file(video)
+            except ValueError as exc:
+                raise forms.ValidationError(str(exc)) from exc
+        return video
 
 
 class CompanySettingsForm(forms.ModelForm):

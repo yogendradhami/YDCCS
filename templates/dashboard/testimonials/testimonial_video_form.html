@@ -1,0 +1,60 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | YD Dashboard{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}{% if is_editing %}Update the video and details for this customer testimonial.{% else %}Upload several customer testimonial videos at once.{% endif %}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard/testimonial-dashboard.css' %}">{% endblock %}
+
+{% block content %}
+<div class="records-page testimonial-form-page">
+    <nav class="records-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'testimonial_video_list' %}">Testimonials</a><span>/</span><span>{{ page_title }}</span></nav>
+    <section class="records-form-intro">
+        <span class="records-eyebrow"><i></i> BRAND &amp; CONTENT / CUSTOMER TESTIMONIALS</span>
+        <h1>{% if is_editing %}Refine this customer story.{% else %}Add customer stories.{% endif %}</h1>
+        <p>{% if is_editing %}Keep this testimonial current, replace its video, or hide it from the public website.{% else %}Select up to 10 videos. A separate testimonial will be created for each file, named from its filename.{% endif %}</p>
+    </section>
+
+    <form method="post" enctype="multipart/form-data" class="records-form-card testimonial-admin-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="records-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <section class="records-form-section">
+            <header><span>01</span><div><h2>{% if is_editing %}Testimonial details{% else %}Video upload{% endif %}</h2><p>{% if is_editing %}Update the title, description, visibility, or video file.{% else %}Choose supported video files and choose whether they should be published immediately.{% endif %}</p></div></header>
+            <div class="records-form-grid">
+                {% if is_editing %}
+                    <div class="records-field records-field-wide">
+                        <label for="{{ form.title.id_for_label }}">Title</label>{{ form.title }}{% if form.title.errors %}<div class="records-field-error">{{ form.title.errors }}</div>{% endif %}
+                    </div>
+                    <div class="records-field records-field-wide">
+                        <label for="{{ form.description.id_for_label }}">Description <span>Optional</span></label>{{ form.description }}{% if form.description.errors %}<div class="records-field-error">{{ form.description.errors }}</div>{% endif %}
+                    </div>
+                    <div class="records-field records-field-wide testimonial-current-video">
+                        <label>Current video</label>
+                        {% if testimonial.video %}<video src="{{ testimonial.video.url }}" controls preload="metadata" aria-label="Current testimonial video"></video>{% endif %}
+                    </div>
+                    <div class="records-field records-field-wide">
+                        <label for="{{ form.replacement_video.id_for_label }}">{{ form.replacement_video.label }} <span>Optional</span></label>{{ form.replacement_video }}<small>{{ form.replacement_video.help_text }} Supported: MP4, MOV, M4V, WebM, AVI, MKV, MPEG, MPG, OGV and 3GP. Maximum 100 MB.</small>{% if form.replacement_video.errors %}<div class="records-field-error">{{ form.replacement_video.errors }}</div>{% endif %}
+                    </div>
+                    <div class="records-field testimonial-checkbox-field">
+                        <label for="{{ form.active.id_for_label }}">{{ form.active }} Show on website</label>{% if form.active.errors %}<div class="records-field-error">{{ form.active.errors }}</div>{% endif %}
+                    </div>
+                {% else %}
+                    <div class="records-field records-field-wide">
+                        <label for="{{ form.videos.id_for_label }}">Video files</label>{{ form.videos }}<small>{{ form.videos.help_text }} Supported: MP4, MOV, M4V, WebM, AVI, MKV, MPEG, MPG, OGV and 3GP.</small>{% if form.videos.errors %}<div class="records-field-error">{{ form.videos.errors }}</div>{% endif %}
+                    </div>
+                    <div class="records-field records-field-wide">
+                        <label for="{{ form.description.id_for_label }}">Description <span>Optional</span></label>{{ form.description }}<small>{{ form.description.help_text }}</small>{% if form.description.errors %}<div class="records-field-error">{{ form.description.errors }}</div>{% endif %}
+                    </div>
+                    <div class="records-field testimonial-checkbox-field">
+                        <label for="{{ form.active.id_for_label }}">{{ form.active }} Show on website</label>{% if form.active.errors %}<div class="records-field-error">{{ form.active.errors }}</div>{% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+        <div class="records-form-actions">
+            <a class="records-button records-button-muted" href="{% url 'testimonial_video_list' %}">Cancel</a>
+            <button class="records-button records-button-teal" type="submit">{% if is_editing %}Save testimonial{% else %}Upload videos{% endif %} <span>→</span></button>
+        </div>
+    </form>
+</div>
+{% endblock %}

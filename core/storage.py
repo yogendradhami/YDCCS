@@ -33,8 +33,11 @@ class CloudinaryVideoStorage(Storage):
         return False
 
     def delete(self, name):
-        if name:
-            cloudinary.uploader.destroy(
-                name,
-                resource_type="video",
-            )
+        if not name:
+            return True
+        result = cloudinary.uploader.destroy(
+            name,
+            resource_type="video",
+            invalidate=True,
+        )
+        return isinstance(result, dict) and result.get("result") in {"ok", "not found"}

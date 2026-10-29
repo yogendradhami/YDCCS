@@ -128,6 +128,9 @@
                         <span class="side-badge">{{ notification_counts.gallery }}</span>
                     {% endif %}
                 </a>
+                <a href="{% url 'testimonial_video_list' %}">
+                    <span>Testimonials</span>
+                </a>
                 <a href="/dashboard/site-images/">
                     <span>Site Images</span>
                     {% if notification_counts.site_images %}
@@ -549,4 +552,3 @@
         </nav>
 
     </aside>
-

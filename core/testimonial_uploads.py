@@ -3,6 +3,7 @@ import logging
 import secrets
 import time
 import uuid
+from pathlib import Path
 
 import cloudinary
 import cloudinary.api as cloudinary_api
@@ -17,9 +18,17 @@ TESTIMONIAL_UPLOAD_SESSION_KEY = "pending_testimonial_video_uploads"
 TESTIMONIAL_UPLOAD_PREFIX = "testimonial-videos/admin"
 TESTIMONIAL_UPLOAD_TTL_SECONDS = 60 * 60
 MAX_TESTIMONIAL_VIDEO_BYTES = 100 * 1024 * 1024
+MAX_TESTIMONIAL_UPLOAD_COUNT = 10
 ALLOWED_TESTIMONIAL_VIDEO_FORMATS = frozenset(
     {"mp4", "mov", "m4v", "webm", "avi", "mkv", "mpeg", "mpg", "ogv", "3gp"}
 )
+
+
+def validate_testimonial_video_file(uploaded_file):
+    if uploaded_file.size > MAX_TESTIMONIAL_VIDEO_BYTES:
+        raise ValueError("Testimonial videos must be 100 MB or smaller.")
+    if Path(uploaded_file.name).suffix.lower().lstrip(".") not in ALLOWED_TESTIMONIAL_VIDEO_FORMATS:
+        raise ValueError("Upload a supported video file such as MP4, MOV, or WebM.")
 
 
 def _configure_cloudinary():
