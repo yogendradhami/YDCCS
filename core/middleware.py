@@ -55,6 +55,9 @@ DASHBOARD_PERMISSION_SECTIONS = {
     "/dashboard/contracts/": (("contracts", "cleaningcontract"),),
     "/dashboard/reports/": (("reports", "cleaningreport"),),
     "/dashboard/gallery/": (("gallery", "galleryitem"),),
+    "/dashboard/property-damage-reports/": (
+        ("employees", "employee"),
+    ),
     "/dashboard/reviews/": (("reviews", "review"),),
     "/dashboard/review-analytics/": (("reviews", "review"), ("dashboard", "reviewrequestlog")),
     "/dashboard/review-requests/send/": (("bookings", "booking"), ("dashboard", "reviewrequestlog")),
@@ -151,7 +154,7 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     list live_chat_assign live_chat_close live_chat_counts live_chat_detail live_chat_list live_chat_takeover maintenance_list
     mark_invoice_paid mark_invoice_unpaid mark_payroll_paid newsletter_subscriber_detail onboarding_dashboard onboarding_detail
     onboarding_document_review onboarding_set_status operations_command_centre owner_alert_centre owner_command_centre payroll_list
-    profit_loss_dashboard purchase_orders quote_conversion_analytics quote_followup_centre receive_purchase_order reject_leave_request
+    profit_loss_dashboard property_damage_report_list purchase_orders quote_conversion_analytics quote_followup_centre receive_purchase_order reject_leave_request
     reminder_centre report_list review_analytics review_list review_requests roster_list run_audit
     security_center security_position_create security_position_edit security_position_list security_user_access_action security_user_create
     security_user_edit security_user_list send_booking_reminder send_contract_renewal_email send_customer_followup send_inactive_campaign

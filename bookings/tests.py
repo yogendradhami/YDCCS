@@ -12,7 +12,14 @@ from leave_management.models import LeaveRequest
 
 from .forms import BookingForm, PublicBookingForm
 from .models import Booking
-from .services import SERVICE_MAPPING, check_booking_availability, create_booking, map_service
+from .services import (
+	get_booking_service_choices,
+	SERVICE_MAPPING,
+	check_booking_availability,
+	create_booking,
+	map_service,
+)
+from services.models import Service
 
 
 class BookingServiceTests(TestCase):
@@ -99,6 +106,99 @@ class BookingServiceTests(TestCase):
 		for unsupported in ("oven_cleaning", "carpet_cleaning", "spring_cleaning", "other"):
 			self.assertNotIn(unsupported, SERVICE_MAPPING)
 			self.assertIsNone(map_service(unsupported))
+
+	def test_booking_forms_include_all_active_catalog_services(self):
+		Service.objects.create(
+			slug="carpet-cleaning",
+			name="Carpet Cleaning",
+			description="Carpet cleaning",
+			overview="Carpet cleaning overview",
+			included=[],
+			packages=[],
+			hero_image="services/carpet-cleaning.jpg",
+		)
+		Service.objects.create(
+			slug="inactive-special-clean",
+			name="Inactive Special Clean",
+			description="Inactive clean",
+			overview="Inactive clean overview",
+			included=[],
+			packages=[],
+			is_active=False,
+			hero_image="services/inactive-special-clean.jpg",
+		)
+
+		choices = dict(get_booking_service_choices())
+		self.assertIn("Carpet Cleaning", choices)
+		self.assertNotIn("Inactive Special Clean", choices)
+		self.assertIn("Carpet Cleaning", dict(BookingForm().fields["service_type"].choices))
+		self.assertIn(
+			"Carpet Cleaning",
+			dict(PublicBookingForm().fields["service_type"].choices),
+		)
+
+	def test_booking_service_labels_hide_adelaide_but_keep_catalog_values(self):
+		Service.objects.create(
+			slug="carpet-cleaning-adelaide",
+			name="Carpet Cleaning Adelaide",
+			description="Carpet cleaning",
+			overview="Carpet cleaning overview",
+			included=[],
+			packages=[],
+			hero_image="services/carpet-cleaning.jpg",
+		)
+
+		choices = dict(get_booking_service_choices())
+
+		self.assertEqual(choices["Carpet Cleaning Adelaide"], "Carpet Cleaning")
+		self.assertTrue(all("Adelaide" not in label for label in choices.values()))
+
+	def test_booking_accepts_active_catalog_service(self):
+		Service.objects.create(
+			slug="carpet-cleaning",
+			name="Carpet Cleaning",
+			description="Carpet cleaning",
+			overview="Carpet cleaning overview",
+			included=[],
+			packages=[],
+			hero_image="services/carpet-cleaning.jpg",
+		)
+
+		booking, created = create_booking(
+			**self.booking_kwargs(service_type="Carpet Cleaning")
+		)
+
+		self.assertTrue(created)
+		self.assertEqual(booking.service_type, "Carpet Cleaning")
+
+	def test_staff_booking_form_accepts_website_service_name(self):
+		Service.objects.create(
+			slug="carpet-cleaning-adelaide",
+			name="Carpet Cleaning Adelaide",
+			description="Carpet cleaning",
+			overview="Carpet cleaning overview",
+			included=[],
+			packages=[],
+			hero_image="services/carpet-cleaning.jpg",
+		)
+		form = BookingForm(
+			data={
+				"customer": self.customer.pk,
+				"service_type": "Carpet Cleaning Adelaide",
+				"booking_date": (date.today() + timedelta(days=3)).isoformat(),
+				"booking_time": "10:00",
+				"address": "1 King Street",
+				"suburb_postcode": "Adelaide 5000",
+				"quoted_price": "200.00",
+				"assigned_employee": "",
+				"status": "confirmed",
+				"notes": "",
+			}
+		)
+
+		self.assertTrue(form.is_valid(), form.errors)
+		booking = form.save()
+		self.assertEqual(booking.service_type, "Carpet Cleaning Adelaide")
 
 	def test_public_form_has_no_customer_selector_but_staff_form_does(self):
 		self.assertNotIn("customer", PublicBookingForm().fields)

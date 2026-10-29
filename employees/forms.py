@@ -16,7 +16,87 @@ from django.db.models import Q
 
 from bookings.models import Booking
 
-from .models import Employee
+from .models import Employee, PropertyDamageReport
+
+MAX_DAMAGE_REPORT_IMAGES = 12
+MAX_DAMAGE_REPORT_IMAGE_SIZE = 25 * 1024 * 1024
+ALLOWED_DAMAGE_REPORT_IMAGE_FORMATS = {"JPEG", "PNG", "WEBP"}
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleImageField(forms.FileField):
+    widget = MultipleFileInput
+
+    def clean(self, data, initial=None):
+        if not data:
+            return []
+
+        files = data if isinstance(data, (list, tuple)) else [data]
+        if len(files) > MAX_DAMAGE_REPORT_IMAGES:
+            raise ValidationError(
+                f"Choose no more than {MAX_DAMAGE_REPORT_IMAGES} images."
+            )
+
+        image_field = forms.ImageField()
+        cleaned_images = []
+        for image in files:
+            cleaned_image = image_field.clean(image, initial)
+            if cleaned_image.size > MAX_DAMAGE_REPORT_IMAGE_SIZE:
+                raise ValidationError("Each image must be 25 MB or smaller.")
+            if cleaned_image.image.format not in ALLOWED_DAMAGE_REPORT_IMAGE_FORMATS:
+                raise ValidationError("Use JPEG, PNG, or WebP images.")
+            cleaned_images.append(cleaned_image)
+        return cleaned_images
+
+
+class PropertyDamageReportForm(forms.ModelForm):
+    images = MultipleImageField(
+        required=False,
+        label="Damage photos",
+        help_text="Upload up to 12 JPEG, PNG, or WebP images (25 MB max each).",
+        widget=MultipleFileInput(
+            attrs={
+                "accept": "image/jpeg,image/png,image/webp",
+                "class": "damage-report-file-input",
+            }
+        ),
+    )
+
+    class Meta:
+        model = PropertyDamageReport
+        fields = ["booking", "description", "images"]
+        widgets = {
+            "booking": forms.Select(attrs={"class": "damage-report-control"}),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "damage-report-control",
+                    "rows": 6,
+                    "placeholder": "Describe what happened, where the damage is, and any immediate action taken.",
+                }
+            ),
+        }
+        labels = {
+            "booking": "Assigned job",
+            "description": "What happened?",
+        }
+
+    def __init__(self, *args, employee, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["booking"].required = True
+        self.fields["booking"].queryset = (
+            Booking.objects.filter(assigned_employee=employee)
+            .select_related("customer")
+            .order_by("-booking_date", "-booking_time")
+        )
+        self.fields["booking"].label_from_instance = (
+            lambda booking: (
+                f"{booking.booking_date:%d %b %Y} — {booking.get_service_type_display()} — "
+                f"{booking.address}, {booking.suburb_postcode}"
+            )
+        )
 
 
 class EmployeeForm(forms.ModelForm):

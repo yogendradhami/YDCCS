@@ -50,7 +50,7 @@ from customers.forms import CustomerForm, MarketingSignupForm
 from customers.models import Customer, MarketingSubscriber
 from dashboard.models import CampaignLog, CleaningSupply, Equipment, Vehicle, CareerApplication
 from employees.forms import EmployeeCreateForm, EmployeeForm
-from employees.models import Employee
+from employees.models import Employee, PropertyDamageReport
 from employees.services import create_employee_from_form
 from expenses.models import Expense
 from gallery.forms import GalleryItemForm
@@ -2267,6 +2267,36 @@ def gallery_list(request):
         {
             "items": items,
             "source_count": items.values("source").distinct().count(),
+        },
+    )
+
+
+@admin_required
+def property_damage_report_list(request):
+    reports = (
+        PropertyDamageReport.objects
+        .select_related("employee", "booking")
+        .prefetch_related("images")
+        .order_by("-created_at")
+    )
+    paginator = Paginator(reports, 12)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "dashboard/employees/property_damage_reports.html",
+        {
+            "page_obj": page_obj,
+            "report_count": reports.count(),
+            "today_report_count": reports.filter(
+                created_at__date=timezone.localdate()
+            ).count(),
+            "reporting_employee_count": (
+                reports.exclude(employee__isnull=True)
+                .values("employee_id")
+                .distinct()
+                .count()
+            ),
         },
     )
 

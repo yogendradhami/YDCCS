@@ -196,6 +196,10 @@
                         <span class="side-badge" data-notification-type="employee" {% if not notification_counts.employee %}hidden{% endif %}>{{ notification_counts.employee|default:0 }}</span>
                     </a>
 
+                    <a href="{% url 'property_damage_report_list' %}" {% if request.resolver_match.url_name == "property_damage_report_list" %}aria-current="page"{% endif %}>
+                        <span>Property Damage Reports</span>
+                    </a>
+
                     <a href="/dashboard/induction/">
                         <span>Employee Induction</span>
                         {% if notification_counts.induction %}

@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from leave_management.models import LeaveRequest
 from employees.models import Employee
+from services.models import Service
 
 from .models import Booking
 
@@ -19,6 +20,22 @@ SERVICE_MAPPING = {
 
 def map_service(service):
     return SERVICE_MAPPING.get(service)
+
+
+def get_booking_service_choices():
+    service_names = dict(Booking.SERVICE_CHOICES)
+    existing_values = set(service_names)
+    active_services = Service.objects.filter(is_active=True).order_by("name")
+
+    for service_name in active_services.values_list("name", flat=True):
+        if service_name not in existing_values:
+            service_names[service_name] = service_name
+            existing_values.add(service_name)
+
+    return [
+        (value, label.removesuffix(" Adelaide").strip())
+        for value, label in service_names.items()
+    ]
 
 
 def check_booking_availability(*, booking_date, booking_time, assigned_employee=None):
@@ -50,7 +67,7 @@ def check_booking_availability(*, booking_date, booking_time, assigned_employee=
 
 
 def create_booking(*, customer=None, service_type, booking_date, booking_time, address, suburb_postcode, quoted_price=0, notes="", assigned_employee=None, workflow_key=None, trusted_assignment=False):
-    if service_type not in dict(Booking.SERVICE_CHOICES):
+    if service_type not in dict(get_booking_service_choices()):
         raise ValueError("Unsupported booking service.")
     if not isinstance(booking_date, date) or not isinstance(booking_time, time):
         raise ValueError("A valid booking date and time are required.")

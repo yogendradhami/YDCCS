@@ -100,6 +100,7 @@ from .views import (
     faq_question_reply,
     owner_command_centre,
     profit_loss_dashboard,
+    property_damage_report_list,
     purchase_orders,
     quote_conversion_analytics,
     quote_followup_centre,
@@ -376,6 +377,12 @@ urlpatterns = [
         "dashboard/gallery/",
         gallery_list,
         name="gallery_list",
+    ),
+
+    path(
+        "dashboard/property-damage-reports/",
+        property_damage_report_list,
+        name="property_damage_report_list",
     ),
 
     path(

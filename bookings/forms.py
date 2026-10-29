@@ -3,16 +3,33 @@ from django import forms
 from leave_management.models import LeaveRequest
 
 from .models import Booking, JobPhoto
+from .services import get_booking_service_choices
 from leave_management.models import LeaveRequest
 
 from .models import Booking, JobPhoto
 
 
+class BookingServiceChoicesValidationMixin:
+    def _get_validation_exclusions(self):
+        exclude = super()._get_validation_exclusions()
+        # The form field validates against the live service catalog; the model
+        # field's legacy choices would reject catalog services after form validation.
+        exclude.add("service_type")
+        return exclude
 
-class BookingForm(forms.ModelForm):
+
+
+class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        service_choices = get_booking_service_choices()
+        if self.instance and self.instance.pk:
+            current_service = self.instance.service_type
+            if current_service and current_service not in dict(service_choices):
+                service_choices.append((current_service, current_service))
+        self.fields["service_type"].choices = service_choices
 
         self.fields["customer"].required = False
         self.fields["customer"].label = "Customer (Optional)"
@@ -138,7 +155,7 @@ class BookingForm(forms.ModelForm):
 
         return cleaned_data
 
-class PublicBookingForm(forms.ModelForm):
+class PublicBookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
     name = forms.CharField(max_length=150)
     email = forms.EmailField()
     phone = forms.CharField(max_length=30)
@@ -147,6 +164,7 @@ class PublicBookingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.idempotency_key = kwargs.pop("idempotency_key", None)
         super().__init__(*args, **kwargs)
+        self.fields["service_type"].choices = get_booking_service_choices()
 
     class Meta:
         model = Booking

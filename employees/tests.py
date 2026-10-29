@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import DatabaseError
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
@@ -16,7 +16,142 @@ from customers.models import Customer
 from invoices.models import Invoice
 from quotes.models import QuoteRequest
 
-from .models import Employee
+from .models import Employee, PropertyDamageImage, PropertyDamageReport
+
+
+def _damage_report_image(name):
+	buffer = io.BytesIO()
+	Image.new("RGB", (16, 16), color="red").save(buffer, format="JPEG")
+	return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/jpeg")
+
+
+class EmployeeDamageReportTests(TestCase):
+	def setUp(self):
+		self.media_directory = tempfile.TemporaryDirectory()
+		self.addCleanup(self.media_directory.cleanup)
+		self.media_settings = override_settings(MEDIA_ROOT=self.media_directory.name)
+		self.media_settings.enable()
+		self.addCleanup(self.media_settings.disable)
+
+		self.user = User.objects.create_user(
+			username="damage-report-employee",
+			password="test-password",
+		)
+		self.employee = Employee.objects.create(
+			user=self.user,
+			full_name="Damage Report Employee",
+			phone="0400000000",
+		)
+		programme = InductionProgramme.objects.create(
+			name="Damage report induction",
+		)
+		EmployeeInduction.objects.create(
+			employee=self.employee,
+			programme=programme,
+			status="completed",
+		)
+		self.booking = Booking.objects.create(
+			service_type="House Cleaning",
+			booking_date=date(2026, 10, 29),
+			booking_time=time(9, 0),
+			address="12 King Street",
+			suburb_postcode="Adelaide 5000",
+			assigned_employee=self.employee,
+		)
+		self.client.force_login(self.user)
+
+	def test_employee_can_submit_report_with_multiple_images(self):
+		response = self.client.post(
+			reverse("employee_damage_report"),
+			{
+				"booking": self.booking.pk,
+				"description": "A tile was cracked near the kitchen sink.",
+				"images": [
+					_damage_report_image("damage-one.jpg"),
+					_damage_report_image("damage-two.jpg"),
+				],
+			},
+		)
+
+		self.assertRedirects(response, reverse("employee_damage_report"))
+		report = PropertyDamageReport.objects.get()
+		self.assertEqual(report.employee, self.employee)
+		self.assertEqual(report.booking, self.booking)
+		self.assertEqual(
+			report.description,
+			"A tile was cracked near the kitchen sink.",
+		)
+		self.assertEqual(PropertyDamageImage.objects.filter(report=report).count(), 2)
+
+	def test_employee_cannot_report_against_another_employees_booking(self):
+		other_employee = Employee.objects.create(
+			full_name="Another Employee",
+			phone="0400000001",
+		)
+		other_booking = Booking.objects.create(
+			service_type="Office Cleaning",
+			booking_date=date(2026, 10, 30),
+			booking_time=time(10, 0),
+			address="1 King William Road",
+			suburb_postcode="Adelaide 5000",
+			assigned_employee=other_employee,
+		)
+
+		response = self.client.post(
+			reverse("employee_damage_report"),
+			{
+				"booking": other_booking.pk,
+				"description": "A report outside my assigned jobs.",
+			},
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(PropertyDamageReport.objects.count(), 0)
+		self.assertContains(response, "Select a valid choice")
+
+	def test_report_requires_an_assigned_job(self):
+		response = self.client.post(
+			reverse("employee_damage_report"),
+			{"description": "Damage without a selected job."},
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(PropertyDamageReport.objects.count(), 0)
+		self.assertContains(response, "This field is required.")
+
+	def test_dashboard_lists_reports_for_staff_only(self):
+		report = PropertyDamageReport.objects.create(
+			employee=self.employee,
+			booking=self.booking,
+			description="Damage next to the kitchen sink.",
+		)
+		report.images.create(image=_damage_report_image("damage.jpg"))
+
+		response = self.client.get(reverse("property_damage_report_list"))
+		self.assertIn(response.status_code, (302, 403))
+
+		staff_user = User.objects.create_user(
+			username="damage-report-manager",
+			password="test-password",
+			is_staff=True,
+		)
+		grant_dashboard_permissions(
+			staff_user,
+			"employees.view_employee",
+		)
+		staff_client = Client()
+		staff_client.force_login(staff_user)
+		response = staff_client.get(reverse("property_damage_report_list"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Damage next to the kitchen sink.")
+		self.assertContains(response, "Damage Report Employee")
+		self.assertContains(response, "12 King Street")
+		self.assertContains(response, report.images.get().image.url)
+		self.assertContains(
+			response,
+			f'href="{reverse("property_damage_report_list")}"',
+		)
 
 
 class EmployeePortalLayoutTests(TestCase):

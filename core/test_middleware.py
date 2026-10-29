@@ -16,6 +16,16 @@ from .middleware import (
 
 
 class DashboardPermissionMappingTests(SimpleTestCase):
+    def test_property_damage_reports_require_employee_report_view_permission(self):
+        self.assertEqual(
+            dashboard_required_permissions(
+                "/dashboard/property-damage-reports/",
+                "GET",
+                "property_damage_report_list",
+            ),
+            ("employees.view_employee",),
+        )
+
     def test_customer_routes_require_customer_permissions(self):
         self.assertEqual(
             dashboard_required_permissions("/dashboard/customers/", "GET"),

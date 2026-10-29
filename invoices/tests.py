@@ -126,8 +126,14 @@ class InvoiceBookingServiceTests(TestCase):
         self.assertEqual(first.status, "draft")
         self.assertEqual(Invoice.objects.count(), 1)
 
-    def test_invoice_for_booking_without_customer_can_be_deleted(self):
+    def test_deleting_invoice_preserves_booking_customer_and_other_invoices(self):
+        customer = Customer.objects.create(
+            full_name="Invoice History Customer",
+            email="invoice-history@example.com",
+            phone="0400000000",
+        )
         booking = Booking.objects.create(
+            customer=customer,
             service_type="Office Cleaning",
             booking_date=date.today() + timedelta(days=1),
             booking_time=time(10, 0),
@@ -153,8 +159,9 @@ class InvoiceBookingServiceTests(TestCase):
             fetch_redirect_response=False,
         )
         self.assertFalse(Invoice.objects.filter(pk=invoice.pk).exists())
-        self.assertFalse(Invoice.objects.filter(pk=additional_invoice.pk).exists())
-        self.assertFalse(Booking.objects.filter(pk=booking.pk).exists())
+        self.assertTrue(Invoice.objects.filter(pk=additional_invoice.pk).exists())
+        self.assertTrue(Booking.objects.filter(pk=booking.pk).exists())
+        self.assertTrue(Customer.objects.filter(pk=customer.pk).exists())
 
     def test_invoice_list_renders_kpis_from_stats_context(self):
         booking = Booking.objects.create(

@@ -86,3 +86,46 @@ class EmployeeGoogleAccount(models.Model):
             return f"{self.employee.full_name} - {self.email}"
 
         return f"{self.employee.full_name} - Google Calendar"
+
+
+class PropertyDamageReport(models.Model):
+    """Damage reported by an employee for one of their assigned bookings."""
+
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="property_damage_reports",
+    )
+    booking = models.ForeignKey(
+        "bookings.Booking",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="property_damage_reports",
+    )
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Property damage report #{self.pk}"
+
+
+class PropertyDamageImage(models.Model):
+    report = models.ForeignKey(
+        PropertyDamageReport,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    image = models.ImageField(upload_to="damage_reports/%Y/%m/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["uploaded_at", "pk"]
+
+    def __str__(self):
+        return f"Image for property damage report #{self.report_id}"

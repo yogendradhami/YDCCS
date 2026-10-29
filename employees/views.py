@@ -32,7 +32,12 @@ from django.db import DatabaseError, transaction
 from django.http import HttpResponse, JsonResponse
 from google_auth_oauthlib.flow import Flow
 
-from .models import Employee, EmployeeGoogleAccount
+from .models import (
+    Employee,
+    EmployeeGoogleAccount,
+    PropertyDamageImage,
+    PropertyDamageReport,
+)
 from .decorators import employee_required
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
@@ -42,7 +47,11 @@ from django.utils import timezone
 from bookings.forms import JobPhotoForm
 from bookings.models import Booking, JobPhoto
 
-from .forms import EmployeeJobStatusForm, EmployeeLoginForm
+from .forms import (
+    EmployeeJobStatusForm,
+    EmployeeLoginForm,
+    PropertyDamageReportForm,
+)
 from .models import Employee
 from .profile_forms import (
     EmployeePasswordForm,
@@ -565,6 +574,80 @@ def employee_jobs(request):
         {
             "employee": employee,
             "jobs": jobs,
+        },
+    )
+
+
+@employee_required
+def employee_damage_report(request):
+    employee = get_object_or_404(Employee, user=request.user)
+
+    if request.method == "POST":
+        form = PropertyDamageReportForm(
+            request.POST,
+            request.FILES,
+            employee=employee,
+        )
+        if form.is_valid():
+            saved_assets = []
+            try:
+                with transaction.atomic():
+                    booking = Booking.objects.select_for_update().get(
+                        pk=form.cleaned_data["booking"].pk,
+                        assigned_employee=employee,
+                    )
+                    report = PropertyDamageReport.objects.create(
+                        employee=employee,
+                        booking=booking,
+                        description=form.cleaned_data["description"],
+                    )
+                    for image in form.cleaned_data["images"]:
+                        report_image = PropertyDamageImage(
+                            report=report,
+                            image=image,
+                        )
+                        report_image.save()
+                        saved_assets.append(
+                            (report_image.image.storage, report_image.image.name)
+                        )
+            except Booking.DoesNotExist:
+                form.add_error(
+                    "booking",
+                    "That job is no longer assigned to your account. Choose another job.",
+                )
+            except Exception:
+                logger.exception(
+                    "Could not save a property damage report for employee %s.",
+                    employee.pk,
+                )
+                for storage, name in saved_assets:
+                    try:
+                        storage.delete(name)
+                    except Exception:
+                        logger.exception(
+                            "Could not clean up property damage image %s.",
+                            name,
+                        )
+                form.add_error(
+                    None,
+                    "We couldn't save your report right now. Please try again.",
+                )
+            else:
+                messages.success(
+                    request,
+                    "Your property damage report has been sent to the team.",
+                )
+                return redirect("employee_damage_report")
+    else:
+        form = PropertyDamageReportForm(employee=employee)
+
+    return render(
+        request,
+        "employees/employee_damage_report.html",
+        {
+            "employee": employee,
+            "form": form,
+            "has_assigned_jobs": form.fields["booking"].queryset.exists(),
         },
     )
 

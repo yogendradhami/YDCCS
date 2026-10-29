@@ -1,0 +1,126 @@
+.damage-report-list {
+    display: grid;
+    gap: 18px;
+}
+
+.damage-report-card {
+    min-width: 0;
+    padding: clamp(18px, 3vw, 28px);
+    border: 1px solid #e5ebf0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(16, 43, 70, .05);
+}
+
+.damage-report-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e9eef2;
+}
+
+.damage-report-reference,
+.damage-report-label {
+    color: #748596;
+    font-size: .66rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+}
+
+.damage-report-card-header h3 {
+    margin: 6px 0 0;
+    color: #172b45;
+    font-size: 1.15rem;
+}
+
+.damage-report-card-header time {
+    color: #748596;
+    font-size: .78rem;
+}
+
+.damage-report-job {
+    display: grid;
+    gap: 5px;
+    margin: 17px 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f5f8fa;
+    color: #40546a;
+    font-size: .83rem;
+}
+
+.damage-report-job strong {
+    color: #172b45;
+}
+
+.damage-report-job small {
+    color: #748596;
+}
+
+.damage-report-description p {
+    margin: 7px 0 0;
+    color: #40546a;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.damage-report-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.damage-report-images a {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+    background: #eef2f5;
+}
+
+.damage-report-images img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .2s ease;
+}
+
+.damage-report-images a:hover img {
+    transform: scale(1.04);
+}
+
+.damage-report-no-images {
+    margin: 18px 0 0;
+    color: #748596;
+    font-size: .82rem;
+}
+
+.damage-report-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 22px;
+    color: #748596;
+    font-size: .82rem;
+}
+
+.damage-report-pagination a {
+    color: #087f82;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+@media (max-width: 600px) {
+    .damage-report-card-header {
+        flex-direction: column;
+    }
+
+    .damage-report-images {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

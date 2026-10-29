@@ -14,6 +14,7 @@ from django.urls import path
 
 from .views import (
     employee_dashboard,
+    employee_damage_report,
     employee_job_detail,
     employee_jobs,
     employee_login,
@@ -42,6 +43,11 @@ urlpatterns = [
     ),
     # Employee dashboard route
     path("employee/dashboard/", employee_dashboard, name="employee_dashboard"),
+    path(
+        "employee/damage-report/",
+        employee_damage_report,
+        name="employee_damage_report",
+    ),
     # Employee profile route
     path("employee/profile/", employee_profile, name="employee_profile"),
     # Employee job routes

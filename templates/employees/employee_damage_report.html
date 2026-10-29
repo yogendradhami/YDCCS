@@ -1,0 +1,86 @@
+{% extends 'employees/employee_portal_base.html' %}
+{% load static %}
+
+{% block title %}Report Property Damage | Employee Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portal/employee-dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="employee-portal">
+    <main class="employee-portal-main">
+        <div class="employee-portal-container">
+            <section class="damage-report-page">
+                <header class="damage-report-heading">
+                    <span class="section-kicker">Employee workspace</span>
+                    <h1>Report property damage</h1>
+                    <p>
+                        Tell the team what happened as soon as possible. Choose the assigned job,
+                        add clear photos if available, and include any immediate action taken.
+                    </p>
+                </header>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="damage-report-message {{ message.tags }}" role="status">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if not has_assigned_jobs %}
+                    <div class="damage-report-notice" role="status">
+                        You do not currently have an assigned job to attach to a damage report.
+                        Contact your manager if you need to report damage from an earlier job.
+                    </div>
+                {% else %}
+                    <form class="damage-report-form" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="damage-report-errors" role="alert">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="damage-report-field">
+                            <label for="{{ form.booking.id_for_label }}">{{ form.booking.label }}</label>
+                            {{ form.booking }}
+                            {% for error in form.booking.errors %}
+                                <span class="damage-report-error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="damage-report-field">
+                            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% for error in form.description.errors %}
+                                <span class="damage-report-error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="damage-report-field">
+                            <label for="{{ form.images.id_for_label }}">{{ form.images.label }}</label>
+                            {{ form.images }}
+                            <small>{{ form.images.help_text }}</small>
+                            {% for error in form.images.errors %}
+                                <span class="damage-report-error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="damage-report-actions">
+                            <button type="submit" class="portal-primary-btn">
+                                Send damage report
+                            </button>
+                            <a href="{% url 'employee_dashboard' %}" class="portal-secondary-btn">
+                                Back to overview
+                            </a>
+                        </div>
+                    </form>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+</section>
+{% endblock %}

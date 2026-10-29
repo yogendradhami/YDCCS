@@ -1,0 +1,119 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Property Damage Reports | YD Dashboard{% endblock %}
+{% block page_title %}Property Damage Reports{% endblock %}
+{% block page_subtitle %}Review property damage reported by employees during assigned jobs.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/records-dashboard.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard/property-damage-reports.css' %}">{% endblock %}
+
+{% block content %}
+<div class="records-page damage-reports-page">
+    <section class="records-hero">
+        <div>
+            <span class="records-eyebrow"><i></i> OPERATIONS / EMPLOYEE REPORTS</span>
+            <h1>Property damage<br><strong>reports</strong></h1>
+            <p>Review employee notes and photo evidence linked to assigned cleaning jobs.</p>
+        </div>
+    </section>
+
+    <section class="records-metrics" aria-label="Damage report overview">
+        <article class="records-metric records-metric-featured">
+            <span>TOTAL REPORTS</span>
+            <strong>{{ report_count }}</strong>
+            <small>submitted by employees</small>
+        </article>
+        <article class="records-metric">
+            <span>REPORTED TODAY</span>
+            <strong>{{ today_report_count }}</strong>
+            <small>new property reports</small>
+        </article>
+        <article class="records-metric">
+            <span>EMPLOYEES REPORTING</span>
+            <strong>{{ reporting_employee_count }}</strong>
+            <small>employees represented</small>
+        </article>
+    </section>
+
+    <section class="records-panel">
+        <header class="records-panel-header">
+            <div>
+                <span class="records-section-label">LATEST SUBMISSIONS</span>
+                <h2>Employee damage reports</h2>
+                <p>Most recent reports are shown first.</p>
+            </div>
+            <span class="records-count"><strong>{{ report_count }}</strong> reports</span>
+        </header>
+
+        {% if page_obj.object_list %}
+            <div class="damage-report-list">
+                {% for report in page_obj %}
+                    <article class="damage-report-card">
+                        <header class="damage-report-card-header">
+                            <div>
+                                <span class="damage-report-reference">REPORT #{{ report.pk }}</span>
+                                <h3>{% if report.employee %}{{ report.employee.full_name }}{% else %}Former employee{% endif %}</h3>
+                            </div>
+                            <time datetime="{{ report.created_at|date:'c' }}">{{ report.created_at|date:"d M Y, g:i A" }}</time>
+                        </header>
+
+                        <div class="damage-report-job">
+                            {% if report.booking %}
+                                <strong>{{ report.booking.get_service_type_display }}</strong>
+                                <span>{{ report.booking.address }}, {{ report.booking.suburb_postcode }}</span>
+                                <small>Job date: {{ report.booking.booking_date|date:"d M Y" }}</small>
+                            {% else %}
+                                <strong>Job details unavailable</strong>
+                                <span>The original booking is no longer available.</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="damage-report-description">
+                            <span class="damage-report-label">EMPLOYEE NOTES</span>
+                            <p>{{ report.description|linebreaksbr }}</p>
+                        </div>
+
+                        {% with images=report.images.all %}
+                            {% if images %}
+                                <div class="damage-report-images" aria-label="Damage report photos">
+                                    {% for image in images %}
+                                        <a href="{{ image.image.url }}" target="_blank" rel="noopener noreferrer">
+                                            <img
+                                                src="{{ image.image.url }}"
+                                                alt="Damage photo {{ forloop.counter }} for report #{{ report.pk }}"
+                                                loading="lazy"
+                                            >
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="damage-report-no-images">No photos were attached.</p>
+                            {% endif %}
+                        {% endwith %}
+                    </article>
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav class="damage-report-pagination" aria-label="Damage report pages">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}">← Newer reports</a>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+                    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">Older reports →</a>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="records-empty-block">
+                <strong>No property damage reports yet</strong>
+                <p>Employee submissions will appear here with their notes and photo evidence.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
