@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import formset_factory
 
 from leave_management.models import LeaveRequest
 
@@ -18,6 +19,32 @@ class BookingServiceChoicesValidationMixin:
         return exclude
 
 
+class BookingWorkOrderForm(forms.Form):
+    service_type = forms.ChoiceField(label="Service / work order")
+    price = forms.DecimalField(
+        label="Price",
+        min_value=0,
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+    )
+    DELETE = forms.BooleanField(required=False, widget=forms.HiddenInput)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["service_type"].choices = [("", "Choose a service")] + (
+            get_booking_service_choices()
+        )
+
+
+BookingWorkOrderFormSet = formset_factory(
+    BookingWorkOrderForm,
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+)
+
 
 class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
 
@@ -30,6 +57,15 @@ class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
             if current_service and current_service not in dict(service_choices):
                 service_choices.append((current_service, current_service))
         self.fields["service_type"].choices = service_choices
+        self.fields["service_type"].required = False
+        self.fields["quoted_price"].required = False
+        if not self.is_bound and service_choices:
+            self.initial.setdefault("service_type", service_choices[0][0])
+        if not self.is_bound:
+            self.initial.setdefault(
+                "quoted_price",
+                self.instance.quoted_price if self.instance.pk else 0,
+            )
 
         self.fields["customer"].required = False
         self.fields["customer"].label = "Customer (Optional)"

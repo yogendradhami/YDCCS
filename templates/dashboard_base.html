@@ -198,6 +198,9 @@
 
                     <a href="{% url 'property_damage_report_list' %}" {% if request.resolver_match.url_name == "property_damage_report_list" %}aria-current="page"{% endif %}>
                         <span>Property Damage Reports</span>
+                        {% if notification_counts.damage_report %}
+                            <span class="side-badge">{{ notification_counts.damage_report }}</span>
+                        {% endif %}
                     </a>
 
                     <a href="/dashboard/induction/">

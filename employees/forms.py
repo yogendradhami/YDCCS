@@ -16,7 +16,7 @@ from django.db.models import Q
 
 from bookings.models import Booking
 
-from .models import Employee, PropertyDamageReport
+from .models import Employee, PropertyDamageReport, PropertyDamageReportReply
 
 MAX_DAMAGE_REPORT_IMAGES = 12
 MAX_DAMAGE_REPORT_IMAGE_SIZE = 25 * 1024 * 1024
@@ -97,6 +97,22 @@ class PropertyDamageReportForm(forms.ModelForm):
                 f"{booking.address}, {booking.suburb_postcode}"
             )
         )
+
+
+class PropertyDamageReportReplyForm(forms.ModelForm):
+    class Meta:
+        model = PropertyDamageReportReply
+        fields = ["message"]
+        widgets = {
+            "message": forms.Textarea(
+                attrs={
+                    "class": "damage-report-control",
+                    "rows": 3,
+                    "placeholder": "Write an update or follow-up for the employee.",
+                }
+            ),
+        }
+        labels = {"message": "Reply to employee"}
 
 
 class EmployeeForm(forms.ModelForm):

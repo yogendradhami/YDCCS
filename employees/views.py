@@ -37,6 +37,7 @@ from .models import (
     EmployeeGoogleAccount,
     PropertyDamageImage,
     PropertyDamageReport,
+    PropertyDamageReportReply,
 )
 from .decorators import employee_required
 from django.contrib import messages
@@ -51,13 +52,14 @@ from .forms import (
     EmployeeJobStatusForm,
     EmployeeLoginForm,
     PropertyDamageReportForm,
+    PropertyDamageReportReplyForm,
 )
 from .models import Employee
 from .profile_forms import (
     EmployeePasswordForm,
     EmployeeProfileForm,
 )
-from notifications.utils import notify_admins, temporary_instance_flags
+from notifications.utils import notify_admins, notify_user, temporary_instance_flags
 
 EMPLOYEE_GOOGLE_SCOPES = [
     "https://www.googleapis.com/auth/calendar",
@@ -564,8 +566,10 @@ def employee_jobs(request):
 
     employee = get_object_or_404(Employee, user=request.user)
 
-    jobs = Booking.objects.filter(assigned_employee=employee).order_by(
-        "-booking_date", "-booking_time"
+    jobs = (
+        Booking.objects.filter(assigned_employee=employee)
+        .prefetch_related("work_orders")
+        .order_by("-booking_date", "-booking_time")
     )
 
     return render(
@@ -633,6 +637,15 @@ def employee_damage_report(request):
                     "We couldn't save your report right now. Please try again.",
                 )
             else:
+                notify_admins(
+                    "New property damage report",
+                    (
+                        f"{employee.full_name} submitted property damage report "
+                        f"#{report.pk}."
+                    ),
+                    notification_type="damage_report",
+                    link=f"/dashboard/property-damage-reports/#report-{report.pk}",
+                )
                 messages.success(
                     request,
                     "Your property damage report has been sent to the team.",
@@ -641,6 +654,12 @@ def employee_damage_report(request):
     else:
         form = PropertyDamageReportForm(employee=employee)
 
+    reports = (
+        PropertyDamageReport.objects.filter(employee=employee)
+        .select_related("booking")
+        .prefetch_related("images", "replies__responder")
+        .order_by("-created_at")
+    )
     return render(
         request,
         "employees/employee_damage_report.html",
@@ -648,6 +667,7 @@ def employee_damage_report(request):
             "employee": employee,
             "form": form,
             "has_assigned_jobs": form.fields["booking"].queryset.exists(),
+            "reports": reports,
         },
     )
 

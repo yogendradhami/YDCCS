@@ -289,15 +289,21 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             </thead>
 
             <tbody>
-                <tr>
-                    <td>
-                        <strong>{{ invoice.booking.service_type }}</strong><br>
-                        <small>{{ invoice.description }}</small>
-                    </td>
-                    <td class="text-right">1</td>
-                    <td class="text-right">${{ invoice.amount|floatformat:2 }}</td>
-                    <td class="text-right">${{ invoice.amount|floatformat:2 }}</td>
-                </tr>
+                {% for work_order in invoice.work_orders.all %}
+                    <tr>
+                        <td>{{ forloop.counter }}. {{ work_order.description }}</td>
+                        <td class="text-right">1</td>
+                        <td class="text-right">${{ work_order.price|floatformat:2 }}</td>
+                        <td class="text-right">${{ work_order.price|floatformat:2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td>1. {{ invoice.booking.service_type }} — {{ invoice.description }}</td>
+                        <td class="text-right">1</td>
+                        <td class="text-right">${{ invoice.amount|floatformat:2 }}</td>
+                        <td class="text-right">${{ invoice.amount|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
 

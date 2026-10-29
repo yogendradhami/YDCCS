@@ -1,4 +1,5 @@
 from datetime import date, time
+from decimal import Decimal
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -7,7 +8,7 @@ from leave_management.models import LeaveRequest
 from employees.models import Employee
 from services.models import Service
 
-from .models import Booking
+from .models import Booking, BookingWorkOrder
 
 SERVICE_MAPPING = {
     "commercial_cleaning": "Commercial Cleaning",
@@ -38,6 +39,32 @@ def get_booking_service_choices():
     ]
 
 
+def replace_booking_work_orders(booking, work_orders):
+    normalized_work_orders = list(work_orders)
+    if not normalized_work_orders:
+        raise ValueError("At least one work order is required.")
+
+    booking.work_orders.all().delete()
+    BookingWorkOrder.objects.bulk_create(
+        [
+            BookingWorkOrder(
+                booking=booking,
+                service_type=work_order["service_type"],
+                price=Decimal(str(work_order["price"])),
+                position=position,
+            )
+            for position, work_order in enumerate(normalized_work_orders)
+        ]
+    )
+    booking.service_type = normalized_work_orders[0]["service_type"]
+    booking.quoted_price = sum(
+        (Decimal(str(work_order["price"])) for work_order in normalized_work_orders),
+        Decimal("0.00"),
+    )
+    booking.save(update_fields=["service_type", "quoted_price"])
+    return booking.quoted_price
+
+
 def check_booking_availability(*, booking_date, booking_time, assigned_employee=None):
     if not assigned_employee:
         return {
@@ -66,9 +93,23 @@ def check_booking_availability(*, booking_date, booking_time, assigned_employee=
     }
 
 
-def create_booking(*, customer=None, service_type, booking_date, booking_time, address, suburb_postcode, quoted_price=0, notes="", assigned_employee=None, workflow_key=None, trusted_assignment=False):
-    if service_type not in dict(get_booking_service_choices()):
-        raise ValueError("Unsupported booking service.")
+def create_booking(*, customer=None, service_type, booking_date, booking_time, address, suburb_postcode, quoted_price=0, notes="", assigned_employee=None, workflow_key=None, trusted_assignment=False, work_orders=None):
+    normalized_work_orders = work_orders or [
+        {"service_type": service_type, "price": quoted_price}
+    ]
+    valid_services = dict(get_booking_service_choices())
+    if not normalized_work_orders:
+        raise ValueError("At least one work order is required.")
+    for work_order in normalized_work_orders:
+        if work_order["service_type"] not in valid_services:
+            raise ValueError("Unsupported booking service.")
+        if Decimal(str(work_order["price"])) < 0:
+            raise ValueError("Work order prices cannot be negative.")
+    service_type = normalized_work_orders[0]["service_type"]
+    quoted_price = sum(
+        (Decimal(str(work_order["price"])) for work_order in normalized_work_orders),
+        Decimal("0.00"),
+    )
     if not isinstance(booking_date, date) or not isinstance(booking_time, time):
         raise ValueError("A valid booking date and time are required.")
     if not address or not suburb_postcode:
@@ -115,6 +156,7 @@ def create_booking(*, customer=None, service_type, booking_date, booking_time, a
                 notes=notes,
                 idempotency_key=workflow_key,
             )
+            replace_booking_work_orders(booking, normalized_work_orders)
     except IntegrityError:
         if workflow_key:
             existing = Booking.objects.filter(idempotency_key=workflow_key).first()

@@ -76,6 +76,7 @@ def notification_context(request):
         "system": unread_by_type.get("system", 0),
         "review": unread_by_type.get("review", 0),
         "report": unread_by_type.get("report", 0),
+        "damage_report": unread_by_type.get("damage_report", 0),
         "contract": unread_by_type.get("contract", 0),
         "attendance": unread_by_type.get("attendance", 0),
         "payroll": unread_by_type.get("payroll", 0),

@@ -1,6 +1,34 @@
 from django import forms
+from django.forms import formset_factory
 
 from .models import Invoice
+
+
+class InvoiceWorkOrderForm(forms.Form):
+    description = forms.CharField(
+        label="Work order",
+        max_length=255,
+        widget=forms.TextInput(
+            attrs={"placeholder": "e.g. Office cleaning or Carpet cleaning"}
+        ),
+    )
+    price = forms.DecimalField(
+        label="Price before GST",
+        min_value=0,
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+    )
+    DELETE = forms.BooleanField(required=False, widget=forms.HiddenInput)
+
+
+InvoiceWorkOrderFormSet = formset_factory(
+    InvoiceWorkOrderForm,
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+)
 
 
 class InvoiceForm(forms.ModelForm):

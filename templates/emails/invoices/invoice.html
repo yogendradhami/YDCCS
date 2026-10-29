@@ -146,7 +146,11 @@ Your invoice {{ invoice.invoice_number }} from YD Commercial Cleaning Services.
                         font-weight: 600;
                         color: #243c34;
                     ">
-                        {{ booking.service_type }}
+                        {% for work_order in invoice.work_orders.all %}
+                            {{ forloop.counter }}. {{ work_order.description }} — ${{ work_order.price|floatformat:2 }}{% if not forloop.last %}<br>{% endif %}
+                        {% empty %}
+                            1. {{ booking.service_type }} — ${{ invoice.amount|floatformat:2 }}
+                        {% endfor %}
                     </td>
                 </tr>
 

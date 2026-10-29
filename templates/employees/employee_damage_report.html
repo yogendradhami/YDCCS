@@ -80,6 +80,51 @@
                     </form>
                 {% endif %}
             </section>
+
+            <section class="damage-report-history" id="reports" aria-labelledby="damage-report-history-title">
+                <header class="damage-report-history-heading">
+                    <div>
+                        <span class="section-kicker">Your records</span>
+                        <h2 id="damage-report-history-title">Damage report history</h2>
+                        <p>Your reports, photo evidence, and messages from the dashboard team stay available here.</p>
+                    </div>
+                </header>
+                {% for report in reports %}
+                    <article class="damage-report-history-card" id="report-{{ report.pk }}">
+                        <header>
+                            <strong>Report #{{ report.pk }}</strong>
+                            <time datetime="{{ report.created_at|date:'c' }}">{{ report.created_at|date:"d M Y, g:i A" }}</time>
+                        </header>
+                        {% if report.booking %}
+                            <p class="damage-report-history-job">{{ report.booking.get_service_type_display }} · {{ report.booking.address }}, {{ report.booking.suburb_postcode }}</p>
+                        {% endif %}
+                        <p class="damage-report-history-description">{{ report.description|linebreaksbr }}</p>
+                        {% if report.images.all %}
+                            <div class="damage-report-history-images">
+                                {% for image in report.images.all %}
+                                    <a href="{{ image.image.url }}" target="_blank" rel="noopener noreferrer">
+                                        <img src="{{ image.image.url }}" alt="Damage photo {{ forloop.counter }} for report #{{ report.pk }}" loading="lazy">
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="damage-report-history-replies">
+                            <h3>Team updates</h3>
+                            {% for reply in report.replies.all %}
+                                <article>
+                                    <strong>{% if reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
+                                    <time datetime="{{ reply.created_at|date:'c' }}">{{ reply.created_at|date:"d M Y, g:i A" }}</time>
+                                    <p>{{ reply.message|linebreaksbr }}</p>
+                                </article>
+                            {% empty %}
+                                <p>No team updates yet.</p>
+                            {% endfor %}
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="damage-report-notice">Your submitted reports and any team updates will be saved here.</div>
+                {% endfor %}
+            </section>
         </div>
     </main>
 </section>

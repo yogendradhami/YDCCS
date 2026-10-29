@@ -74,7 +74,7 @@ My Jobs | Employee Portal
                         <tbody>
                             {% for job in jobs %}
                                 <tr>
-                                    <td>{{ job.service_type }}</td>
+                                    <td>{% for work_order in job.work_orders.all %}{{ forloop.counter }}. {{ work_order.service_type }}{% if not forloop.last %}<br>{% endif %}{% empty %}1. {{ job.service_type }}{% endfor %}</td>
                                     <td>{{ job.booking_date }}</td>
                                     <td>{{ job.booking_time }}</td>
                                     <td>{{ job.customer.full_name }}</td>

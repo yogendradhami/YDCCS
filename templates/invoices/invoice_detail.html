@@ -637,33 +637,29 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning
 
                     <tbody>
 
-                        <tr>
-
-                            <td>
-
-                                <div class="invoice-item-title">
-                                    {{ invoice.booking.service_type }}
-                                </div>
-
-                                <div class="invoice-item-description">
-                                    {{ invoice.description }}
-                                </div>
-
-                            </td>
-
-                            <td>
-                                1
-                            </td>
-
-                            <td>
-                                ${{ invoice.amount|floatformat:2 }}
-                            </td>
-
-                            <td>
-                                ${{ invoice.amount|floatformat:2 }}
-                            </td>
-
-                        </tr>
+                        {% for work_order in invoice.work_orders.all %}
+                            <tr>
+                                <td>
+                                    <div class="invoice-item-title">{{ forloop.counter }}. {{ work_order.description }}</div>
+                                    {% if forloop.first and invoice.description %}
+                                        <div class="invoice-item-description">{{ invoice.description }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>1</td>
+                                <td>${{ work_order.price|floatformat:2 }}</td>
+                                <td>${{ work_order.price|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td>
+                                    <div class="invoice-item-title">1. {{ invoice.booking.service_type }}</div>
+                                    <div class="invoice-item-description">{{ invoice.description }}</div>
+                                </td>
+                                <td>1</td>
+                                <td>${{ invoice.amount|floatformat:2 }}</td>
+                                <td>${{ invoice.amount|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
 
                     </tbody>
 

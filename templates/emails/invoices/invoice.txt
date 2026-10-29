@@ -13,7 +13,9 @@ Invoice number:
 {{ invoice.invoice_number }}
 
 Service:
-{{ booking.service_type }}
+{% for work_order in invoice.work_orders.all %}{{ forloop.counter }}. {{ work_order.description }} — ${{ work_order.price|floatformat:2 }}
+{% empty %}1. {{ booking.service_type }} — ${{ invoice.amount|floatformat:2 }}
+{% endfor %}
 
 Issue date:
 {{ invoice.issue_date|date:"d F Y" }}

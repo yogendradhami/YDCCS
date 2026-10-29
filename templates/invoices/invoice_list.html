@@ -338,6 +338,32 @@
         font-weight: 800;
     }
 
+    .invoice-customer-group th {
+        padding: 14px 18px;
+        background: #f1f5f9;
+        color: #0f172a;
+        text-align: left;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .invoice-customer-group a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .invoice-customer-group a:hover {
+        color: #0f766e;
+        text-decoration: underline;
+    }
+
+    .invoice-customer-group span {
+        display: block;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
     .invoice-customer-email {
         margin-top: 3px;
         color: #94a3b8;
@@ -903,8 +929,6 @@
 
                             <th>Invoice</th>
 
-                            <th>Customer</th>
-
                             <th>Service</th>
 
                             <th>Issue</th>
@@ -926,6 +950,23 @@
 
                         {% for invoice in invoices %}
 
+                            {% ifchanged invoice.booking.customer_id %}
+                                <tr class="invoice-customer-group">
+                                    <th colspan="7">
+                                        {% if invoice.booking.customer %}
+                                            <a href="{% url 'customer_profile_360' invoice.booking.customer_id %}">
+                                                {{ invoice.booking.customer.full_name }}
+                                            </a>
+                                            {% if invoice.booking.customer.email %}
+                                                <span>{{ invoice.booking.customer.email }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            No customer
+                                        {% endif %}
+                                    </th>
+                                </tr>
+                            {% endifchanged %}
+
                             <tr>
 
                                 <!-- INVOICE -->
@@ -939,31 +980,16 @@
                                 </td>
 
 
-                                <!-- CUSTOMER -->
-
-                                <td>
-
-                                    <div class="invoice-customer-name">
-                                        {{ invoice.booking.customer.full_name }}
-                                    </div>
-
-                                    {% if invoice.booking.customer.email %}
-
-                                        <div class="invoice-customer-email">
-                                            {{ invoice.booking.customer.email }}
-                                        </div>
-
-                                    {% endif %}
-
-                                </td>
-
-
                                 <!-- SERVICE -->
 
                                 <td>
 
                                     <div class="invoice-service">
-                                        {{ invoice.booking.service_type }}
+                                        {% for work_order in invoice.work_orders.all %}
+                                            {{ forloop.counter }}. {{ work_order.description }}{% if not forloop.last %}<br>{% endif %}
+                                        {% empty %}
+                                            1. {{ invoice.booking.service_type }}
+                                        {% endfor %}
                                     </div>
 
                                 </td>

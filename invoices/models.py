@@ -122,3 +122,20 @@ class Invoice(models.Model):
         customer = self.booking.customer
         customer_name = customer.full_name if customer else "No customer"
         return f"{self.invoice_number} - {customer_name}"
+
+
+class InvoiceWorkOrder(models.Model):
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.CASCADE,
+        related_name="work_orders",
+    )
+    description = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self):
+        return f"{self.position + 1}. {self.description}"

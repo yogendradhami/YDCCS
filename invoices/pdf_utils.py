@@ -77,39 +77,52 @@ def generate_invoice_pdf(invoice):
     y2 -= 16
     pdf.drawString(330, y2, f"Address: {booking.address[:38]}")
 
+    work_orders = list(invoice.work_orders.all())
+    if work_orders:
+        line_items = [
+            (item.description, item.price)
+            for item in work_orders
+        ]
+    else:
+        line_items = [(booking.service_type, invoice.amount)]
+
+    def draw_table_header(y):
+        pdf.setFillColorRGB(0.94, 0.96, 0.98)
+        pdf.rect(45, y, width - 90, 28, fill=True, stroke=False)
+        pdf.setFillColorRGB(0, 0, 0)
+        pdf.setFont("Helvetica-Bold", 10)
+        pdf.drawString(55, y + 9, "Work order")
+        pdf.drawRightString(385, y + 9, "Qty")
+        pdf.drawRightString(470, y + 9, "Price")
+        pdf.drawRightString(width - 55, y + 9, "Total")
+
     table_top = height - 330
-
-    pdf.setFillColorRGB(0.94, 0.96, 0.98)
-    pdf.rect(45, table_top, width - 90, 28, fill=True, stroke=False)
-
-    pdf.setFillColorRGB(0, 0, 0)
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawString(55, table_top + 9, "Description")
-    pdf.drawRightString(385, table_top + 9, "Qty")
-    pdf.drawRightString(470, table_top + 9, "Price")
-    pdf.drawRightString(width - 55, table_top + 9, "Total")
-
+    draw_table_header(table_top)
     row_y = table_top - 32
+    for position, (description, price) in enumerate(line_items, start=1):
+        if row_y < 245:
+            pdf.showPage()
+            draw_table_header(height - 55)
+            row_y = height - 100
+        pdf.setFont("Helvetica", 10)
+        pdf.drawString(55, row_y, f"{position}. {description[:48]}")
+        pdf.drawRightString(385, row_y, "1")
+        pdf.drawRightString(470, row_y, f"${price:.2f}")
+        pdf.drawRightString(width - 55, row_y, f"${price:.2f}")
+        pdf.line(45, row_y - 12, width - 45, row_y - 12)
+        row_y -= 24
 
-    pdf.setFont("Helvetica", 10)
-    pdf.drawString(55, row_y, booking.service_type[:45])
-    pdf.drawRightString(385, row_y, "1")
-    pdf.drawRightString(470, row_y, f"${invoice.amount:.2f}")
-    pdf.drawRightString(width - 55, row_y, f"${invoice.amount:.2f}")
-
-    pdf.line(45, row_y - 18, width - 45, row_y - 18)
-
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(45, row_y - 55, "Description")
-
-    pdf.setFont("Helvetica", 10)
-    desc_y = row_y - 75
-
-    description = invoice.description or "Cleaning service"
-
-    for line in description.split("\n"):
-        pdf.drawString(45, desc_y, line[:80])
-        desc_y -= 14
+    description_lines = (invoice.description or "").splitlines()
+    if description_lines:
+        if row_y - (len(description_lines) + 1) * 14 < 220:
+            pdf.showPage()
+            row_y = height - 80
+        pdf.setFont("Helvetica-Bold", 10)
+        pdf.drawString(45, row_y, "Invoice description")
+        pdf.setFont("Helvetica", 9)
+        for line in description_lines:
+            row_y -= 14
+            pdf.drawString(45, row_y, line[:95])
 
     discount_value = getattr(invoice, "discount_amount", 0)
 

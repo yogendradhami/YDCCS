@@ -12,6 +12,8 @@
 # ====================================================
 
 import logging
+import json
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +33,12 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
 from .forms import InvoiceForm
+from .forms import InvoiceWorkOrderFormSet
 from .models import Invoice
 
 from django.db.models import Q, Sum
 
+from bookings.models import Booking
 from dashboard.decorators import admin_required
 from dashboard.models import ActivityLog
 from django.core.mail import EmailMultiAlternatives
@@ -42,8 +46,10 @@ from django.template.loader import render_to_string
 from django.db import transaction
 from django.db.models import Sum, Q
 from dashboard.models import ActivityLog, EmailLog
+from bookings.models import Booking
 from customers.models import Customer
 from google_reviews.calendar_utils import delete_booking_event, delete_roster_event
+from .services import get_booking_work_order_initial, replace_invoice_work_orders
 
 
 
@@ -84,6 +90,7 @@ def invoice_list(request):
     base_invoices = (
         Invoice.objects
         .select_related("booking__customer")
+        .prefetch_related("work_orders")
         .all()
     )
 
@@ -154,6 +161,8 @@ def invoice_list(request):
         invoices = invoices.filter(issue_date__lte=date_to)
 
     invoices = invoices.order_by(
+        "booking__customer__full_name",
+        "booking__customer_id",
         "-issue_date",
         "-created_at",
     )
@@ -227,43 +236,128 @@ def invoice_list(request):
         context,
     )
 
+def _booking_work_orders_json():
+    bookings = Booking.objects.prefetch_related("work_orders").order_by(
+        "-booking_date", "-booking_time"
+    )
+    return json.dumps(
+        {
+            str(booking.pk): [
+                {
+                    "description": item["description"],
+                    "price": str(item["price"]),
+                }
+                for item in get_booking_work_order_initial(booking)
+            ]
+            for booking in bookings
+        }
+    )
+
+
+def _invoice_work_order_initial(invoice):
+    line_items = list(invoice.work_orders.all())
+    if line_items:
+        return [
+            {"description": item.description, "price": item.price}
+            for item in line_items
+        ]
+    return [
+        {
+            "description": invoice.booking.service_type,
+            "price": invoice.amount,
+        }
+    ]
+
+
 @login_required
 def create_invoice(request):
-
+    work_order_prefix = "work_orders"
     if request.method == "POST":
-
         form = InvoiceForm(request.POST)
+        work_order_formset = (
+            InvoiceWorkOrderFormSet(request.POST, prefix=work_order_prefix)
+            if f"{work_order_prefix}-TOTAL_FORMS" in request.POST
+            else None
+        )
 
         if form.is_valid():
-
-            invoice = form.save()
-
-            # Keep manual invoices on the same PDF-email workflow as
-            # automatically generated invoices.
-            from dashboard.views import send_invoice_email
-
-            if send_invoice_email(request, invoice):
-                messages.success(
-                    request,
-                    (
-                        f"Invoice {invoice.invoice_number} created and emailed "
-                        f"to {invoice.booking.customer.email}."
-                    ),
-                )
+            booking = form.cleaned_data["booking"]
+            if work_order_formset is None:
+                work_orders = get_booking_work_order_initial(booking)
+                if not booking.work_orders.exists():
+                    work_orders = [
+                        {
+                            "description": (
+                                form.cleaned_data["description"]
+                                or booking.service_type
+                            ),
+                            "price": form.cleaned_data["amount"],
+                        }
+                    ]
+            elif work_order_formset.is_valid():
+                work_orders = [
+                    {
+                        "description": item["description"],
+                        "price": item["price"],
+                    }
+                    for item in work_order_formset.cleaned_data
+                    if item and item.get("description") and not item.get("DELETE")
+                ]
             else:
-                messages.warning(
-                    request,
-                    (
-                        f"Invoice {invoice.invoice_number} was created, but the "
-                        "customer email could not be sent. Check the customer's "
-                        "email address and mail service settings."
-                    ),
-                )
+                work_orders = []
 
-            return redirect(
-                "invoice_detail",
-                invoice_id=invoice.id,
-            )
+            if work_orders:
+                with transaction.atomic():
+                    booking = Booking.objects.select_for_update().get(pk=booking.pk)
+                    existing_invoice = (
+                        Invoice.objects.filter(booking=booking).order_by("pk").first()
+                    )
+                    if existing_invoice:
+                        messages.warning(
+                            request,
+                            f"An invoice already exists for this booking "
+                            f"({existing_invoice.invoice_number}).",
+                        )
+                        return redirect(
+                            "invoice_detail",
+                            invoice_id=existing_invoice.pk,
+                        )
+
+                    invoice = form.save(commit=False)
+                    invoice.booking = booking
+                    invoice.amount = sum(
+                        (item["price"] for item in work_orders),
+                        Decimal("0.00"),
+                    )
+                    invoice.save()
+                    replace_invoice_work_orders(invoice, work_orders)
+
+                # Keep manual invoices on the same PDF-email workflow as
+                # automatically generated invoices.
+                from dashboard.views import send_invoice_email
+
+                if send_invoice_email(request, invoice):
+                    messages.success(
+                        request,
+                        (
+                            f"Invoice {invoice.invoice_number} created and emailed "
+                            f"to {invoice.booking.customer.email}."
+                        ),
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        (
+                            f"Invoice {invoice.invoice_number} was created, but the "
+                            "customer email could not be sent. Check the customer's "
+                            "email address and mail service settings."
+                        ),
+                    )
+
+                return redirect(
+                    "invoice_detail",
+                    invoice_id=invoice.id,
+                )
 
         messages.error(
             request,
@@ -271,14 +365,50 @@ def create_invoice(request):
         )
 
     else:
+        selected_booking = None
+        booking_id = request.GET.get("booking") or request.GET.get("booking_id")
+        if booking_id:
+            selected_booking = get_object_or_404(Booking, pk=booking_id)
+        initial = {}
+        if selected_booking:
+            initial_work_orders = get_booking_work_order_initial(selected_booking)
+            initial.update(
+                booking=selected_booking.pk,
+                amount=sum(
+                    (item["price"] for item in initial_work_orders),
+                    Decimal("0.00"),
+                ),
+                description=selected_booking.service_type,
+            )
+            work_order_formset = InvoiceWorkOrderFormSet(
+                prefix=work_order_prefix,
+                initial=initial_work_orders,
+            )
+        else:
+            work_order_formset = InvoiceWorkOrderFormSet(
+                prefix=work_order_prefix,
+                initial=[{"description": "", "price": Decimal("0.00")}],
+            )
+        form = InvoiceForm(initial=initial)
 
-        form = InvoiceForm()
+    if work_order_formset is None:
+        work_order_formset = InvoiceWorkOrderFormSet(
+            prefix=work_order_prefix,
+            initial=[
+                {
+                    "description": request.POST.get("description", ""),
+                    "price": request.POST.get("amount", ""),
+                }
+            ],
+        )
 
     return render(
         request,
         "invoices/invoice_form.html",
         {
             "form": form,
+            "work_order_formset": work_order_formset,
+            "booking_work_orders_json": _booking_work_orders_json(),
             "is_edit": False,
         },
     )
@@ -447,45 +577,75 @@ def edit_invoice(request, invoice_id):
         )
 
     if request.method == "POST":
-
         form = InvoiceForm(
             request.POST,
             instance=invoice,
         )
+        work_order_formset = (
+            InvoiceWorkOrderFormSet(request.POST, prefix="work_orders")
+            if "work_orders-TOTAL_FORMS" in request.POST
+            else None
+        )
 
         if form.is_valid():
+            if work_order_formset is None:
+                work_orders = _invoice_work_order_initial(invoice)
+            elif work_order_formset.is_valid():
+                work_orders = [
+                    {
+                        "description": item["description"],
+                        "price": item["price"],
+                    }
+                    for item in work_order_formset.cleaned_data
+                    if item and item.get("description") and not item.get("DELETE")
+                ]
+            else:
+                work_orders = []
 
-            updated_invoice = form.save()
+            if work_orders:
+                with transaction.atomic():
+                    updated_invoice = form.save(commit=False)
+                    updated_invoice.amount = sum(
+                        (item["price"] for item in work_orders),
+                        Decimal("0.00"),
+                    )
+                    updated_invoice.save()
+                    replace_invoice_work_orders(updated_invoice, work_orders)
+            else:
+                form.add_error(None, "Add at least one invoice work order.")
+                updated_invoice = None
 
-            try:
+            if updated_invoice:
+                try:
+                    ActivityLog.objects.create(
+                        user=request.user,
+                        action_type="invoice",
+                        title="Invoice Updated",
+                        description=(
+                            f"{updated_invoice.invoice_number} "
+                            f"was updated by "
+                            f"{request.user.get_username()}."
+                        ),
+                    )
+                except Exception:
+                    logger.exception(
+                        "Could not log changes to invoice %s.",
+                        updated_invoice.pk,
+                    )
 
-                ActivityLog.objects.create(
-                    user=request.user,
-                    action_type="invoice",
-                    title="Invoice Updated",
-                    description=(
+                messages.success(
+                    request,
+                    (
+                        f"Invoice "
                         f"{updated_invoice.invoice_number} "
-                        f"was updated by "
-                        f"{request.user.get_username()}."
+                        "updated successfully."
                     ),
                 )
 
-            except Exception:
-                pass
-
-            messages.success(
-                request,
-                (
-                    f"Invoice "
-                    f"{updated_invoice.invoice_number} "
-                    "updated successfully."
-                ),
-            )
-
-            return redirect(
-                "invoice_detail",
-                invoice_id=updated_invoice.id,
-            )
+                return redirect(
+                    "invoice_detail",
+                    invoice_id=updated_invoice.id,
+                )
 
         messages.error(
             request,
@@ -493,9 +653,18 @@ def edit_invoice(request, invoice_id):
         )
 
     else:
-
         form = InvoiceForm(
             instance=invoice
+        )
+        work_order_formset = InvoiceWorkOrderFormSet(
+            prefix="work_orders",
+            initial=_invoice_work_order_initial(invoice),
+        )
+
+    if work_order_formset is None:
+        work_order_formset = InvoiceWorkOrderFormSet(
+            prefix="work_orders",
+            initial=_invoice_work_order_initial(invoice),
         )
 
     return render(
@@ -503,6 +672,8 @@ def edit_invoice(request, invoice_id):
         "invoices/invoice_form.html",
         {
             "form": form,
+            "work_order_formset": work_order_formset,
+            "booking_work_orders_json": _booking_work_orders_json(),
             "invoice": invoice,
             "is_edit": True,
         },

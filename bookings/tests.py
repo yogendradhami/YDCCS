@@ -1,8 +1,11 @@
 # Create your tests here.
 from datetime import date, time, timedelta
+from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from customers.models import Customer
@@ -51,6 +54,27 @@ class BookingServiceTests(TestCase):
 		self.assertFalse(second_created)
 		self.assertEqual(first.pk, second.pk)
 		self.assertEqual(Booking.objects.count(), 1)
+
+	def test_booking_saves_multiple_work_orders_and_sums_the_quoted_price(self):
+		booking, created = create_booking(
+			**self.booking_kwargs(),
+			work_orders=[
+				{"service_type": "Office Cleaning", "price": Decimal("125.00")},
+				{"service_type": "Window Cleaning", "price": Decimal("75.50")},
+			],
+		)
+
+		self.assertTrue(created)
+		self.assertEqual(booking.service_type, "Office Cleaning")
+		self.assertEqual(booking.quoted_price, Decimal("200.50"))
+		self.assertEqual(
+			list(booking.work_orders.values_list("service_type", "price", "position")),
+			[
+				("Office Cleaning", Decimal("125.00"), 0),
+				("Window Cleaning", Decimal("75.50"), 1),
+			],
+		)
+
 
 	def test_invalid_inputs_and_untrusted_employee_are_rejected(self):
 		for key in ("service_type", "booking_date", "booking_time", "address", "suburb_postcode"):
@@ -255,3 +279,62 @@ class BookingServiceTests(TestCase):
 		self.assertTrue(created)
 		self.assertIsNone(booking.customer)
 		self.assertIsNone(booking.assigned_employee)
+
+
+class BookingWorkOrderDashboardTests(TestCase):
+	def setUp(self):
+		self.admin = User.objects.create_user(
+			username="booking-work-order-admin",
+			password="test-password",
+			is_staff=True,
+			is_superuser=True,
+		)
+		self.client.force_login(self.admin)
+
+	@patch("dashboard.views.create_or_update_booking_event")
+	@patch("rosters.services.sync_booking_roster", return_value=None)
+	def test_dashboard_booking_saves_multiple_work_orders(
+		self,
+		sync_booking_roster,
+		calendar_sync,
+	):
+		form_response = self.client.get(reverse("add_booking"))
+		self.assertEqual(form_response.status_code, 200)
+		self.assertContains(form_response, "Services &amp; work orders")
+		self.assertContains(form_response, 'id="id_work_orders-TOTAL_FORMS"')
+
+		response = self.client.post(
+			reverse("add_booking"),
+			{
+				"customer": "",
+				"service_type": "Office Cleaning",
+				"quoted_price": "0.00",
+				"booking_date": (date.today() + timedelta(days=3)).isoformat(),
+				"booking_time": "10:00",
+				"address": "1 King Street",
+				"suburb_postcode": "Adelaide 5000",
+				"assigned_employee": "",
+				"status": "pending",
+				"notes": "",
+				"work_orders-TOTAL_FORMS": "2",
+				"work_orders-INITIAL_FORMS": "0",
+				"work_orders-MIN_NUM_FORMS": "1",
+				"work_orders-MAX_NUM_FORMS": "1000",
+				"work_orders-0-service_type": "Office Cleaning",
+				"work_orders-0-price": "125.00",
+				"work_orders-1-service_type": "Window Cleaning",
+				"work_orders-1-price": "75.50",
+			},
+		)
+
+		self.assertRedirects(
+			response,
+			reverse("booking_list"),
+			fetch_redirect_response=False,
+		)
+		booking = Booking.objects.get()
+		self.assertEqual(booking.quoted_price, Decimal("200.50"))
+		self.assertEqual(booking.work_orders.count(), 2)
+		self.assertEqual(booking.work_orders.last().service_type, "Window Cleaning")
+		sync_booking_roster.assert_called_once()
+		calendar_sync.assert_called_once_with(booking)

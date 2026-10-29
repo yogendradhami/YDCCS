@@ -74,6 +74,23 @@ class Booking(models.Model):
         return f"{customer_name} - {self.service_type} - {self.booking_date}"
 
 
+class BookingWorkOrder(models.Model):
+    booking = models.ForeignKey(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name="work_orders",
+    )
+    service_type = models.CharField(max_length=150)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self):
+        return f"{self.position + 1}. {self.service_type}"
+
+
 class JobPhoto(models.Model):
     PHOTO_TYPES = [
         ("before", "Before"),

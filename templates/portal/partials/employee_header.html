@@ -20,14 +20,29 @@
             </nav>
 
             <div class="portal-topbar-actions">
-                <a href="#notificationBell" class="portal-notification" aria-label="Notifications">
+                <details class="portal-notification-menu">
+                    <summary class="portal-notification" aria-label="Notifications">
                     <span class="portal-notification-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
                             <path d="M10 21h4"/>
                         </svg>
                     </span>
-                </a>
+                        {% if global_unread_notifications %}<span class="portal-notification-count">{{ global_unread_notifications }}</span>{% endif %}
+                    </summary>
+                    <div class="portal-notification-dropdown">
+                        <strong>Notifications</strong>
+                        {% for notification in global_notifications %}
+                            <a href="{{ notification.link|default:'#' }}" class="{% if not notification.is_read %}unread{% endif %}">
+                                <b>{{ notification.title }}</b>
+                                <span>{{ notification.message }}</span>
+                                <time>{{ notification.created_at|date:"d M Y, g:i A" }}</time>
+                            </a>
+                        {% empty %}
+                            <p>No notifications yet.</p>
+                        {% endfor %}
+                    </div>
+                </details>
                 <a href="{% url 'employee_profile' %}" class="portal-user-mini">
                     {% if employee.image %}
                         <img src="{{ employee.image.url }}" alt="{{ employee.full_name }}">

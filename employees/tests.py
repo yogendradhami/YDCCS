@@ -15,8 +15,14 @@ from bookings.models import Booking, JobPhoto
 from customers.models import Customer
 from invoices.models import Invoice
 from quotes.models import QuoteRequest
+from notifications.models import Notification
 
-from .models import Employee, PropertyDamageImage, PropertyDamageReport
+from .models import (
+	Employee,
+	PropertyDamageImage,
+	PropertyDamageReport,
+	PropertyDamageReportReply,
+)
 
 
 def _damage_report_image(name):
@@ -83,6 +89,71 @@ class EmployeeDamageReportTests(TestCase):
 		)
 		self.assertEqual(PropertyDamageImage.objects.filter(report=report).count(), 2)
 
+	def test_new_damage_report_notifies_dashboard_staff(self):
+		staff_user = User.objects.create_user(
+			username="damage-report-dashboard-staff",
+			password="test-password",
+			is_staff=True,
+		)
+
+		response = self.client.post(
+			reverse("employee_damage_report"),
+			{
+				"booking": self.booking.pk,
+				"description": "A tile was cracked near the kitchen sink.",
+			},
+		)
+
+		report = PropertyDamageReport.objects.get()
+		self.assertRedirects(response, reverse("employee_damage_report"))
+		notification = Notification.objects.get(user=staff_user)
+		self.assertEqual(notification.notification_type, "damage_report")
+		self.assertEqual(
+			notification.link,
+			f"/dashboard/property-damage-reports/#report-{report.pk}",
+		)
+
+	def test_dashboard_reply_is_saved_and_notifies_employee_portal(self):
+		report = PropertyDamageReport.objects.create(
+			employee=self.employee,
+			booking=self.booking,
+			description="A tile was cracked near the kitchen sink.",
+		)
+		admin = User.objects.create_user(
+			username="damage-report-reply-admin",
+			password="test-password",
+			is_staff=True,
+		)
+		grant_dashboard_permissions(
+			admin,
+			"employees.change_propertydamagereport",
+		)
+		self.client.force_login(admin)
+
+		response = self.client.post(
+			reverse("property_damage_report_reply", args=[report.pk]),
+			{f"reply-{report.pk}-message": "Thank you for reporting this."},
+		)
+
+		self.assertEqual(response.status_code, 302)
+		reply = PropertyDamageReportReply.objects.get(report=report)
+		self.assertEqual(reply.responder, admin)
+		self.assertEqual(reply.message, "Thank you for reporting this.")
+		notification = Notification.objects.get(
+			user=self.user,
+			notification_type="damage_report",
+		)
+		self.assertEqual(notification.notification_type, "damage_report")
+		self.assertEqual(
+			notification.link,
+			f"/employee/damage-report/#report-{report.pk}",
+		)
+
+		self.client.force_login(self.user)
+		employee_response = self.client.get(reverse("employee_damage_report"))
+		self.assertEqual(employee_response.status_code, 200)
+		self.assertContains(employee_response, "Thank you for reporting this.")
+
 	def test_employee_cannot_report_against_another_employees_booking(self):
 		other_employee = Employee.objects.create(
 			full_name="Another Employee",
@@ -138,6 +209,7 @@ class EmployeeDamageReportTests(TestCase):
 		grant_dashboard_permissions(
 			staff_user,
 			"employees.view_employee",
+			"employees.view_propertydamagereport",
 		)
 		staff_client = Client()
 		staff_client.force_login(staff_user)

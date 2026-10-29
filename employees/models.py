@@ -115,6 +115,29 @@ class PropertyDamageReport(models.Model):
         return f"Property damage report #{self.pk}"
 
 
+class PropertyDamageReportReply(models.Model):
+    report = models.ForeignKey(
+        PropertyDamageReport,
+        on_delete=models.CASCADE,
+        related_name="replies",
+    )
+    responder = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="property_damage_report_replies",
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"Reply to property damage report #{self.report_id}"
+
+
 class PropertyDamageImage(models.Model):
     report = models.ForeignKey(
         PropertyDamageReport,

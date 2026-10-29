@@ -173,6 +173,65 @@
     color:#334155;
 }
 
+.invoice-work-order-panel {
+    margin: 24px 0;
+    padding: 20px;
+    border: 1px solid #dbe3ee;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.invoice-work-order-header,
+.invoice-work-order-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(150px, 1fr) auto;
+    align-items: end;
+    gap: 12px;
+}
+
+.invoice-work-order-header {
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.invoice-work-order-header h3 {
+    margin: 0 0 5px;
+}
+
+.invoice-work-order-header p {
+    margin: 0;
+    color: #64748b;
+}
+
+.invoice-work-order-row {
+    padding: 14px 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.invoice-work-order-row label {
+    display: block;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.invoice-work-order-row input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 11px;
+}
+
+.invoice-work-order-summary {
+    margin-top: 12px;
+    text-align: right;
+    color: #0f172a;
+    font-weight: 800;
+    line-height: 1.8;
+}
+
 @media(max-width:700px) {
 
     .invoice-form-grid {
@@ -185,6 +244,11 @@
 
     .invoice-form-body {
         padding:20px;
+    }
+
+    .invoice-work-order-header,
+    .invoice-work-order-row {
+        grid-template-columns:1fr;
     }
 
     .invoice-save-btn,
@@ -325,25 +389,7 @@
                     </div>
 
 
-                    <div class="invoice-form-group">
-
-                        <label for="{{ form.amount.id_for_label }}">
-                            Amount Before GST
-                        </label>
-
-                        {{ form.amount }}
-
-                        <div class="invoice-help">
-                            GST and total are calculated by the invoice model.
-                        </div>
-
-                        {% if form.amount.errors %}
-                            <div class="invoice-errors">
-                                {{ form.amount.errors }}
-                            </div>
-                        {% endif %}
-
-                    </div>
+                    {{ form.amount.as_hidden }}
 
 
                     <div class="invoice-form-group">
@@ -406,6 +452,58 @@
                 </div>
 
 
+                <section class="invoice-work-order-panel" aria-labelledby="invoice-work-order-title">
+                    <div class="invoice-work-order-header">
+                        <div>
+                            <h3 id="invoice-work-order-title">Work orders</h3>
+                            <p>Each service is listed separately and totalled before GST.</p>
+                        </div>
+                        <button type="button" class="invoice-cancel-btn" id="add-invoice-work-order">＋ Add work order</button>
+                    </div>
+                    {{ work_order_formset.management_form }}
+                    <div id="invoice-work-order-rows">
+                        {% for work_order in work_order_formset %}
+                            <div class="invoice-work-order-row">
+                                <div>
+                                    <label for="{{ work_order.description.id_for_label }}">Work order {{ forloop.counter }}</label>
+                                    {{ work_order.description }}
+                                    {% if work_order.description.errors %}<div class="invoice-errors">{{ work_order.description.errors }}</div>{% endif %}
+                                </div>
+                                <div>
+                                    <label for="{{ work_order.price.id_for_label }}">Price before GST</label>
+                                    {{ work_order.price }}
+                                    {% if work_order.price.errors %}<div class="invoice-errors">{{ work_order.price.errors }}</div>{% endif %}
+                                </div>
+                                {{ work_order.DELETE }}
+                                <button type="button" class="invoice-cancel-btn remove-invoice-work-order">Remove</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if work_order_formset.non_form_errors %}<div class="invoice-errors">{{ work_order_formset.non_form_errors }}</div>{% endif %}
+                    <div class="invoice-work-order-summary">
+                        Subtotal: $<span id="invoice-work-order-subtotal">0.00</span><br>
+                        GST (10%): $<span id="invoice-work-order-gst">0.00</span><br>
+                        Grand total: $<span id="invoice-work-order-grand-total">0.00</span>
+                    </div>
+                    <template id="invoice-work-order-empty">
+                        <div class="invoice-work-order-row">
+                            <div>
+                                <label for="{{ work_order_formset.empty_form.description.id_for_label }}">Work order __number__</label>
+                                {{ work_order_formset.empty_form.description }}
+                            </div>
+                            <div>
+                                <label for="{{ work_order_formset.empty_form.price.id_for_label }}">Price before GST</label>
+                                {{ work_order_formset.empty_form.price }}
+                            </div>
+                            {{ work_order_formset.empty_form.DELETE }}
+                            <button type="button" class="invoice-cancel-btn remove-invoice-work-order">Remove</button>
+                        </div>
+                    </template>
+                </section>
+
+                {% if form.amount.errors %}<div class="invoice-errors">{{ form.amount.errors }}</div>{% endif %}
+                {% if form.non_field_errors %}<div class="invoice-errors">{{ form.non_field_errors }}</div>{% endif %}
+
                 <div class="invoice-form-actions">
 
                     <button
@@ -439,5 +537,79 @@
     </section>
 
 </div>
+
+{{ booking_work_orders_json|json_script:"booking-work-orders-data" }}
+<script>
+(() => {
+    const form = document.querySelector(".invoice-form-body form");
+    const rows = document.getElementById("invoice-work-order-rows");
+    const count = document.getElementById("id_work_orders-TOTAL_FORMS");
+    const empty = document.getElementById("invoice-work-order-empty");
+    const addButton = document.getElementById("add-invoice-work-order");
+    const bookingSelect = document.getElementById("id_booking");
+    const amountInput = document.getElementById("id_amount");
+    const bookingData = JSON.parse(
+        document.getElementById("booking-work-orders-data").textContent
+    );
+    if (!form || !rows || !count || !empty || !addButton || !amountInput) return;
+
+    const addRow = (item = {}) => {
+        const index = Number(count.value);
+        const html = empty.innerHTML
+            .replaceAll("__prefix__", String(index))
+            .replaceAll("__number__", String(index + 1));
+        rows.insertAdjacentHTML("beforeend", html);
+        const row = rows.lastElementChild;
+        const description = row.querySelector('input[name$="-description"]');
+        const price = row.querySelector('input[name$="-price"]');
+        if (description) description.value = item.description || "";
+        if (price) price.value = item.price || "";
+        count.value = String(index + 1);
+    };
+
+    const updateTotals = () => {
+        let subtotal = 0;
+        rows.querySelectorAll(".invoice-work-order-row").forEach((row) => {
+            if (row.hidden) return;
+            const description = row.querySelector('input[name$="-description"]');
+            const price = row.querySelector('input[name$="-price"]');
+            if (description && description.value.trim() && price) {
+                subtotal += Number(price.value || 0);
+            }
+        });
+        const gst = Math.round(subtotal * 10) / 100;
+        document.getElementById("invoice-work-order-subtotal").textContent = subtotal.toFixed(2);
+        document.getElementById("invoice-work-order-gst").textContent = gst.toFixed(2);
+        document.getElementById("invoice-work-order-grand-total").textContent =
+            (subtotal + gst).toFixed(2);
+        amountInput.value = subtotal.toFixed(2);
+    };
+
+    addButton.addEventListener("click", () => {
+        addRow();
+        updateTotals();
+    });
+    rows.addEventListener("input", updateTotals);
+    rows.addEventListener("click", (event) => {
+        const button = event.target.closest(".remove-invoice-work-order");
+        if (!button) return;
+        const row = button.closest(".invoice-work-order-row");
+        const deletion = row.querySelector('input[name$="-DELETE"]');
+        if (deletion) deletion.checked = true;
+        row.hidden = true;
+        updateTotals();
+    });
+    if (bookingSelect) {
+        bookingSelect.addEventListener("change", () => {
+            rows.replaceChildren();
+            count.value = "0";
+            (bookingData[bookingSelect.value] || []).forEach(addRow);
+            if (!Number(count.value)) addRow();
+            updateTotals();
+        });
+    }
+    updateTotals();
+})();
+</script>
 
 {% endblock %}

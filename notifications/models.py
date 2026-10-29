@@ -12,6 +12,7 @@ class Notification(models.Model):
         ("gallery", "Gallery"),
         ("review", "Review"),
         ("report", "Report"),
+        ("damage_report", "Property damage report"),
         ("contract", "Contract"),
         ("attendance", "Attendance"),
         ("payroll", "Payroll"),

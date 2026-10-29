@@ -12,6 +12,7 @@ from datetime import timedelta
 import csv
 from collections import defaultdict
 from datetime import datetime, time, timedelta
+from decimal import Decimal
 from functools import wraps
 
 from django.conf import settings
@@ -42,14 +43,18 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 from attendance.models import AttendanceLog
-from bookings.forms import BookingForm
+from bookings.forms import BookingForm, BookingWorkOrderFormSet
 from bookings.models import Booking
-from bookings.services import create_booking
+from bookings.services import create_booking, replace_booking_work_orders
 from contracts.models import CleaningContract
 from customers.forms import CustomerForm, MarketingSignupForm
 from customers.models import Customer, MarketingSubscriber
 from dashboard.models import CampaignLog, CleaningSupply, Equipment, Vehicle, CareerApplication
-from employees.forms import EmployeeCreateForm, EmployeeForm
+from employees.forms import (
+    EmployeeCreateForm,
+    EmployeeForm,
+    PropertyDamageReportReplyForm,
+)
 from employees.models import Employee, PropertyDamageReport
 from employees.services import create_employee_from_form
 from expenses.models import Expense
@@ -70,6 +75,7 @@ from invoices.services import get_or_create_invoice_for_booking
 from invoices.pdf_utils import generate_invoice_pdf
 from leave_management.models import LeaveRequest
 from notifications.models import Notification
+from notifications.utils import notify_user
 from payroll.models import PayrollRecord
 from quotes.models import QuoteRequest
 from quotes.services import convert_quote_to_booking as convert_quote_service
@@ -961,7 +967,7 @@ def booking_list(request):
     bookings = (
         Booking.objects
         .select_related("customer", "assigned_employee")
-        .prefetch_related("rosters")
+        .prefetch_related("rosters", "work_orders")
         .all()
         .order_by("-booking_date", "-booking_time")
     )
@@ -976,99 +982,141 @@ def booking_list(request):
 
 @admin_required
 def add_booking(request):
+    work_order_prefix = "work_orders"
     if request.method == "POST":
         form = BookingForm(request.POST)
+        if f"{work_order_prefix}-TOTAL_FORMS" in request.POST:
+            work_order_formset = BookingWorkOrderFormSet(
+                request.POST,
+                prefix=work_order_prefix,
+            )
+        else:
+            work_order_formset = BookingWorkOrderFormSet(
+                prefix=work_order_prefix
+            )
 
         if form.is_valid():
-            booking, _ = create_booking(
-                customer=form.cleaned_data.get("customer"),
-                service_type=form.cleaned_data["service_type"],
-                booking_date=form.cleaned_data["booking_date"],
-                booking_time=form.cleaned_data["booking_time"],
-                address=form.cleaned_data["address"],
-                suburb_postcode=form.cleaned_data["suburb_postcode"],
-                quoted_price=form.cleaned_data["quoted_price"],
-                assigned_employee=form.cleaned_data.get("assigned_employee"),
-                notes=form.cleaned_data.get("notes", ""),
-                trusted_assignment=True,
-            )
+            if work_order_formset is None:
+                work_orders = [
+                    {
+                        "service_type": form.cleaned_data["service_type"],
+                        "price": form.cleaned_data["quoted_price"],
+                    }
+                ]
+            elif work_order_formset.is_valid():
+                work_orders = [
+                    {
+                        "service_type": item["service_type"],
+                        "price": item["price"],
+                    }
+                    for item in work_order_formset.cleaned_data
+                    if item
+                    and item.get("service_type")
+                    and not item.get("DELETE")
+                ]
+            else:
+                work_orders = []
 
-            roster_sync_succeeded = True
-            try:
-                from rosters.services import (
-                    RosterSyncNotConfigured,
-                    RosterSyncPending,
-                    sync_booking_roster,
-                )
-
-                roster_sync = sync_booking_roster(booking)
-                if isinstance(roster_sync, RosterSyncPending):
-                    raise roster_sync.error
-                if isinstance(roster_sync, RosterSyncNotConfigured):
-                    messages.info(
-                        request,
-                        "Booking saved. Employee Calendar sync is not configured.",
-                    )
-
-            except Exception:
-                roster_sync_succeeded = False
-                logger.exception("Roster sync failed for new booking %s.", booking.pk)
-                messages.warning(
-                    request,
-                    "Booking saved, but the employee schedule could not be synced automatically.",
-                )
-
-            try:
-                create_or_update_booking_event(booking)
-
-            except Exception:
-                logger.exception("Google Calendar sync failed for new booking %s.", booking.pk)
-                messages.warning(
-                    request,
-                    "Booking saved, but Google Calendar could not be synced automatically.",
-                )
-
-            if (
-                roster_sync_succeeded
-                and booking.assigned_employee
-                and booking.assigned_employee.user
-            ):
-                Notification.objects.create(
-                    user=booking.assigned_employee.user,
-                    title="New Job Assigned",
-                    message=(
-                        f"You have been assigned "
-                        f"{booking.service_type} on "
-                        f"{booking.booking_date} at "
-                        f"{booking.booking_time}."
+            if work_orders:
+                booking, _ = create_booking(
+                    customer=form.cleaned_data.get("customer"),
+                    service_type=work_orders[0]["service_type"],
+                    booking_date=form.cleaned_data["booking_date"],
+                    booking_time=form.cleaned_data["booking_time"],
+                    address=form.cleaned_data["address"],
+                    suburb_postcode=form.cleaned_data["suburb_postcode"],
+                    quoted_price=sum(
+                        (item["price"] for item in work_orders),
+                        Decimal("0.00"),
                     ),
-                    notification_type="booking",
-                    link="/employee/jobs/",
+                    assigned_employee=form.cleaned_data.get("assigned_employee"),
+                    notes=form.cleaned_data.get("notes", ""),
+                    trusted_assignment=True,
+                    work_orders=work_orders,
                 )
+            else:
+                booking = None
 
-            create_activity_log(
-                request.user,
-                "booking",
-                "Booking Created",
-                f"{booking.customer.full_name if booking.customer else 'No customer'} "
-                f"- {booking.service_type} on {booking.booking_date}",
-            )
-
-            messages.success(request, "✅ Booking created successfully.")
-            return redirect("booking_list")
+            if booking:
+                return _finish_new_booking(request, booking)
 
     else:
         form = BookingForm()
+        work_order_formset = BookingWorkOrderFormSet(prefix=work_order_prefix)
 
     return render(
         request,
         "bookings/booking_form.html",
         {
             "form": form,
+            "work_order_formset": work_order_formset,
             "page_title": "Add New Booking",
             "button_text": "Save Booking",
         },
     )
+
+
+def _finish_new_booking(request, booking):
+    roster_sync_succeeded = True
+    try:
+        from rosters.services import (
+            RosterSyncNotConfigured,
+            RosterSyncPending,
+            sync_booking_roster,
+        )
+
+        roster_sync = sync_booking_roster(booking)
+        if isinstance(roster_sync, RosterSyncPending):
+            raise roster_sync.error
+        if isinstance(roster_sync, RosterSyncNotConfigured):
+            messages.info(
+                request,
+                "Booking saved. Employee Calendar sync is not configured.",
+            )
+    except Exception:
+        roster_sync_succeeded = False
+        logger.exception("Roster sync failed for new booking %s.", booking.pk)
+        messages.warning(
+            request,
+            "Booking saved, but the employee schedule could not be synced automatically.",
+        )
+
+    try:
+        create_or_update_booking_event(booking)
+    except Exception:
+        logger.exception("Google Calendar sync failed for new booking %s.", booking.pk)
+        messages.warning(
+            request,
+            "Booking saved, but Google Calendar could not be synced automatically.",
+        )
+
+    if (
+        roster_sync_succeeded
+        and booking.assigned_employee
+        and booking.assigned_employee.user
+    ):
+        Notification.objects.create(
+            user=booking.assigned_employee.user,
+            title="New Job Assigned",
+            message=(
+                f"You have been assigned "
+                f"{booking.service_type} on "
+                f"{booking.booking_date} at "
+                f"{booking.booking_time}."
+            ),
+            notification_type="booking",
+            link="/employee/jobs/",
+        )
+
+    create_activity_log(
+        request.user,
+        "booking",
+        "Booking Created",
+        f"{booking.customer.full_name if booking.customer else 'No customer'} "
+        f"- {booking.service_type} on {booking.booking_date}",
+    )
+    messages.success(request, "✅ Booking created successfully.")
+    return redirect("booking_list")
 
 
 def send_booking_confirmation_email(request, booking, old_status=None):
@@ -1323,7 +1371,17 @@ def send_booking_confirmation_email(request, booking, old_status=None):
 
     return True
 
-def _save_and_sync_booking_edit(request, booking, form):
+def _booking_work_order_initial(booking):
+    work_orders = list(booking.work_orders.all())
+    if work_orders:
+        return [
+            {"service_type": order.service_type, "price": order.price}
+            for order in work_orders
+        ]
+    return [{"service_type": booking.service_type, "price": booking.quoted_price}]
+
+
+def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None):
     from google_reviews.calendar_utils import (
         CalendarNotConfigured,
         create_or_update_roster_event,
@@ -1383,9 +1441,52 @@ def _save_and_sync_booking_edit(request, booking, form):
             if not form.is_valid():
                 return {
                     "form": form,
+                    "work_order_formset": work_order_formset,
                     "saved": False,
                     "invalid": True,
                 }
+            if "work_orders-TOTAL_FORMS" in request.POST:
+                work_order_formset = BookingWorkOrderFormSet(
+                    request.POST,
+                    prefix="work_orders",
+                )
+                if not work_order_formset.is_valid():
+                    return {
+                        "form": form,
+                        "work_order_formset": work_order_formset,
+                        "saved": False,
+                        "invalid": True,
+                    }
+                work_orders = [
+                    {
+                        "service_type": item["service_type"],
+                        "price": item["price"],
+                    }
+                    for item in work_order_formset.cleaned_data
+                    if item
+                    and item.get("service_type")
+                    and not item.get("DELETE")
+                ]
+            else:
+                work_orders = [
+                    {
+                        "service_type": form.cleaned_data["service_type"],
+                        "price": form.cleaned_data["quoted_price"],
+                    }
+                ]
+            if not work_orders:
+                form.add_error(None, "Add at least one service or work order.")
+                return {
+                    "form": form,
+                    "work_order_formset": work_order_formset,
+                    "saved": False,
+                    "invalid": True,
+                }
+            form.instance.service_type = work_orders[0]["service_type"]
+            form.instance.quoted_price = sum(
+                (item["price"] for item in work_orders),
+                Decimal("0.00"),
+            )
 
             requested_employee = form.cleaned_data.get("assigned_employee")
             requested_employee_id = (
@@ -1433,6 +1534,7 @@ def _save_and_sync_booking_edit(request, booking, form):
                 with temporary_instance_flags(form.instance, **suppression_flags):
                     with transaction.atomic():
                         updated_booking = form.save()
+                        replace_booking_work_orders(updated_booking, work_orders)
             except Exception:
                 logger.exception(
                     "Booking save failed after editing booking %s.",
@@ -1463,6 +1565,7 @@ def _save_and_sync_booking_edit(request, booking, form):
                     messages.error(request, "The booking could not be saved.")
                 return {
                     "form": form,
+                    "work_order_formset": work_order_formset,
                     "saved": False,
                     "invalid": False,
                 }
@@ -1612,12 +1715,26 @@ def _save_and_sync_booking_edit(request, booking, form):
 @admin_required
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
+    work_order_initial = _booking_work_order_initial(booking)
 
     if request.method == "POST":
         form = BookingForm(request.POST, instance=booking)
-        if form.is_valid():
-            result = _save_and_sync_booking_edit(request, booking, form)
+        work_order_formset = (
+            BookingWorkOrderFormSet(request.POST, prefix="work_orders")
+            if "work_orders-TOTAL_FORMS" in request.POST
+            else None
+        )
+        if form.is_valid() and (
+            work_order_formset is None or work_order_formset.is_valid()
+        ):
+            result = _save_and_sync_booking_edit(
+                request,
+                booking,
+                form,
+                work_order_formset,
+            )
             form = result["form"]
+            work_order_formset = result.get("work_order_formset") or work_order_formset
             if not result["saved"]:
                 if result.get("invalid"):
                     pass
@@ -1627,6 +1744,7 @@ def edit_booking(request, booking_id):
                         "bookings/booking_form.html",
                         {
                             "form": form,
+                            "work_order_formset": work_order_formset,
                             "page_title": "Edit Booking",
                             "button_text": "Update Booking",
                         },
@@ -1758,12 +1876,17 @@ def edit_booking(request, booking_id):
 
     else:
         form = BookingForm(instance=booking)
+        work_order_formset = BookingWorkOrderFormSet(
+            prefix="work_orders",
+            initial=work_order_initial,
+        )
 
     return render(
         request,
         "bookings/booking_form.html",
         {
             "form": form,
+            "work_order_formset": work_order_formset,
             "page_title": "Edit Booking",
             "button_text": "Update Booking",
         },
@@ -2276,11 +2399,15 @@ def property_damage_report_list(request):
     reports = (
         PropertyDamageReport.objects
         .select_related("employee", "booking")
-        .prefetch_related("images")
+        .prefetch_related("images", "replies__responder")
         .order_by("-created_at")
     )
     paginator = Paginator(reports, 12)
     page_obj = paginator.get_page(request.GET.get("page"))
+    for report in page_obj.object_list:
+        report.reply_form = PropertyDamageReportReplyForm(
+            prefix=f"reply-{report.pk}"
+        )
 
     return render(
         request,
@@ -2299,6 +2426,54 @@ def property_damage_report_list(request):
             ),
         },
     )
+
+
+@admin_required
+@require_POST
+def property_damage_report_reply(request, report_id):
+    report = get_object_or_404(
+        PropertyDamageReport.objects.select_related("employee__user"),
+        pk=report_id,
+    )
+    form = PropertyDamageReportReplyForm(
+        request.POST,
+        prefix=f"reply-{report.pk}",
+    )
+    if not form.is_valid():
+        messages.error(request, "Please enter a reply before sending it.")
+        return redirect(f"{reverse('property_damage_report_list')}#report-{report.pk}")
+
+    reply = form.save(commit=False)
+    reply.report = report
+    reply.responder = request.user
+    reply.save()
+
+    employee_user = report.employee.user if report.employee else None
+    if employee_user:
+        notify_user(
+            employee_user,
+            f"Reply to property damage report #{report.pk}",
+            (
+                f"{request.user.get_full_name() or request.user.get_username()} "
+                f"replied to your report: {reply.message[:180]}"
+            ),
+            notification_type="damage_report",
+            link=f"/employee/damage-report/#report-{report.pk}",
+        )
+    else:
+        logger.warning(
+            "Reply saved for property damage report %s, but its employee has "
+            "no linked portal user to notify.",
+            report.pk,
+        )
+        messages.warning(
+            request,
+            "Reply saved, but the employee has no linked portal account for notification.",
+        )
+        return redirect(f"{reverse('property_damage_report_list')}#report-{report.pk}")
+
+    messages.success(request, "Your reply was sent to the employee.")
+    return redirect(f"{reverse('property_damage_report_list')}#report-{report.pk}")
 
 
 def _persist_gallery_form_uploads(request, form, gallery_item, item_id=None):
@@ -4056,7 +4231,10 @@ def customer_profile_360(request, customer_id):
 
     completed_bookings = bookings.filter(status="completed").count()
 
-    total_spent = customer.total_revenue
+    total_spent = (
+        invoices.filter(status="paid").aggregate(total=Sum("total_amount"))["total"]
+        or 0
+    )
 
     customer_lifetime_value = 0
 
@@ -6510,16 +6688,29 @@ def customer_360(request, customer_id):
 
     bookings = customer.bookings.all().order_by("-created_at")[:10]
 
-    invoices = Invoice.objects.filter(customer=customer).order_by("-created_at")[:10]
+    customer_invoices = Invoice.objects.filter(booking__customer=customer)
+    invoices = (
+        customer_invoices
+        .select_related("booking")
+        .order_by("-created_at")[:10]
+    )
 
-    quotes = QuoteRequest.objects.filter(customer=customer).order_by("-created_at")[:10]
+    quotes = QuoteRequest.objects.filter(email=customer.email).order_by("-created_at")[
+        :10
+    ]
 
-    outstanding_invoices = invoices.exclude(status="paid").count()
+    outstanding_invoices = customer_invoices.exclude(status="paid").count()
 
     context = {
         "customer": customer,
         "bookings": bookings,
         "invoices": invoices,
+        "total_revenue": (
+            Invoice.objects.filter(booking__customer=customer, status="paid").aggregate(
+                total=Sum("total_amount")
+            )["total"]
+            or 0
+        ),
         "quotes": quotes,
         "outstanding_invoices": outstanding_invoices,
     }

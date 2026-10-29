@@ -642,7 +642,7 @@
                                         <div class="service-cell">
 
                                             <strong>
-                                                {{ booking.service_type }}
+                                                {% for work_order in booking.work_orders.all %}{{ forloop.counter }}. {{ work_order.service_type }}{% if not forloop.last %}<br>{% endif %}{% empty %}1. {{ booking.service_type }}{% endfor %}
                                             </strong>
 
                                             <span>
@@ -1113,7 +1113,7 @@
                                         <div class="service-cell">
 
                                             <strong>
-                                                {{ booking.service_type }}
+                                                {% for work_order in booking.work_orders.all %}{{ forloop.counter }}. {{ work_order.service_type }}{% if not forloop.last %}<br>{% endif %}{% empty %}1. {{ booking.service_type }}{% endfor %}
                                             </strong>
 
                                             <span>

@@ -47,7 +47,7 @@
         {% if page_obj.object_list %}
             <div class="damage-report-list">
                 {% for report in page_obj %}
-                    <article class="damage-report-card">
+                    <article class="damage-report-card" id="report-{{ report.pk }}">
                         <header class="damage-report-card-header">
                             <div>
                                 <span class="damage-report-reference">REPORT #{{ report.pk }}</span>
@@ -89,6 +89,26 @@
                                 <p class="damage-report-no-images">No photos were attached.</p>
                             {% endif %}
                         {% endwith %}
+
+                        <section class="damage-report-replies" aria-label="Report conversation">
+                            <span class="damage-report-label">UPDATES TO EMPLOYEE</span>
+                            {% for reply in report.replies.all %}
+                                <article class="damage-report-reply">
+                                    <strong>{% if reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
+                                    <time datetime="{{ reply.created_at|date:'c' }}">{{ reply.created_at|date:"d M Y, g:i A" }}</time>
+                                    <p>{{ reply.message|linebreaksbr }}</p>
+                                </article>
+                            {% empty %}
+                                <p class="damage-report-no-images">No updates have been sent to the employee yet.</p>
+                            {% endfor %}
+                        </section>
+
+                        <form class="damage-report-reply-form" method="post" action="{% url 'property_damage_report_reply' report.pk %}">
+                            {% csrf_token %}
+                            <label for="{{ report.reply_form.message.id_for_label }}">{{ report.reply_form.message.label }}</label>
+                            {{ report.reply_form.message }}
+                            <button type="submit" class="records-button records-button-teal">Send reply</button>
+                        </form>
                     </article>
                 {% endfor %}
             </div>

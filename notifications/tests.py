@@ -101,6 +101,12 @@ class NotificationStatusTests(TestCase):
         )
         Notification.objects.create(
             user=user,
+            title="Property damage report",
+            message="An employee submitted a property damage report.",
+            notification_type="damage_report",
+        )
+        Notification.objects.create(
+            user=user,
             title="New website chat message",
             message="A visitor sent a message in live chat #1.",
             notification_type="support",
@@ -117,10 +123,10 @@ class NotificationStatusTests(TestCase):
         response = self.client.get(reverse("notification_status"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["unread_count"], 3)
+        self.assertEqual(response.json()["unread_count"], 4)
         self.assertEqual(
             response.json()["unread_by_type"],
-            {"quote": 2, "support": 1},
+            {"quote": 2, "support": 1, "damage_report": 1},
         )
 
 
