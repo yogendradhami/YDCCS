@@ -9,6 +9,14 @@
 {{ page_description }}
 {% endblock %}
 
+{% block robots_meta %}
+{% if is_controlled_local_page %}
+index, follow
+{% else %}
+noindex, follow
+{% endif %}
+{% endblock %}
+
 {% block og_title %}
 {{ page_title }}
 {% endblock %}
