@@ -10,36 +10,41 @@
 <div class="records-page damage-reports-page">
     <section class="records-hero">
         <div>
-            <span class="records-eyebrow"><i></i> OPERATIONS / EMPLOYEE REPORTS</span>
-            <h1>Property damage<br><strong>reports</strong></h1>
-            <p>Review employee notes and photo evidence linked to assigned cleaning jobs.</p>
+            <span class="records-eyebrow"><i></i> OPERATIONS / CASE MANAGEMENT</span>
+            <h1>Property damage<br><strong>response centre</strong></h1>
+            <p>Review evidence, keep every update in one conversation, and coordinate a clear response with the employee.</p>
         </div>
+        <aside class="damage-hero-aside" aria-label="Damage report workflow">
+            <span class="damage-hero-aside-icon" aria-hidden="true">↗</span>
+            <strong>One case. One conversation.</strong>
+            <p>Replies are shared with the reporting employee and saved to the report history.</p>
+        </aside>
     </section>
 
     <section class="records-metrics" aria-label="Damage report overview">
         <article class="records-metric records-metric-featured">
-            <span>TOTAL REPORTS</span>
-            <strong>{{ report_count }}</strong>
-            <small>submitted by employees</small>
+            <span>OPEN TICKETS</span>
+            <strong>{{ open_report_count }}</strong>
+            <small>require a dashboard response</small>
+        </article>
+        <article class="records-metric">
+            <span>RESOLVED &amp; CLOSED</span>
+            <strong>{{ closed_report_count }}</strong>
+            <small>kept in the case history</small>
         </article>
         <article class="records-metric">
             <span>REPORTED TODAY</span>
             <strong>{{ today_report_count }}</strong>
             <small>new property reports</small>
         </article>
-        <article class="records-metric">
-            <span>EMPLOYEES REPORTING</span>
-            <strong>{{ reporting_employee_count }}</strong>
-            <small>employees represented</small>
-        </article>
     </section>
 
     <section class="records-panel">
         <header class="records-panel-header">
             <div>
-                <span class="records-section-label">LATEST SUBMISSIONS</span>
-                <h2>Employee damage reports</h2>
-                <p>Most recent reports are shown first.</p>
+                <span class="records-section-label">CASE INBOX</span>
+                <h2>Damage report cases</h2>
+                <p>Review the submission and respond directly in the case conversation.</p>
             </div>
             <span class="records-count"><strong>{{ report_count }}</strong> reports</span>
         </header>
@@ -52,9 +57,21 @@
                             <div>
                                 <span class="damage-report-reference">REPORT #{{ report.pk }}</span>
                                 <h3>{% if report.employee %}{{ report.employee.full_name }}{% else %}Former employee{% endif %}</h3>
+                                <span class="damage-case-status {% if report.status == 'closed' %}is-closed{% else %}is-open{% endif %}">
+                                    <i></i>{{ report.get_status_display }}
+                                </span>
                             </div>
                             <time datetime="{{ report.created_at|date:'c' }}">{{ report.created_at|date:"d M Y, g:i A" }}</time>
                         </header>
+                        {% if report.status == "closed" %}
+                            <div class="damage-case-resolution">
+                                <strong>Ticket resolved and closed</strong>
+                                <span>
+                                    {% if report.closed_at %}Closed {{ report.closed_at|date:"d M Y, g:i A" }}{% endif %}
+                                    {% if report.closed_by %} by {{ report.closed_by.get_full_name|default:report.closed_by.username }}{% endif %}
+                                </span>
+                            </div>
+                        {% endif %}
 
                         <div class="damage-report-job">
                             {% if report.booking %}
@@ -90,24 +107,61 @@
                             {% endif %}
                         {% endwith %}
 
-                        <section class="damage-report-replies" aria-label="Report conversation">
-                            <span class="damage-report-label">UPDATES TO EMPLOYEE</span>
+                        <section
+                            class="damage-report-replies"
+                            aria-label="Report conversation"
+                            data-live-conversation
+                            data-side="dashboard"
+                            data-conversation-url="{% url 'property_damage_report_conversation' report.pk %}"
+                        >
+                            <div class="damage-conversation-heading">
+                                <div>
+                                    <span class="damage-report-label">CASE ACTIVITY</span>
+                                    <h4>Conversation</h4>
+                                </div>
+                                <span data-message-count>{{ report.replies.count }} update{{ report.replies.count|pluralize }}</span>
+                            </div>
+                            <div class="damage-conversation-presence" role="status" aria-live="polite" data-conversation-presence></div>
                             {% for reply in report.replies.all %}
-                                <article class="damage-report-reply">
-                                    <strong>{% if reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
-                                    <time datetime="{{ reply.created_at|date:'c' }}">{{ reply.created_at|date:"d M Y, g:i A" }}</time>
+                                <article class="damage-report-reply{% if report.employee.user_id == reply.responder_id %} is-employee{% else %} is-dashboard{% endif %}" data-reply-id="{{ reply.pk }}">
+                                    <div class="damage-reply-meta">
+                                        <strong>{% if report.employee.user_id == reply.responder_id %}{{ report.employee.full_name }}{% elif reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
+                                        <span>{% if report.employee.user_id == reply.responder_id %}Employee{% else %}Dashboard{% endif %}</span>
+                                        <time datetime="{{ reply.created_at|date:'c' }}">{{ reply.created_at|date:"d M Y, g:i A" }}</time>
+                                    </div>
                                     <p>{{ reply.message|linebreaksbr }}</p>
                                 </article>
                             {% empty %}
-                                <p class="damage-report-no-images">No updates have been sent to the employee yet.</p>
+                                <div class="damage-conversation-empty">
+                                    <span aria-hidden="true">✦</span>
+                                    <p>No replies yet. Send the first update to keep the employee informed.</p>
+                                </div>
                             {% endfor %}
                         </section>
 
                         <form class="damage-report-reply-form" method="post" action="{% url 'property_damage_report_reply' report.pk %}">
                             {% csrf_token %}
-                            <label for="{{ report.reply_form.message.id_for_label }}">{{ report.reply_form.message.label }}</label>
+                            <div class="damage-reply-compose-heading">
+                                <div>
+                                    <label for="{{ report.reply_form.message.id_for_label }}">Reply to employee</label>
+                                    <small>Your message will be saved in the case and sent as a portal notification.</small>
+                                </div>
+                                <span aria-hidden="true">↩</span>
+                            </div>
                             {{ report.reply_form.message }}
                             <button type="submit" class="records-button records-button-teal">Send reply</button>
+                            <span class="damage-chat-feedback" role="status" aria-live="polite" data-chat-feedback></span>
+                        </form>
+
+                        <form class="damage-ticket-status-form" method="post" action="{% url 'property_damage_report_set_status' report.pk %}">
+                            {% csrf_token %}
+                            {% if report.status == "closed" %}
+                                <p>Need to continue the investigation? Reopen this ticket to return it to the active queue.</p>
+                                <button type="submit" class="damage-ticket-reopen">Reopen ticket</button>
+                            {% else %}
+                                <p>Mark this ticket resolved when the issue has been addressed. The employee will see the closed status in their portal.</p>
+                                <button type="submit" class="damage-ticket-close">Mark resolved &amp; close ticket</button>
+                            {% endif %}
                         </form>
                     </article>
                 {% endfor %}
@@ -136,4 +190,5 @@
         {% endif %}
     </section>
 </div>
+<script src="{% static 'js/damage-report-conversation.js' %}" defer></script>
 {% endblock %}

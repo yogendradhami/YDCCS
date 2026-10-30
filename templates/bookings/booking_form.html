@@ -1,4 +1,5 @@
 {% extends 'dashboard_base.html' %}
+{% load static %}
 
 {% block title %}{{ page_title }} | YD Commercial Cleaning Services Dashboard{% endblock %}
 
@@ -8,25 +9,44 @@
 Create or update cleaning job bookings for YD Commercial Cleaning Services.
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/booking-form.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<section class="crm-panel">
-
+<section class="booking-editor">
+    <header class="booking-editor-hero">
+        <div>
+            <span class="booking-editor-eyebrow">BOOKING WORKSPACE</span>
+            <h1>{{ page_title }}</h1>
+            <p>Capture the customer, schedule, services, and access details in one place.</p>
+        </div>
+        <span class="booking-editor-mark" aria-hidden="true">YD</span>
+    </header>
 
     {% if form.non_field_errors %}
-        <div class="custom-alert error">
+        <div class="custom-alert error booking-editor-error" role="alert">
             {% for error in form.non_field_errors %}
                 <p>{{ error }}</p>
             {% endfor %}
         </div>
     {% endif %}
 
-    <form method="POST" class="crm-form">
+    <form method="POST" class="crm-form booking-editor-form">
         {% csrf_token %}
         {{ form.service_type.as_hidden }}
         {{ form.quoted_price.as_hidden }}
 
-        <div class="auth-grid">
+        <section class="booking-editor-section">
+            <div class="booking-section-heading">
+                <span>01</span>
+                <div>
+                    <h2>Customer &amp; schedule</h2>
+                    <p>Choose who the job is for and when the team should arrive.</p>
+                </div>
+            </div>
+            <div class="booking-editor-grid">
 
             <div class="form-group">
                 <label>Customer (Optional)</label>
@@ -58,13 +78,29 @@ Create or update cleaning job bookings for YD Commercial Cleaning Services.
                 <div class="text-danger">{{ form.assigned_employee.errors }}</div>
             </div>
 
-            <section class="booking-work-orders" aria-labelledby="booking-work-orders-title">
+            <div class="form-group">
+                <label>Status</label>
+                {{ form.status }}
+                <div class="text-danger">{{ form.status.errors }}</div>
+            </div>
+            </div>
+        </section>
+
+        <section class="booking-editor-section booking-work-section" aria-labelledby="booking-work-orders-title">
+            <div class="booking-section-heading">
+                <span>02</span>
+                <div>
+                    <h2 id="booking-work-orders-title">Services &amp; work orders</h2>
+                    <p>Build the job scope and price each service. The total updates as you work.</p>
+                </div>
+            </div>
+            <section class="booking-work-orders">
                 <header>
                     <div>
-                        <h2 id="booking-work-orders-title">Services &amp; work orders</h2>
-                        <p>Add every service included in this job. The booking total is calculated from their prices.</p>
+                        <span class="booking-work-orders-kicker">JOB SCOPE</span>
+                        <h3>Included services</h3>
                     </div>
-                    <button type="button" class="btn-outline" id="add-work-order">＋ Add work order</button>
+                    <button type="button" class="booking-add-order" id="add-work-order">＋ Add service</button>
                 </header>
 
                 {{ work_order_formset.management_form }}
@@ -83,7 +119,7 @@ Create or update cleaning job bookings for YD Commercial Cleaning Services.
                             </div>
                             {{ work_order.DELETE }}
                             {% if work_order.non_field_errors %}<div class="text-danger">{{ work_order.non_field_errors }}</div>{% endif %}
-                            <button type="button" class="btn-outline remove-work-order">Remove</button>
+                            <button type="button" class="booking-remove-order remove-work-order">Remove</button>
                         </div>
                     {% endfor %}
                 </div>
@@ -100,53 +136,44 @@ Create or update cleaning job bookings for YD Commercial Cleaning Services.
                             {{ work_order_formset.empty_form.price }}
                         </div>
                         {{ work_order_formset.empty_form.DELETE }}
-                        <button type="button" class="btn-outline remove-work-order">Remove</button>
+                        <button type="button" class="booking-remove-order remove-work-order">Remove</button>
                     </div>
                 </template>
             </section>
+        </section>
 
-            <div class="form-group">
-                <label>Status</label>
-                {{ form.status }}
-                <div class="text-danger">{{ form.status.errors }}</div>
+        <section class="booking-editor-section">
+            <div class="booking-section-heading">
+                <span>03</span>
+                <div>
+                    <h2>Location &amp; instructions</h2>
+                    <p>Give the cleaning team the exact address and useful access notes.</p>
+                </div>
             </div>
+            <div class="booking-editor-location-grid">
+                <div class="form-group">
+                    <label>Job Address</label>
+                    {{ form.address }}
+                    <div class="text-danger">{{ form.address.errors }}</div>
+                </div>
+                <div class="form-group">
+                    <label>Notes for the team</label>
+                    {{ form.notes }}
+                    <div class="text-danger">{{ form.notes.errors }}</div>
+                </div>
+            </div>
+        </section>
 
-        </div>
-
-        <div class="form-group">
-            <label>Job Address</label>
-            {{ form.address }}
-            <div class="text-danger">{{ form.address.errors }}</div>
-        </div>
-
-        <div class="form-group">
-            <label>Notes</label>
-            {{ form.notes }}
-            <div class="text-danger">{{ form.notes.errors }}</div>
-        </div>
-
-        <button type="submit" class="btn-fill">
-            {{ button_text }}
-        </button>
-
-        <a href="/dashboard/bookings/" class="btn-outline">
-            Back to Bookings
-        </a>
+        <footer class="booking-editor-actions">
+            <a href="{% url 'booking_list' %}" class="booking-cancel-btn">Back to bookings</a>
+            <button type="submit" class="booking-save-btn">
+                {{ button_text }} <span aria-hidden="true">→</span>
+            </button>
+        </footer>
 
     </form>
 
 </section>
-
-<style>
-    .booking-work-orders { margin: 24px 0; padding: 20px; border: 1px solid #dbe3ee; border-radius: 14px; background: #f8fafc; }
-    .booking-work-orders > header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
-    .booking-work-orders h2 { margin: 0 0 5px; font-size: 19px; }
-    .booking-work-orders p { margin: 0; color: #64748b; }
-    .booking-work-order-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(140px, 1fr) auto; gap: 12px; align-items: end; padding: 14px 0; border-top: 1px solid #e2e8f0; }
-    .booking-work-order-row .form-group { margin: 0; }
-    .booking-work-order-total { margin-top: 12px; text-align: right; color: #0f172a; font-size: 17px; }
-    @media (max-width: 700px) { .booking-work-orders > header { align-items: flex-start; flex-direction: column; } .booking-work-order-row { grid-template-columns: 1fr; } }
-</style>
 
 <script>
 (() => {

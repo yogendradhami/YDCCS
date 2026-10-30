@@ -1,98 +1,66 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Profit & Loss{% endblock %}
-
-{% block page_title %}
-Profit & Loss Dashboard
-{% endblock %}
-
-{% block page_subtitle %}
-Financial summary for YD Commercial Cleaning Services based on paid invoices.
-{% endblock %}
+{% block title %}Profit &amp; loss | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Profit &amp; loss{% endblock %}
+{% block page_subtitle %}Understand the income and operating costs behind your estimated result.{% endblock %}
 
 {% block content %}
+<div class="finance-page">
+    {% include "dashboard/finance/_finance_nav.html" %}
+    <section class="finance-hero">
+        <div class="finance-hero-copy">
+            <span class="finance-eyebrow">Management report · calendar year {{ selected_year }}</span>
+            <h2>Profit, made understandable.</h2>
+            <p>Choose a year to compare paid invoice income with recorded payroll, expenses and estimated employee bonuses.</p>
+        </div>
+        <form class="finance-filter-bar" method="get">
+            <div class="finance-filter-field">
+                <label for="profit-year">Reporting year</label>
+                <select id="profit-year" name="year">
+                    {% for year in years %}<option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>{% endfor %}
+                </select>
+            </div>
+            <button class="finance-button" type="submit">Update report</button>
+        </form>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Paid Revenue</span>
-        <h2>${{ paid_revenue }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Paid invoice revenue</span><strong class="finance-metric-value">${{ paid_revenue|floatformat:2 }}</strong><small class="finance-metric-foot">Cash collected in {{ selected_year }}</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Total operating costs</span><strong class="finance-metric-value">${{ total_costs|floatformat:2 }}</strong><small class="finance-metric-foot">Payroll, expenses and estimated bonuses</small></article>
+        <article class="finance-metric {% if estimated_profit < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Estimated profit</span><strong class="finance-metric-value">${{ estimated_profit|floatformat:2 }}</strong><small class="finance-metric-foot">Revenue less listed operating costs</small></article>
+        <article class="finance-metric {% if profit_margin < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Profit margin</span><strong class="finance-metric-value">{{ profit_margin|floatformat:2 }}%</strong><small class="finance-metric-foot">Estimated profit ÷ paid revenue</small></article>
     </div>
 
-    <div class="crm-card">
-        <span>Payroll Cost</span>
-        <h2>${{ payroll_cost }}</h2>
+    <div class="finance-grid">
+        <section class="finance-panel span-7">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Income statement</span><h3>{{ selected_year }} operating summary</h3><p>All values are based on records dated within the selected calendar year.</p></div></header>
+            <div class="finance-table-wrap">
+                <table class="finance-table">
+                    <thead><tr><th>Line item</th><th class="numeric">Amount</th></tr></thead>
+                    <tbody>
+                        <tr><td>Paid invoice revenue</td><td class="numeric"><strong>${{ paid_revenue|floatformat:2 }}</strong></td></tr>
+                        <tr><td>Payroll cost</td><td class="numeric">−${{ payroll_cost|floatformat:2 }}</td></tr>
+                        <tr><td>Estimated employee bonus cost</td><td class="numeric">−${{ bonus_cost|floatformat:2 }}</td></tr>
+                        <tr><td>Business expenses</td><td class="numeric">−${{ expense_cost|floatformat:2 }}</td></tr>
+                        <tr><td><strong>Estimated profit</strong></td><td class="numeric"><strong>${{ estimated_profit|floatformat:2 }}</strong></td></tr>
+                        <tr><td>Profit margin</td><td class="numeric">{{ profit_margin|floatformat:2 }}%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <aside class="finance-panel span-5">
+            <header class="finance-panel-heading"><div><span class="finance-overline">How to read this</span><h3>Calculation notes</h3></div></header>
+            <div class="finance-callout">
+                <strong>Estimated employee bonuses</strong> use completed bookings in the selected year: 5% of quoted job prices plus $10 per completed job. This is an estimate, not a payroll ledger entry.
+            </div>
+            <div class="finance-inline-actions" style="margin-top:14px">
+                <a class="finance-button-secondary" href="{% url 'expense_list' %}">Review expenses</a>
+                <a class="finance-button-secondary" href="{% url 'finance_trends' %}">See monthly trends</a>
+                <a class="finance-button-secondary" href="{% url 'job_profitability_dashboard' %}">Job profitability</a>
+            </div>
+        </aside>
     </div>
-
-    <div class="crm-card">
-        <span>Bonus Cost</span>
-        <h2>${{ bonus_cost }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Expense</span>
-        <h2>${{ expense_cost }}</h2>
-    </div>  
-
-    <div class="crm-card">
-        <span>Estimated Profit</span>
-        <h2>${{ estimated_profit }}</h2>
-    </div>
-
 </div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Profit Summary</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr>
-                    <td>Paid Invoice Revenue</td>
-                    <td>${{ paid_revenue }}</td>
-                </tr>
-
-                <tr>
-                    <td>Payroll Cost</td>
-                    <td>${{ payroll_cost }}</td>
-                </tr>
-
-                <tr>
-                    <td>Estimated Employee Bonus Cost</td>
-                    <td>${{ bonus_cost }}</td>
-                </tr>
-                <tr>
-                    <td>Business Expenses</td>
-                    <td>${{ expense_cost }}</td>
-                </tr>
-
-                <tr>
-                    <td><strong>Estimated Profit</strong></td>
-                    <td><strong>${{ estimated_profit }}</strong></td>
-                </tr>
-
-                <tr>
-                    <td><strong>Profit Margin</strong></td>
-                    <td><strong>{{ profit_margin }}%</strong></td>
-                </tr>
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
 {% endblock %}

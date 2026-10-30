@@ -301,6 +301,8 @@ class BookingWorkOrderDashboardTests(TestCase):
 		form_response = self.client.get(reverse("add_booking"))
 		self.assertEqual(form_response.status_code, 200)
 		self.assertContains(form_response, "Services &amp; work orders")
+		self.assertContains(form_response, "BOOKING WORKSPACE")
+		self.assertContains(form_response, "booking-editor")
 		self.assertContains(form_response, 'id="id_work_orders-TOTAL_FORMS"')
 
 		response = self.client.post(

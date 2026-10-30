@@ -26,6 +26,34 @@ class DashboardPermissionMappingTests(SimpleTestCase):
             ("employees.view_employee",),
         )
 
+    def test_property_damage_ticket_status_requires_change_permission(self):
+        self.assertEqual(
+            dashboard_required_permissions(
+                "/dashboard/property-damage-reports/12/status/",
+                "POST",
+                "property_damage_report_set_status",
+            ),
+            ("employees.change_propertydamagereport",),
+        )
+
+    def test_property_damage_conversation_polling_requires_report_view_permission(self):
+        self.assertEqual(
+            dashboard_required_permissions(
+                "/dashboard/property-damage-reports/12/conversation/",
+                "GET",
+                "property_damage_report_conversation",
+            ),
+            ("employees.view_employee",),
+        )
+        self.assertEqual(
+            dashboard_required_permissions(
+                "/dashboard/property-damage-reports/12/conversation/",
+                "POST",
+                "property_damage_report_conversation",
+            ),
+            ("employees.change_propertydamagereport",),
+        )
+
     def test_customer_routes_require_customer_permissions(self):
         self.assertEqual(
             dashboard_required_permissions("/dashboard/customers/", "GET"),

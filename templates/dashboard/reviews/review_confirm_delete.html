@@ -1,0 +1,30 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Delete review | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Delete review{% endblock %}
+{% block page_subtitle %}Confirm removal of this customer review.{% endblock %}
+
+{% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-panel reputation-confirm">
+        <span class="reputation-eyebrow">Permanent action</span>
+        <h2>Remove this review?</h2>
+        <p>This will permanently delete the review from the website and dashboard.</p>
+        <div class="reputation-review-card">
+            <div class="reputation-review-top">
+                <strong class="reputation-review-author">{{ review.customer_name }}</strong>
+                <span class="reputation-stars">{{ review.stars }}</span>
+            </div>
+            <p class="reputation-review-text">{{ review.review_text }}</p>
+        </div>
+        <form method="post" class="reputation-actions" style="margin-top:16px">
+            {% csrf_token %}
+            <button type="submit" class="reputation-button-danger">Delete review</button>
+            <a href="{% url 'review_list' %}" class="reputation-button-secondary">Keep review</a>
+        </form>
+    </section>
+</div>
+{% endblock %}

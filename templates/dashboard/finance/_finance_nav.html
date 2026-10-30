@@ -1,0 +1,8 @@
+<nav class="finance-nav" aria-label="Finance navigation">
+    <a href="{% url 'financial_dashboard' %}" {% if request.resolver_match.url_name == "financial_dashboard" %}aria-current="page"{% endif %}>Overview</a>
+    <a href="{% url 'expense_list' %}" {% if request.resolver_match.url_name == "expense_list" or request.resolver_match.url_name == "add_expense" or request.resolver_match.url_name == "edit_expense" or request.resolver_match.url_name == "delete_expense" %}aria-current="page"{% endif %}>Expenses</a>
+    <a href="{% url 'profit_loss_dashboard' %}" {% if request.resolver_match.url_name == "profit_loss_dashboard" %}aria-current="page"{% endif %}>Profit &amp; loss</a>
+    <a href="{% url 'gst_report' %}" {% if request.resolver_match.url_name == "gst_report" %}aria-current="page"{% endif %}>GST report</a>
+    <a href="{% url 'finance_trends' %}" {% if request.resolver_match.url_name == "finance_trends" %}aria-current="page"{% endif %}>Trends</a>
+    <a href="{% url 'job_profitability_dashboard' %}" {% if request.resolver_match.url_name == "job_profitability_dashboard" %}aria-current="page"{% endif %}>Job profitability</a>
+</nav>

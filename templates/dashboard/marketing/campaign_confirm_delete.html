@@ -1,0 +1,29 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Delete campaign record | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Delete campaign record{% endblock %}
+{% block page_subtitle %}Confirm removal of this historical campaign entry.{% endblock %}
+
+{% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-panel reputation-confirm">
+        <span class="reputation-eyebrow">Permanent action</span>
+        <h2>Delete this campaign record?</h2>
+        <p>This removes the history entry only. It cannot undo or resend emails already sent.</p>
+        <div class="reputation-detail-list">
+            <div class="reputation-detail-item"><span>Campaign</span><strong>{{ campaign.title }}</strong></div>
+            <div class="reputation-detail-item"><span>Type</span><strong>{{ campaign.get_campaign_type_display }}</strong></div>
+            <div class="reputation-detail-item"><span>Recipients recorded</span><strong>{{ campaign.recipients_count }}</strong></div>
+            <div class="reputation-detail-item"><span>Sent at</span><strong>{{ campaign.sent_at|date:"j F Y, g:i A" }}</strong></div>
+        </div>
+        <form method="post" class="reputation-actions" style="margin-top:16px">
+            {% csrf_token %}
+            <button type="submit" class="reputation-button-danger">Delete record</button>
+            <a href="{% url 'campaign_history_detail' campaign.pk %}" class="reputation-button-secondary">Keep record</a>
+        </form>
+    </section>
+</div>
+{% endblock %}

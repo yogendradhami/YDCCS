@@ -1,0 +1,7 @@
+<nav class="reputation-nav" aria-label="Reviews and campaigns navigation">
+    <a href="{% url 'review_list' %}" {% if request.resolver_match.url_name == "review_list" or request.resolver_match.url_name == "add_review" or request.resolver_match.url_name == "edit_review" or request.resolver_match.url_name == "delete_review" %}aria-current="page"{% endif %}>Reviews</a>
+    <a href="{% url 'review_requests' %}" {% if request.resolver_match.url_name == "review_requests" or request.resolver_match.url_name == "send_review_request" %}aria-current="page"{% endif %}>Review requests</a>
+    <a href="{% url 'review_analytics' %}" {% if request.resolver_match.url_name == "review_analytics" %}aria-current="page"{% endif %}>Review analytics</a>
+    <a href="{% url 'campaign_center' %}" {% if request.resolver_match.url_name == "campaign_center" or request.resolver_match.url_name == "campaign_preview" or request.resolver_match.url_name == "campaign_history_detail" or request.resolver_match.url_name == "edit_campaign_history" or request.resolver_match.url_name == "delete_campaign_history" or request.resolver_match.url_name == "newsletter_subscriber_detail" or request.resolver_match.url_name == "edit_newsletter_subscriber" or request.resolver_match.url_name == "delete_newsletter_subscriber" %}aria-current="page"{% endif %}>Campaign center</a>
+    <a href="{% url 'campaign_performance' %}" {% if request.resolver_match.url_name == "campaign_performance" %}aria-current="page"{% endif %}>Campaign performance</a>
+</nav>

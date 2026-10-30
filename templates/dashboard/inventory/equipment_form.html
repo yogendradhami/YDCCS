@@ -1,27 +1,25 @@
 {% extends "dashboard_base.html" %}
-
-{% block title %}
-{{ page_title }}
-{% endblock %}
-
+{% load static %}
+{% block title %}{{ page_title }} | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}Record equipment details, employee assignment and service schedule.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <h1>{{ page_title }}</h1>
-
-    <form method="POST">
-
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Equipment register</span><h2>{% if form.instance.pk %}Update asset details.{% else %}Register a new asset.{% endif %}</h2><p>Keep serial number, condition and servicing information accurate for the operations team.</p></div><a class="inventory-button-secondary" href="{% url 'equipment_list' %}">← Back to equipment</a></section>
+    <form method="post" class="inventory-panel">
         {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit" class="btn-fill">
-            {{ button_text }}
-        </button>
-
+        {% if form.non_field_errors %}<div class="inventory-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="inventory-form-grid">{% for field in form %}
+            <div class="inventory-field {% if field.name == 'notes' %}full-width{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="helptext">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<span class="inventory-field-error" role="alert">{{ error }}</span>{% endfor %}
+            </div>
+        {% endfor %}</div>
+        <div class="inventory-actions" style="margin-top:18px"><button type="submit" class="inventory-button">{{ button_text }}</button><a href="{% url 'equipment_list' %}" class="inventory-button-secondary">Cancel</a></div>
     </form>
-
 </div>
-
 {% endblock %}

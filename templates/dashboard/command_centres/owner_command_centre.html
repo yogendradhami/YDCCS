@@ -1,65 +1,35 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Owner overview | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Owner overview{% endblock %}
+{% block page_subtitle %}Today's operations, this month's financial position and issues needing attention.{% endblock %}
 {% block content %}
-
-<h1>Owner Command Centre</h1>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Today's Jobs</span>
-        <h2>{{ today_jobs }}</h2>
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Owner command centre · {{ today|date:"j F Y" }}</span><h2>One view of the business.</h2><p>Financial figures use paid invoices, recorded expenses and payroll overlapping the current month.</p></div><div class="finance-hero-actions"><a class="finance-button" href="{% url 'owner_alert_centre' %}">Review alerts</a></div></section>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Today's jobs</span><strong class="finance-metric-value">{{ today_jobs }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Outstanding invoices</span><strong class="finance-metric-value">{{ outstanding_invoices }}</strong><small class="finance-metric-foot">Unpaid, excluding cancelled</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Paid revenue this month</span><strong class="finance-metric-value">${{ monthly_revenue|floatformat:2 }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Recorded expenses this month</span><strong class="finance-metric-value">${{ monthly_expenses|floatformat:2 }}</strong></article>
     </div>
-
-    <div class="crm-card">
-        <span>Outstanding Invoices</span>
-        <h2>{{ outstanding_invoices }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric {% if estimated_profit < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Estimated profit</span><strong class="finance-metric-value">${{ estimated_profit|floatformat:2 }}</strong><small class="finance-metric-foot">After expenses and payroll</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Low-stock supplies</span><strong class="finance-metric-value">{{ low_stock_items }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Overdue equipment service</span><strong class="finance-metric-value">{{ overdue_equipment }}</strong><small class="finance-metric-foot">{{ equipment_due_soon }} due within 30 days</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Vehicle service overdue</span><strong class="finance-metric-value">{{ vehicles_due_service }}</strong><small class="finance-metric-foot">{{ vehicle_due_soon }} due within 30 days</small></article>
     </div>
-
-    <div class="crm-card">
-        <span>Revenue</span>
-        <h2>${{ monthly_revenue }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Pending leave requests</span><strong class="finance-metric-value">{{ pending_leave_requests }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Open purchase orders</span><strong class="finance-metric-value">{{ draft_purchase_orders }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Unassigned future jobs</span><strong class="finance-metric-value">{{ unassigned_jobs }}</strong></article>
     </div>
-
-    <div class="crm-card">
-        <span>Expenses</span>
-        <h2>${{ monthly_expenses }}</h2>
+    <div class="finance-inline-actions">
+        <a class="finance-button-secondary" href="{% url 'financial_dashboard' %}">Financial overview</a>
+        <a class="finance-button-secondary" href="{% url 'operations_command_centre' %}">Operations</a>
+        <a class="finance-button-secondary" href="{% url 'booking_list' %}">Bookings</a>
+        <a class="finance-button-secondary" href="{% url 'invoice_list' %}">Invoices</a>
     </div>
-
-    <div class="crm-card">
-        <span>Profit</span>
-        <h2>${{ estimated_profit }}</h2>
-    </div>
-
 </div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Low Stock</span>
-        <h2>{{ low_stock_items }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Equipment Alerts</span>
-        <h2>{{ overdue_equipment }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Vehicle Alerts</span>
-        <h2>{{ vehicles_due_service }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Pending Leave</span>
-        <h2>{{ pending_leave_requests }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Draft POs</span>
-        <h2>{{ draft_purchase_orders }}</h2>
-    </div>
-
-</div>
-
 {% endblock %}

@@ -313,19 +313,20 @@ function setupActiveSidebarNavigation() {
             }
         }
 
-        function setupSidebarBadges() {
-            document.querySelectorAll(".side-badge").forEach(function (badge) {
-                if (badge.dataset.notificationType) {
-                    return;
-                }
-
-                const link = badge.closest("a");
-                const label = link ? link.querySelector("span") : null;
-                const count = badge.textContent.trim();
-                const item = label ? label.textContent.trim() : "dashboard";
-                badge.setAttribute("aria-label", count + " items needing attention in " + item);
-                badge.title = count + " items needing attention";
-            });
-        }
     }
+}
+
+function setupSidebarBadges() {
+    document.querySelectorAll(".side-badge").forEach(function (badge) {
+        if (badge.dataset.notificationType) {
+            return;
+        }
+
+        const link = badge.closest("a");
+        const label = link ? link.querySelector("span") : null;
+        const count = badge.textContent.trim();
+        const item = label ? label.textContent.trim() : "dashboard";
+        badge.setAttribute("aria-label", count + " items needing attention in " + item);
+        badge.title = count + " items needing attention";
+    });
 }

@@ -1,93 +1,33 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Quote estimator | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Quote estimator{% endblock %}
+{% block page_subtitle %}Create a guide price from property details and available job history.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <h1>AI Quote Estimator</h1>
-
-    <form method="post">
-
-        {% csrf_token %}
-
-        <label>Bedrooms</label>
-        <input
-            type="number"
-            name="bedrooms"
-            min="0"
-            required
-        >
-
-        <label>Bathrooms</label>
-        <input
-            type="number"
-            name="bathrooms"
-            min="0"
-            required
-        >
-
-        <label>Property Type</label>
-
-        <select name="property_type">
-
-            <option value="unit">
-                Unit
-            </option>
-
-            <option value="house">
-                House
-            </option>
-
-            <option value="commercial">
-                Commercial
-            </option>
-
-        </select>
-
-        <button type="submit">
-            Estimate Quote
-        </button>
-
-    </form>
-
-    {% if estimated_price %}
-
-        <div
-            style="
-                margin-top:20px;
-                padding:20px;
-                background:#f5f5f5;
-                border-radius:10px;
-            "
-        >
-
-            {% if estimated_price %}
-
-            <div class="dashboard-card">
-
-                <h2>
-                    Estimated Quote:
-                    ${{ estimated_price }}
-                </h2>
-
-
-                <p>
-                    Confidence:
-                    {{ confidence_level }}
-                </p>
-
-                <p>
-                    Based on your real invoice history.
-                </p>
-
-            </div>
-
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Internal pricing guide</span><h2>Estimate a starting quote.</h2><p>Use this as a guide only. Confirm the final quote after reviewing the property's needs and access.</p></div></section>
+    <div class="finance-grid">
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Property details</span><h3>Estimate a job</h3></div></header>
+            <form method="post" class="finance-filter-form">{% csrf_token %}
+                {% if form.non_field_errors %}<div class="finance-alert">{{ form.non_field_errors }}</div>{% endif %}
+                <label for="{{ form.bedrooms.id_for_label }}">Bedrooms</label>{{ form.bedrooms }}{{ form.bedrooms.errors }}
+                <label for="{{ form.bathrooms.id_for_label }}">Bathrooms</label>{{ form.bathrooms }}{{ form.bathrooms.errors }}
+                <label for="{{ form.property_type.id_for_label }}">Property type</label>{{ form.property_type }}{{ form.property_type.errors }}
+                <button class="finance-button" type="submit">Calculate guide price</button>
+            </form>
+        </section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Estimate</span><h3>Indicative pricing</h3></div></header>
+            {% if estimated_price != None %}
+                <p class="finance-metric-value">${{ estimated_price|floatformat:2 }}</p>
+                <p><strong>Confidence:</strong> {{ confidence_level }}</p>
+                <p>{{ estimate_basis }}</p>
+                <p class="finance-muted">Historical pricing is descriptive; property-specific work may differ.</p>
+            {% else %}
+                <div class="finance-empty-state"><strong>Enter property details</strong>The price guide and evidence basis will appear here.</div>
             {% endif %}
-
-        </div>
-
-    {% endif %}
-
+        </section>
+    </div>
 </div>
-
 {% endblock %}

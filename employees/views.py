@@ -39,13 +39,14 @@ from .models import (
     PropertyDamageReport,
     PropertyDamageReportReply,
 )
+from .damage_report_chat import conversation_response, update_report_presence
 from .decorators import employee_required
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 
 from bookings.forms import JobPhotoForm
 from bookings.models import Booking, JobPhoto
@@ -689,25 +690,85 @@ def employee_property_damage_report_reply(request, report_id):
     )
     form = EmployeePropertyDamageReportReplyForm(request.POST)
     if not form.is_valid():
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse(
+                {"error": "Please enter a response before sending it."},
+                status=400,
+            )
         messages.error(request, "Please enter a response before sending it.")
         return redirect(f"{reverse('employee_damage_report')}#report-{report.pk}")
 
-    reply = form.save(commit=False)
-    reply.report = report
-    reply.responder = request.user
-    reply.save()
+    reopened = False
+    with transaction.atomic():
+        report = get_object_or_404(
+            PropertyDamageReport.objects.select_for_update(),
+            pk=report.pk,
+            employee=employee,
+        )
+        reply = form.save(commit=False)
+        reply.report = report
+        reply.responder = request.user
+        reply.save()
+        if report.status == PropertyDamageReport.STATUS_CLOSED:
+            report.status = PropertyDamageReport.STATUS_OPEN
+            report.closed_at = None
+            report.closed_by = None
+            report.save(update_fields=["status", "closed_at", "closed_by"])
+            reopened = True
 
     notify_admins(
-        f"Employee response to property damage report #{report.pk}",
         (
-            f"{employee.full_name} responded to property damage report "
+            f"Reopened property damage report #{report.pk}"
+            if reopened
+            else f"Employee response to property damage report #{report.pk}"
+        ),
+        (
+            f"{employee.full_name} replied to and reopened property damage report "
+            f"#{report.pk}: {reply.message[:180]}"
+            if reopened
+            else f"{employee.full_name} responded to property damage report "
             f"#{report.pk}: {reply.message[:180]}"
         ),
         notification_type="damage_report",
         link=f"/dashboard/property-damage-reports/#report-{report.pk}",
     )
-    messages.success(request, "Your response has been sent to the dashboard team.")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True})
+    messages.success(
+        request,
+        (
+            "Your response has been sent and the closed ticket has been reopened."
+            if reopened
+            else "Your response has been sent to the dashboard team."
+        ),
+    )
     return redirect(f"{reverse('employee_damage_report')}#report-{report.pk}")
+
+
+@employee_required
+@require_http_methods(["GET", "POST"])
+def employee_property_damage_report_conversation(request, report_id):
+    employee = get_object_or_404(Employee, user=request.user)
+    report = get_object_or_404(
+        PropertyDamageReport.objects.select_related("employee__user"),
+        pk=report_id,
+        employee=employee,
+    )
+    if request.method == "POST":
+        typing_value = request.POST.get("is_typing")
+        if typing_value not in {"true", "false"}:
+            return JsonResponse(
+                {"error": "A valid typing state is required."},
+                status=400,
+            )
+        update_report_presence(
+            report,
+            request.user,
+            is_typing=typing_value == "true",
+        )
+    else:
+        update_report_presence(report, request.user)
+    return conversation_response(report, request.user, other_side="dashboard")
 
 
 # ==========================================================

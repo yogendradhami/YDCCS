@@ -92,9 +92,24 @@
                 {% for report in reports %}
                     <article class="damage-report-history-card" id="report-{{ report.pk }}">
                         <header>
-                            <strong>Report #{{ report.pk }}</strong>
+                            <div class="employee-damage-case-title">
+                                <strong>Report #{{ report.pk }}</strong>
+                                <span class="employee-damage-case-status {% if report.status == 'closed' %}is-closed{% else %}is-open{% endif %}">
+                                    <i></i>{{ report.get_status_display }}
+                                </span>
+                            </div>
                             <time datetime="{{ report.created_at|date:'c' }}">{{ report.created_at|date:"d M Y, g:i A" }}</time>
                         </header>
+                        {% if report.status == "closed" %}
+                            <div class="employee-damage-case-resolution">
+                                <strong>This report has been resolved and closed.</strong>
+                                <span>
+                                    {% if report.closed_at %}Closed {{ report.closed_at|date:"d M Y, g:i A" }}{% endif %}
+                                    {% if report.closed_by %} by {{ report.closed_by.get_full_name|default:report.closed_by.username }}{% endif %}
+                                </span>
+                                <small>If you need to add information, reply below and the ticket will reopen for the dashboard team.</small>
+                            </div>
+                        {% endif %}
                         {% if report.booking %}
                             <p class="damage-report-history-job">{{ report.booking.get_service_type_display }} · {{ report.booking.address }}, {{ report.booking.suburb_postcode }}</p>
                         {% endif %}
@@ -108,12 +123,21 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="damage-report-history-replies">
+                        <div
+                            class="damage-report-history-replies"
+                            data-live-conversation
+                            data-side="employee"
+                            data-conversation-url="{% url 'employee_property_damage_report_conversation' report.pk %}"
+                        >
                             <h3>Report conversation</h3>
+                            <div class="damage-conversation-presence" role="status" aria-live="polite" data-conversation-presence></div>
                             {% for reply in report.replies.all %}
-                                <article>
-                                    <strong>{% if reply.responder_id == request.user.pk %}You{% elif reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
-                                    <time datetime="{{ reply.created_at|date:'c' }}">{{ reply.created_at|date:"d M Y, g:i A" }}</time>
+                                <article class="{% if reply.responder_id == request.user.pk %}is-employee{% else %}is-dashboard{% endif %}" data-reply-id="{{ reply.pk }}">
+                                    <div class="employee-damage-reply-meta">
+                                        <strong>{% if reply.responder_id == request.user.pk %}You{% elif reply.responder %}{{ reply.responder.get_full_name|default:reply.responder.username }}{% else %}Dashboard team{% endif %}</strong>
+                                        <span>{% if reply.responder_id == request.user.pk %}You{% else %}Dashboard{% endif %}</span>
+                                        <time datetime="{{ reply.created_at|date:'c' }}">{{ reply.created_at|date:"d M Y, g:i A" }}</time>
+                                    </div>
                                     <p>{{ reply.message|linebreaksbr }}</p>
                                 </article>
                             {% empty %}
@@ -135,6 +159,7 @@
                                 placeholder="Write a response or follow-up for the dashboard team."
                             ></textarea>
                             <button type="submit" class="portal-primary-btn">Send response</button>
+                            <span class="damage-chat-feedback" role="status" aria-live="polite" data-chat-feedback></span>
                         </form>
                     </article>
                 {% empty %}
@@ -144,4 +169,5 @@
         </div>
     </main>
 </section>
+<script src="{% static 'js/damage-report-conversation.js' %}" defer></script>
 {% endblock %}

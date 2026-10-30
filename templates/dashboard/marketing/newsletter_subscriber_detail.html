@@ -1,122 +1,38 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Newsletter Subscriber
-{% endblock %}
-
-{% block page_title %}
-Newsletter Subscriber
-{% endblock %}
-
-{% block page_subtitle %}
-View newsletter subscriber details.
-{% endblock %}
+{% block title %}Subscriber details | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Newsletter subscriber{% endblock %}
+{% block page_subtitle %}Review the recorded email consent and subscription status.{% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <div>
-            <h2>Subscriber Details</h2>
-            <p style="margin:6px 0 0;">
-                Newsletter subscriber information.
-            </p>
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy"><span class="reputation-eyebrow">Newsletter audience</span><h2>{{ subscriber.email }}</h2><p>Subscriber record created {{ subscriber.created_at|date:"j F Y" }}.</p></div>
+        <div class="reputation-actions">
+            <a class="reputation-button-secondary" href="{% url 'edit_newsletter_subscriber' subscriber.pk %}">Edit record</a>
+            <a class="reputation-button-danger" href="{% url 'delete_newsletter_subscriber' subscriber.pk %}">Delete subscriber</a>
+            <a class="reputation-button-secondary" href="{% url 'campaign_center' %}">Back to center</a>
         </div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <a
-                href="{% url 'edit_newsletter_subscriber' subscriber.id %}"
-                class="small-link-btn"
-            >
-                Edit
-            </a>
-
-            <a
-                href="{% url 'delete_newsletter_subscriber' subscriber.id %}"
-                class="small-link-btn"
-            >
-                Delete
-            </a>
-
-            <a
-                href="{% url 'campaign_center' %}"
-                class="small-link-btn"
-            >
-                Back to Campaign Center
-            </a>
+    </section>
+    <div class="reputation-metrics">
+        <article class="reputation-metric"><span class="reputation-metric-label">Subscription</span><strong class="reputation-metric-value">{% if subscriber.is_active %}Active{% else %}Inactive{% endif %}</strong></article>
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Consent</span><strong class="reputation-metric-value">{% if subscriber.consent_given %}Recorded{% else %}Not recorded{% endif %}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Consent date</span><strong class="reputation-metric-value">{% if subscriber.consented_at %}{{ subscriber.consented_at|date:"j M Y" }}{% else %}Not recorded{% endif %}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Source</span><strong class="reputation-metric-value">{{ subscriber.source|default:"Unknown" }}</strong></article>
+    </div>
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Subscriber record</span><h3>Consent and status details</h3></div></header>
+        <div class="reputation-detail-list">
+            <div class="reputation-detail-item"><span>Email</span><strong>{{ subscriber.email }}</strong></div>
+            <div class="reputation-detail-item"><span>Subscription status</span><strong>{% if subscriber.is_active %}Active{% else %}Inactive{% endif %}</strong></div>
+            <div class="reputation-detail-item"><span>Marketing consent</span><strong>{% if subscriber.consent_given %}Recorded{% else %}Not recorded{% endif %}</strong></div>
+            <div class="reputation-detail-item"><span>Consent recorded at</span><strong>{% if subscriber.consented_at %}{{ subscriber.consented_at|date:"j F Y, g:i A" }}{% else %}Not recorded{% endif %}</strong></div>
+            <div class="reputation-detail-item"><span>Subscription source</span><strong>{{ subscriber.source|default:"Unknown" }}</strong></div>
+            <div class="reputation-detail-item"><span>Last updated</span><strong>{{ subscriber.updated_at|date:"j F Y, g:i A" }}</strong></div>
         </div>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <tbody>
-
-                <tr>
-                    <th>Email</th>
-                    <td>{{ subscriber.email }}</td>
-                </tr>
-
-                <tr>
-                    <th>Source</th>
-                    <td>{{ subscriber.source|default:"Unknown" }}</td>
-                </tr>
-
-                <tr>
-                    <th>Consent</th>
-                    <td>
-                        {% if subscriber.consent_given %}
-                            Yes
-                        {% else %}
-                            No
-                        {% endif %}
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Consent Date</th>
-                    <td>
-                        {% if subscriber.consented_at %}
-                            {{ subscriber.consented_at|date:"d M Y H:i" }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Status</th>
-                    <td>
-                        {% if subscriber.is_active and subscriber.consent_given %}
-                            Active
-                        {% else %}
-                            Inactive
-                        {% endif %}
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Subscribed</th>
-                    <td>
-                        {{ subscriber.created_at|date:"d M Y H:i" }}
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Last Updated</th>
-                    <td>
-                        {{ subscriber.updated_at|date:"d M Y H:i" }}
-                    </td>
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+    </section>
+</div>
 {% endblock %}

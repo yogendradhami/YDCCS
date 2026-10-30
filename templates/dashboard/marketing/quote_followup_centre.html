@@ -1,194 +1,29 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Quote follow-ups | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Quote follow-ups{% endblock %}
+{% block page_subtitle %}Find older quotes that need a response and follow up or convert them into a booking.{% endblock %}
 {% block content %}
-
-
-<style>
-
-.responsive-table-wrap{
-    width:100%;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-}
-
-.dashboard-table{
-    width:100%;
-    min-width:1100px;
-    border-collapse:collapse;
-}
-
-.dashboard-table th,
-.dashboard-table td{
-    white-space:nowrap;
-}
-
-@media (max-width:768px){
-
-    .dashboard-card{
-        padding:15px;
-    }
-
-}
-
-</style>
-
-
-<h1>Quote Follow-Up Centre</h1>
-
-<div style="margin:20px 0;">
-
-    <input
-        type="text"
-        id="quoteFollowupSearch"
-        placeholder="Search quote..."
-        style="
-            width:100%;
-            max-width:100%;
-            box-sizing:border-box;
-            padding:12px;
-            border:1px solid #ddd;
-            border-radius:10px;
-        "
-    >
-
-</div>
-
-<div class="dashboard-card">
-
-    <div class="responsive-table-wrap">
-
-        <table
-            class="dashboard-table"
-            id="quoteFollowupTable"
-        >
-
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Property Type</th>
-                    <th>Estimated Price</th>
-                    <th>Created</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Sales actions</span><h2>Keep qualified quotes moving.</h2><p>Only quotes in the quoted stage, created at least two days ago, appear in this follow-up queue.</p></div><div class="finance-hero-actions"><a class="finance-button-secondary" href="{% url 'quote_conversion_analytics' %}">Quote analytics</a></div></section>
+    <section class="finance-panel">
+        <form method="get" class="finance-filter-form">
+            <label for="quote-search">Search quote follow-ups</label>
+            <input id="quote-search" type="search" name="q" value="{{ query }}" placeholder="Name, email, property or suburb">
+            <button class="finance-button" type="submit">Search</button>
+            {% if query %}<a class="finance-button-secondary" href="{% url 'quote_followup_centre' %}">Clear</a>{% endif %}
+        </form>
+        <div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Customer</th><th>Property</th><th>Estimate</th><th>Received</th><th>Actions</th></tr></thead><tbody>
             {% for quote in quotes %}
-
-                <tr>
-
-                    <td>{{ quote.name }}</td>
-
-                    <td>{{ quote.email }}</td>
-
-                    <td>{{ quote.property_type }}</td>
-
-                    <td>${{ quote.estimated_price }}</td>
-
-                    <td>{{ quote.created_at }}</td>
-
-                    <td>
-
-                        <a
-                            href="/dashboard/quote-followups/send/{{ quote.id }}/"
-                            class="btn-fill"
-                        >
-                            Send Follow-Up
-                        </a>
-
-                        <a
-                            href="/dashboard/quotes/convert/{{ quote.id }}/"
-                            class="btn-fill"
-                        >
-                            Convert To Booking
-                        </a>
-
-                    </td>
-
-                </tr>
-
-            {% empty %}
-
-                <tr>
-
-                    <td colspan="6">
-                        No quotes require follow-up.
-                    </td>
-
-                </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
+                <tr><td><strong>{{ quote.name }}</strong><br><a href="mailto:{{ quote.email }}">{{ quote.email }}</a></td><td>{{ quote.get_property_type_display|default:quote.property_type }}<br><small>{{ quote.suburb_postcode|default:"Location not supplied" }}</small></td><td>${{ quote.estimated_price|floatformat:2 }}</td><td>{{ quote.created_at|date:"j M Y" }}</td><td><div class="finance-inline-actions">
+                    <form method="post" action="{% url 'send_quote_followup_email' quote.pk %}">{% csrf_token %}<button class="finance-button-secondary" type="submit">Send follow-up</button></form>
+                    <form method="post" action="{% url 'convert_quote_to_booking' quote.pk %}">{% csrf_token %}<button class="finance-button" type="submit">Convert to booking</button></form>
+                </div></td></tr>
+            {% empty %}<tr><td colspan="5"><div class="finance-empty-state"><strong>No quotes need follow-up</strong>Older quotes that are still in the quoted stage will appear here.</div></td></tr>{% endfor %}
+        </tbody></table></div>
+        {% if page_obj.has_other_pages %}<nav class="finance-pagination" aria-label="Quote follow-up pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&page={{ page_obj.previous_page_number }}">← Newer</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&page={{ page_obj.next_page_number }}">Older →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
 </div>
-
-
-
-
-<script>
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function(){
-
-        const searchInput =
-            document.getElementById(
-                "quoteFollowupSearch"
-            );
-
-        const table =
-            document.getElementById(
-                "quoteFollowupTable"
-            );
-
-        if(!searchInput || !table){
-            return;
-        }
-
-        searchInput.addEventListener(
-            "keyup",
-            function(){
-
-                const search =
-                    searchInput.value
-                    .toLowerCase();
-
-                const rows =
-                    table.querySelectorAll(
-                        "tbody tr"
-                    );
-
-                rows.forEach(
-                    function(row){
-
-                        const text =
-                            row.textContent
-                            .toLowerCase();
-
-                        if(
-                            text.includes(search)
-                        ){
-                            row.style.display="";
-                        }
-                        else{
-                            row.style.display="none";
-                        }
-
-                    }
-                );
-
-            }
-        );
-
-    }
-);
-
-</script>
 {% endblock %}

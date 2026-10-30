@@ -1,1006 +1,139 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Campaign Center
-{% endblock %}
-
-{% block page_title %}
-Campaign Center
-{% endblock %}
-
-{% block page_subtitle %}
-Marketing campaigns for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}Campaign center | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Campaign center{% endblock %}
+{% block page_subtitle %}Plan customer outreach, review eligible audiences, and review past campaign activity.{% endblock %}
 
 {% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy">
+            <span class="reputation-eyebrow">Customer engagement</span>
+            <h2>Thoughtful outreach, clearly managed.</h2>
+            <p>Preview recipients before a campaign is sent. Marketing emails are actions with real recipients—check the audience and consent status first.</p>
+        </div>
+        <div class="reputation-actions">
+            <a class="reputation-button-secondary" href="{% url 'campaign_performance' %}">Campaign performance</a>
+            <a class="reputation-button-secondary" href="{% url 'review_requests' %}">Review requests</a>
+        </div>
+    </section>
 
-<!-- ===================================================== -->
-<!-- Marketing Summary -->
-<!-- ===================================================== -->
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>VIP Customers</span>
-        <h2>{{ vip_count }}</h2>
-        <p>High-value customers</p>
+    <div class="reputation-metrics">
+        <article class="reputation-metric"><span class="reputation-metric-label">VIP customers</span><strong class="reputation-metric-value">{{ vip_count }}</strong><small class="reputation-metric-foot">Recorded revenue $1,000+</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Review opportunities</span><strong class="reputation-metric-value">{{ review_count }}</strong><small class="reputation-metric-foot">Completed jobs, email available, not requested</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Inactive customers</span><strong class="reputation-metric-value">{{ inactive_count }}</strong><small class="reputation-metric-foot">Current audience rule: 1 or fewer completed jobs</small></article>
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Campaigns sent</span><strong class="reputation-metric-value">{{ campaigns_sent }}</strong><small class="reputation-metric-foot">Logged campaign sends</small></article>
     </div>
 
-    <div class="crm-card">
-        <span>Inactive Customers</span>
-        <h2>{{ inactive_count }}</h2>
-        <p>Need re-engagement</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Review Opportunities</span>
-        <h2>{{ review_count }}</h2>
-        <p>Completed jobs ready for a review request</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Campaigns Sent</span>
-        <h2>{{ campaigns_sent }}</h2>
-        <p>Total campaigns delivered</p>
-    </div>
-
-</div>
-
-
-<!-- ===================================================== -->
-<!-- Review Campaign Status -->
-<!-- ===================================================== -->
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-
-        <div>
-            <h2>Review Campaign Status</h2>
-
-            <p style="margin:6px 0 0;">
-                Review-request eligibility across completed bookings.
-            </p>
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Campaign planning</span><h3>Choose an audience</h3><p>Preview the recipient list before opening the send confirmation.</p></div></header>
+        <div class="reputation-grid">
+            <article class="reputation-panel span-4">
+                <span class="reputation-overline">Customer loyalty</span><h3>VIP customers</h3>
+                <p>Reach higher-value customers with priority offers. Review the audience before sending.</p>
+                <a class="reputation-button-secondary" href="{% url 'campaign_preview' 'vip' %}">Preview VIP audience</a>
+            </article>
+            <article class="reputation-panel span-4">
+                <span class="reputation-overline">Re-engagement</span><h3>Inactive customers</h3>
+                <p>Reconnect with customers whose recorded completed-job count is one or less.</p>
+                <a class="reputation-button-secondary" href="{% url 'campaign_preview' 'inactive' %}">Preview inactive audience</a>
+            </article>
+            <article class="reputation-panel span-4">
+                <span class="reputation-overline">Reputation</span><h3>Review follow-up</h3>
+                <p>Invite customers from completed bookings who have not yet received a request.</p>
+                <a class="reputation-button-secondary" href="{% url 'campaign_preview' 'review' %}">Preview review audience</a>
+            </article>
         </div>
-
-        <a
-            href="{% url 'campaign_preview' 'review' %}"
-            class="small-link-btn"
-        >
-            Open Review Preview
-        </a>
-
-    </div>
-
-
-    <!-- Review Statistics -->
-
-    <div
-        style="
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-            gap:15px;
-            margin-top:20px;
-        "
-    >
-
-        <!-- Completed -->
-
-        <div
-            style="
-                padding:20px;
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                background:#f8fafc;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:13px;
-                    opacity:.7;
-                "
-            >
-                Completed Bookings
-            </span>
-
-            <strong
-                style="
-                    display:block;
-                    font-size:30px;
-                    margin-top:6px;
-                "
-            >
-                {{ review_completed_count }}
-            </strong>
-
-            <span
-                style="
-                    display:block;
-                    margin-top:5px;
-                    font-size:13px;
-                    opacity:.65;
-                "
-            >
-                Total completed jobs
-            </span>
-
+        <div class="reputation-callout is-warning">
+            Review requests are tracked per booking and duplicate requests are skipped in bulk sends. VIP and inactive sends are promotional campaigns; confirm the target list and applicable marketing consent before sending.
+            {% if review_missing_email %}<br><strong>{{ review_missing_email }}</strong> completed booking(s) cannot receive review email because the customer email is missing.{% endif %}
         </div>
+    </section>
 
-
-        <!-- Already Requested -->
-
-        <div
-            style="
-                padding:20px;
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                background:#f8fafc;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:13px;
-                    opacity:.7;
-                "
-            >
-                Already Requested
-            </span>
-
-            <strong
-                style="
-                    display:block;
-                    font-size:30px;
-                    margin-top:6px;
-                "
-            >
-                {{ review_already_requested }}
-            </strong>
-
-            <span
-                style="
-                    display:block;
-                    margin-top:5px;
-                    font-size:13px;
-                    opacity:.65;
-                "
-            >
-                Protected from duplicates
-            </span>
-
+    <section class="reputation-panel" id="newsletter-subscribers">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Newsletter audience</span><h3>Subscriber overview</h3><p>Only subscribers with active status and recorded consent are counted as active.</p></div></header>
+        <div class="reputation-metrics">
+            <article class="reputation-metric"><span class="reputation-metric-label">All subscribers</span><strong class="reputation-metric-value">{{ newsletter_subscriber_count }}</strong></article>
+            <article class="reputation-metric is-accent"><span class="reputation-metric-label">Active with consent</span><strong class="reputation-metric-value">{{ active_newsletter_subscriber_count }}</strong></article>
+            <article class="reputation-metric"><span class="reputation-metric-label">Showing</span><strong class="reputation-metric-value">{{ newsletter_subscriber_page.paginator.count }}</strong><small class="reputation-metric-foot">Subscriber records</small></article>
         </div>
-
-
-        <!-- Ready -->
-
-        <div
-            style="
-                padding:20px;
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                background:#f8fafc;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:13px;
-                    opacity:.7;
-                "
-            >
-                Ready to Contact
-            </span>
-
-            <strong
-                style="
-                    display:block;
-                    font-size:30px;
-                    margin-top:6px;
-                "
-            >
-                {{ review_count }}
-            </strong>
-
-            <span
-                style="
-                    display:block;
-                    margin-top:5px;
-                    font-size:13px;
-                    opacity:.65;
-                "
-            >
-                Eligible for review request
-            </span>
-
-        </div>
-
-
-        <!-- Missing Email -->
-
-        <div
-            style="
-                padding:20px;
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                background:#f8fafc;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:13px;
-                    opacity:.7;
-                "
-            >
-                Missing Email
-            </span>
-
-            <strong
-                style="
-                    display:block;
-                    font-size:30px;
-                    margin-top:6px;
-                "
-            >
-                {{ review_missing_email }}
-            </strong>
-
-            <span
-                style="
-                    display:block;
-                    margin-top:5px;
-                    font-size:13px;
-                    opacity:.65;
-                "
-            >
-                Cannot receive email
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <!-- Campaign Status Message -->
-
-    {% if review_count > 0 %}
-
-        <div
-            style="
-                margin-top:20px;
-                padding:18px 20px;
-                border-radius:12px;
-                background:#f0fdf4;
-                border:1px solid #bbf7d0;
-            "
-        >
-
-            <strong>
-                {{ review_count }} completed booking{{ review_count|pluralize }}
-                ready for a review request.
-            </strong>
-
-            <p style="margin:7px 0 0;">
-                Review the recipient list before sending the campaign.
-            </p>
-
-        </div>
-
-    {% else %}
-
-        <div
-            style="
-                margin-top:20px;
-                padding:18px 20px;
-                border-radius:12px;
-                background:#f8fafc;
-                border:1px solid #e5e7eb;
-            "
-        >
-
-            <strong>
-                No review requests are currently required.
-            </strong>
-
-            <p style="margin:7px 0 0;">
-                All eligible completed bookings have already received a review
-                request, or the customer does not have an email address.
-            </p>
-
-        </div>
-
-    {% endif %}
-
-</section>
-
-
-<!-- ===================================================== -->
-<!-- Campaign Actions -->
-<!-- ===================================================== -->
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-
-        <div>
-            <h2>Campaign Actions</h2>
-
-            <p style="margin:6px 0 0;">
-                Preview campaign recipients before sending any marketing email.
-            </p>
-        </div>
-
-    </div>
-
-
-    <div
-        style="
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-            gap:15px;
-            margin-top:20px;
-        "
-    >
-
-        <!-- VIP Campaign -->
-
-        <div
-            style="
-                padding:22px;
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                background:#ffffff;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:12px;
-                    font-weight:700;
-                    letter-spacing:.08em;
-                    text-transform:uppercase;
-                    opacity:.65;
-                "
-            >
-                Customer Growth
-            </span>
-
-            <h3 style="margin:8px 0 6px;">
-                VIP Campaign
-            </h3>
-
-            <p style="margin:0 0 18px;">
-                Reach high-value customers with priority offers and
-                exclusive promotions.
-            </p>
-
-            <a
-                href="{% url 'campaign_preview' 'vip' %}"
-                class="small-link-btn"
-            >
-                Preview VIP Campaign
-            </a>
-
-        </div>
-
-
-        <!-- Inactive Campaign -->
-
-        <div
-            style="
-                padding:22px;
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                background:#ffffff;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:12px;
-                    font-weight:700;
-                    letter-spacing:.08em;
-                    text-transform:uppercase;
-                    opacity:.65;
-                "
-            >
-                Re-engagement
-            </span>
-
-            <h3 style="margin:8px 0 6px;">
-                Inactive Customer Campaign
-            </h3>
-
-            <p style="margin:0 0 18px;">
-                Reconnect with customers who have not booked a service
-                recently.
-            </p>
-
-            <a
-                href="{% url 'campaign_preview' 'inactive' %}"
-                class="small-link-btn"
-            >
-                Preview Inactive Campaign
-            </a>
-
-        </div>
-
-
-        <!-- Review Campaign -->
-
-        <div
-            style="
-                padding:22px;
-                border:1px solid #e5e7eb;
-                border-radius:12px;
-                background:#ffffff;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:12px;
-                    font-weight:700;
-                    letter-spacing:.08em;
-                    text-transform:uppercase;
-                    opacity:.65;
-                "
-            >
-                Reputation
-            </span>
-
-            <h3 style="margin:8px 0 6px;">
-                Review Campaign
-            </h3>
-
-            <p style="margin:0 0 18px;">
-                Request Google reviews from customers after completed
-                cleaning services.
-            </p>
-
-            <a
-                href="{% url 'campaign_preview' 'review' %}"
-                class="small-link-btn"
-            >
-                Preview Review Campaign
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- ===================================================== -->
-<!-- Newsletter Management -->
-<!-- ===================================================== -->
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-
-        <div>
-            <h2>Newsletter Management</h2>
-
-            <p style="margin:6px 0 0;">
-                Manage newsletter subscribers and add customers directly
-                from the dashboard.
-            </p>
-        </div>
-
-    </div>
-
-
-    <!-- Newsletter Statistics -->
-
-    <div
-        style="
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-            gap:15px;
-            margin:20px 0;
-        "
-    >
-
-        <!-- Total Subscribers -->
-
-        <div
-            style="
-                padding:18px;
-                border:1px solid #e5e7eb;
-                border-radius:10px;
-                background:#f8fafc;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:13px;
-                    opacity:.7;
-                "
-            >
-                Total Subscribers
-            </span>
-
-            <strong
-                style="
-                    display:block;
-                    font-size:28px;
-                    margin-top:5px;
-                "
-            >
-                {{ newsletter_subscriber_count }}
-            </strong>
-
-        </div>
-
-
-        <!-- Active Subscribers -->
-
-        <div
-            style="
-                padding:18px;
-                border:1px solid #e5e7eb;
-                border-radius:10px;
-                background:#f8fafc;
-            "
-        >
-
-            <span
-                style="
-                    display:block;
-                    font-size:13px;
-                    opacity:.7;
-                "
-            >
-                Active Subscribers
-            </span>
-
-            <strong
-                style="
-                    display:block;
-                    font-size:28px;
-                    margin-top:5px;
-                "
-            >
-                {{ active_newsletter_subscriber_count }}
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <!-- Add Newsletter Subscriber -->
-
-    <div
-        style="
-            margin-top:20px;
-            padding:22px;
-            border:1px solid #e5e7eb;
-            border-radius:12px;
-            background:#ffffff;
-        "
-    >
-
-        <h3 style="margin-top:0;">
-            Add Newsletter Subscriber
-        </h3>
-
-        <p style="margin-bottom:20px;">
-            Add a customer to the YD Commercial Cleaning Services newsletter.
-            The customer will receive a confirmation email and the company
-            will receive a notification.
-        </p>
-
-        <form
-            method="post"
-            action="{% url 'dashboard_newsletter_subscribe' %}"
-        >
-
+        <form method="post" action="{% url 'dashboard_newsletter_subscribe' %}" class="reputation-panel" style="background:#f8fbfc">
             {% csrf_token %}
-
-            <div
-                style="
-                    display:grid;
-                    grid-template-columns:minmax(250px,1fr) auto;
-                    gap:15px;
-                    align-items:end;
-                "
-            >
-
-                <div>
-
-                    <label
-                        for="newsletter-email"
-                        style="
-                            display:block;
-                            margin-bottom:7px;
-                            font-weight:600;
-                        "
-                    >
-                        Email address
+            <div class="reputation-form-grid">
+                <div class="reputation-field"><label for="newsletter-email">Customer email</label><input id="newsletter-email" name="email" type="email" autocomplete="email" placeholder="customer@example.com" required></div>
+                <div class="reputation-field">
+                    <label class="reputation-field" style="display:flex;align-items:flex-start;gap:8px">
+                        <input type="checkbox" name="consent" required>
+                        <span>Customer has agreed to receive promotional emails.</span>
                     </label>
-
-                    <input
-                        type="email"
-                        id="newsletter-email"
-                        name="email"
-                        placeholder="customer@example.com"
-                        autocomplete="email"
-                        required
-                        style="
-                            width:100%;
-                            box-sizing:border-box;
-                            padding:12px 14px;
-                            border:1px solid #d1d5db;
-                            border-radius:8px;
-                            font-size:15px;
-                        "
-                    >
-
+                    <small class="helptext">Record consent before subscribing a customer.</small>
                 </div>
-
-                <button
-                    type="submit"
-                    class="small-link-btn"
-                    style="
-                        border:0;
-                        cursor:pointer;
-                        padding:12px 20px;
-                    "
-                >
-                    Subscribe Customer
-                </button>
-
             </div>
-
-
-            <label
-                style="
-                    display:flex;
-                    gap:9px;
-                    align-items:flex-start;
-                    margin-top:15px;
-                    font-size:14px;
-                    line-height:1.5;
-                "
-            >
-
-                <input
-                    type="checkbox"
-                    name="consent"
-                    required
-                    style="margin-top:4px;"
-                >
-
-                <span>
-                    I agree to receive promotional emails from
-                    YD Commercial Cleaning Services.
-                </span>
-
-            </label>
-
-
-            <p
-                style="
-                    margin:12px 0 0;
-                    font-size:13px;
-                    opacity:.7;
-                "
-            >
-                Subscribers can join from the public website or directly
-                through this dashboard.
-            </p>
-
+            <button type="submit" class="reputation-button" style="margin-top:12px">Add consenting subscriber</button>
         </form>
 
-    </div>
-
-</section>
-
-
-<!-- ===================================================== -->
-<!-- Newsletter Subscribers -->
-<!-- ===================================================== -->
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-
-        <div>
-            <h2>Newsletter Subscribers</h2>
-
-            <p style="margin:6px 0 0;">
-                All customers currently recorded in the marketing newsletter.
-            </p>
+        <div class="reputation-table-wrap">
+            <table class="reputation-table">
+                <thead><tr><th>Email</th><th>Source</th><th>Consent</th><th>Status</th><th>Subscribed</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for subscriber in newsletter_subscribers %}
+                        <tr>
+                            <td><strong>{{ subscriber.email }}</strong></td>
+                            <td>{{ subscriber.get_source_display|default:subscriber.source|default:"Unknown" }}</td>
+                            <td>{% if subscriber.consent_given %}<span class="reputation-status is-active">Recorded</span>{% else %}<span class="reputation-status is-danger">Not recorded</span>{% endif %}</td>
+                            <td>{% if subscriber.is_active and subscriber.consent_given %}<span class="reputation-status is-active">Active</span>{% else %}<span class="reputation-status">Inactive</span>{% endif %}</td>
+                            <td>{{ subscriber.created_at|date:"j M Y" }}</td>
+                            <td><div class="reputation-inline-actions">
+                                <a class="reputation-button-secondary" href="{% url 'newsletter_subscriber_detail' subscriber.pk %}">View</a>
+                                <a class="reputation-button-secondary" href="{% url 'edit_newsletter_subscriber' subscriber.pk %}">Edit</a>
+                                <a class="reputation-button-danger" href="{% url 'delete_newsletter_subscriber' subscriber.pk %}">Delete</a>
+                            </div></td>
+                        </tr>
+                    {% empty %}<tr><td colspan="6"><div class="reputation-empty"><strong>No subscribers yet</strong>Add a subscriber only after consent has been provided.</div></td></tr>{% endfor %}
+                </tbody>
+            </table>
         </div>
+        {% if newsletter_subscriber_page.has_other_pages %}
+            <nav class="reputation-pagination" aria-label="Newsletter subscriber pages">
+                {% if newsletter_subscriber_page.has_previous %}<a href="?subscriber_page={{ newsletter_subscriber_page.previous_page_number }}#newsletter-subscribers">← Previous</a>{% else %}<span></span>{% endif %}
+                <span>Page {{ newsletter_subscriber_page.number }} of {{ newsletter_subscriber_page.paginator.num_pages }}</span>
+                {% if newsletter_subscriber_page.has_next %}<a href="?subscriber_page={{ newsletter_subscriber_page.next_page_number }}#newsletter-subscribers">Next →</a>{% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
 
-    </div>
-
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-
-                <tr>
-                    <th>Email</th>
-                    <th>Source</th>
-                    <th>Consent</th>
-                    <th>Status</th>
-                    <th>Subscribed</th>
-                    <th>Actions</th>
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for subscriber in newsletter_subscribers %}
-
-                    <tr>
-
-                        <td>
-                            <strong>
-                                {{ subscriber.email }}
-                            </strong>
-                        </td>
-
-
-                        <td>
-
-                            {% if subscriber.source == "homepage_clean20" %}
-
-                                <span>
-                                    Homepage
-                                </span>
-
-                            {% elif subscriber.source == "dashboard_newsletter" %}
-
-                                <span>
-                                    Dashboard
-                                </span>
-
-                            {% else %}
-
-                                <span>
-                                    {{ subscriber.source|default:"Unknown" }}
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            {% if subscriber.consent_given %}
-                                Yes
-                            {% else %}
-                                No
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            {% if subscriber.is_active and subscriber.consent_given %}
-
-                                <span>
-                                    Active
-                                </span>
-
-                            {% else %}
-
-                                <span>
-                                    Inactive
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-                            {{ subscriber.created_at|date:"d M Y H:i" }}
-                        </td>
-
-
-                        <td>
-
-                            <div
-                                style="
-                                    display:flex;
-                                    gap:8px;
-                                    flex-wrap:wrap;
-                                "
-                            >
-
-                                <a
-                                    href="{% url 'newsletter_subscriber_detail' subscriber.id %}"
-                                    class="small-link-btn"
-                                >
-                                    View
-                                </a>
-
-                                <a
-                                    href="{% url 'edit_newsletter_subscriber' subscriber.id %}"
-                                    class="small-link-btn"
-                                >
-                                    Edit
-                                </a>
-
-                                <a
-                                    href="{% url 'delete_newsletter_subscriber' subscriber.id %}"
-                                    class="small-link-btn"
-                                >
-                                    Delete
-                                </a>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                {% empty %}
-
-                    <tr>
-
-                        <td colspan="6">
-                            No newsletter subscribers yet.
-                        </td>
-
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-
-<!-- ===================================================== -->
-<!-- Campaign History -->
-<!-- ===================================================== -->
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-
-        <div>
-            <h2>Campaign History</h2>
-
-            <p style="margin:6px 0 0;">
-                Recent marketing campaigns sent from the dashboard.
-            </p>
+    <section class="reputation-panel" id="campaign-history">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Send log</span><h3>Campaign history</h3><p>Recent campaign records and their recipient counts.</p></div><a class="reputation-button-secondary" href="{% url 'campaign_performance' %}">All performance</a></header>
+        <div class="reputation-table-wrap">
+            <table class="reputation-table">
+                <thead><tr><th>Sent</th><th>Campaign</th><th>Recipients</th><th>Sent by</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for campaign in campaign_history %}
+                        <tr>
+                            <td>{{ campaign.sent_at|date:"j M Y, g:i A" }}</td>
+                            <td><strong>{{ campaign.title }}</strong><br><small>{{ campaign.get_campaign_type_display }}</small></td>
+                            <td>{{ campaign.recipients_count }}</td>
+                            <td>{% if campaign.sent_by %}{{ campaign.sent_by.get_full_name|default:campaign.sent_by.username }}{% else %}System{% endif %}</td>
+                            <td><div class="reputation-inline-actions">
+                                <a class="reputation-button-secondary" href="{% url 'campaign_history_detail' campaign.pk %}">Details</a>
+                                <a class="reputation-button-secondary" href="{% url 'edit_campaign_history' campaign.pk %}">Edit</a>
+                                <a class="reputation-button-danger" href="{% url 'delete_campaign_history' campaign.pk %}">Delete</a>
+                            </div></td>
+                        </tr>
+                    {% empty %}<tr><td colspan="5"><div class="reputation-empty"><strong>No campaigns recorded</strong>Campaigns appear here after recipients have been sent a message.</div></td></tr>{% endfor %}
+                </tbody>
+            </table>
         </div>
-
-    </div>
-
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-
-                <tr>
-                    <th>Date</th>
-                    <th>Campaign</th>
-                    <th>Recipients</th>
-                    <th>Sent By</th>
-                    <th>Actions</th>
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for campaign in campaign_history %}
-
-                    <tr>
-
-                        <td>
-                            {{ campaign.sent_at|date:"d M Y H:i" }}
-                        </td>
-
-
-                        <td>
-                            {{ campaign.get_campaign_type_display }}
-                        </td>
-
-
-                        <td>
-                            {{ campaign.recipients_count }}
-                        </td>
-
-
-                        <td>
-
-                            {% if campaign.sent_by %}
-                                {{ campaign.sent_by.username }}
-                            {% else %}
-                                System
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            <div
-                                style="
-                                    display:flex;
-                                    gap:8px;
-                                    flex-wrap:wrap;
-                                "
-                            >
-
-                                <a
-                                    href="{% url 'campaign_history_detail' campaign.id %}"
-                                    class="small-link-btn"
-                                >
-                                    View
-                                </a>
-
-                                <a
-                                    href="{% url 'edit_campaign_history' campaign.id %}"
-                                    class="small-link-btn"
-                                >
-                                    Edit
-                                </a>
-
-                                <a
-                                    href="{% url 'delete_campaign_history' campaign.id %}"
-                                    class="small-link-btn"
-                                >
-                                    Delete
-                                </a>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                {% empty %}
-
-                    <tr>
-
-                        <td colspan="5">
-                            No campaigns sent yet.
-                        </td>
-
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+        {% if campaign_history_page.has_other_pages %}
+            <nav class="reputation-pagination" aria-label="Campaign history pages">
+                {% if campaign_history_page.has_previous %}<a href="?campaign_page={{ campaign_history_page.previous_page_number }}#campaign-history">← Previous</a>{% else %}<span></span>{% endif %}
+                <span>Page {{ campaign_history_page.number }} of {{ campaign_history_page.paginator.num_pages }}</span>
+                {% if campaign_history_page.has_next %}<a href="?campaign_page={{ campaign_history_page.next_page_number }}#campaign-history">Next →</a>{% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

@@ -264,10 +264,31 @@ class CleaningSupplyForm(forms.ModelForm):
 
 
 class PurchaseOrderForm(forms.ModelForm):
+    status = forms.ChoiceField(
+        choices=[
+            choice
+            for choice in PurchaseOrder.STATUS_CHOICES
+            if choice[0] in {"draft", "ordered"}
+        ],
+        initial="draft",
+    )
 
     class Meta:
         model = PurchaseOrder
-        fields = "__all__"
+        fields = [
+            "supply",
+            "supplier_name",
+            "quantity",
+            "unit_cost",
+            "status",
+            "notes",
+        ]
+
+        widgets = {
+            "supplier_name": forms.TextInput(
+                attrs={"list": "active-supplier-names"}
+            ),
+        }
 
 
 class SupplierForm(forms.ModelForm):
@@ -328,28 +349,46 @@ class MarketingSubscriberForm(forms.ModelForm):
 class CampaignLogForm(forms.ModelForm):
     class Meta:
         model = CampaignLog
-
         fields = [
             "campaign_type",
             "title",
             "recipients_count",
         ]
-
         widgets = {
             "campaign_type": forms.Select(
-                attrs={
-                    "class": "form-control",
-                }
+                attrs={"class": "form-control"}
             ),
             "title": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                }
+                attrs={"class": "form-control"}
             ),
             "recipients_count": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "min": "0",
-                }
+                attrs={"class": "form-control", "min": "0"}
             ),
         }
+
+
+class QuoteEstimateForm(forms.Form):
+    PROPERTY_TYPE_CHOICES = [
+        ("unit", "Unit / apartment"),
+        ("house", "House"),
+        ("commercial", "Commercial"),
+    ]
+
+    bedrooms = forms.IntegerField(
+        min_value=0,
+        max_value=30,
+        widget=forms.NumberInput(
+            attrs={"min": 0, "max": 30, "class": "form-control"}
+        ),
+    )
+    bathrooms = forms.IntegerField(
+        min_value=0,
+        max_value=30,
+        widget=forms.NumberInput(
+            attrs={"min": 0, "max": 30, "class": "form-control"}
+        ),
+    )
+    property_type = forms.ChoiceField(
+        choices=PROPERTY_TYPE_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )

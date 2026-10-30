@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import DatabaseError
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 import io
@@ -22,6 +23,7 @@ from .models import (
 	EmployeeGoogleAccount,
 	PropertyDamageImage,
 	PropertyDamageReport,
+	PropertyDamageReportPresence,
 	PropertyDamageReportReply,
 )
 
@@ -155,6 +157,173 @@ class EmployeeDamageReportTests(TestCase):
 		self.assertEqual(employee_response.status_code, 200)
 		self.assertContains(employee_response, "Thank you for reporting this.")
 
+	def test_dashboard_can_close_and_reopen_ticket_and_employee_is_notified(self):
+		report = PropertyDamageReport.objects.create(
+			employee=self.employee,
+			booking=self.booking,
+			description="A tile was cracked near the kitchen sink.",
+		)
+		admin = User.objects.create_user(
+			username="damage-report-close-admin",
+			password="test-password",
+			is_staff=True,
+		)
+		grant_dashboard_permissions(
+			admin,
+			"employees.change_propertydamagereport",
+		)
+		self.client.force_login(admin)
+
+		close_response = self.client.post(
+			reverse("property_damage_report_set_status", args=[report.pk]),
+		)
+
+		self.assertEqual(close_response.status_code, 302)
+		report.refresh_from_db()
+		self.assertEqual(report.status, PropertyDamageReport.STATUS_CLOSED)
+		self.assertIsNotNone(report.closed_at)
+		self.assertEqual(report.closed_by, admin)
+		self.assertTrue(
+			Notification.objects.filter(
+				user=self.user,
+				title=f"Property damage report #{report.pk} closed",
+			).exists()
+		)
+
+		self.client.force_login(self.user)
+		employee_response = self.client.get(reverse("employee_damage_report"))
+		self.assertContains(employee_response, "Resolved &amp; closed")
+		self.assertContains(employee_response, "This report has been resolved and closed.")
+
+		self.client.force_login(admin)
+		reopen_response = self.client.post(
+			reverse("property_damage_report_set_status", args=[report.pk]),
+		)
+
+		self.assertEqual(reopen_response.status_code, 302)
+		report.refresh_from_db()
+		self.assertEqual(report.status, PropertyDamageReport.STATUS_OPEN)
+		self.assertIsNone(report.closed_at)
+		self.assertIsNone(report.closed_by)
+
+	def test_conversation_polling_and_typing_presence_work_for_both_sides(self):
+		report = PropertyDamageReport.objects.create(
+			employee=self.employee,
+			booking=self.booking,
+			description="A damaged tile needs review.",
+		)
+		admin = User.objects.create_user(
+			username="damage-report-live-admin",
+			password="test-password",
+			is_staff=True,
+		)
+		grant_dashboard_permissions(
+			admin,
+			"employees.view_employee",
+			"employees.change_propertydamagereport",
+		)
+
+		employee_url = reverse(
+			"employee_property_damage_report_conversation",
+			args=[report.pk],
+		)
+		employee_poll = self.client.get(employee_url)
+		self.assertEqual(employee_poll.status_code, 200)
+		self.assertEqual(employee_poll.json()["replies"], [])
+		presence = PropertyDamageReportPresence.objects.get(
+			report=report,
+			user=self.user,
+		)
+		self.assertFalse(presence.is_typing)
+
+		typing_response = self.client.post(
+			employee_url,
+			{"is_typing": "true"},
+		)
+		self.assertEqual(typing_response.status_code, 200)
+
+		self.client.force_login(admin)
+		dashboard_url = reverse(
+			"property_damage_report_conversation",
+			args=[report.pk],
+		)
+		dashboard_poll = self.client.get(dashboard_url)
+		self.assertEqual(dashboard_poll.status_code, 200)
+		self.assertEqual(
+			dashboard_poll.json()["presence"],
+			[{"name": self.employee.full_name, "is_typing": True}],
+		)
+
+		reply_response = self.client.post(
+			reverse("property_damage_report_reply", args=[report.pk]),
+			{f"reply-{report.pk}-message": "We are looking into this now."},
+			HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+		)
+		self.assertEqual(reply_response.status_code, 200)
+		self.assertEqual(reply_response.json(), {"ok": True})
+
+		self.client.force_login(self.user)
+		updated_conversation = self.client.get(employee_url).json()
+		self.assertEqual(
+			updated_conversation["replies"][0]["message"],
+			"We are looking into this now.",
+		)
+		self.assertEqual(
+			updated_conversation["replies"][0]["role"],
+			"dashboard",
+		)
+
+		self.client.force_login(admin)
+		admin_typing = self.client.post(
+			dashboard_url,
+			{"is_typing": "true"},
+		)
+		self.assertEqual(admin_typing.status_code, 200)
+		self.client.force_login(self.user)
+		employee_presence = self.client.get(employee_url).json()["presence"]
+		self.assertEqual(
+			employee_presence,
+			[{"name": admin.username, "is_typing": True}],
+		)
+
+		employee_reply_response = self.client.post(
+			reverse(
+				"employee_property_damage_report_reply",
+				args=[report.pk],
+			),
+			{"message": "Thanks, I will wait for your update."},
+			HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+		)
+		self.assertEqual(employee_reply_response.status_code, 200)
+		self.assertEqual(employee_reply_response.json(), {"ok": True})
+		self.client.force_login(admin)
+		dashboard_replies = self.client.get(dashboard_url).json()["replies"]
+		self.assertEqual(
+			dashboard_replies[-1]["message"],
+			"Thanks, I will wait for your update.",
+		)
+		self.assertEqual(dashboard_replies[-1]["role"], "employee")
+
+	def test_employee_conversation_endpoint_cannot_read_other_employee_report(self):
+		other_employee = Employee.objects.create(
+			full_name="Other Live Chat Employee",
+			phone="0400000003",
+		)
+		report = PropertyDamageReport.objects.create(
+			employee=other_employee,
+			booking=self.booking,
+			description="Private damage report.",
+		)
+
+		response = self.client.get(
+			reverse(
+				"employee_property_damage_report_conversation",
+				args=[report.pk],
+			)
+		)
+
+		self.assertEqual(response.status_code, 404)
+
 	def test_employee_can_respond_to_own_report_and_notifies_dashboard(self):
 		report = PropertyDamageReport.objects.create(
 			employee=self.employee,
@@ -194,10 +363,43 @@ class EmployeeDamageReportTests(TestCase):
 			notification.link,
 			f"/dashboard/property-damage-reports/#report-{report.pk}",
 		)
+		report.refresh_from_db()
+		self.assertEqual(report.status, PropertyDamageReport.STATUS_OPEN)
 
 		portal_response = self.client.get(reverse("employee_damage_report"))
 		self.assertContains(portal_response, "I have added a close-up photo for clarity.")
 		self.assertContains(portal_response, ">You</strong>")
+
+	def test_employee_reply_reopens_closed_ticket_and_notifies_dashboard(self):
+		report = PropertyDamageReport.objects.create(
+			employee=self.employee,
+			booking=self.booking,
+			description="Resolved damage report.",
+			status=PropertyDamageReport.STATUS_CLOSED,
+			closed_at=timezone.now(),
+		)
+		staff_user = User.objects.create_user(
+			username="damage-report-reopen-staff",
+			password="test-password",
+			is_staff=True,
+		)
+
+		response = self.client.post(
+			reverse("employee_property_damage_report_reply", args=[report.pk]),
+			{"message": "The issue needs further attention."},
+		)
+
+		self.assertEqual(response.status_code, 302)
+		report.refresh_from_db()
+		self.assertEqual(report.status, PropertyDamageReport.STATUS_OPEN)
+		self.assertIsNone(report.closed_at)
+		self.assertIsNone(report.closed_by)
+		self.assertTrue(
+			Notification.objects.filter(
+				user=staff_user,
+				title=f"Reopened property damage report #{report.pk}",
+			).exists()
+		)
 
 	def test_employee_cannot_respond_to_another_employees_report(self):
 		other_employee = Employee.objects.create(
@@ -276,7 +478,6 @@ class EmployeeDamageReportTests(TestCase):
 		grant_dashboard_permissions(
 			staff_user,
 			"employees.view_employee",
-			"employees.view_propertydamagereport",
 		)
 		staff_client = Client()
 		staff_client.force_login(staff_user)
@@ -286,6 +487,8 @@ class EmployeeDamageReportTests(TestCase):
 		self.assertContains(response, "Damage next to the kitchen sink.")
 		self.assertContains(response, "Damage Report Employee")
 		self.assertContains(response, "12 King Street")
+		self.assertContains(response, "Open")
+		self.assertContains(response, "Mark resolved &amp; close ticket")
 		self.assertContains(response, report.images.get().image.url)
 		self.assertContains(
 			response,

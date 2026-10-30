@@ -1,158 +1,448 @@
 import os
+from html import escape
 from io import BytesIO
 
 from django.conf import settings
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import mm
+from reportlab.platypus import (
+    Image,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
+
+
+NAVY = colors.HexColor("#0f172a")
+BLUE = colors.HexColor("#0759c9")
+SLATE = colors.HexColor("#475569")
+MUTED = colors.HexColor("#64748b")
+PALE = colors.HexColor("#f8fafc")
+BORDER = colors.HexColor("#e2e8f0")
+WHITE = colors.white
+
+
+def _safe_paragraph(value, style):
+    text = escape(str(value or "")).replace("\n", "<br/>")
+    return Paragraph(text or " ", style)
+
+
+def _format_money(value):
+    return f"${value:,.2f}"
+
+
+def _footer(canvas, document):
+    canvas.saveState()
+    canvas.setStrokeColor(BORDER)
+    canvas.line(18 * mm, 16 * mm, A4[0] - 18 * mm, 16 * mm)
+    canvas.setFillColor(MUTED)
+    canvas.setFont("Helvetica", 8)
+    canvas.drawCentredString(
+        A4[0] / 2,
+        10 * mm,
+        "YD Commercial Cleaning Services  |  Professional Cleaning. Reliable Service.",
+    )
+    canvas.restoreState()
 
 
 def generate_invoice_pdf(invoice):
     booking = invoice.booking
     customer = booking.customer
-
     buffer = BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=A4)
-
-    width, height = A4
-
-    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.jpeg")
-
-    if os.path.exists(logo_path):
-        pdf.drawImage(
-            logo_path,
-            45,
-            height - 120,
-            width=85,
-            height=85,
-            preserveAspectRatio=True,
-            mask="auto",
+    document = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=16 * mm,
+        bottomMargin=22 * mm,
+        title=f"Invoice {invoice.invoice_number}",
+        author="YD Commercial Cleaning Services",
+    )
+    content_width = A4[0] - 36 * mm
+    styles = getSampleStyleSheet()
+    styles.add(
+        ParagraphStyle(
+            name="CompanyName",
+            parent=styles["Heading1"],
+            fontName="Helvetica-Bold",
+            fontSize=17,
+            leading=20,
+            textColor=NAVY,
+            spaceAfter=5,
         )
-
-    pdf.setFont("Helvetica-Bold", 20)
-    pdf.drawString(145, height - 55, "YD Commercial Cleaning Services")
-
-    pdf.setFont("Helvetica", 9)
-    pdf.drawString(145, height - 75, "ABN: 95 916 203 175")
-    pdf.drawString(145, height - 90, "2/10 Da Costa Avenue, Prospect SA 5082")
-    pdf.drawString(145, height - 105, "Phone: 0430 049 865")
-    pdf.drawString(145, height - 120, "Email: info@ydcleaning.com.au")
-
-    pdf.setFont("Helvetica-Bold", 18)
-    pdf.drawRightString(width - 45, height - 95, invoice.invoice_number)
-
-    pdf.setFont("Helvetica", 10)
-    pdf.drawRightString(width - 45, height - 115, f"Issue Date: {invoice.issue_date}")
-    pdf.drawRightString(width - 45, height - 133, f"Due Date: {invoice.due_date}")
-    pdf.drawRightString(
-        width - 45, height - 151, f"Status: {invoice.get_status_display()}"
+    )
+    styles.add(
+        ParagraphStyle(
+            name="CompanyDetails",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=8.5,
+            leading=12,
+            textColor=MUTED,
+            spaceAfter=2,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="InvoiceTitle",
+            parent=styles["Heading1"],
+            fontName="Helvetica-Bold",
+            fontSize=23,
+            leading=27,
+            textColor=NAVY,
+            alignment=TA_RIGHT,
+            spaceAfter=4,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="InvoiceMeta",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=8.5,
+            leading=13,
+            textColor=SLATE,
+            alignment=TA_RIGHT,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="SectionHeading",
+            parent=styles["Heading3"],
+            fontName="Helvetica-Bold",
+            fontSize=11,
+            leading=14,
+            textColor=BLUE,
+            spaceAfter=7,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="PartyTitle",
+            parent=styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=10,
+            leading=14,
+            textColor=NAVY,
+            spaceAfter=4,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="PartyDetail",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=8.5,
+            leading=12,
+            textColor=SLATE,
+            spaceAfter=3,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="TableHeader",
+            parent=styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=8,
+            leading=10,
+            textColor=NAVY,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="TableCell",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=8.5,
+            leading=12,
+            textColor=SLATE,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="TableCellRight",
+            parent=styles["TableCell"],
+            alignment=TA_RIGHT,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="TotalLabel",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=9,
+            leading=13,
+            textColor=SLATE,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="TotalValue",
+            parent=styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=9,
+            leading=13,
+            textColor=NAVY,
+            alignment=TA_RIGHT,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="GrandTotal",
+            parent=styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=15,
+            leading=19,
+            textColor=BLUE,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="GrandTotalRight",
+            parent=styles["GrandTotal"],
+            alignment=TA_RIGHT,
+        )
     )
 
-    pdf.line(45, height - 170, width - 45, height - 170)
+    company_lines = [
+        _safe_paragraph("YD Commercial Cleaning Services", styles["CompanyName"]),
+        _safe_paragraph("ABN 95 916 203 175", styles["CompanyDetails"]),
+        _safe_paragraph(
+            "2/10 Da Costa Avenue, Prospect SA 5082", styles["CompanyDetails"]
+        ),
+        _safe_paragraph(
+            "0430 049 865  |  info@ydcleaning.com.au", styles["CompanyDetails"]
+        ),
+    ]
+    logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.jpeg")
+    if os.path.exists(logo_path):
+        logo = Image(logo_path, width=22 * mm, height=22 * mm, kind="proportional")
+        company_block = Table(
+            [[logo, company_lines]],
+            colWidths=[25 * mm, 84 * mm],
+            hAlign="LEFT",
+        )
+        company_block.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]
+            )
+        )
+    else:
+        company_block = company_lines
 
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(45, height - 200, "CLIENT INFORMATION")
+    due_date = invoice.due_date.strftime("%d %b %Y") if invoice.due_date else "Not set"
+    issued_date = invoice.issue_date.strftime("%d %b %Y")
+    invoice_meta = [
+        Paragraph("INVOICE", styles["InvoiceTitle"]),
+        Paragraph(escape(invoice.invoice_number), styles["InvoiceMeta"]),
+        Paragraph(f"Issued {issued_date}", styles["InvoiceMeta"]),
+        Paragraph(f"Due {due_date}", styles["InvoiceMeta"]),
+        Paragraph(escape(invoice.get_status_display().upper()), styles["InvoiceMeta"]),
+    ]
+    header = Table(
+        [[company_block, invoice_meta]],
+        colWidths=[content_width * 0.62, content_width * 0.38],
+    )
+    header.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+                ("LINEBELOW", (0, 0), (-1, -1), 0.8, BORDER),
+            ]
+        )
+    )
 
-    pdf.setFont("Helvetica", 10)
-    y = height - 220
-    pdf.drawString(45, y, f"Name: {customer.full_name if customer else 'No customer'}")
-    y -= 16
-    pdf.drawString(45, y, f"Phone: {customer.phone if customer else 'Not provided'}")
-    y -= 16
-    pdf.drawString(45, y, f"Email: {customer.email if customer else 'Not provided'}")
-    y -= 16
-    pdf.drawString(45, y, f"Address: {customer.address if customer else 'Not provided'}")
-
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawString(330, height - 200, "JOB DETAILS")
-
-    pdf.setFont("Helvetica", 10)
-    y2 = height - 220
-    pdf.drawString(330, y2, f"Service: {booking.service_type}")
-    y2 -= 16
-    pdf.drawString(330, y2, f"Date: {booking.booking_date}")
-    y2 -= 16
-    pdf.drawString(330, y2, f"Time: {booking.booking_time}")
-    y2 -= 16
-    pdf.drawString(330, y2, f"Suburb: {booking.suburb_postcode}")
-    y2 -= 16
-    pdf.drawString(330, y2, f"Address: {booking.address[:38]}")
+    bill_to = [
+        Paragraph("BILL TO", styles["SectionHeading"]),
+        _safe_paragraph(
+            customer.full_name if customer else "No customer",
+            styles["PartyTitle"],
+        ),
+        _safe_paragraph(
+            customer.email if customer and customer.email else "Email not provided",
+            styles["PartyDetail"],
+        ),
+        _safe_paragraph(
+            customer.phone if customer and customer.phone else "Phone not provided",
+            styles["PartyDetail"],
+        ),
+        _safe_paragraph(
+            customer.address if customer and customer.address else "Address not provided",
+            styles["PartyDetail"],
+        ),
+    ]
+    booking_date = booking.booking_date.strftime("%d %b %Y")
+    booking_time = booking.booking_time.strftime("%I:%M %p").lstrip("0")
+    service_details = [
+        Paragraph("SERVICE DETAILS", styles["SectionHeading"]),
+        _safe_paragraph(booking.service_type, styles["PartyTitle"]),
+        _safe_paragraph(f"Date: {booking_date}", styles["PartyDetail"]),
+        _safe_paragraph(f"Time: {booking_time}", styles["PartyDetail"]),
+        _safe_paragraph(
+            f"Property: {booking.address}, {booking.suburb_postcode}",
+            styles["PartyDetail"],
+        ),
+    ]
+    parties = Table(
+        [[bill_to, service_details]],
+        colWidths=[content_width / 2 - 4 * mm, content_width / 2 - 4 * mm],
+        hAlign="LEFT",
+    )
+    parties.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), PALE),
+                ("BOX", (0, 0), (-1, -1), 0.7, BORDER),
+                ("INNERGRID", (0, 0), (-1, -1), 0.7, BORDER),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                ("TOPPADDING", (0, 0), (-1, -1), 11),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+            ]
+        )
+    )
 
     work_orders = list(invoice.work_orders.all())
+    item_rows = [[
+        Paragraph("DESCRIPTION", styles["TableHeader"]),
+        Paragraph("QTY", styles["TableHeader"]),
+        Paragraph("UNIT PRICE", styles["TableHeader"]),
+        Paragraph("TOTAL", styles["TableHeader"]),
+    ]]
     if work_orders:
-        line_items = [
-            (item.description, item.price)
-            for item in work_orders
-        ]
+        for position, work_order in enumerate(work_orders, start=1):
+            title = _safe_paragraph(
+                f"{position}. {work_order.description}",
+                styles["TableCell"],
+            )
+            if position == 1 and invoice.description:
+                title = [
+                    title,
+                    _safe_paragraph(invoice.description, styles["PartyDetail"]),
+                ]
+            item_rows.append(
+                [
+                    title,
+                    Paragraph("1", styles["TableCell"]),
+                    Paragraph(_format_money(work_order.price), styles["TableCellRight"]),
+                    Paragraph(_format_money(work_order.price), styles["TableCellRight"]),
+                ]
+            )
     else:
-        line_items = [(booking.service_type, invoice.amount)]
-
-    def draw_table_header(y):
-        pdf.setFillColorRGB(0.94, 0.96, 0.98)
-        pdf.rect(45, y, width - 90, 28, fill=True, stroke=False)
-        pdf.setFillColorRGB(0, 0, 0)
-        pdf.setFont("Helvetica-Bold", 10)
-        pdf.drawString(55, y + 9, "Work order")
-        pdf.drawRightString(385, y + 9, "Qty")
-        pdf.drawRightString(470, y + 9, "Price")
-        pdf.drawRightString(width - 55, y + 9, "Total")
-
-    table_top = height - 330
-    draw_table_header(table_top)
-    row_y = table_top - 32
-    for position, (description, price) in enumerate(line_items, start=1):
-        if row_y < 245:
-            pdf.showPage()
-            draw_table_header(height - 55)
-            row_y = height - 100
-        pdf.setFont("Helvetica", 10)
-        pdf.drawString(55, row_y, f"{position}. {description[:48]}")
-        pdf.drawRightString(385, row_y, "1")
-        pdf.drawRightString(470, row_y, f"${price:.2f}")
-        pdf.drawRightString(width - 55, row_y, f"${price:.2f}")
-        pdf.line(45, row_y - 12, width - 45, row_y - 12)
-        row_y -= 24
-
-    description_lines = (invoice.description or "").splitlines()
-    if description_lines:
-        if row_y - (len(description_lines) + 1) * 14 < 220:
-            pdf.showPage()
-            row_y = height - 80
-        pdf.setFont("Helvetica-Bold", 10)
-        pdf.drawString(45, row_y, "Invoice description")
-        pdf.setFont("Helvetica", 9)
-        for line in description_lines:
-            row_y -= 14
-            pdf.drawString(45, row_y, line[:95])
-
-    discount_value = getattr(invoice, "discount_amount", 0)
-
-    pdf.setFont("Helvetica", 11)
-    pdf.drawString(360, 190, "Subtotal:")
-    pdf.drawRightString(width - 55, 190, f"${invoice.amount:.2f}")
-
-    pdf.drawString(360, 168, "Discount:")
-    pdf.drawRightString(width - 55, 168, f"-${discount_value:.2f}")
-
-    pdf.drawString(360, 146, "GST 10%:")
-    pdf.drawRightString(width - 55, 146, f"${invoice.gst_amount:.2f}")
-
-    pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(360, 112, "Total:")
-    pdf.drawRightString(width - 55, 112, f"${invoice.total_amount:.2f}")
-
-    pdf.line(45, 85, width - 45, 85)
-
-    pdf.setFont("Helvetica", 9)
-    pdf.drawCentredString(
-        width / 2, 65, "Thank you for choosing YD Commercial Cleaning Services."
+        item_rows.append(
+            [
+                [
+                    _safe_paragraph(
+                        f"1. {booking.service_type}",
+                        styles["TableCell"],
+                    ),
+                    _safe_paragraph(invoice.description, styles["PartyDetail"]),
+                ],
+                Paragraph("1", styles["TableCell"]),
+                Paragraph(_format_money(invoice.amount), styles["TableCellRight"]),
+                Paragraph(_format_money(invoice.amount), styles["TableCellRight"]),
+            ]
+        )
+    item_table = Table(
+        item_rows,
+        colWidths=[
+            content_width * 0.52,
+            content_width * 0.10,
+            content_width * 0.19,
+            content_width * 0.19,
+        ],
+        repeatRows=1,
+        hAlign="LEFT",
     )
-    pdf.drawCentredString(
-        width / 2, 50, "Professional Cleaning. Reliable Service. Spotless Results."
+    item_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), NAVY),
+                ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LINEBELOW", (0, 0), (-1, 0), 0.8, BORDER),
+                ("LINEBELOW", (0, 1), (-1, -1), 0.5, BORDER),
+                ("LEFTPADDING", (0, 0), (-1, -1), 9),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+                ("TOPPADDING", (0, 0), (-1, -1), 10),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+            ]
+        )
     )
 
-    pdf.showPage()
-    pdf.save()
+    notes = [
+        Paragraph("NOTES", styles["SectionHeading"]),
+        _safe_paragraph(
+            invoice.notes or "Thank you for choosing YD Commercial Cleaning Services.",
+            styles["PartyDetail"],
+        ),
+    ]
+    totals = [
+        [Paragraph("Subtotal", styles["TotalLabel"]), Paragraph(_format_money(invoice.amount), styles["TotalValue"])],
+        [Paragraph("Discount", styles["TotalLabel"]), Paragraph(_format_money(invoice.discount_amount), styles["TotalValue"])],
+        [Paragraph("GST", styles["TotalLabel"]), Paragraph(_format_money(invoice.gst_amount), styles["TotalValue"])],
+        [Paragraph("Total", styles["GrandTotal"]), Paragraph(_format_money(invoice.total_amount), styles["GrandTotalRight"])],
+    ]
+    totals_table = Table(totals, colWidths=[40 * mm, 40 * mm])
+    totals_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), PALE),
+                ("BOX", (0, 0), (-1, -1), 0.7, BORDER),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ("LINEABOVE", (0, 3), (-1, 3), 0.8, BORDER),
+            ]
+        )
+    )
+    summary = Table(
+        [[notes, totals_table]],
+        colWidths=[content_width - 86 * mm, 86 * mm],
+        hAlign="LEFT",
+    )
+    summary.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
 
+    story = [
+        header,
+        Spacer(1, 8 * mm),
+        parties,
+        Spacer(1, 8 * mm),
+        item_table,
+        Spacer(1, 9 * mm),
+        summary,
+    ]
+    document.build(story, onFirstPage=_footer, onLaterPages=_footer)
     buffer.seek(0)
-
     return buffer

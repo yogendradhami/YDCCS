@@ -1,162 +1,85 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Review Requests
-{% endblock %}
-
-{% block page_title %}
-Review Requests
-{% endblock %}
-
-{% block page_subtitle %}
-Send Google review requests to completed jobs.
-{% endblock %}
+{% block title %}Review requests | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Review requests{% endblock %}
+{% block page_subtitle %}Follow up with customers after completed cleaning jobs and track every request sent.{% endblock %}
 
 {% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy">
+            <span class="reputation-eyebrow">Customer follow-up</span>
+            <h2>Turn completed jobs into feedback.</h2>
+            <p>Request a Google review from completed bookings. Review requests are tracked per booking so you can see when a follow-up was sent.</p>
+        </div>
+        <a class="reputation-button-secondary" href="{% url 'campaign_preview' 'review' %}">Review campaign preview</a>
+    </section>
 
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Completed Jobs</h2>
+    <div class="reputation-metrics">
+        <article class="reputation-metric"><span class="reputation-metric-label">Review requests sent</span><strong class="reputation-metric-value">{{ requests_sent }}</strong><small class="reputation-metric-foot">Unique completed bookings</small></article>
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Eligible to contact</span><strong class="reputation-metric-value">{{ eligible_count }}</strong><small class="reputation-metric-foot">Completed, not yet requested, email available</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Matching completed jobs</span><strong class="reputation-metric-value">{{ page_obj.paginator.count }}</strong><small class="reputation-metric-foot">Current filter</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Page</span><strong class="reputation-metric-value">{{ page_obj.number }} / {{ page_obj.paginator.num_pages|default:1 }}</strong><small class="reputation-metric-foot">25 bookings per page</small></article>
     </div>
 
-    <div class="table-wrapper">
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading">
+            <div><span class="reputation-overline">Completed bookings</span><h3>Request history and actions</h3><p>Previously contacted customers can receive a deliberate follow-up using “Send again”.</p></div>
+        </header>
+        <form class="reputation-filter-bar" method="get">
+            <div class="reputation-filter-field"><label for="request-search">Search</label><input id="request-search" type="search" name="q" value="{{ query }}" placeholder="Customer, email, service"></div>
+            <div class="reputation-filter-field">
+                <label for="request-status">Request status</label>
+                <select id="request-status" name="status">
+                    <option value="">All statuses</option>
+                    <option value="not_sent" {% if status_filter == "not_sent" %}selected{% endif %}>Not sent</option>
+                    <option value="sent" {% if status_filter == "sent" %}selected{% endif %}>Sent</option>
+                </select>
+            </div>
+            <button type="submit" class="reputation-button">Apply filters</button>
+            <a href="{% url 'review_requests' %}" class="reputation-button-secondary">Clear</a>
+        </form>
 
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Email</th>
-                    <th>Service</th>
-                    <th>Date</th>
-                    <th>Last Sent</th>
-                    <th>Count</th>
-                    <th>Action</th>
-                    <th>Add Review</th>
-
-
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for booking in completed_bookings %}
-
-                    <tr>
-
-                        <td>
-                            {{ booking.customer.full_name }}
-                        </td>
-
-                        <td>
-                            {{ booking.customer.email }}
-                        </td>
-
-                        <td>
-                            {{ booking.service_type }}
-                        </td>
-
-                        <td>
-                            {{ booking.booking_date }}
-                        </td>
-
-                        {% comment %} <td>
-
-                            <form
-                                method="POST"
-                                action="{% url 'send_review_request' booking.id %}"
-                            >
-                                {% csrf_token %}
-
-                                <button
-                                    type="submit"
-                                    class="small-link-btn"
-                                >
-                                    Send Request
-                                </button>
-
-                            </form>
-
-                        </td> {% endcomment %}
-
-
-                        <td>
-                            {% if booking.review_request_log %}
-                                <span class="status-badge success">
-                                    Sent
-                                </span>
-                            {% else %}
-                                <span class="status-badge warning">
-                                    Not Sent
-                                </span>
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            {% if booking.review_request_log %}
-                                {{ booking.review_request_log.last_sent_at|date:"d M Y H:i" }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            {% if booking.review_request_log %}
-                                {{ booking.review_request_log.sent_count }}
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            <form method="POST"
-                                action="{% url 'send_review_request' booking.id %}">
-                                {% csrf_token %}
-
-                                {% if booking.review_request_log %}
-                                    <button type="submit"
-                                            class="small-link-btn">
-                                        Send Again
-                                    </button>
-                                {% else %}
-                                    <button type="submit"
-                                            class="small-link-btn">
-                                        Send Request
-                                    </button>
-                                {% endif %}
-                            </form>
-                        </td>
-
-                        <td>
-                            <a
-                                href="/dashboard/reviews/add/?customer_name={{ booking.customer.full_name }}&suburb={{ booking.suburb_postcode }}"
-                                class="small-link-btn"
-                            >
-                                Add Review
-                            </a>
-                        </td>
-
-
-
-                    </tr>
-
-                {% empty %}
-
-                    <tr>
-                        <td colspan="9">
-                            No completed bookings found.
-                        </td>
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+        <div class="reputation-table-wrap">
+            <table class="reputation-table">
+                <thead><tr><th>Customer / email</th><th>Service</th><th>Job date</th><th>Request status</th><th>Last sent</th><th>Sent count</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for booking in completed_bookings %}
+                        <tr>
+                            <td><strong>{{ booking.customer.full_name|default:"No customer" }}</strong><br><small>{{ booking.customer.email|default:"No email address" }}</small></td>
+                            <td>{{ booking.get_service_type_display|default:booking.service_type }}</td>
+                            <td>{{ booking.booking_date|date:"j M Y" }}</td>
+                            <td>{% if booking.review_request_log %}<span class="reputation-status is-sent">Sent</span>{% elif booking.customer.email %}<span class="reputation-status is-warning">Not sent</span>{% else %}<span class="reputation-status is-danger">No email</span>{% endif %}</td>
+                            <td>{% if booking.review_request_log.last_sent_at %}{{ booking.review_request_log.last_sent_at|date:"j M Y, g:i A" }}{% else %}—{% endif %}</td>
+                            <td>{{ booking.review_request_log.sent_count|default:0 }}</td>
+                            <td>
+                                <div class="reputation-inline-actions">
+                                    {% if booking.customer.email %}
+                                        <form method="post" action="{% url 'send_review_request' booking.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="{% if booking.review_request_log %}reputation-button-secondary{% else %}reputation-button{% endif %}" onclick="return confirm('{% if booking.review_request_log %}Send this review request again?{% else %}Send a review request to this customer?{% endif %}')">{% if booking.review_request_log %}Send again{% else %}Send request{% endif %}</button>
+                                        </form>
+                                    {% endif %}
+                                    <a class="reputation-button-secondary" href="{% url 'add_review' %}?customer_name={{ booking.customer.full_name|urlencode }}&amp;suburb={{ booking.suburb_postcode|urlencode }}">Add review</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7"><div class="reputation-empty"><strong>No completed bookings found</strong>Once bookings are marked completed, they’ll appear here.</div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="reputation-pagination" aria-label="Review request pages">
+                {% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Newer</a>{% else %}<span></span>{% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Older →</a>{% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

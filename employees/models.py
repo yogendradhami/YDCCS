@@ -91,6 +91,13 @@ class EmployeeGoogleAccount(models.Model):
 class PropertyDamageReport(models.Model):
     """Damage reported by an employee for one of their assigned bookings."""
 
+    STATUS_OPEN = "open"
+    STATUS_CLOSED = "closed"
+    STATUS_CHOICES = [
+        (STATUS_OPEN, "Open"),
+        (STATUS_CLOSED, "Resolved & closed"),
+    ]
+
     employee = models.ForeignKey(
         Employee,
         on_delete=models.SET_NULL,
@@ -106,6 +113,20 @@ class PropertyDamageReport(models.Model):
         related_name="property_damage_reports",
     )
     description = models.TextField()
+    status = models.CharField(
+        max_length=12,
+        choices=STATUS_CHOICES,
+        default=STATUS_OPEN,
+        db_index=True,
+    )
+    closed_at = models.DateTimeField(null=True, blank=True)
+    closed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="closed_property_damage_reports",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -136,6 +157,32 @@ class PropertyDamageReportReply(models.Model):
 
     def __str__(self):
         return f"Reply to property damage report #{self.report_id}"
+
+
+class PropertyDamageReportPresence(models.Model):
+    report = models.ForeignKey(
+        PropertyDamageReport,
+        on_delete=models.CASCADE,
+        related_name="conversation_presence",
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="property_damage_report_presence",
+    )
+    is_typing = models.BooleanField(default=False)
+    last_seen_at = models.DateTimeField(db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["report", "user"],
+                name="unique_damage_report_presence_per_user",
+            )
+        ]
+
+    def __str__(self):
+        return f"Presence for property damage report #{self.report_id}"
 
 
 class PropertyDamageImage(models.Model):

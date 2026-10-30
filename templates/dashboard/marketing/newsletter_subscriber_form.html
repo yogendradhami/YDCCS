@@ -1,94 +1,35 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-{{ page_title }}
-{% endblock %}
-
-{% block page_title %}
-{{ page_title }}
-{% endblock %}
-
-{% block page_subtitle %}
-Update newsletter subscriber information.
-{% endblock %}
+{% block title %}{{ page_title }} | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}Maintain subscriber status and consent records accurately.{% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <div>
-            <h2>{{ page_title }}</h2>
-            <p style="margin:6px 0 0;">
-                Update the subscriber details below.
-            </p>
-        </div>
-    </div>
-
-    <form method="post">
-
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy"><span class="reputation-eyebrow">Newsletter audience</span><h2>Update subscriber details.</h2><p>Keep consent and subscription status aligned with the customer’s preferences.</p></div>
+        <a class="reputation-button-secondary" href="{% url 'newsletter_subscriber_detail' subscriber.pk %}">← Back to subscriber</a>
+    </section>
+    <form method="post" class="reputation-panel">
         {% csrf_token %}
-
-        {% if form.non_field_errors %}
-            <div style="margin-bottom:20px;">
-                {{ form.non_field_errors }}
-            </div>
-        {% endif %}
-
-        {% for field in form %}
-
-            <div style="margin-bottom:18px;">
-
-                <label
-                    for="{{ field.id_for_label }}"
-                    style="
-                        display:block;
-                        margin-bottom:7px;
-                        font-weight:600;
-                    "
-                >
-                    {{ field.label }}
-                </label>
-
-                {{ field }}
-
-                {% if field.help_text %}
-                    <small style="display:block;margin-top:5px;opacity:.7;">
-                        {{ field.help_text }}
-                    </small>
-                {% endif %}
-
-                {% if field.errors %}
-                    <div style="margin-top:5px;">
-                        {{ field.errors }}
-                    </div>
-                {% endif %}
-
-            </div>
-
-        {% endfor %}
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-
-            <button
-                type="submit"
-                class="small-link-btn"
-                style="border:0;cursor:pointer;"
-            >
-                {{ button_text }}
-            </button>
-
-            <a
-                href="{% url 'newsletter_subscriber_detail' subscriber.id %}"
-                class="small-link-btn"
-            >
-                Cancel
-            </a>
-
+        {% if form.non_field_errors %}<div class="reputation-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="reputation-form-grid">
+            {% for field in form %}
+                <div class="reputation-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small class="helptext">{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}<span class="reputation-field-error" role="alert">{{ error }}</span>{% endfor %}
+                </div>
+            {% endfor %}
         </div>
-
+        <div class="reputation-actions" style="margin-top:18px">
+            <button type="submit" class="reputation-button">{{ button_text }}</button>
+            <a href="{% url 'newsletter_subscriber_detail' subscriber.pk %}" class="reputation-button-secondary">Cancel</a>
+        </div>
     </form>
-
-</section>
-
+</div>
 {% endblock %}

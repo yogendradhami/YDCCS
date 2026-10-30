@@ -1,137 +1,34 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Business forecast | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Business forecast{% endblock %}
+{% block page_subtitle %}A simple run-rate estimate based on this month's recorded revenue, expenses and payroll.{% endblock %}
 {% block content %}
-
-<h1>Business Forecasting Centre</h1>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Current Revenue</span>
-        <h2>${{ current_revenue }}</h2>
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Run-rate estimate · {{ today|date:"F Y" }}</span><h2>Forecast from {{ elapsed_days }} elapsed days.</h2><p>This straight-line projection extends month-to-date activity across {{ days_in_month }} calendar days. It is an estimate, not a financial forecast or guarantee.</p></div><div class="finance-hero-actions"><a class="finance-button-secondary" href="{% url 'business_intelligence' %}">View historical trends</a></div></section>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Month-to-date paid revenue</span><strong class="finance-metric-value">${{ current_revenue|floatformat:2 }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Month-to-date expenses</span><strong class="finance-metric-value">${{ current_expenses|floatformat:2 }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Month-to-date payroll</span><strong class="finance-metric-value">${{ current_payroll|floatformat:2 }}</strong></article>
+        <article class="finance-metric {% if current_profit < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Month-to-date estimated profit</span><strong class="finance-metric-value">${{ current_profit|floatformat:2 }}</strong></article>
     </div>
-
-    <div class="crm-card">
-        <span>Current Expenses</span>
-        <h2>${{ current_expenses }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Projected paid revenue</span><strong class="finance-metric-value">${{ projected_revenue|floatformat:2 }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Projected expenses</span><strong class="finance-metric-value">${{ projected_expenses|floatformat:2 }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Projected payroll</span><strong class="finance-metric-value">${{ projected_payroll|floatformat:2 }}</strong></article>
+        <article class="finance-metric {% if projected_profit < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Projected profit</span><strong class="finance-metric-value">${{ projected_profit|floatformat:2 }}</strong></article>
     </div>
-
-    <div class="crm-card">
-        <span>Current Profit</span>
-        <h2>${{ current_profit }}</h2>
-    </div>
-
+    <section class="finance-panel"><header class="finance-panel-heading"><div><span class="finance-overline">Current versus run rate</span><h3>Month-to-date and projected amounts</h3></div></header><div style="height:320px"><canvas id="forecastChart" aria-label="Current and projected revenue, costs and profit"></canvas></div></section>
 </div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Projected Revenue</span>
-        <h2>${{ projected_revenue }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Projected Expenses</span>
-        <h2>${{ projected_expenses }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Projected Profit</span>
-        <h2>${{ projected_profit }}</h2>
-    </div>
-
-</div>
-
-
-
-<div class="dashboard-card">
-
-    <h2>Revenue Forecast</h2>
-
-    <canvas id="revenueChart"></canvas>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Expense Forecast</h2>
-
-    <canvas id="expenseChart"></canvas>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Profit Forecast</h2>
-
-    <canvas id="profitChart"></canvas>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+{{ revenue_chart|json_script:"forecast-revenue" }}{{ expense_chart|json_script:"forecast-costs" }}{{ profit_chart|json_script:"forecast-profit" }}
 <script>
-
-new Chart(
-    document.getElementById("revenueChart"),
-    {
-        type: "bar",
-        data: {
-            labels: [
-                "Current",
-                "Projected"
-            ],
-            datasets: [{
-                label: "Revenue",
-                data: [
-                    {{ revenue_chart.0 }},
-                    {{ revenue_chart.1 }}
-                ]
-            }]
-        }
-    }
-);
-
-new Chart(
-    document.getElementById("expenseChart"),
-    {
-        type: "bar",
-        data: {
-            labels: [
-                "Current",
-                "Projected"
-            ],
-            datasets: [{
-                label: "Expenses",
-                data: [
-                    {{ expense_chart.0 }},
-                    {{ expense_chart.1 }}
-                ]
-            }]
-        }
-    }
-);
-
-new Chart(
-    document.getElementById("profitChart"),
-    {
-        type: "bar",
-        data: {
-            labels: [
-                "Current",
-                "Projected"
-            ],
-            datasets: [{
-                label: "Profit",
-                data: [
-                    {{ profit_chart.0 }},
-                    {{ profit_chart.1 }}
-                ]
-            }]
-        }
-    }
-);
-
+document.addEventListener("DOMContentLoaded", function () {
+    const canvas = document.getElementById("forecastChart");
+    if (!canvas || !window.Chart) return;
+    const read = (id) => JSON.parse(document.getElementById(id).textContent);
+    new Chart(canvas, {type: "bar", data: {labels: ["Month to date", "Run-rate estimate"], datasets: [{label: "Paid revenue ($)", data: read("forecast-revenue"), backgroundColor: "#1769aa"}, {label: "Costs incl. payroll ($)", data: read("forecast-costs"), backgroundColor: "#ef9b36"}, {label: "Profit ($)", data: read("forecast-profit"), backgroundColor: "#087e78"}]}, options: {responsive: true, maintainAspectRatio: false}});
+});
 </script>
-
 {% endblock %}

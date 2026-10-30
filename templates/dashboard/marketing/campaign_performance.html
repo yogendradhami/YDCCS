@@ -1,126 +1,89 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Campaign Performance
-{% endblock %}
-
-{% block page_title %}
-Campaign Performance Dashboard
-{% endblock %}
-
-{% block page_subtitle %}
-Track campaign effectiveness for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}Campaign performance | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Campaign performance{% endblock %}
+{% block page_subtitle %}Review campaign send history and recipient totals. Delivery and engagement metrics are not available in the send log.{% endblock %}
 
 {% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy">
+            <span class="reputation-eyebrow">Campaign reporting</span>
+            <h2>Understand your outreach history.</h2>
+            <p>These metrics reflect emails recorded as sent by the application. Opens, clicks, bounces and conversions are not currently tracked.</p>
+        </div>
+        <a class="reputation-button-secondary" href="{% url 'campaign_center' %}">← Campaign center</a>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Campaigns</span>
-        <h2>{{ total_campaigns }}</h2>
+    <div class="reputation-metrics">
+        <article class="reputation-metric"><span class="reputation-metric-label">Campaign sends</span><strong class="reputation-metric-value">{{ total_campaigns }}</strong><small class="reputation-metric-foot">All campaign types</small></article>
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Recipients sent</span><strong class="reputation-metric-value">{{ total_emails_sent }}</strong><small class="reputation-metric-foot">Total across all sends</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Most-used type</span><strong class="reputation-metric-value">{{ most_used_campaign_type }}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Campaign types</span><strong class="reputation-metric-value">3</strong><small class="reputation-metric-foot">VIP, inactive and review follow-up</small></article>
     </div>
 
-    <div class="crm-card">
-        <span>Total Emails Sent</span>
-        <h2>{{ total_emails_sent }}</h2>
+    {% if not total_campaigns %}
+        <div class="reputation-callout is-warning" role="status">
+            <strong>No campaign batch history has been recorded yet.</strong>
+            These figures count successful sends written to the campaign history table. This database currently has no campaign history rows, so campaign sends, recipients and type counts are zero. Other application email records and individual review requests are tracked separately and are not campaign runs.
+        </div>
+    {% endif %}
+
+    <div class="reputation-metrics">
+        <article class="reputation-metric"><span class="reputation-metric-label">VIP sends</span><strong class="reputation-metric-value">{{ vip_campaigns }}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Inactive sends</span><strong class="reputation-metric-value">{{ inactive_campaigns }}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Review follow-ups</span><strong class="reputation-metric-value">{{ review_campaigns }}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Matching records</span><strong class="reputation-metric-value">{{ page_obj.paginator.count }}</strong></article>
     </div>
 
-    <div class="crm-card">
-        <span>Most Used Campaign Type</span>
-        <h2>{{ most_used_campaign_type }}</h2>
+    <div class="reputation-metrics">
+        <article class="reputation-metric"><span class="reputation-metric-label">Other email history</span><strong class="reputation-metric-value">{{ general_email_log_count }}</strong><small class="reputation-metric-foot">Email log rows not tagged as campaigns</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Standalone review requests</span><strong class="reputation-metric-value">{{ standalone_review_requests }}</strong><small class="reputation-metric-foot">Tracked separately from campaign batches</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Campaign-tagged email logs</span><strong class="reputation-metric-value">{{ email_logs_related_to_campaigns }}</strong><small class="reputation-metric-foot">Email history with campaign reference</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Current filtered rows</span><strong class="reputation-metric-value">{{ page_obj.paginator.count }}</strong></article>
     </div>
 
-    <div class="crm-card">
-        <span>VIP Campaigns</span>
-        <h2>{{ vip_campaigns }}</h2>
-    </div>
-
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Send log</span><h3>Campaign history</h3></div></header>
+        <form class="reputation-filter-bar" method="get">
+            <div class="reputation-filter-field">
+                <label for="campaign-type">Campaign type</label>
+                <select id="campaign-type" name="type">
+                    <option value="">All types</option>
+                    <option value="vip" {% if campaign_type_filter == "vip" %}selected{% endif %}>VIP</option>
+                    <option value="inactive" {% if campaign_type_filter == "inactive" %}selected{% endif %}>Inactive</option>
+                    <option value="review" {% if campaign_type_filter == "review" %}selected{% endif %}>Review follow-up</option>
+                </select>
+            </div>
+            <button type="submit" class="reputation-button">Filter history</button>
+            <a href="{% url 'campaign_performance' %}" class="reputation-button-secondary">Clear</a>
+        </form>
+        <div class="reputation-table-wrap">
+            <table class="reputation-table">
+                <thead><tr><th>Date sent</th><th>Campaign</th><th>Recipients</th><th>Sent by</th><th>Details</th></tr></thead>
+                <tbody>
+                    {% for campaign in campaigns %}
+                        <tr>
+                            <td>{{ campaign.sent_at|date:"j M Y, g:i A" }}</td>
+                            <td><strong>{{ campaign.title }}</strong><br><small>{{ campaign.get_campaign_type_display }}</small></td>
+                            <td><strong>{{ campaign.recipients_count }}</strong></td>
+                            <td>{% if campaign.sent_by %}{{ campaign.sent_by.get_full_name|default:campaign.sent_by.username }}{% else %}System{% endif %}</td>
+                            <td><a class="reputation-button-secondary" href="{% url 'campaign_history_detail' campaign.pk %}">View log</a></td>
+                        </tr>
+                    {% empty %}<tr><td colspan="5"><div class="reputation-empty"><strong>{% if campaign_type_filter %}No campaign sends match this type{% else %}No campaign sends have been logged{% endif %}</strong>Other emails appear separately above and are not reclassified as campaigns. Send a campaign from the campaign center to create a batch-history record.</div></td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="reputation-pagination" aria-label="Campaign performance pages">
+                {% if page_obj.has_previous %}<a href="?type={{ campaign_type_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}<a href="?type={{ campaign_type_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
 </div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Inactive Campaigns</span>
-        <h2>{{ inactive_campaigns }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Review Campaigns</span>
-        <h2>{{ review_campaigns }}</h2>
-    </div>
-
-</div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Campaign Performance History</h2>
-
-        <a href="/dashboard/campaigns/" class="small-link-btn">
-            Campaign Center
-        </a>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Campaign</th>
-                    <th>Recipients</th>
-                    <th>Sent By</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for campaign in campaigns %}
-
-                    <tr>
-
-                        <td>
-                            {{ campaign.sent_at|date:"d M Y H:i" }}
-                        </td>
-
-                        <td>
-                            {{ campaign.get_campaign_type_display }}
-                        </td>
-
-                        <td>
-                            {{ campaign.recipients_count }}
-                        </td>
-
-                        <td>
-
-                            {% if campaign.sent_by %}
-                                {{ campaign.sent_by.username }}
-                            {% else %}
-                                System
-                            {% endif %}
-
-                        </td>
-
-                    </tr>
-
-                {% empty %}
-
-                    <tr>
-                        <td colspan="4">
-                            No campaign data available.
-                        </td>
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
 {% endblock %}

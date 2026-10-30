@@ -1,57 +1,39 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Maintenance history | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Maintenance history{% endblock %}
+{% block page_subtitle %}Review completed work, maintenance spend and next-service dates across assets.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <div class="crm-panel-header">
-
-        <h1>Maintenance History</h1>
-
-        <a href="{% url 'add_maintenance' %}"
-           class="btn-fill">
-
-            Add Record
-
-        </a>
-
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Asset care</span><h2>Service history that’s easy to act on.</h2><p>Keep a clear record of what was maintained, when it happened and what needs service next.</p></div><a class="inventory-button" href="{% url 'add_maintenance' %}">＋ Add maintenance record</a></section>
+    <div class="inventory-metrics">
+        <article class="inventory-metric is-accent"><span class="inventory-metric-label">Maintenance records</span><strong class="inventory-metric-value">{{ total_records }}</strong><small class="inventory-metric-foot">All recorded services</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Vehicle services</span><strong class="inventory-metric-value">{{ vehicle_records }}</strong><small class="inventory-metric-foot">Recorded fleet work</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Equipment services</span><strong class="inventory-metric-value">{{ equipment_records }}</strong><small class="inventory-metric-foot">Recorded equipment work</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Recorded spend</span><strong class="inventory-metric-value">${{ maintenance_cost|floatformat:2 }}</strong><small class="inventory-metric-foot">{{ overdue_services }} next-service date(s) overdue</small></article>
     </div>
-
-    <table class="dashboard-table">
-
-        <thead>
-
-            <tr>
-                <th>Asset</th>
-                <th>Date</th>
-                <th>Cost</th>
-                <th>Next Service</th>
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            {% for item in records %}
-
-            <tr>
-
-                <td>{{ item.asset_name }}</td>
-
-                <td>{{ item.maintenance_date }}</td>
-
-                <td>${{ item.cost }}</td>
-
-                <td>{{ item.next_service_date }}</td>
-
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
+    {% if not total_records %}<div class="inventory-callout"><strong>No maintenance records exist yet.</strong> The service history and recorded spend are zero because there are no maintenance records in the current database.</div>{% endif %}
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Service register</span><h3>Maintenance history</h3><p>{{ page_obj.paginator.count }} matching records · as of {% now "j M Y" %}</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="maintenance-query">Search</label><input id="maintenance-query" type="search" name="q" value="{{ query }}" placeholder="Asset, work or provider"></div>
+            <div class="inventory-filter-field"><label for="maintenance-type">Asset type</label><select id="maintenance-type" name="type"><option value="">All assets</option>{% for value,label in asset_type_choices %}<option value="{{ value }}" {% if asset_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <button type="submit" class="inventory-button">Filter history</button><a class="inventory-button-secondary" href="{% url 'maintenance_list' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Asset</th><th>Type</th><th>Work performed</th><th>Service date</th><th>Next service</th><th>Performed by</th><th>Cost</th></tr></thead>
+            <tbody>{% for item in records %}
+                <tr>
+                    <td><strong>{{ item.asset_name }}</strong></td><td>{{ item.get_asset_type_display }}</td>
+                    <td>{{ item.description|truncatechars:120 }}</td><td>{{ item.maintenance_date|date:"j M Y" }}</td>
+                    <td>{% if item.next_service_date %}{{ item.next_service_date|date:"j M Y" }}{% if item.next_service_date < today %}<br><span class="inventory-status is-danger">Overdue</span>{% endif %}{% else %}Not scheduled{% endif %}</td>
+                    <td>{{ item.performed_by|default:"—" }}</td><td>${{ item.cost|floatformat:2 }}</td>
+                </tr>
+            {% empty %}<tr><td colspan="7"><div class="inventory-empty"><strong>{% if query or asset_type %}No maintenance records match these filters{% else %}No maintenance records have been added{% endif %}</strong>Adjust your filters or add a maintenance record.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Maintenance pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;type={{ asset_type|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;type={{ asset_type|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
 </div>
-
 {% endblock %}

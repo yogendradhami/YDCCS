@@ -1,0 +1,21 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Delete equipment | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Delete equipment{% endblock %}
+{% block page_subtitle %}Confirm removal of this equipment record.{% endblock %}
+{% block content %}
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-panel inventory-confirm">
+        <span class="inventory-eyebrow">Permanent action</span><h2>Remove this equipment record?</h2>
+        <p>This will permanently delete the asset record. Any separate maintenance history records will remain as recorded.</p>
+        <div class="inventory-callout"><strong>{{ equipment.name }}</strong>{% if equipment.serial_number %} · Serial {{ equipment.serial_number }}{% endif %} · {{ equipment.get_condition_display }}</div>
+        <form method="post" class="inventory-actions">
+            {% csrf_token %}
+            <button type="submit" class="inventory-button-danger">Delete equipment</button>
+            <a href="{% url 'equipment_list' %}" class="inventory-button-secondary">Keep equipment</a>
+        </form>
+    </section>
+</div>
+{% endblock %}

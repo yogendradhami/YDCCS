@@ -1,117 +1,98 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Expenses{% endblock %}
-
-{% block page_title %}
-Expenses
-{% endblock %}
-
-{% block page_subtitle %}
-Track business expenses for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}Expenses | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Expenses{% endblock %}
+{% block page_subtitle %}Record, search and manage the costs of running your cleaning business.{% endblock %}
 
 {% block content %}
+<div class="finance-page">
+    {% include "dashboard/finance/_finance_nav.html" %}
+    <section class="finance-hero">
+        <div class="finance-hero-copy">
+            <span class="finance-eyebrow">Cost management</span>
+            <h2>Every expense, accounted for.</h2>
+            <p>Keep receipts and descriptions together so your operating reports stay useful.</p>
+        </div>
+        <div class="finance-hero-actions">
+            <a class="finance-button" href="{% url 'add_expense' %}">＋ Record expense</a>
+            <a class="finance-button-secondary" href="{% url 'gst_report' %}">GST estimate</a>
+        </div>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Expenses</span>
-        <h2>${{ total_expenses }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">All recorded expenses</span><strong class="finance-metric-value">${{ total_expenses|floatformat:2 }}</strong><small class="finance-metric-foot">Across all dates</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">This month</span><strong class="finance-metric-value">${{ month_expenses|floatformat:2 }}</strong><small class="finance-metric-foot">From {{ today|date:"F Y" }}</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Filtered results</span><strong class="finance-metric-value">${{ filtered_total|floatformat:2 }}</strong><small class="finance-metric-foot">{{ page_obj.paginator.count }} matching records</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Current page</span><strong class="finance-metric-value">{{ page_obj.number }} / {{ page_obj.paginator.num_pages|default:1 }}</strong><small class="finance-metric-foot">Up to 25 records per page</small></article>
     </div>
 
-    <div class="crm-card">
-        <span>This Month Expenses</span>
-        <h2>${{ month_expenses }}</h2>
-    </div>
+    <section class="finance-panel">
+        <header class="finance-panel-heading">
+            <div><span class="finance-overline">Expense register</span><h3>Business expenses</h3><p>Search by description and narrow the list by category or date.</p></div>
+        </header>
+        <form class="finance-filter-bar" method="get">
+            <div class="finance-filter-field">
+                <label for="expense-search">Description</label>
+                <input id="expense-search" name="q" type="search" value="{{ query }}" placeholder="Search expenses">
+            </div>
+            <div class="finance-filter-field">
+                <label for="expense-category">Category</label>
+                <select id="expense-category" name="category">
+                    <option value="">All categories</option>
+                    {% for value, label in category_choices %}<option value="{{ value }}" {% if category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="finance-filter-field">
+                <label for="expense-date-from">From</label>
+                <input id="expense-date-from" name="date_from" type="date" value="{{ date_from }}">
+            </div>
+            <div class="finance-filter-field">
+                <label for="expense-date-to">To</label>
+                <input id="expense-date-to" name="date_to" type="date" value="{{ date_to }}">
+            </div>
+            <button class="finance-button" type="submit">Apply filters</button>
+            <a class="finance-button-secondary" href="{% url 'expense_list' %}">Clear</a>
+        </form>
+        {% if filter_error %}<p class="finance-field-error" role="alert">{{ filter_error }}</p>{% endif %}
 
-    <div class="crm-card">
-        <span>Expense Records</span>
-        <h2>{{ expenses|length }}</h2>
-    </div>
-
-</div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Expense List</h2>
-
-        <a href="/dashboard/expenses/add/" class="small-link-btn">
-            Add Expense
-        </a>
-    </div>
-
-    {% if expenses %}
-
-        <div class="table-wrapper">
-
-            <table class="dashboard-table advanced-table">
-
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th>Paid By</th>
-                        <th>Receipt</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
+        <div class="finance-table-wrap">
+            <table class="finance-table">
+                <thead><tr><th>Date</th><th>Category</th><th>Description</th><th class="numeric">Amount</th><th>Paid by</th><th>Receipt</th><th>Actions</th></tr></thead>
                 <tbody>
-
                     {% for expense in expenses %}
-
                         <tr>
-                            <td>{{ expense.date }}</td>
-                            <td>{{ expense.get_category_display }}</td>
-                            <td>{{ expense.description }}</td>
-                            <td>${{ expense.amount }}</td>
+                            <td>{{ expense.date|date:"j M Y" }}</td>
+                            <td><span class="finance-status">{{ expense.get_category_display }}</span></td>
+                            <td><strong>{{ expense.description }}</strong>{% if expense.notes %}<br><small>{{ expense.notes|truncatechars:90 }}</small>{% endif %}</td>
+                            <td class="numeric"><strong>${{ expense.amount|floatformat:2 }}</strong></td>
+                            <td>{% if expense.paid_by %}{{ expense.paid_by.get_full_name|default:expense.paid_by.username }}{% else %}—{% endif %}</td>
+                            <td>{% if expense.receipt %}<a class="finance-button-secondary" href="{{ expense.receipt.url }}" target="_blank" rel="noopener noreferrer">Open receipt</a>{% else %}<span class="finance-overline">None</span>{% endif %}</td>
                             <td>
-                                {% if expense.paid_by %}
-                                    {{ expense.paid_by.username }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if expense.receipt %}
-                                    <a href="{{ expense.receipt.url }}" target="_blank" class="small-link-btn">
-                                        View
-                                    </a>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a href="/dashboard/expenses/{{ expense.id }}/edit/" class="small-link-btn">
-                                    Edit
-                                </a>
-
-                                <a href="/dashboard/expenses/{{ expense.id }}/delete/" class="small-link-btn">
-                                    Delete
-                                </a>
+                                <div class="finance-inline-actions">
+                                    <a class="finance-button-secondary" href="{% url 'edit_expense' expense.id %}">Edit</a>
+                                    <a class="finance-button-danger" href="{% url 'delete_expense' expense.id %}">Delete</a>
+                                </div>
                             </td>
                         </tr>
-
+                    {% empty %}
+                        <tr><td colspan="7"><div class="finance-empty-state"><strong>No matching expenses</strong>Adjust your filters or add your first business expense.</div></td></tr>
                     {% endfor %}
-
                 </tbody>
-
             </table>
-
         </div>
-
-    {% else %}
-
-        <div class="empty-box">
-            <h3>No expenses found.</h3>
-            <p>Add fuel, supplies, equipment, marketing and other business expenses.</p>
-        </div>
-
-    {% endif %}
-
-</section>
-
+        {% if page_obj.has_other_pages %}
+            <nav class="finance-pagination" aria-label="Expense pages">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ query|urlencode }}&amp;category={{ category|urlencode }}&amp;date_from={{ date_from|urlencode }}&amp;date_to={{ date_to|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>
+                {% else %}<span></span>{% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?q={{ query|urlencode }}&amp;category={{ category|urlencode }}&amp;date_from={{ date_from|urlencode }}&amp;date_to={{ date_to|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>
+                {% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

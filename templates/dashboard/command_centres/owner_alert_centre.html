@@ -1,36 +1,29 @@
-{% extends 'dashboard_base.html' %}
-
-{% block title %}Owner Alert Centre{% endblock %}
-
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Owner alerts | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Owner alerts{% endblock %}
+{% block page_subtitle %}A live queue of invoices, staffing and asset issues that need follow-up.{% endblock %}
 {% block content %}
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Overdue Invoices</span>
-        <h2>{{ overdue_invoices }}</h2>
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Action queue · {{ today|date:"j F Y" }}</span><h2>{{ alert_count }} items need attention.</h2><p>Each section links to its full register so you can review and resolve the underlying records.</p></div><div class="finance-hero-actions"><a class="finance-button-secondary" href="{% url 'owner_command_centre' %}">Owner overview</a></div></section>
+    <div class="finance-metric-grid">
+        <article class="finance-metric {% if overdue_invoices %}is-negative{% endif %}"><span class="finance-metric-label">Overdue invoices</span><strong class="finance-metric-value">{{ overdue_invoices.count }}</strong><small class="finance-metric-foot">Past due · unpaid</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Contracts expiring</span><strong class="finance-metric-value">{{ expiring_contracts.count }}</strong><small class="finance-metric-foot">Within 30 days</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Pending leave</span><strong class="finance-metric-value">{{ pending_leave_requests.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Low stock</span><strong class="finance-metric-value">{{ low_stock_items.count }}</strong></article>
     </div>
-
-    <div class="crm-card">
-        <span>Active Contracts</span>
-        <h2>{{ expiring_contracts }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Equipment service overdue</span><strong class="finance-metric-value">{{ overdue_equipment.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Vehicle, registration or insurance overdue</span><strong class="finance-metric-value">{{ vehicles_due_service.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Unassigned upcoming jobs</span><strong class="finance-metric-value">{{ unassigned_jobs.count }}</strong></article>
     </div>
-
-    <div class="crm-card">
-        <span>Pending Leave</span>
-        <h2>{{ pending_leave_requests }}</h2>
+    <div class="finance-grid">
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Finance</span><h3>Overdue invoices</h3></div><a class="finance-button-secondary" href="{% url 'invoice_list' %}">Invoice register</a></header><ul class="finance-record-list">{% for invoice in overdue_invoices|slice:":5" %}<li><strong>{{ invoice.invoice_number }}</strong><span>Due {{ invoice.due_date|date:"j M Y" }} · ${{ invoice.total_amount|floatformat:2 }}</span></li>{% empty %}<li>No overdue invoices.</li>{% endfor %}</ul></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Supply chain</span><h3>Low-stock supplies</h3></div><a class="finance-button-secondary" href="{% url 'supplies_list' %}">Supply register</a></header><ul class="finance-record-list">{% for item in low_stock_items|slice:":5" %}<li><strong>{{ item.name }}</strong><span>{{ item.current_stock }} {{ item.get_unit_display }} remaining · minimum {{ item.minimum_stock }}</span></li>{% empty %}<li>No low-stock supplies.</li>{% endfor %}</ul></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Scheduling</span><h3>Unassigned jobs</h3></div><a class="finance-button-secondary" href="{% url 'booking_list' %}">Bookings</a></header><ul class="finance-record-list">{% for booking in unassigned_jobs|slice:":5" %}<li><strong>{{ booking.customer.full_name|default:"Customer not set" }}</strong><span>{{ booking.booking_date|date:"j M Y" }} · {{ booking.get_service_type_display }}</span></li>{% empty %}<li>No unassigned upcoming jobs.</li>{% endfor %}</ul></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Assets</span><h3>Overdue equipment service</h3></div><a class="finance-button-secondary" href="{% url 'equipment_list' %}">Equipment</a></header><ul class="finance-record-list">{% for item in overdue_equipment|slice:":5" %}<li><strong>{{ item.name }}</strong><span>Service due {{ item.next_service_date|date:"j M Y" }}</span></li>{% empty %}<li>No overdue equipment service.</li>{% endfor %}</ul></section>
     </div>
-
-    <div class="crm-card">
-        <span>Low Stock</span>
-        <h2>{{ low_stock_items }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Vehicles Due Service</span>
-        <h2>{{ vehicles_due_service }}</h2>
-    </div>
-
 </div>
-
 {% endblock %}

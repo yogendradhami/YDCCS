@@ -1,123 +1,62 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-GST Report
-{% endblock %}
-
-{% block page_title %}
-GST Report Dashboard
-{% endblock %}
-
-{% block page_subtitle %}
-GST reporting for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}GST report | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}GST report{% endblock %}
+{% block page_subtitle %}A year-based estimate of GST on collected invoices and recorded business expenses.{% endblock %}
 
 {% block content %}
+<div class="finance-page">
+    {% include "dashboard/finance/_finance_nav.html" %}
+    <section class="finance-hero">
+        <div class="finance-hero-copy">
+            <span class="finance-eyebrow">Tax overview · calendar year {{ selected_year }}</span>
+            <h2>GST position at a glance.</h2>
+            <p>Use this operational summary to prepare your records. Confirm BAS figures with your accountant or tax agent.</p>
+        </div>
+        <form class="finance-filter-bar" method="get">
+            <div class="finance-filter-field">
+                <label for="gst-year">Reporting year</label>
+                <select id="gst-year" name="year">
+                    {% for year in years %}<option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>{% endfor %}
+                </select>
+            </div>
+            <button class="finance-button" type="submit">Update report</button>
+        </form>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>GST Collected</span>
-        <h2>${{ gst_collected }}</h2>
-        <p>From paid invoices</p>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">GST collected</span><strong class="finance-metric-value">${{ gst_collected|floatformat:2 }}</strong><small class="finance-metric-foot">Paid invoices in {{ selected_year }}</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">GST on expenses · estimate</span><strong class="finance-metric-value">${{ gst_paid|floatformat:2 }}</strong><small class="finance-metric-foot">Assumes recorded expense amounts include GST</small></article>
+        <article class="finance-metric {% if net_gst_payable < 0 %}is-positive{% else %}{% endif %}"><span class="finance-metric-label">Estimated net GST</span><strong class="finance-metric-value">${{ net_gst_payable|floatformat:2 }}</strong><small class="finance-metric-foot">{% if net_gst_payable < 0 %}Potential credit{% else %}Potential payable{% endif %}</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">GST rate</span><strong class="finance-metric-value">{{ company_gst_rate }}%</strong><small class="finance-metric-foot">Standard Australian rate</small></article>
     </div>
 
-    <div class="crm-card">
-        <span>GST Paid</span>
-        <h2>${{ gst_paid }}</h2>
-        <p>From expenses</p>
+    <div class="finance-grid">
+        <section class="finance-panel span-7">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Summary</span><h3>{{ selected_year }} GST estimate</h3><p>Paid invoices are taken from the GST value stored on each invoice.</p></div></header>
+            <div class="finance-table-wrap">
+                <table class="finance-table">
+                    <thead><tr><th>Item</th><th class="numeric">Amount</th></tr></thead>
+                    <tbody>
+                        <tr><td>Paid invoice revenue (incl. GST)</td><td class="numeric">${{ paid_revenue|floatformat:2 }}</td></tr>
+                        <tr><td>GST collected on paid invoices</td><td class="numeric">${{ gst_collected|floatformat:2 }}</td></tr>
+                        <tr><td>Recorded expenses</td><td class="numeric">${{ total_expenses|floatformat:2 }}</td></tr>
+                        <tr><td>Estimated GST component of expenses</td><td class="numeric">−${{ gst_paid|floatformat:2 }}</td></tr>
+                        <tr><td><strong>Estimated net GST</strong></td><td class="numeric"><strong>${{ net_gst_payable|floatformat:2 }}</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <aside class="finance-panel span-5">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Important</span><h3>Estimate only</h3></div></header>
+            <p class="finance-callout">Expense records do not currently track GST registration or GST paid per receipt. The expense GST amount is therefore estimated as total recorded expenses ÷ 11 and may not equal the claimable input tax credit. Review receipts and eligibility before lodging.</p>
+            <div class="finance-inline-actions" style="margin-top:14px">
+                <a class="finance-button-secondary" href="{% url 'expense_list' %}">Review expense receipts</a>
+                <a class="finance-button-secondary" href="{% url 'financial_dashboard' %}">Finance overview</a>
+            </div>
+        </aside>
     </div>
-
-    <div class="crm-card">
-        <span>Net GST Payable</span>
-        <h2>${{ net_gst_payable }}</h2>
-        <p>Estimated BAS amount</p>
-    </div>
-
-    <div class="crm-card">
-        <span>GST Rate</span>
-        <h2>{{ company_gst_rate }}%</h2>
-        <p>Australia GST</p>
-    </div>
-
 </div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>GST Summary</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                <tr>
-                    <td>Total Paid Revenue</td>
-                    <td>${{ paid_revenue }}</td>
-                </tr>
-
-                <tr>
-                    <td>Total Expenses</td>
-                    <td>${{ total_expenses }}</td>
-                </tr>
-
-                <tr>
-                    <td>GST Collected</td>
-                    <td>${{ gst_collected }}</td>
-                </tr>
-
-                <tr>
-                    <td>GST Paid</td>
-                    <td>${{ gst_paid }}</td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <strong>Net GST Payable</strong>
-                    </td>
-
-                    <td>
-                        <strong>${{ net_gst_payable }}</strong>
-                    </td>
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>GST Formula</h2>
-    </div>
-
-    <p>
-        GST Collected = Revenue ÷ 11
-    </p>
-
-    <p>
-        GST Paid = Expenses ÷ 11
-    </p>
-
-    <p>
-        Net GST Payable =
-        GST Collected − GST Paid
-    </p>
-
-</section>
-
 {% endblock %}

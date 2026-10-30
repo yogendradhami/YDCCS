@@ -1,39 +1,60 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-{{ page_title }}
-{% endblock %}
-
-{% block page_title %}
-{{ page_title }}
-{% endblock %}
-
-{% block page_subtitle %}
-Add or update business expenses for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}{{ page_title }} | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}Capture the amount, category and receipt so this cost is available in your finance reports.{% endblock %}
 
 {% block content %}
+<div class="finance-page">
+    {% include "dashboard/finance/_finance_nav.html" %}
+    <section class="finance-hero">
+        <div class="finance-hero-copy">
+            <span class="finance-eyebrow">Expense record</span>
+            <h2>{% if expense %}Update this expense.{% else %}Add a business expense.{% endif %}</h2>
+            <p>Required fields are marked in the form. Receipts accept PDF, JPG, PNG or WebP up to 10 MB.</p>
+        </div>
+        <a class="finance-button-secondary" href="{% url 'expense_list' %}">← Back to expenses</a>
+    </section>
 
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>{{ page_title }}</h2>
-
-        <a href="/dashboard/expenses/" class="small-link-btn">
-            Back to Expenses
-        </a>
-    </div>
-
-    <form method="POST" enctype="multipart/form-data" class="crm-form">
+    <form method="post" enctype="multipart/form-data" class="finance-panel">
         {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit" class="small-link-btn">
-            {{ button_text }}
-        </button>
+        {% if form.non_field_errors %}
+            <div class="finance-error-summary" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="finance-form-layout">
+            <div class="finance-form-main">
+                {% for field in form %}
+                    {% if field.name != "notes" %}
+                        <div class="finance-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                            {{ field }}
+                            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                            {% for error in field.errors %}<span class="finance-field-error" role="alert">{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <aside class="finance-form-aside">
+                {% if form.notes %}
+                    <div class="finance-field">
+                        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                        {% if form.notes.help_text %}<small>{{ form.notes.help_text }}</small>{% endif %}
+                        {% for error in form.notes.errors %}<span class="finance-field-error" role="alert">{{ error }}</span>{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="finance-callout">Attach the original receipt where available. Your finance and GST reports use the expense date and recorded amount.</div>
+                {% if expense.receipt %}
+                    <a class="finance-button-secondary" href="{{ expense.receipt.url }}" target="_blank" rel="noopener noreferrer">View current receipt</a>
+                {% endif %}
+                <div class="finance-inline-actions">
+                    <button class="finance-button" type="submit">{{ button_text }}</button>
+                    <a class="finance-button-secondary" href="{% url 'expense_list' %}">Cancel</a>
+                </div>
+            </aside>
+        </div>
     </form>
-
-</section>
-
+</div>
 {% endblock %}

@@ -73,6 +73,45 @@
     margin-top: 20px;
 }
 
+.damage-conversation-presence {
+    min-height: 20px;
+    margin: -4px 0 12px;
+    color: #8494a2;
+    font-size: .73rem;
+    font-weight: 650;
+}
+
+.damage-conversation-presence.is-active {
+    color: #147c65;
+}
+
+.damage-conversation-presence.is-typing {
+    color: #0759c9;
+}
+
+.damage-chat-feedback {
+    display: block;
+    min-height: 18px;
+    margin-top: 8px;
+    color: #147c65;
+    font-size: .74rem;
+}
+
+.damage-chat-feedback.is-error {
+    color: #b42318;
+}
+
+.damage-report-reply-form button:disabled,
+.employee-damage-report-reply-form button:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+.damage-report-reply p,
+.employee-damage-report-reply-form textarea {
+    white-space: pre-wrap;
+}
+
 .damage-report-images a {
     display: block;
     overflow: hidden;
@@ -171,9 +210,363 @@
     text-decoration: none;
 }
 
+.damage-reports-page .records-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    overflow: hidden;
+    padding: clamp(24px, 4vw, 42px);
+    border: 1px solid rgba(198, 226, 225, .75);
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 85% 10%, rgba(119, 226, 201, .23), transparent 25%),
+        linear-gradient(118deg, #102d38, #125b60 66%, #11787d);
+    color: #fff;
+    box-shadow: 0 18px 44px rgba(13, 61, 65, .14);
+}
+
+.damage-reports-page .records-hero h1,
+.damage-reports-page .records-hero p {
+    color: #fff;
+}
+
+.damage-reports-page .records-hero p {
+    max-width: 640px;
+    color: rgba(255, 255, 255, .76);
+}
+
+.damage-reports-page .records-hero .records-eyebrow {
+    color: #a9ddd5;
+}
+
+.damage-hero-aside {
+    z-index: 1;
+    width: min(250px, 30%);
+    flex: 0 0 auto;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, .22);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .1);
+    backdrop-filter: blur(10px);
+}
+
+.damage-hero-aside-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    margin-bottom: 12px;
+    place-items: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .16);
+    font-size: 1.15rem;
+}
+
+.damage-hero-aside strong {
+    display: block;
+    color: #fff;
+    font-size: .9rem;
+}
+
+.damage-hero-aside p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .73);
+    font-size: .77rem;
+    line-height: 1.55;
+}
+
+.damage-reports-page .records-panel,
+.damage-reports-page .records-metric {
+    border-color: #e2e9ee;
+    border-radius: 17px;
+    box-shadow: 0 12px 32px rgba(18, 45, 59, .055);
+}
+
+.damage-report-card {
+    border-color: #dfe8eb;
+    border-radius: 18px;
+    box-shadow: 0 14px 36px rgba(16, 43, 70, .065);
+    scroll-margin-top: 24px;
+}
+
+.damage-case-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 5px 9px;
+    border: 1px solid #cce8df;
+    border-radius: 999px;
+    background: #effaf5;
+    color: #177052;
+    font-size: .67rem;
+    font-weight: 800;
+}
+
+.damage-case-status i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1ba66f;
+    box-shadow: 0 0 0 3px rgba(27, 166, 111, .12);
+}
+
+.damage-case-status.is-closed {
+    border-color: #d7e3e8;
+    background: #edf2f5;
+    color: #536978;
+}
+
+.damage-case-status.is-closed i {
+    background: #748596;
+    box-shadow: 0 0 0 3px rgba(116, 133, 150, .12);
+}
+
+.damage-case-resolution {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px 12px;
+    margin: 14px 0;
+    padding: 12px 14px;
+    border: 1px solid #d6e4e9;
+    border-radius: 12px;
+    background: #f2f6f8;
+}
+
+.damage-case-resolution strong {
+    color: #405b6b;
+    font-size: .82rem;
+}
+
+.damage-case-resolution span {
+    color: #718492;
+    font-size: .75rem;
+}
+
+.damage-report-replies {
+    padding: 18px;
+    border: 1px solid #e4ebee;
+    border-radius: 16px;
+    background: #fafcfc;
+}
+
+.damage-conversation-heading,
+.damage-reply-meta,
+.damage-reply-compose-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.damage-conversation-heading h4 {
+    margin: 4px 0 0;
+    color: #172b45;
+    font-size: 1rem;
+}
+
+.damage-conversation-heading > span {
+    color: #748596;
+    font-size: .74rem;
+    font-weight: 750;
+}
+
+.damage-report-reply {
+    max-width: 86%;
+    padding: 13px 15px;
+    border: 1px solid #e4ebee;
+    border-radius: 4px 14px 14px 14px;
+    background: #fff;
+}
+
+.damage-report-reply.is-dashboard {
+    margin-left: auto;
+    border-color: #cfe7e4;
+    border-radius: 14px 4px 14px 14px;
+    background: #eff8f7;
+}
+
+.damage-reply-meta {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.damage-reply-meta strong {
+    color: #172b45;
+    font-size: .81rem;
+}
+
+.damage-reply-meta > span {
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #eaf0f3;
+    color: #587080;
+    font-size: .62rem;
+    font-weight: 800;
+}
+
+.damage-report-reply.is-dashboard .damage-reply-meta > span {
+    background: #d9efeb;
+    color: #087477;
+}
+
+.damage-reply-meta time {
+    margin-left: auto;
+}
+
+.damage-report-reply p {
+    color: #40546a;
+}
+
+.damage-conversation-empty {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 13px;
+    border: 1px dashed #d2e0e3;
+    border-radius: 12px;
+    color: #748596;
+}
+
+.damage-conversation-empty > span {
+    color: #138b88;
+}
+
+.damage-conversation-empty p {
+    margin: 0;
+    font-size: .81rem;
+    line-height: 1.5;
+}
+
+.damage-report-reply-form {
+    padding: 18px;
+    border: 1px solid #dfe9eb;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #f8fbfb, #f2f8f7);
+}
+
+.damage-reply-compose-heading label {
+    color: #172b45;
+    font-size: .9rem;
+    font-weight: 850;
+}
+
+.damage-reply-compose-heading small {
+    display: block;
+    margin-top: 4px;
+    color: #748596;
+    font-size: .74rem;
+}
+
+.damage-reply-compose-heading > span {
+    color: #0c8283;
+    font-size: 1.3rem;
+}
+
+.damage-report-reply-form textarea {
+    min-height: 100px;
+    border-color: #d2e0e3;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.damage-report-reply-form textarea:focus {
+    border-color: #138b88;
+    outline: 0;
+    box-shadow: 0 0 0 4px rgba(19, 139, 136, .11);
+}
+
+.damage-report-reply-form button {
+    min-height: 42px;
+    border-radius: 10px;
+}
+
+.damage-ticket-status-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 16px;
+    padding: 16px 18px;
+    border: 1px solid #e1e9ed;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.damage-ticket-status-form p {
+    max-width: 580px;
+    margin: 0;
+    color: #718492;
+    font-size: .77rem;
+    line-height: 1.5;
+}
+
+.damage-ticket-close,
+.damage-ticket-reopen {
+    display: inline-flex;
+    min-height: 40px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font: inherit;
+    font-size: .77rem;
+    font-weight: 850;
+    cursor: pointer;
+    transition: transform .16s ease, background .16s ease;
+}
+
+.damage-ticket-close {
+    background: #187a5b;
+    color: #fff;
+}
+
+.damage-ticket-close:hover {
+    background: #126449;
+    transform: translateY(-1px);
+}
+
+.damage-ticket-reopen {
+    border-color: #b9d9d7;
+    background: #eff8f7;
+    color: #087477;
+}
+
+.damage-ticket-reopen:hover {
+    background: #e2f2ef;
+    transform: translateY(-1px);
+}
+
 @media (max-width: 600px) {
+    .damage-reports-page .records-hero {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .damage-hero-aside {
+        width: auto;
+    }
+
     .damage-report-card-header {
         flex-direction: column;
+    }
+
+    .damage-report-reply {
+        max-width: 100%;
+    }
+
+    .damage-ticket-status-form {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .damage-ticket-status-form button {
+        width: 100%;
     }
 
     .damage-report-images {

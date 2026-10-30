@@ -1,110 +1,80 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Review Analytics{% endblock %}
-
-{% block page_title %}Review Analytics{% endblock %}
-
-{% block page_subtitle %}
-Track customer reviews, review requests and rating performance.
-{% endblock %}
+{% block title %}Review analytics | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Review analytics{% endblock %}
+{% block page_subtitle %}Monitor ratings, website visibility and review-request coverage.{% endblock %}
 
 {% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy">
+            <span class="reputation-eyebrow">Reputation insights</span>
+            <h2>Listen to the pattern in the feedback.</h2>
+            <p>Ratings summarize recorded reviews. Request coverage compares completed bookings with those that have a logged review request; it is not a review conversion rate.</p>
+        </div>
+        <div class="reputation-actions">
+            <a class="reputation-button" href="{% url 'review_requests' %}">Review requests</a>
+            <a class="reputation-button-secondary" href="{% url 'review_list' %}">Manage reviews</a>
+        </div>
+    </section>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Average Rating</span>
-        <h2>{{ average_rating }} ⭐</h2>
-        <p>Across all reviews</p>
+    <div class="reputation-metrics">
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Average rating</span><strong class="reputation-metric-value">{{ average_rating|floatformat:1 }} / 5</strong><small class="reputation-metric-foot">Across {{ total_reviews }} reviews</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Total reviews</span><strong class="reputation-metric-value">{{ total_reviews }}</strong><small class="reputation-metric-foot">Manually recorded</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Featured reviews</span><strong class="reputation-metric-value">{{ featured_reviews }}</strong><small class="reputation-metric-foot">Eligible to appear on website</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Request coverage</span><strong class="reputation-metric-value">{{ review_request_coverage|floatformat:1 }}%</strong><small class="reputation-metric-foot">{{ completed_bookings_with_request }} requested of {{ completed_bookings }} completed bookings</small></article>
     </div>
 
-    <div class="crm-card">
-        <span>Total Reviews</span>
-        <h2>{{ total_reviews }}</h2>
-        <p>Manual customer reviews</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Featured Reviews</span>
-        <h2>{{ featured_reviews }}</h2>
-        <p>Shown on website</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Review Conversion</span>
-        <h2>{{ review_conversion_rate }}%</h2>
-        <p>Reviews vs requests sent</p>
-    </div>
-
-</div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>5 Star Reviews</span>
-        <h2>{{ five_star_reviews }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Review Requests Sent</span>
-        <h2>{{ review_requests_sent }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>4 Star Reviews</span>
-        <h2>{{ rating_breakdown.four }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Lower Ratings</span>
-        <h2>{{ rating_breakdown.three|add:rating_breakdown.two|add:rating_breakdown.one }}</h2>
-    </div>
-
-</div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Latest Reviews</h2>
-        <a href="/dashboard/reviews/">Manage Reviews</a>
-    </div>
-
-    <div class="table-wrapper">
-        <table class="dashboard-table advanced-table">
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Suburb</th>
-                    <th>Rating</th>
-                    <th>Featured</th>
-                    <th>Created</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for review in latest_reviews %}
-                    <tr>
-                        <td>{{ review.customer_name }}</td>
-                        <td>{{ review.suburb }}</td>
-                        <td>{{ review.rating }} ⭐</td>
-                        <td>
-                            {% if review.featured %}
-                                <span class="status-badge success">Yes</span>
-                            {% else %}
-                                <span class="status-badge warning">No</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ review.created_at|date:"d M Y" }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="5">No reviews found.</td>
-                    </tr>
+    <div class="reputation-grid">
+        <section class="reputation-panel span-5">
+            <header class="reputation-panel-heading"><div><span class="reputation-overline">Rating distribution</span><h3>How customers rated the service</h3></div></header>
+            <div class="reputation-star-bars">
+                {% for value, count in rating_rows %}
+                    <div class="reputation-star-row">
+                        <span>{{ value }} star{{ value|pluralize }}</span>
+                        <div class="reputation-star-track" role="progressbar" aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="{{ total_reviews }}">
+                            <div class="reputation-star-fill" style="width:{% if total_reviews %}{% widthratio count total_reviews 100 %}{% else %}0{% endif %}%"></div>
+                        </div>
+                        <strong>{{ count }}</strong>
+                    </div>
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+        </section>
+        <section class="reputation-panel span-7">
+            <header class="reputation-panel-heading"><div><span class="reputation-overline">Request activity</span><h3>Follow-up coverage</h3></div></header>
+            <div class="reputation-detail-list">
+                <div class="reputation-detail-item"><span>Completed bookings</span><strong>{{ completed_bookings }}</strong></div>
+                <div class="reputation-detail-item"><span>Completed bookings with request logged</span><strong>{{ completed_bookings_with_request }}</strong></div>
+                <div class="reputation-detail-item"><span>5-star reviews</span><strong>{{ five_star_reviews }}</strong></div>
+                <div class="reputation-detail-item"><span>4-star reviews</span><strong>{{ rating_breakdown.four }}</strong></div>
+                <div class="reputation-detail-item"><span>1–3 star reviews</span><strong>{{ lower_rating_reviews }}</strong></div>
+                <div class="reputation-detail-item"><span>Coverage formula</span><strong>Requested bookings ÷ completed bookings</strong></div>
+            </div>
+            <p class="reputation-callout" style="margin-top:14px">Reviews are not currently linked to individual bookings, so this dashboard does not infer a review conversion rate from manually entered feedback.</p>
+        </section>
     </div>
 
-</section>
-
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Latest feedback</span><h3>Recently added reviews</h3></div><a class="reputation-button-secondary" href="{% url 'review_list' %}">Open review library</a></header>
+        <div class="reputation-table-wrap">
+            <table class="reputation-table">
+                <thead><tr><th>Customer</th><th>Suburb</th><th>Rating</th><th>Visibility</th><th>Added</th></tr></thead>
+                <tbody>
+                    {% for review in latest_reviews %}
+                        <tr>
+                            <td><strong>{{ review.customer_name }}</strong></td>
+                            <td>{{ review.suburb|default:"—" }}</td>
+                            <td><span class="reputation-stars">{{ review.stars }}</span></td>
+                            <td>{% if review.featured %}<span class="reputation-status is-active">Featured</span>{% else %}<span class="reputation-status">Hidden</span>{% endif %}</td>
+                            <td>{{ review.created_at|date:"j M Y" }}</td>
+                        </tr>
+                    {% empty %}<tr><td colspan="5"><div class="reputation-empty"><strong>No reviews yet</strong>Review insights will appear after feedback is recorded.</div></td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 {% endblock %}

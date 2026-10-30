@@ -1,170 +1,47 @@
 {% extends "dashboard_base.html" %}
-
-{% block title %}
-Equipment Inventory
-{% endblock %}
-
+{% load static %}
+{% block title %}Equipment inventory | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Equipment inventory{% endblock %}
+{% block page_subtitle %}Track equipment condition, employee assignments and upcoming servicing.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <div class="crm-panel-header">
-
-        <div>
-            <h1>Equipment Inventory</h1>
-            <p>
-                Manage cleaning equipment, service schedules and assignments.
-            </p>
-        </div>
-
-        <a href="{% url 'add_equipment' %}" class="btn-fill">
-            Add Equipment
-        </a>
-
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero">
+        <div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Assets</span><h2>Equipment, ready for the next job.</h2><p>Keep asset condition, team assignment and service schedules visible in one register.</p></div>
+        <a class="inventory-button" href="{% url 'add_equipment' %}">＋ Add equipment</a>
+    </section>
+    <div class="inventory-metrics">
+        <article class="inventory-metric is-accent"><span class="inventory-metric-label">Equipment records</span><strong class="inventory-metric-value">{{ total_equipment }}</strong><small class="inventory-metric-foot">All registered assets</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Overdue service</span><strong class="inventory-metric-value">{{ overdue_equipment }}</strong><small class="inventory-metric-foot">Past service date</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Service due soon</span><strong class="inventory-metric-value">{{ due_soon_equipment }}</strong><small class="inventory-metric-foot">Within 30 days</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Needs repair</span><strong class="inventory-metric-value">{{ equipment_needing_repair }}</strong><small class="inventory-metric-foot">Condition requires attention</small></article>
     </div>
-
-    <div class="dashboard-card">
-
-        <h3>Service Alerts</h3>
-
-        <table class="dashboard-table">
-            <thead>
+    {% if not total_equipment %}<div class="inventory-callout"><strong>No equipment records exist yet.</strong> The empty table and zero metrics reflect the current database, not a hidden dashboard calculation. Add an asset to begin tracking servicing and assignment.</div>{% endif %}
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Asset register</span><h3>Equipment and service schedule</h3><p>{{ page_obj.paginator.count }} matching records · as of {{ today|date:"j M Y" }}</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="equipment-query">Search</label><input id="equipment-query" type="search" name="q" value="{{ query }}" placeholder="Name, serial or employee"></div>
+            <div class="inventory-filter-field"><label for="equipment-condition">Condition</label><select id="equipment-condition" name="condition"><option value="">All conditions</option>{% for value,label in condition_choices %}<option value="{{ value }}" {% if condition == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <div class="inventory-filter-field"><label for="equipment-service">Service schedule</label><select id="equipment-service" name="service"><option value="">All schedules</option><option value="overdue" {% if service_filter == "overdue" %}selected{% endif %}>Overdue</option><option value="due_soon" {% if service_filter == "due_soon" %}selected{% endif %}>Due within 30 days</option><option value="not_scheduled" {% if service_filter == "not_scheduled" %}selected{% endif %}>Not scheduled</option></select></div>
+            <button type="submit" class="inventory-button">Filter assets</button><a class="inventory-button-secondary" href="{% url 'equipment_list' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Equipment</th><th>Serial</th><th>Assigned employee</th><th>Condition</th><th>Purchase cost</th><th>Next service</th><th>Service status</th><th>Actions</th></tr></thead>
+            <tbody>{% for item in equipment_items %}
                 <tr>
-                    <th>Equipment</th>
-                    <th>Service Date</th>
-                    <th>Status</th>
+                    <td><strong>{{ item.name }}</strong>{% if item.purchase_date %}<br><small>Purchased {{ item.purchase_date|date:"j M Y" }}</small>{% endif %}</td>
+                    <td>{{ item.serial_number|default:"—" }}</td>
+                    <td>{{ item.assigned_employee|default:"Not assigned" }}</td>
+                    <td>{{ item.get_condition_display }}</td>
+                    <td>${{ item.purchase_cost|floatformat:2 }}</td>
+                    <td>{{ item.next_service_date|date:"j M Y"|default:"Not scheduled" }}</td>
+                    <td>{% if item.service_status == "overdue" %}<span class="inventory-status is-danger">Overdue</span>{% elif item.service_status == "today" %}<span class="inventory-status is-warning">Due today</span>{% elif item.service_status == "upcoming" %}<span class="inventory-status is-warning">Due soon</span>{% elif item.service_status == "not_scheduled" %}<span class="inventory-status">Not scheduled</span>{% else %}<span class="inventory-status is-good">On schedule</span>{% endif %}</td>
+                    <td><div class="inventory-inline-actions"><a class="inventory-button-secondary" href="{% url 'edit_equipment' item.pk %}">Edit</a><a class="inventory-button-danger" href="{% url 'delete_equipment' item.pk %}">Delete</a></div></td>
                 </tr>
-            </thead>
-
-            <tbody>
-                {% for item in equipment_items %}
-                    {% if item.next_service_date %}
-                        <tr>
-                            <td>{{ item.name }}</td>
-                            <td>{{ item.next_service_date }}</td>
-             
-
-                            <td>
-                                {% if item.service_status == "overdue" %}
-                                    <span class="status-badge danger">Overdue</span>
-
-                                {% elif item.service_status == "today" %}
-                                    <span class="status-badge warning">Today is the last day for service</span>
-
-                                {% elif item.service_status == "upcoming" %}
-                                    <span class="status-badge warning">Upcoming</span>
-
-                                {% else %}
-                                    <span class="status-badge success">OK</span>
-                                {% endif %}
-                            </td>
-
-
-
-
-
-
-                        </tr>
-                    {% endif %}
-                {% empty %}
-                    <tr>
-                        <td colspan="3">No equipment service alerts.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-    </div>
-
-
-
-
-
-
-
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table">
-
-            <thead>
-
-                <tr>
-                    <th>Name</th>
-                    <th>Serial Number</th>
-                    <th>Assigned Employee</th>
-                    <th>Condition</th>
-                    <th>Purchase Cost</th>
-                    <th>Service Date</th>
-                    <th>Actions</th>
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for item in equipment_items %}
-
-                <tr>
-
-                    <td>{{ item.name }}</td>
-
-                    <td>{{ item.serial_number }}</td>
-
-                    <td>
-                        {{ item.assigned_employee|default:"Not Assigned" }}
-                    </td>
-
-                    <td>
-                        {{ item.get_condition_display }}
-                    </td>
-
-                    <td>
-                        ${{ item.purchase_cost }}
-                    </td>
-
-                    <td>
-                        {{ item.next_service_date }}
-                    </td>
-
-                    <td>
-
-                        <a
-                            href="{% url 'edit_equipment' item.id %}"
-                            class="small-link-btn"
-                        >
-                            Edit
-                        </a>
-
-                        <a
-                            href="{% url 'delete_equipment' item.id %}"
-                            class="small-link-btn danger"
-                        >
-                            Delete
-                        </a>
-
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="7">
-                        No equipment found.
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
+            {% empty %}<tr><td colspan="8"><div class="inventory-empty"><strong>{% if query or condition or service_filter %}No equipment matches these filters{% else %}No equipment has been added{% endif %}</strong>Adjust your filters or add equipment to populate this register.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Equipment pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;condition={{ condition|urlencode }}&amp;service={{ service_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;condition={{ condition|urlencode }}&amp;service={{ service_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
 </div>
-
 {% endblock %}

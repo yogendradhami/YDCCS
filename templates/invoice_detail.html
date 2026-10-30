@@ -1,26 +1,38 @@
 
-
-{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
-{% endblock %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f7f9fc;
+    color: #111827;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
 .invoice-page {
     background: #f7f9fc;
-    padding: 40px 0;
+    min-height: 100vh;
+    padding: 32px 16px;
 }
 
 .invoice-card {
-    max-width: 1100px;
+    max-width: 1000px;
     margin: auto;
     background: #fff;
     border-radius: 18px;
-    padding: 35px;
+    padding: clamp(20px, 4vw, 35px);
     box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
     color: #111827;
 }
@@ -107,6 +119,31 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     margin-bottom: 18px;
 }
 
+.invoice-box .invoice-contact-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 10px 0;
+    color: #4b5563;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.invoice-box .invoice-contact-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    margin-top: 2px;
+    color: #0759c9;
+}
+
+.invoice-box .invoice-contact-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
 .invoice-table {
     width: 100%;
     border-collapse: collapse;
@@ -166,45 +203,30 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     color: #0759c9;
 }
 
-.invoice-actions {
-    display: flex;
-    gap: 18px;
-    margin-top: 35px;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 28px;
-    flex-wrap: wrap;
-}
-
-.invoice-btn {
-    padding: 14px 28px;
-    border-radius: 8px;
-    font-weight: 700;
-    text-decoration: none;
-    border: 1px solid #0759c9;
-}
-
-.btn-blue {
-    color: #0759c9;
-    background: #fff;
-}
-
-.btn-green {
-    background: #22c55e;
-    color: #fff;
-    border-color: #22c55e;
-}
-
-.btn-unpaid {
-    background: #fff7ed;
-    color: #c2410c;
-    border-color: #fed7aa;
-    cursor: pointer;
-}
-
 .thank-you {
     text-align: center;
     margin-top: 30px;
     color: #64748b;
+}
+
+@media print {
+    body,
+    .invoice-page {
+        background: #fff;
+    }
+
+    .invoice-page {
+        min-height: auto;
+        padding: 0;
+    }
+
+    .invoice-card {
+        max-width: none;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+    }
 }
 
 @media (max-width: 800px) {
@@ -223,8 +245,14 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     .invoice-brand h1 {
         font-size: 28px;
     }
+
+    .invoice-card {
+        border-radius: 12px;
+    }
 }
 </style>
+</head>
+<body>
 
 <section class="invoice-page">
     <div class="invoice-card">
@@ -262,10 +290,22 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
         <div class="invoice-info-grid">
             <div class="invoice-box">
                 <h3>👤 Bill To</h3>
-                <p><strong>{{ invoice.booking.customer.full_name }}</strong></p>
-                <p>📞 {{ invoice.booking.customer.phone }}</p>
-                <p>✉ {{ invoice.booking.customer.email }}</p>
-                <p>📍 {{ invoice.booking.customer.address }}</p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5Z"/></svg></span>
+                    <strong>{{ invoice.booking.customer.full_name }}</strong>
+                </p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.56 3.58.56.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.19 2.46.56 3.58a1 1 0 0 1-.25 1.01l-2.19 2.2Z"/></svg></span>
+                    {{ invoice.booking.customer.phone|default:"Phone not provided" }}
+                </p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg></span>
+                    {{ invoice.booking.customer.email|default:"Email not provided" }}
+                </p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"/></svg></span>
+                    {{ invoice.booking.customer.address|default:"Address not provided" }}
+                </p>
             </div>
 
             <div class="invoice-box">
@@ -345,35 +385,6 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             </div>
         </div>
 
-        <div class="invoice-actions">
-            <a href="/dashboard/invoices/" class="invoice-btn btn-blue">← Back to Invoices</a>
-            <a href="/dashboard/invoices/{{ invoice.id }}/download/" class="invoice-btn btn-blue">⬇ Download PDF</a>
-
-            {% if invoice.status != "paid" %}
-                <form method="post" action="{% url 'create_stripe_checkout_session' invoice.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="invoice-btn btn-green">
-                    💳 Pay Now with Stripe
-                    </button>
-                </form>
-            {% else %}
-                <span class="invoice-btn btn-green">Paid</span>
-
-                {% if request.user.is_staff or request.user.is_superuser %}
-                    <form
-                        method="post"
-                        action="{% url 'mark_invoice_unpaid' invoice.id %}"
-                        onsubmit="return confirm('Mark this invoice as unpaid? This changes the invoice status only and does not refund a Stripe payment.');"
-                    >
-                        {% csrf_token %}
-                        <button type="submit" class="invoice-btn btn-unpaid">
-                            Mark Unpaid
-                        </button>
-                    </form>
-                {% endif %}
-            {% endif %}
-        </div>
-
         <div class="thank-you">
             <p><strong>Thank you for your business!</strong></p>
             <p>We appreciate the opportunity to serve you.</p>
@@ -382,4 +393,5 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     </div>
 </section>
 
-{% endblock %}
+</body>
+</html>

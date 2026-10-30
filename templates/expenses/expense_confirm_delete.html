@@ -1,0 +1,23 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Delete expense | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Delete expense{% endblock %}
+{% block page_subtitle %}Confirm removal of this expense record.{% endblock %}
+
+{% block content %}
+<div class="finance-page">
+    {% include "dashboard/finance/_finance_nav.html" %}
+    <section class="finance-panel" style="max-width:760px;margin:40px auto">
+        <span class="finance-eyebrow">Permanent action</span>
+        <h2>Delete this expense?</h2>
+        <p>This will permanently remove <strong>{{ object_name }}</strong> and its expense record. This action cannot be undone.</p>
+        <form method="post" class="finance-inline-actions">
+            {% csrf_token %}
+            <button type="submit" class="finance-button-danger">Delete expense</button>
+            <a href="{{ cancel_url }}" class="finance-button-secondary">Keep expense</a>
+        </form>
+    </section>
+</div>
+{% endblock %}

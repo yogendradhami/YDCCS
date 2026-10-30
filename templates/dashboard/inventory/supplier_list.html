@@ -1,51 +1,41 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Suppliers | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+{% block page_subtitle %}Maintain supplier contacts and confirm active vendor status.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <div class="crm-panel-header">
-        <h1>Suppliers</h1>
-
-        <a href="{% url 'add_supplier' %}" class="btn-fill">
-            Add Supplier
-        </a>
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Procurement</span><h2>Supplier relationships at a glance.</h2><p>Keep contact details current so purchasing and delivery follow-up have a clear owner.</p></div><a class="inventory-button" href="{% url 'add_supplier' %}">＋ Add supplier</a></section>
+    <div class="inventory-metrics">
+        <article class="inventory-metric is-accent"><span class="inventory-metric-label">Supplier records</span><strong class="inventory-metric-value">{{ total_suppliers }}</strong><small class="inventory-metric-foot">All registered suppliers</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Active</span><strong class="inventory-metric-value">{{ active_suppliers }}</strong><small class="inventory-metric-foot">Available for purchasing</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Inactive</span><strong class="inventory-metric-value">{{ inactive_suppliers }}</strong><small class="inventory-metric-foot">Retained for reference</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Contact details</span><strong class="inventory-metric-value">{{ contactable_suppliers }}</strong><small class="inventory-metric-foot">Have both email and phone</small></article>
     </div>
-
-    <table class="dashboard-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Contact</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Active</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for supplier in suppliers %}
+    {% if not total_suppliers %}<div class="inventory-callout"><strong>No supplier records exist yet.</strong> Create a supplier record to keep procurement contacts in one place.</div>{% endif %}
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Supplier directory</span><h3>Contacts</h3><p>{{ page_obj.paginator.count }} matching suppliers</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="supplier-query">Search</label><input id="supplier-query" type="search" name="q" value="{{ query }}" placeholder="Name, contact, email or phone"></div>
+            <div class="inventory-filter-field"><label for="supplier-status">Status</label><select id="supplier-status" name="status"><option value="">All suppliers</option><option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option><option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option></select></div>
+            <button type="submit" class="inventory-button">Filter suppliers</button><a class="inventory-button-secondary" href="{% url 'supplier_list' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Supplier</th><th>Contact person</th><th>Email</th><th>Phone</th><th>ABN</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{% for supplier in suppliers %}
                 <tr>
-                    <td>{{ supplier.name }}</td>
-                    <td>{{ supplier.contact_person }}</td>
-                    <td>{{ supplier.email }}</td>
-                    <td>{{ supplier.phone }}</td>
-                    <td>{{ supplier.active }}</td>
-                    <td>
-                        <a href="{% url 'edit_supplier' supplier.id %}">
-                            Edit
-                        </a>
-                    </td>
+                    <td><strong>{{ supplier.name }}</strong></td><td>{{ supplier.contact_person|default:"—" }}</td>
+                    <td>{% if supplier.email %}<a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a>{% else %}—{% endif %}</td>
+                    <td>{% if supplier.phone %}<a href="tel:{{ supplier.phone }}">{{ supplier.phone }}</a>{% else %}—{% endif %}</td>
+                    <td>{{ supplier.abn|default:"—" }}</td>
+                    <td>{% if supplier.active %}<span class="inventory-status is-good">Active</span>{% else %}<span class="inventory-status">Inactive</span>{% endif %}</td>
+                    <td><a class="inventory-button-secondary" href="{% url 'edit_supplier' supplier.pk %}">Edit</a></td>
                 </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6">No suppliers found.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+            {% empty %}<tr><td colspan="7"><div class="inventory-empty"><strong>{% if query or status_filter %}No suppliers match these filters{% else %}No suppliers have been added{% endif %}</strong>Adjust your filters or add a supplier contact.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Supplier pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
 </div>
-
 {% endblock %}

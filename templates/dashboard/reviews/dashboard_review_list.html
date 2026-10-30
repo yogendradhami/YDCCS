@@ -1,59 +1,81 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Reviews | YD Dashboard{% endblock %}
-{% block page_title %}Reviews{% endblock %}
-{% block page_subtitle %}Manage customer reviews and testimonials.{% endblock %}
+{% block title %}Customer reviews | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Customer reviews{% endblock %}
+{% block page_subtitle %}Manage the customer feedback displayed on your website.{% endblock %}
 
 {% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy">
+            <span class="reputation-eyebrow">Reputation management</span>
+            <h2>Customer voices, thoughtfully managed.</h2>
+            <p>Review and feature customer feedback, keep details accurate, and find a review quickly.</p>
+        </div>
+        <div class="reputation-actions">
+            <a class="reputation-button" href="{% url 'add_review' %}">＋ Add review</a>
+            <a class="reputation-button-secondary" href="/reviews/">Public reviews</a>
+        </div>
+    </section>
 
-<section class="crm-quick-actions">
-    <a href="/dashboard/reviews/add/">+ Add Review</a>
-    <a href="/reviews/">View Public Reviews</a>
-    <a href="/dashboard/">Back to Dashboard</a>
-</section>
-
-<section class="crm-panel">
-    <div class="crm-panel-header">
-        <h2>Customer Reviews</h2>
+    <div class="reputation-metrics">
+        <article class="reputation-metric"><span class="reputation-metric-label">All reviews</span><strong class="reputation-metric-value">{{ total_reviews }}</strong><small class="reputation-metric-foot">Stored customer feedback</small></article>
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Average rating</span><strong class="reputation-metric-value">{{ average_rating|floatformat:1 }} / 5</strong><small class="reputation-metric-foot">Across all reviews</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Featured on site</span><strong class="reputation-metric-value">{{ featured_count }}</strong><small class="reputation-metric-foot">Visible customer stories</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Matching records</span><strong class="reputation-metric-value">{{ page_obj.paginator.count }}</strong><small class="reputation-metric-foot">Current search and filter</small></article>
     </div>
 
-    {% if reviews %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Rating</th>
-                        <th>Review</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading">
+            <div><span class="reputation-overline">Review library</span><h3>Customer feedback</h3><p>Search by customer, suburb or review text.</p></div>
+        </header>
+        <form class="reputation-filter-bar" method="get">
+            <div class="reputation-filter-field"><label for="review-query">Search reviews</label><input id="review-query" type="search" name="q" value="{{ query }}" placeholder="Customer, suburb, words"></div>
+            <div class="reputation-filter-field">
+                <label for="review-rating">Rating</label>
+                <select id="review-rating" name="rating">
+                    <option value="">All ratings</option>
+                    {% for value, label in rating_choices %}<option value="{{ value }}" {% if rating == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="reputation-button">Filter reviews</button>
+            <a href="{% url 'review_list' %}" class="reputation-button-secondary">Clear</a>
+        </form>
 
+        <div class="reputation-table-wrap">
+            <table class="reputation-table">
+                <thead><tr><th>Customer</th><th>Rating</th><th>Review</th><th>Website</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>
                     {% for review in reviews %}
                         <tr>
-                            <td>{{ review.name }}</td>
-                            <td>{{ review.rating }}</td>
-                            <td>{{ review.comment }}</td>
+                            <td><strong>{{ review.customer_name }}</strong>{% if review.suburb %}<br><small>{{ review.suburb }}</small>{% endif %}</td>
+                            <td><span class="reputation-stars" aria-label="{{ review.rating }} out of 5 stars">{{ review.stars }}</span></td>
+                            <td>{{ review.review_text|truncatechars:180 }}</td>
+                            <td>{% if review.featured %}<span class="reputation-status is-active">Featured</span>{% else %}<span class="reputation-status">Hidden</span>{% endif %}</td>
+                            <td>{{ review.created_at|date:"j M Y" }}</td>
                             <td>
-                                <a href="/dashboard/reviews/{{ review.id }}/edit/" class="small-link-btn">
-                                    Edit
-                                </a>
-                            </td>
-                            <td>
-                                <a href="/dashboard/reviews/{{ review.id }}/delete/" class="small-delete-btn">
-                                    Delete
-                                </a>
+                                <div class="reputation-inline-actions">
+                                    <a class="reputation-button-secondary" href="{% url 'edit_review' review.pk %}">Edit</a>
+                                    <a class="reputation-button-danger" href="{% url 'delete_review' review.pk %}">Delete</a>
+                                </div>
                             </td>
                         </tr>
+                    {% empty %}
+                        <tr><td colspan="6"><div class="reputation-empty"><strong>No reviews found</strong>Try a different search or add the first review.</div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    {% else %}
-        <p>No reviews added yet.</p>
-    {% endif %}
-</section>
-
+        {% if page_obj.has_other_pages %}
+            <nav class="reputation-pagination" aria-label="Review pages">
+                {% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;rating={{ rating|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Newer</a>{% else %}<span></span>{% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;rating={{ rating|urlencode }}&amp;page={{ page_obj.next_page_number }}">Older →</a>{% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

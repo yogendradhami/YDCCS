@@ -1,28 +1,39 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}{{ page_title }} | YD Dashboard{% endblock %}
+{% block title %}{{ page_title }} | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
-{% block page_subtitle %}Create or update customer reviews.{% endblock %}
+{% block page_subtitle %}Add or update customer feedback shown on your public website.{% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-
-
-    <form method="POST">
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy">
+            <span class="reputation-eyebrow">Review editor</span>
+            <h2>{% if form.instance.pk %}Keep this review up to date.{% else %}Share a customer experience.{% endif %}</h2>
+            <p>Use the customer’s own feedback and only feature reviews approved for public display.</p>
+        </div>
+        <a class="reputation-button-secondary" href="{% url 'review_list' %}">← Back to reviews</a>
+    </section>
+    <form method="post" class="reputation-panel">
         {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit" class="btn-fill">
-            {{ button_text }}
-        </button>
-
-        <a href="/dashboard/reviews/" class="btn-outline">
-            Back to Reviews
-        </a>
+        {% if form.non_field_errors %}<div class="reputation-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="reputation-form-grid">
+            {% for field in form %}
+                <div class="reputation-field {% if field.name == 'review_text' %}full-width{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small class="helptext">{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}<span class="reputation-field-error" role="alert">{{ error }}</span>{% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="reputation-actions" style="margin-top:18px">
+            <button type="submit" class="reputation-button">{{ button_text }}</button>
+            <a href="{% url 'review_list' %}" class="reputation-button-secondary">Cancel</a>
+        </div>
     </form>
-
-</section>
-
+</div>
 {% endblock %}

@@ -154,7 +154,7 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     list live_chat_assign live_chat_close live_chat_counts live_chat_detail live_chat_list live_chat_takeover maintenance_list
     mark_invoice_paid mark_invoice_unpaid mark_payroll_paid newsletter_subscriber_detail onboarding_dashboard onboarding_detail
     onboarding_document_review onboarding_set_status operations_command_centre owner_alert_centre owner_command_centre payroll_list
-    profit_loss_dashboard property_damage_report_list property_damage_report_reply purchase_orders quote_conversion_analytics quote_followup_centre receive_purchase_order reject_leave_request
+    profit_loss_dashboard property_damage_report_list property_damage_report_conversation property_damage_report_reply property_damage_report_set_status purchase_orders quote_conversion_analytics quote_followup_centre receive_purchase_order reject_leave_request
     reminder_centre report_list review_analytics review_list review_requests roster_list run_audit
     security_center security_position_create security_position_edit security_position_list security_user_access_action security_user_create
     security_user_edit security_user_list send_booking_reminder send_contract_renewal_email send_customer_followup send_inactive_campaign
@@ -190,8 +190,13 @@ DASHBOARD_PERMISSION_ROUTE_OVERRIDES = {
     "security_position_list": {"GET": ("security.manage_users",), "HEAD": ("security.manage_users",)},
     "customer_profile_360": {"GET": ("customers.view_customer", "bookings.view_booking", "invoices.view_invoice", "reviews.view_review", "dashboard.view_emaillog", "quotes.view_quoterequest"), "HEAD": ("customers.view_customer", "bookings.view_booking", "invoices.view_invoice", "reviews.view_review", "dashboard.view_emaillog", "quotes.view_quoterequest")},
     "customer_360": {"GET": ("customers.view_customer", "bookings.view_booking", "invoices.view_invoice", "quotes.view_quoterequest"), "HEAD": ("customers.view_customer", "bookings.view_booking", "invoices.view_invoice", "quotes.view_quoterequest")},
-    "property_damage_report_list": {"GET": ("employees.view_propertydamagereport",), "HEAD": ("employees.view_propertydamagereport",)},
+    "property_damage_report_list": {"GET": ("employees.view_employee",), "HEAD": ("employees.view_employee",)},
+    "property_damage_report_conversation": {
+        "GET": ("employees.view_employee",),
+        "POST": ("employees.change_propertydamagereport",),
+    },
     "property_damage_report_reply": {"POST": ("employees.change_propertydamagereport",)},
+    "property_damage_report_set_status": {"POST": ("employees.change_propertydamagereport",)},
     "send_customer_followup": {"POST": ("customers.change_customer",)},
     "create_invoice_from_booking": {"POST": ("bookings.view_booking", "invoices.add_invoice")},
     "update_quote_status": {"POST": ("quotes.change_quoterequest", "bookings.add_booking")},

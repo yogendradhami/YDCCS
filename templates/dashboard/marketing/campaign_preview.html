@@ -1,121 +1,91 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Campaign Preview
-{% endblock %}
-
-{% block page_title %}
-{{ title }}
-{% endblock %}
-
-{% block page_subtitle %}
-Preview recipients before sending campaign emails for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}{{ title }} | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Campaign audience preview{% endblock %}
+{% block page_subtitle %}Review the eligible recipients before sending this campaign.{% endblock %}
 
 {% block content %}
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Recipients</span>
-        <h2>{{ recipient_count }}</h2>
-        <p>Customers with email addresses</p>
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy">
+            <span class="reputation-eyebrow">Pre-send review · {{ campaign_type|title }}</span>
+            <h2>{{ title }}</h2>
+            <p>This is the recipient audience currently eligible for this campaign. Confirm that the list is appropriate before you send.</p>
+        </div>
+        <a class="reputation-button-secondary" href="{% url 'campaign_center' %}">← Back to campaign center</a>
+    </section>
+    <div class="reputation-metrics">
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Eligible recipients</span><strong class="reputation-metric-value">{{ recipient_count }}</strong><small class="reputation-metric-foot">Across all result pages</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Showing on page</span><strong class="reputation-metric-value">{{ recipients|length }}</strong><small class="reputation-metric-foot">25 recipients per page</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Campaign type</span><strong class="reputation-metric-value">{{ campaign_type|title }}</strong><small class="reputation-metric-foot">Recipient criteria are shown below</small></article>
     </div>
 
-</div>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Recipient List</h2>
-
-        <a href="/dashboard/campaigns/" class="small-link-btn">
-            Back to Campaigns
-        </a>
-    </div>
-
-    {% if recipients %}
-
-        <div class="table-wrapper">
-
-            <table class="dashboard-table advanced-table">
-
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Jobs Completed</th>
-                        <th>Total Revenue</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    {% for customer in recipients %}
-
-                        <tr>
-                            <td>{{ customer.full_name }}</td>
-                            <td>{{ customer.email }}</td>
-                            <td>{{ customer.phone }}</td>
-                            <td>{{ customer.jobs_completed }}</td>
-                            <td>${{ customer.total_revenue }}</td>
-                        </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading">
+            <div><span class="reputation-overline">Recipient list</span><h3>{{ title }}</h3>
+                {% if campaign_type == "vip" %}<p>Customer revenue is at least $1,000, with an active newsletter subscription and recorded consent.</p>
+                {% elif campaign_type == "inactive" %}<p>Customer has one or fewer completed jobs, with an active newsletter subscription and recorded consent.</p>
+                {% else %}<p>Completed bookings with an email address that do not yet have a review request logged.</p>{% endif %}
+            </div>
+        </header>
+        <div class="reputation-table-wrap">
+            <table class="reputation-table">
+                {% if campaign_type == "review" %}
+                    <thead><tr><th>Customer</th><th>Email</th><th>Service</th><th>Completed</th><th>Request history</th></tr></thead>
+                    <tbody>
+                        {% for booking in recipients %}
+                            <tr>
+                                <td><strong>{{ booking.customer.full_name|default:"No customer" }}</strong></td>
+                                <td>{{ booking.customer.email|default:"—" }}</td>
+                                <td>{{ booking.get_service_type_display|default:booking.service_type }}</td>
+                                <td>{{ booking.booking_date|date:"j M Y" }}</td>
+                                <td><span class="reputation-status is-warning">Not requested</span></td>
+                            </tr>
+                        {% empty %}<tr><td colspan="5"><div class="reputation-empty"><strong>No eligible bookings</strong>All completed bookings have been contacted or don’t have a customer email.</div></td></tr>{% endfor %}
+                    </tbody>
+                {% else %}
+                    <thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Completed jobs</th><th>Total revenue</th><th>Consent</th></tr></thead>
+                    <tbody>
+                        {% for customer in recipients %}
+                            <tr>
+                                <td><strong>{{ customer.full_name }}</strong></td>
+                                <td>{{ customer.email }}</td>
+                                <td>{{ customer.phone|default:"—" }}</td>
+                                <td>{{ customer.jobs_completed }}</td>
+                                <td>${{ customer.total_revenue|floatformat:2 }}</td>
+                                <td><span class="reputation-status is-active">Active</span></td>
+                            </tr>
+                        {% empty %}<tr><td colspan="6"><div class="reputation-empty"><strong>No eligible customers</strong>No customers currently match this campaign and consent criteria.</div></td></tr>{% endfor %}
+                    </tbody>
+                {% endif %}
             </table>
-
         </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="reputation-pagination" aria-label="Campaign audience pages">
+                {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
 
-    {% else %}
-
-        <div class="empty-box">
-            <h3>No recipients found.</h3>
-            <p>No customers match this campaign yet.</p>
-        </div>
-
-    {% endif %}
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Send Campaign</h2>
-    </div>
-
-    {% if campaign_type == "vip" %}
-
-        <form method="POST" action="{% url 'send_vip_campaign' %}">
-            {% csrf_token %}
-            <button type="submit" class="small-link-btn">
-                Confirm & Send VIP Campaign
-            </button>
-        </form>
-
-    {% elif campaign_type == "inactive" %}
-
-        <form method="POST" action="{% url 'send_inactive_campaign' %}">
-            {% csrf_token %}
-            <button type="submit" class="small-link-btn">
-                Confirm & Send Inactive Campaign
-            </button>
-        </form>
-
-    {% elif campaign_type == "review" %}
-
-        <form method="POST" action="{% url 'send_review_campaign' %}">
-            {% csrf_token %}
-            <button type="submit" class="small-link-btn">
-                Confirm & Send Review Campaign
-            </button>
-        </form>
-
-    {% endif %}
-
-</section>
-
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Send campaign</span><h3>Ready to contact these recipients?</h3></div></header>
+        {% if recipient_count %}
+            <p class="reputation-callout {% if campaign_type != 'review' %}is-warning{% endif %}">
+                {% if campaign_type == "review" %}The send action will skip bookings that have received a request since this page was opened.{% else %}The send action will send promotional email to the currently eligible consenting audience. This action contacts real customers.{% endif %}
+            </p>
+            <form method="post" action="{% if campaign_type == 'vip' %}{% url 'send_vip_campaign' %}{% elif campaign_type == 'inactive' %}{% url 'send_inactive_campaign' %}{% else %}{% url 'send_review_campaign' %}{% endif %}" class="reputation-actions" style="margin-top:14px" onsubmit="return confirm('Send this campaign to the eligible recipients?');">
+                {% csrf_token %}
+                <button type="submit" class="reputation-button">{% if campaign_type == "review" %}Send review requests{% else %}Confirm and send campaign{% endif %} · {{ recipient_count }}</button>
+                <a class="reputation-button-secondary" href="{% url 'campaign_center' %}">Cancel</a>
+            </form>
+        {% else %}
+            <div class="reputation-empty"><strong>Nothing to send</strong>There are no eligible recipients in this audience.</div>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

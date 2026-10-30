@@ -1,23 +1,26 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Create purchase order | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Create purchase order{% endblock %}
+{% block page_subtitle %}Choose a supply and record supplier, quantity and unit cost.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <h1>Create Purchase Order</h1>
-
-    <form method="POST">
-
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Procurement</span><h2>Prepare a supply order.</h2><p>When the delivery arrives, record receipt from the order register to update stock exactly once.</p></div><a class="inventory-button-secondary" href="{% url 'purchase_orders' %}">← Back to orders</a></section>
+    <form method="post" class="inventory-panel">
         {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit" class="btn-fill">
-            Save Order
-        </button>
-
+        {% if form.non_field_errors %}<div class="inventory-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="inventory-form-grid">{% for field in form %}
+            <div class="inventory-field {% if field.name == 'notes' %}full-width{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="helptext">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<span class="inventory-field-error" role="alert">{{ error }}</span>{% endfor %}
+            </div>
+        {% endfor %}</div>
+        <datalist id="active-supplier-names">{% for supplier in active_suppliers %}<option value="{{ supplier.name }}">{% endfor %}</datalist>
+        <div class="inventory-actions" style="margin-top:18px"><button type="submit" class="inventory-button">Save order</button><a href="{% url 'purchase_orders' %}" class="inventory-button-secondary">Cancel</a></div>
     </form>
-
 </div>
-
 {% endblock %}

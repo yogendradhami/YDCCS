@@ -106,6 +106,31 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     margin-bottom: 18px;
 }
 
+.invoice-box .invoice-contact-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 10px 0;
+    color: #4b5563;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.invoice-box .invoice-contact-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    margin-top: 2px;
+    color: #0759c9;
+}
+
+.invoice-box .invoice-contact-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
 .invoice-table {
     width: 100%;
     border-collapse: collapse;
@@ -254,10 +279,22 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
         <div class="invoice-info-grid">
             <div class="invoice-box">
                 <h3>👤 Bill To</h3>
-                <p><strong>{{ invoice.booking.customer.full_name }}</strong></p>
-                <p>📞 {{ invoice.booking.customer.phone }}</p>
-                <p>✉ {{ invoice.booking.customer.email }}</p>
-                <p>📍 {{ invoice.booking.customer.address }}</p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5Z"/></svg></span>
+                    <strong>{{ invoice.booking.customer.full_name }}</strong>
+                </p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.56 3.58.56.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.19 2.46.56 3.58a1 1 0 0 1-.25 1.01l-2.19 2.2Z"/></svg></span>
+                    {{ invoice.booking.customer.phone|default:"Phone not provided" }}
+                </p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg></span>
+                    {{ invoice.booking.customer.email|default:"Email not provided" }}
+                </p>
+                <p class="invoice-contact-line">
+                    <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"/></svg></span>
+                    {{ invoice.booking.customer.address|default:"Address not provided" }}
+                </p>
             </div>
 
             <div class="invoice-box">

@@ -232,6 +232,44 @@
     line-height: 1.8;
 }
 
+.invoice-email-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    margin-top: 22px;
+    padding: 16px 18px;
+    border: 1px solid #cfe4e1;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f1faf8, #f8fbfc);
+}
+
+.invoice-email-option input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    flex: 0 0 auto;
+    margin: 2px 0 0;
+    accent-color: #0f766e;
+}
+
+.invoice-email-option label {
+    margin: 0;
+    color: #173c42;
+    font-size: 14px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.invoice-email-option p {
+    margin: 5px 0 0;
+    color: #647b82;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.invoice-email-option .invoice-email-warning {
+    color: #8a5a17;
+}
+
 @media(max-width:700px) {
 
     .invoice-form-grid {
@@ -500,6 +538,28 @@
                         </div>
                     </template>
                 </section>
+
+                {% if not is_edit %}
+                    <section class="invoice-email-option">
+                        <input
+                            type="checkbox"
+                            id="send-invoice-email"
+                            name="send_invoice_email"
+                            value="on"
+                            {% if send_invoice_email_requested %}checked{% endif %}
+                        >
+                        <div>
+                            <label for="send-invoice-email">Email this invoice to the customer after creation</label>
+                            <p>
+                                Leave this unchecked to save the invoice without emailing it.
+                                When selected, the invoice PDF is sent to the email address on the linked customer record.
+                            </p>
+                            {% if not form.booking.value %}
+                                <p class="invoice-email-warning">Select a booking with a customer email address before sending.</p>
+                            {% endif %}
+                        </div>
+                    </section>
+                {% endif %}
 
                 {% if form.amount.errors %}<div class="invoice-errors">{{ form.amount.errors }}</div>{% endif %}
                 {% if form.non_field_errors %}<div class="invoice-errors">{{ form.non_field_errors }}</div>{% endif %}

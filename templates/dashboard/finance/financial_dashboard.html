@@ -1,442 +1,227 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Financial Dashboard{% endblock %}
+{% block title %}Financial overview | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
 
-{% block page_title %}
-Financial Dashboard
-{% endblock %}
-
-{% block page_subtitle %}
-Revenue, invoices, payroll and profit overview.
-{% endblock %}
+{% block page_title %}Financial overview{% endblock %}
+{% block page_subtitle %}A clear view of cash collected, outstanding invoices, costs and business performance.{% endblock %}
 
 {% block content %}
+<div class="finance-page">
+    {% include "dashboard/finance/_finance_nav.html" %}
 
-<div class="crm-summary-grid">
+    <section class="finance-hero">
+        <div class="finance-hero-copy">
+            <span class="finance-eyebrow">Finance workspace · {{ today|date:"j F Y" }}</span>
+            <h2>Know where your business stands.</h2>
+            <p>Revenue is based on paid invoices. Cost and profit figures shown here are operational estimates for the current calendar year.</p>
+        </div>
+        <div class="finance-hero-actions">
+            <a class="finance-button" href="{% url 'add_expense' %}">＋ Add expense</a>
+            <a class="finance-button-secondary" href="{% url 'invoice_list' %}">View invoices</a>
+        </div>
+    </section>
 
-    <div class="crm-card">
-        <span>Today Revenue</span>
-        <h2>${{ today_revenue }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric">
+            <span class="finance-metric-label">Revenue · today</span>
+            <strong class="finance-metric-value">${{ today_revenue|floatformat:2 }}</strong>
+            <small class="finance-metric-foot">Paid invoices</small>
+        </article>
+        <article class="finance-metric">
+            <span class="finance-metric-label">Revenue · this week</span>
+            <strong class="finance-metric-value">${{ week_revenue|floatformat:2 }}</strong>
+            <small class="finance-metric-foot">Monday to today</small>
+        </article>
+        <article class="finance-metric">
+            <span class="finance-metric-label">Revenue · this month</span>
+            <strong class="finance-metric-value">${{ month_revenue|floatformat:2 }}</strong>
+            <small class="finance-metric-foot">Month to date</small>
+        </article>
+        <article class="finance-metric">
+            <span class="finance-metric-label">Revenue · {{ today|date:"Y" }}</span>
+            <strong class="finance-metric-value">${{ year_revenue|floatformat:2 }}</strong>
+            <small class="finance-metric-foot">Year to date</small>
+        </article>
     </div>
 
-    <div class="crm-card">
-        <span>This Week</span>
-        <h2>${{ week_revenue }}</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric">
+            <span class="finance-metric-label">Paid invoices</span>
+            <strong class="finance-metric-value">{{ paid_invoices }}</strong>
+            <small class="finance-metric-foot">All-time count</small>
+        </article>
+        <article class="finance-metric">
+            <span class="finance-metric-label">Unpaid invoices</span>
+            <strong class="finance-metric-value">{{ unpaid_invoices }}</strong>
+            <small class="finance-metric-foot">{{ due_this_week }} due in the next 7 days</small>
+        </article>
+        <article class="finance-metric is-negative">
+            <span class="finance-metric-label">Overdue invoices</span>
+            <strong class="finance-metric-value">{{ overdue_invoices }}</strong>
+            <small class="finance-metric-foot">Needs follow-up</small>
+        </article>
+        <article class="finance-metric">
+            <span class="finance-metric-label">Outstanding balance</span>
+            <strong class="finance-metric-value">${{ outstanding_balance|floatformat:2 }}</strong>
+            <small class="finance-metric-foot">Excludes paid and cancelled invoices</small>
+        </article>
     </div>
 
-    <div class="crm-card">
-        <span>This Month</span>
-        <h2>${{ month_revenue }}</h2>
+    <div class="finance-grid">
+        <section class="finance-panel span-8">
+            <header class="finance-panel-heading">
+                <div>
+                    <span class="finance-overline">Performance</span>
+                    <h3>Paid revenue by day</h3>
+                    <p>Current calendar year</p>
+                </div>
+                <a class="finance-button-secondary" href="{% url 'finance_trends' %}">Explore trends</a>
+            </header>
+            <div class="finance-chart-wrap"><canvas id="revenueChart" aria-label="Daily paid revenue chart"></canvas></div>
+        </section>
+        <section class="finance-panel span-4">
+            <header class="finance-panel-heading">
+                <div>
+                    <span class="finance-overline">Customer mix</span>
+                    <h3>Top customers</h3>
+                    <p>Ranked by recorded revenue</p>
+                </div>
+            </header>
+            <div class="finance-chart-wrap"><canvas id="customerChart" aria-label="Top customers by recorded revenue"></canvas></div>
+        </section>
     </div>
 
-    <div class="crm-card">
-        <span>This Year</span>
-        <h2>${{ year_revenue }}</h2>
-    </div>
+    <section class="finance-panel">
+        <header class="finance-panel-heading">
+            <div>
+                <span class="finance-overline">Collections</span>
+                <h3>Outstanding invoices</h3>
+                <p>Search this list and send a reminder or open the invoice details.</p>
+            </div>
+            <a class="finance-button-secondary" href="{% url 'invoice_list' %}">Invoice register</a>
+        </header>
+        <div class="finance-filter-bar" aria-label="Filter outstanding invoices">
+            <div class="finance-filter-field">
+                <label for="invoiceSearch">Search</label>
+                <input type="search" id="invoiceSearch" placeholder="Invoice or customer">
+            </div>
+            <div class="finance-filter-field">
+                <label for="statusFilter">Status</label>
+                <select id="statusFilter">
+                    <option value="">All statuses</option>
+                    <option value="draft">Draft</option>
+                    <option value="sent">Sent</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="finance-filter-field">
+                <label for="amountFilter">Invoice total</label>
+                <select id="amountFilter">
+                    <option value="">Any amount</option>
+                    <option value="low">Under $500</option>
+                    <option value="medium">$500–$2,000</option>
+                    <option value="high">Over $2,000</option>
+                </select>
+            </div>
+        </div>
+        <div class="finance-table-wrap">
+            <table class="finance-table" id="invoiceTable">
+                <thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th>Status</th><th class="numeric">Total</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for invoice in recent_outstanding_invoices %}
+                        <tr data-status="{{ invoice.status }}" data-amount="{{ invoice.total_amount|floatformat:2 }}">
+                            <td><strong>{{ invoice.invoice_number }}</strong></td>
+                            <td>{{ invoice.booking.customer.full_name|default:"No customer" }}</td>
+                            <td>{% if invoice.due_date %}{{ invoice.due_date|date:"j M Y" }}{% else %}Not set{% endif %}</td>
+                            <td><span class="finance-status is-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
+                            <td class="numeric"><strong>${{ invoice.total_amount|floatformat:2 }}</strong></td>
+                            <td>
+                                <div class="finance-inline-actions">
+                                    <a class="finance-button-secondary" href="{% url 'invoice_detail' invoice.id %}">Open</a>
+                                    {% if invoice.status == "sent" or invoice.status == "overdue" %}
+                                        <form method="post" action="{% url 'send_invoice_reminder' invoice.id %}">
+                                            {% csrf_token %}
+                                            <button class="finance-button-secondary" type="submit">Remind</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6"><div class="finance-empty-state"><strong>All caught up</strong>No outstanding invoices were found.</div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 
+    <div class="finance-grid">
+        <section class="finance-panel span-6">
+            <header class="finance-panel-heading">
+                <div><span class="finance-overline">Year to date</span><h3>Operating snapshot</h3></div>
+                <a class="finance-button-secondary" href="{% url 'profit_loss_dashboard' %}">Full profit &amp; loss</a>
+            </header>
+            <div class="finance-kv">
+                <span>Paid invoice revenue</span><strong>${{ year_revenue|floatformat:2 }}</strong>
+                <span>Payroll cost</span><strong>−${{ payroll_total|floatformat:2 }}</strong>
+                <span>Business expenses</span><strong>−${{ year_expenses|floatformat:2 }}</strong>
+                <span><b>Estimated operating profit</b></span><strong>${{ estimated_profit|floatformat:2 }}</strong>
+            </div>
+        </section>
+        <section class="finance-panel span-6">
+            <header class="finance-panel-heading">
+                <div><span class="finance-overline">Shortcuts</span><h3>Finance tools</h3></div>
+            </header>
+            <div class="finance-inline-actions">
+                <a class="finance-button-secondary" href="{% url 'expense_list' %}">Manage expenses</a>
+                <a class="finance-button-secondary" href="{% url 'gst_report' %}">Review GST</a>
+                <a class="finance-button-secondary" href="{% url 'job_profitability_dashboard' %}">Job profitability</a>
+                <a class="finance-button-secondary" href="{% url 'finance_trends' %}">Monthly trends</a>
+            </div>
+        </section>
+    </div>
 </div>
 
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Paid Invoices</span>
-        <h2>{{ paid_invoices }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Unpaid Invoices</span>
-        <h2>{{ unpaid_invoices }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Overdue Invoices</span>
-        <h2>{{ overdue_invoices }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Due This Week</span>
-        <h2>{{ due_this_week }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Outstanding Balance</span>
-        <h2>${{ outstanding_balance }}</h2>
-    </div>
-
-</div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Payroll</span>
-        <h2>${{ payroll_total }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Estimated Profit</span>
-        <h2>${{ estimated_profit }}</h2>
-    </div>
-
-</div>
-
-<style>
-.invoice-filter-panel {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin: 20px 0;
-    padding: 18px;
-    background: #f8fafc;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-}
-
-.invoice-filter-panel input,
-.invoice-filter-panel select {
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    min-width: 210px;
-}
-
-.invoice-table-wrap {
-    overflow-x: auto;
-    border-radius: 16px;
-    border: 1px solid #e5e7eb;
-}
-
-.invoice-modern-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.invoice-modern-table th {
-    background: #0f172a;
-    color: white;
-    padding: 15px;
-    text-align: left;
-    font-size: 14px;
-}
-
-.invoice-modern-table td {
-    padding: 15px;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 14px;
-}
-
-.invoice-modern-table tr:hover {
-    background: #f8fafc;
-}
-
-.invoice-pill {
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    display: inline-block;
-}
-
-.pill-overdue {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.pill-sent {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.pill-draft {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-.invoice-total {
-    font-weight: 800;
-    color: #0f766e;
-}
-
-.view-btn-small {
-    padding: 8px 14px;
-    border-radius: 8px;
-    background: #2563eb;
-    color: white;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 13px;
-}
-
-.view-btn-small:hover {
-    background: #1d4ed8;
-}
-</style>
-
-<div class="crm-summary-grid" style="margin-top:30px;">
-
-    <div class="crm-card">
-        <h3>Revenue Trend</h3>
-
-        <canvas id="revenueChart"
-                style="width:100%;height:320px;">
-        </canvas>
-    </div>
-
-    <div class="crm-card">
-        <h3>Top Customers</h3>
-
-        <canvas id="customerChart"
-                style="width:100%;height:320px;">
-        </canvas>
-    </div>
-
-</div>
-
-<section class="crm-panel" style="margin-top: 30px;">
-
-    <div class="section-title">
-        <h3>Outstanding Invoices</h3>
-        <p>Search, filter and manage unpaid invoices.</p>
-    </div>
-
-    <div class="invoice-filter-panel">
-        <input type="text" id="invoiceSearch" placeholder="Search invoice or customer...">
-
-        <select id="statusFilter">
-            <option value="">All Status</option>
-            <option value="draft">Draft</option>
-            <option value="sent">Sent</option>
-            <option value="overdue">Overdue</option>
-        </select>
-
-        <select id="amountFilter">
-            <option value="">All Amounts</option>
-            <option value="low">Below $500</option>
-            <option value="medium">$500 - $2000</option>
-            <option value="high">Above $2000</option>
-        </select>
-    </div>
-
-    <div class="invoice-table-wrap">
-
-        <table class="invoice-modern-table" id="invoiceTable">
-
-            <thead>
-                <tr>
-                    <th>Invoice</th>
-                    <th>Customer</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for invoice in recent_outstanding_invoices %}
-
-                <tr
-                    data-status="{{ invoice.status }}"
-                    data-amount="{{ invoice.total_amount|floatformat:2 }}"
-                >
-                    <td>
-                        <strong>{{ invoice.invoice_number }}</strong>
-                    </td>
-
-                    <td>
-                        {{ invoice.booking.customer.full_name }}
-                    </td>
-
-                    <td>
-                        {{ invoice.due_date }}
-                    </td>
-
-                    <td>
-                        {% if invoice.status == "overdue" %}
-                            <span class="invoice-pill pill-overdue">Overdue</span>
-                        {% elif invoice.status == "sent" %}
-                            <span class="invoice-pill pill-sent">Sent</span>
-                        {% elif invoice.status == "draft" %}
-                            <span class="invoice-pill pill-draft">Draft</span>
-                        {% else %}
-                            <span class="invoice-pill pill-draft">
-                                {{ invoice.get_status_display }}
-                            </span>
-                        {% endif %}
-                    </td>
-
-                    <td class="invoice-total">
-                        ${{ invoice.total_amount|floatformat:2 }}
-                    </td>
-
-
-
-                    <td style="display:flex; gap:8px;">
-
-                        <a href="{% url 'invoice_detail' invoice.id %}" class="view-btn-small">
-                            View
-                        </a>
-
-                        <form method="POST"
-                            action="{% url 'send_invoice_reminder' invoice.id %}"
-                            style="display:inline;">
-                            {% csrf_token %}
-
-                            <button type="submit" class="view-btn-small">
-                                Send Reminder
-                            </button>
-                        </form>
-
-                    </td>
-
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-                    <td colspan="6">
-                        No outstanding invoices found.
-                    </td>
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+{{ revenue_labels|json_script:"finance-revenue-labels" }}
+{{ revenue_values|json_script:"finance-revenue-values" }}
+{{ customer_labels|json_script:"finance-customer-labels" }}
+{{ customer_values|json_script:"finance-customer-values" }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("invoiceSearch");
-    const statusFilter = document.getElementById("statusFilter");
-    const amountFilter = document.getElementById("amountFilter");
-    const rows = document.querySelectorAll("#invoiceTable tbody tr");
-
-    function filterTable() {
-        const searchText = searchInput.value.toLowerCase();
-        const selectedStatus = statusFilter.value;
-        const selectedAmount = amountFilter.value;
-
-        rows.forEach(function (row) {
-            const rowText = row.innerText.toLowerCase();
-            const rowStatus = row.getAttribute("data-status");
-            const rowAmount = parseFloat(row.getAttribute("data-amount")) || 0;
-
-            let showRow = true;
-
-            if (searchText && !rowText.includes(searchText)) {
-                showRow = false;
-            }
-
-            if (selectedStatus && rowStatus !== selectedStatus) {
-                showRow = false;
-            }
-
-            if (selectedAmount === "low" && rowAmount >= 500) {
-                showRow = false;
-            }
-
-            if (selectedAmount === "medium" && (rowAmount < 500 || rowAmount > 2000)) {
-                showRow = false;
-            }
-
-            if (selectedAmount === "high" && rowAmount <= 2000) {
-                showRow = false;
-            }
-
-            row.style.display = showRow ? "" : "none";
+    const parse = (id) => JSON.parse(document.getElementById(id).textContent);
+    const labels = parse("finance-revenue-labels");
+    const revenue = parse("finance-revenue-values");
+    const customerLabels = parse("finance-customer-labels");
+    const customerValues = parse("finance-customer-values");
+    const colors = ["#1769aa", "#087e78", "#ef9b43", "#8067b7", "#d76767", "#3b9c9b"];
+    if (window.Chart && document.getElementById("revenueChart")) {
+        new Chart(document.getElementById("revenueChart"), {
+            type: "line",
+            data: { labels, datasets: [{ label: "Revenue", data: revenue, borderColor: "#1769aa", backgroundColor: "rgba(23,105,170,.11)", borderWidth: 3, fill: true, tension: .35, pointRadius: 2 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: (value) => "$" + Number(value).toLocaleString() } }, x: { grid: { display: false }, ticks: { maxTicksLimit: 12 } } } }
         });
     }
-
-    searchInput.addEventListener("keyup", filterTable);
-    statusFilter.addEventListener("change", filterTable);
-    amountFilter.addEventListener("change", filterTable);
+    if (window.Chart && document.getElementById("customerChart")) {
+        new Chart(document.getElementById("customerChart"), {
+            type: "bar",
+            data: { labels: customerLabels, datasets: [{ label: "Recorded revenue", data: customerValues, backgroundColor: customerLabels.map((_, index) => colors[index % colors.length]), borderRadius: 6 }] },
+            options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { callback: (value) => "$" + Number(value).toLocaleString() } }, y: { grid: { display: false } } } }
+        });
+    }
+    const search = document.getElementById("invoiceSearch");
+    const status = document.getElementById("statusFilter");
+    const amount = document.getElementById("amountFilter");
+    const rows = document.querySelectorAll("#invoiceTable tbody tr[data-status]");
+    const filter = () => rows.forEach((row) => {
+        const total = Number.parseFloat(row.dataset.amount) || 0;
+        const matchesText = row.textContent.toLowerCase().includes(search.value.trim().toLowerCase());
+        const matchesStatus = !status.value || row.dataset.status === status.value;
+        const matchesAmount = !amount.value || (amount.value === "low" && total < 500) || (amount.value === "medium" && total >= 500 && total <= 2000) || (amount.value === "high" && total > 2000);
+        row.hidden = !(matchesText && matchesStatus && matchesAmount);
+    });
+    [search, status, amount].forEach((input) => input.addEventListener(input === search ? "input" : "change", filter));
 });
 </script>
-
-<script>
-
-const revenueCtx =
-    document.getElementById("revenueChart");
-
-if (revenueCtx) {
-
-    new Chart(
-        revenueCtx,
-        {
-            type: "line",
-
-            data: {
-                labels: {{ revenue_labels|safe }},
-
-                datasets: [{
-                    label: "Revenue ($)",
-
-                    data: {{ revenue_values|safe }},
-
-                    borderWidth: 3,
-
-                    tension: 0.3,
-
-                    fill: true
-                }]
-            },
-
-            options: {
-                responsive: true,
-
-                plugins: {
-                    legend: {
-                        display: true
-                    }
-                }
-            }
-        }
-    );
-}
-
-
-const customerCtx =
-    document.getElementById("customerChart");
-
-if (customerCtx) {
-
-    new Chart(
-        customerCtx,
-        {
-            type: "bar",
-
-            data: {
-                labels: {{ customer_labels|safe }},
-
-                datasets: [{
-                    label: "Revenue ($)",
-
-                    data: {{ customer_values|safe }},
-
-                    borderWidth: 1
-                }]
-            },
-
-            options: {
-                responsive: true,
-
-                plugins: {
-                    legend: {
-                        display: true
-                    }
-                }
-            }
-        }
-    );
-}
-
-</script>
-
 {% endblock %}

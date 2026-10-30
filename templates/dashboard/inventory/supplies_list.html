@@ -1,81 +1,42 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Cleaning supplies | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Cleaning supplies{% endblock %}
+{% block page_subtitle %}Monitor on-hand stock, reorder thresholds and supply value.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <div class="crm-panel-header">
-
-        <h1>Cleaning Supplies</h1>
-
-        <a href="{% url 'add_supply' %}"
-           class="btn-fill">
-            Add Supply
-        </a>
-
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Stock control</span><h2>Know what’s on the shelf.</h2><p>Keep cleaning essentials visible and reorder before low stock interrupts a scheduled job.</p></div><div class="inventory-actions"><a class="inventory-button-secondary" href="{% url 'add_purchase_order' %}">Create purchase order</a><a class="inventory-button" href="{% url 'add_supply' %}">＋ Add supply</a></div></section>
+    <div class="inventory-metrics">
+        <article class="inventory-metric is-accent"><span class="inventory-metric-label">Supply items</span><strong class="inventory-metric-value">{{ total_supplies }}</strong><small class="inventory-metric-foot">Tracked inventory items</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Low stock</span><strong class="inventory-metric-value">{{ low_stock_count }}</strong><small class="inventory-metric-foot">At or below reorder level</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Units in stock</span><strong class="inventory-metric-value">{{ total_stock_units }}</strong><small class="inventory-metric-foot">Across all tracked items</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Estimated stock value</span><strong class="inventory-metric-value">${{ stock_value|floatformat:2 }}</strong><small class="inventory-metric-foot">On-hand units × recorded unit cost</small></article>
     </div>
-
-    <table class="dashboard-table">
-
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Stock</th>
-                <th>Minimum</th>
-                <th>Status</th>
-                <th>Supplier</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            {% for item in supplies %}
-
-            <tr>
-
-                <td>{{ item.name }}</td>
-
-                <td>{{ item.current_stock }}</td>
-
-                <td>{{ item.minimum_stock }}</td>
-
-                <td>
-
-                    {% if item.current_stock <= item.minimum_stock %}
-
-                        <span class="status-badge danger">
-                            Low Stock
-                        </span>
-
-                    {% else %}
-
-                        <span class="status-badge success">
-                            OK
-                        </span>
-
-                    {% endif %}
-
-                </td>
-
-                <td>{{ item.supplier_name }}</td>
-
-                <td>
-
-                    <a href="{% url 'edit_supply' item.id %}">
-                        Edit
-                    </a>
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
+    {% if not total_supplies %}<div class="inventory-callout"><strong>No supply records exist yet.</strong> The stock counts and value are zero because there are no cleaning-supply records in the current database. Add a supply item to start inventory tracking.</div>{% endif %}
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Stock register</span><h3>Supplies and reorder levels</h3><p>{{ page_obj.paginator.count }} matching items</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="supply-query">Search</label><input id="supply-query" type="search" name="q" value="{{ query }}" placeholder="Supply, category or supplier"></div>
+            <div class="inventory-filter-field"><label for="supply-stock">Stock status</label><select id="supply-stock" name="stock"><option value="">All stock</option><option value="low" {% if stock_filter == "low" %}selected{% endif %}>Low stock</option><option value="healthy" {% if stock_filter == "healthy" %}selected{% endif %}>Above minimum</option></select></div>
+            <div class="inventory-filter-field"><label for="supply-category">Category</label><select id="supply-category" name="category"><option value="">All categories</option>{% for value in categories %}<option value="{{ value }}" {% if category == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></div>
+            <button type="submit" class="inventory-button">Filter stock</button><a class="inventory-button-secondary" href="{% url 'supplies_list' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Supply</th><th>Category</th><th>Current stock</th><th>Minimum</th><th>Unit cost</th><th>Stock value</th><th>Supplier</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{% for item in supplies %}
+                <tr>
+                    <td><strong>{{ item.name }}</strong></td><td>{{ item.category|default:"—" }}</td>
+                    <td>{{ item.current_stock }} {{ item.get_unit_display|lower }}</td><td>{{ item.minimum_stock }}</td>
+                    <td>${{ item.unit_cost|floatformat:2 }}</td><td>${{ item.total_value|floatformat:2 }}</td>
+                    <td>{{ item.supplier_name|default:"—" }}</td>
+                    <td>{% if item.current_stock <= item.minimum_stock %}<span class="inventory-status is-danger">Reorder</span>{% else %}<span class="inventory-status is-good">In stock</span>{% endif %}</td>
+                    <td><a class="inventory-button-secondary" href="{% url 'edit_supply' item.pk %}">Edit</a></td>
+                </tr>
+            {% empty %}<tr><td colspan="9"><div class="inventory-empty"><strong>{% if query or stock_filter or category %}No supplies match these filters{% else %}No supplies have been added{% endif %}</strong>Adjust your filters or add a supply item to populate this register.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Supply pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;stock={{ stock_filter|urlencode }}&amp;category={{ category|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;stock={{ stock_filter|urlencode }}&amp;category={{ category|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
 </div>
-
 {% endblock %}

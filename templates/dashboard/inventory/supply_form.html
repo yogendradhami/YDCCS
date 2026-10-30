@@ -1,34 +1,25 @@
 {% extends "dashboard_base.html" %}
-
-{% block title %}
-{{ title }}
-{% endblock %}
-
+{% load static %}
+{% block title %}{{ title }} | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Maintain item details, stock levels and supplier information.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <div class="crm-panel-header">
-        <div>
-            <h1>{{ title }}</h1>
-            <p>Add or update cleaning supply stock details.</p>
-        </div>
-
-        <a href="{% url 'supplies_list' %}" class="btn-outline">
-            Back to Supplies
-        </a>
-    </div>
-
-    <form method="POST">
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Stock control</span><h2>{% if form.instance.pk %}Update supply item.{% else %}Add a supply to stock.{% endif %}</h2><p>Set the current quantity and minimum reorder threshold to keep stock alerts useful.</p></div><a class="inventory-button-secondary" href="{% url 'supplies_list' %}">← Back to supplies</a></section>
+    <form method="post" class="inventory-panel">
         {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <button type="submit" class="btn-fill">
-            Save Supply
-        </button>
+        {% if form.non_field_errors %}<div class="inventory-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="inventory-form-grid">{% for field in form %}
+            <div class="inventory-field {% if field.name == 'notes' %}full-width{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="helptext">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<span class="inventory-field-error" role="alert">{{ error }}</span>{% endfor %}
+            </div>
+        {% endfor %}</div>
+        <div class="inventory-actions" style="margin-top:18px"><button type="submit" class="inventory-button">Save supply</button><a href="{% url 'supplies_list' %}" class="inventory-button-secondary">Cancel</a></div>
     </form>
-
 </div>
-
 {% endblock %}

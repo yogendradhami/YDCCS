@@ -1,9 +1,11 @@
 import json
 import uuid
 from datetime import timedelta
+from urllib.parse import urlsplit
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count
+from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -44,7 +46,6 @@ def get_or_create_visitor(request):
             browser=get_browser(request),
             operating_system=get_operating_system(request),
         )
-
         visitor.is_returning = False
         visitor.save(update_fields=["is_returning"])
 
@@ -520,7 +521,8 @@ def analytics_dashboard(request):
         - Last 30 days
     """
 
-    now = timezone.now()
+    now = timezone.localtime()
+    today = timezone.localdate(now)
 
     today_start = now.replace(
         hour=0,
@@ -530,10 +532,6 @@ def analytics_dashboard(request):
     )
 
     yesterday_start = today_start - timedelta(days=1)
-
-    seven_days_start = now - timedelta(days=7)
-
-    thirty_days_start = now - timedelta(days=30)
 
     # ======================================================
     # SELECTED PERIOD
@@ -552,17 +550,22 @@ def analytics_dashboard(request):
         period = "today"
 
     if period == "7days":
-        period_start = seven_days_start
+        period_start = today_start - timedelta(days=6)
         period_label = "Last 7 Days"
+        period_days = 7
 
     elif period == "30days":
-        period_start = thirty_days_start
+        period_start = today_start - timedelta(days=29)
         period_label = "Last 30 Days"
+        period_days = 30
 
     else:
         period = "today"
         period_start = today_start
         period_label = "Today"
+        period_days = 1
+
+    previous_period_start = period_start - timedelta(days=period_days)
 
     # ======================================================
     # BASE QUERYSETS
@@ -570,6 +573,11 @@ def analytics_dashboard(request):
 
     period_events = ActivityEvent.objects.filter(
         created_at__gte=period_start,
+        created_at__lt=now,
+    ).exclude(
+        page_url__icontains="/analytics/"
+    ).exclude(
+        page_url__icontains="/admin/"
     )
 
     period_page_views = period_events.filter(
@@ -578,6 +586,7 @@ def analytics_dashboard(request):
 
     period_sessions = VisitorSession.objects.filter(
         started_at__gte=period_start,
+        started_at__lt=now,
     )
 
     # ======================================================
@@ -586,6 +595,17 @@ def analytics_dashboard(request):
 
     visitors_period = (
         period_events
+        .values("visitor_id")
+        .distinct()
+        .count()
+    )
+    previous_period_visitors = (
+        ActivityEvent.objects.filter(
+            created_at__gte=previous_period_start,
+            created_at__lt=period_start,
+        )
+        .exclude(page_url__icontains="/analytics/")
+        .exclude(page_url__icontains="/admin/")
         .values("visitor_id")
         .distinct()
         .count()
@@ -605,6 +625,7 @@ def analytics_dashboard(request):
 
     new_visitors = Visitor.objects.filter(
         first_seen__gte=period_start,
+        first_seen__lt=now,
         is_returning=False,
     ).count()
 
@@ -635,6 +656,8 @@ def analytics_dashboard(request):
 
     total_page_views = ActivityEvent.objects.filter(
         event_type="PAGE_VIEW",
+    ).exclude(page_url__icontains="/analytics/").exclude(
+        page_url__icontains="/admin/"
     ).count()
 
     # ======================================================
@@ -664,6 +687,18 @@ def analytics_dashboard(request):
     booking_completions = period_events.filter(
         event_type="BOOKING_COMPLETE",
     ).count()
+    visitors_with_quote_submission = (
+        period_events.filter(event_type="QUOTE_SUBMIT")
+        .values("visitor_id")
+        .distinct()
+        .count()
+    )
+    visitors_with_booking_completion = (
+        period_events.filter(event_type="BOOKING_COMPLETE")
+        .values("visitor_id")
+        .distinct()
+        .count()
+    )
 
     # ======================================================
     # CONVERSION RATES
@@ -687,13 +722,10 @@ def analytics_dashboard(request):
 
     if visitors_period:
         quote_visitor_rate = round(
-            (quote_submissions / visitors_period) * 100,
-            1,
+            (visitors_with_quote_submission / visitors_period) * 100, 1
         )
-
         booking_visitor_rate = round(
-            (booking_completions / visitors_period) * 100,
-            1,
+            (visitors_with_booking_completion / visitors_period) * 100, 1
         )
     else:
         quote_visitor_rate = 0
@@ -751,6 +783,7 @@ def analytics_dashboard(request):
         SearchEvent.objects
         .filter(
             created_at__gte=period_start,
+            created_at__lt=now,
         )
         .exclude(query="")
         .exclude(page_url__icontains="/analytics/")
@@ -813,6 +846,52 @@ def analytics_dashboard(request):
                 reverse=True,
             )[:10]
         ]
+
+    daily_page_views = {
+        row["day"]: row["total"]
+        for row in period_page_views.annotate(day=TruncDate("created_at"))
+        .values("day")
+        .annotate(total=Count("id"))
+        .order_by("day")
+    }
+    trend_dates = [
+        today - timedelta(days=day_offset)
+        for day_offset in range(period_days - 1, -1, -1)
+    ]
+    trend_max = max(
+        (daily_page_views.get(day, 0) for day in trend_dates),
+        default=0,
+    )
+    traffic_trend = [
+        {
+            "label": day.strftime("%d"),
+            "date": day.strftime("%d %b"),
+            "total": daily_page_views.get(day, 0),
+            "height": (
+                max(4, round(daily_page_views.get(day, 0) / trend_max * 100))
+                if trend_max
+                else 0
+            ),
+        }
+        for day in trend_dates
+    ]
+
+    traffic_source_counts = {}
+    for source, referrer in period_sessions.values_list("utm_source", "referrer"):
+        source = (source or "").strip()
+        try:
+            referrer_host = urlsplit(referrer or "").hostname
+        except ValueError:
+            referrer_host = ""
+        label = source or referrer_host or "Direct / unattributed"
+        traffic_source_counts[label] = traffic_source_counts.get(label, 0) + 1
+    traffic_sources = [
+        {"source": source, "total": total}
+        for source, total in sorted(
+            traffic_source_counts.items(),
+            key=lambda row: (-row[1], row[0].lower()),
+        )[:6]
+    ]
 
     # ======================================================
     # DEVICE BREAKDOWN
@@ -953,13 +1032,17 @@ def analytics_dashboard(request):
             "visitor",
             "session",
         )
+        .filter(
+            created_at__gte=period_start,
+            created_at__lt=now,
+        )
         .exclude(
             page_url__icontains="/analytics/"
         )
         .exclude(
             page_url__icontains="/admin/"
         )
-        .order_by("-created_at")[:20]
+        .order_by("-created_at")[:12]
     )
 
     # ======================================================
@@ -972,6 +1055,8 @@ def analytics_dashboard(request):
             created_at__gte=yesterday_start,
             created_at__lt=today_start,
         )
+        .exclude(page_url__icontains="/analytics/")
+        .exclude(page_url__icontains="/admin/")
         .values("visitor_id")
         .distinct()
         .count()
@@ -986,22 +1071,24 @@ def analytics_dashboard(request):
         event_type="PAGE_VIEW",
         created_at__gte=yesterday_start,
         created_at__lt=today_start,
+    ).exclude(page_url__icontains="/analytics/").exclude(
+        page_url__icontains="/admin/"
     ).count()
 
     # ======================================================
     # VISITOR CHANGE
     # ======================================================
 
-    if visitors_yesterday:
+    if previous_period_visitors:
         visitors_change = round(
             (
-                (visitors_period - visitors_yesterday)
-                / visitors_yesterday
+                (visitors_period - previous_period_visitors)
+                / previous_period_visitors
             ) * 100,
             1,
         )
     else:
-        visitors_change = 100 if visitors_period else 0
+        visitors_change = None
 
     # ======================================================
     # PAGES PER SESSION
@@ -1023,7 +1110,10 @@ def analytics_dashboard(request):
         ActivityEvent.objects
         .filter(
             created_at__gte=today_start,
+            created_at__lt=now,
         )
+        .exclude(page_url__icontains="/analytics/")
+        .exclude(page_url__icontains="/admin/")
         .values("visitor_id")
         .distinct()
         .count()
@@ -1031,41 +1121,51 @@ def analytics_dashboard(request):
 
     today_sessions = VisitorSession.objects.filter(
         started_at__gte=today_start,
+        started_at__lt=now,
     ).count()
 
     today_page_views = ActivityEvent.objects.filter(
         event_type="PAGE_VIEW",
         created_at__gte=today_start,
+        created_at__lt=now,
+    ).exclude(page_url__icontains="/analytics/").exclude(
+        page_url__icontains="/admin/"
     ).count()
 
     today_phone_clicks = ActivityEvent.objects.filter(
         event_type="PHONE_CLICK",
         created_at__gte=today_start,
+        created_at__lt=now,
     ).count()
 
     today_email_clicks = ActivityEvent.objects.filter(
         event_type="EMAIL_CLICK",
         created_at__gte=today_start,
+        created_at__lt=now,
     ).count()
 
     today_quote_starts = ActivityEvent.objects.filter(
         event_type="QUOTE_START",
         created_at__gte=today_start,
+        created_at__lt=now,
     ).count()
 
     today_quote_submissions = ActivityEvent.objects.filter(
         event_type="QUOTE_SUBMIT",
         created_at__gte=today_start,
+        created_at__lt=now,
     ).count()
 
     today_booking_starts = ActivityEvent.objects.filter(
         event_type="BOOKING_START",
         created_at__gte=today_start,
+        created_at__lt=now,
     ).count()
 
     today_booking_completions = ActivityEvent.objects.filter(
         event_type="BOOKING_COMPLETE",
         created_at__gte=today_start,
+        created_at__lt=now,
     ).count()
 
     # ======================================================
@@ -1077,6 +1177,7 @@ def analytics_dashboard(request):
         "selected_period": period,
         "period_label": period_label,
         "period_start": period_start,
+        "period_days": period_days,
 
         # Visitors
         "visitors_today": (
@@ -1089,6 +1190,7 @@ def analytics_dashboard(request):
         "total_visitors": total_visitors,
         "returning_visitors": returning_visitors,
         "visitors_change": visitors_change,
+        "previous_period_visitors": previous_period_visitors,
 
         # Sessions
         "sessions_today": (
@@ -1160,6 +1262,10 @@ def analytics_dashboard(request):
         "popular_pages": popular_pages,
         "popular_clicks": popular_clicks,
         "popular_searches": popular_searches,
+        "traffic_trend": traffic_trend,
+        "traffic_sources": traffic_sources,
+        "visitors_with_quote_submission": visitors_with_quote_submission,
+        "visitors_with_booking_completion": visitors_with_booking_completion,
 
         # Technology
         "device_breakdown": device_breakdown,

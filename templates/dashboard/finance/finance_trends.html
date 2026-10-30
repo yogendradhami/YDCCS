@@ -1,80 +1,78 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Finance Trends{% endblock %}
-
-{% block page_title %}
-Finance Trends Dashboard
-{% endblock %}
-
-{% block page_subtitle %}
-Monthly revenue, expenses, payroll and profit trends for YD Commercial Cleaning Services.
-{% endblock %}
+{% block title %}Finance trends | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Finance trends{% endblock %}
+{% block page_subtitle %}Compare revenue, payroll, expenses and estimated operating performance month by month.{% endblock %}
 
 {% block content %}
+<div class="finance-page">
+    {% include "dashboard/finance/_finance_nav.html" %}
+    <section class="finance-hero">
+        <div class="finance-hero-copy">
+            <span class="finance-eyebrow">Rolling 12 months · {{ period_label }}</span>
+            <h2>See the direction, not just the snapshot.</h2>
+            <p>Monthly totals align collected invoice revenue with recorded expense dates and payroll period end dates.</p>
+        </div>
+        <a class="finance-button-secondary" href="{% url 'financial_dashboard' %}">Back to overview</a>
+    </section>
 
-<section class="crm-panel chart-panel">
-    <div class="crm-panel-header">
-        <h2>Monthly Revenue</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Revenue · 12 months</span><strong class="finance-metric-value">${{ revenue_total|floatformat:2 }}</strong><small class="finance-metric-foot">Paid invoices</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Expenses · 12 months</span><strong class="finance-metric-value">${{ expense_total|floatformat:2 }}</strong><small class="finance-metric-foot">Expense date</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Payroll · 12 months</span><strong class="finance-metric-value">${{ payroll_total|floatformat:2 }}</strong><small class="finance-metric-foot">Payroll period end</small></article>
+        <article class="finance-metric {% if profit_total < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Estimated operating result</span><strong class="finance-metric-value">${{ profit_total|floatformat:2 }}</strong><small class="finance-metric-foot">Revenue less expenses and payroll</small></article>
     </div>
-    <canvas id="revenueChart"></canvas>
-</section>
 
-<section class="crm-panel chart-panel">
-    <div class="crm-panel-header">
-        <h2>Monthly Expenses</h2>
+    <section class="finance-panel">
+        <header class="finance-panel-heading">
+            <div><span class="finance-overline">Monthly comparison</span><h3>Revenue and operating costs</h3><p>All series share the same 12-month timeline; profit excludes estimated bonuses.</p></div>
+            <a class="finance-button-secondary" href="{% url 'profit_loss_dashboard' %}">Annual profit &amp; loss</a>
+        </header>
+        <div class="finance-chart-wrap"><canvas id="financeTrendChart" aria-label="Monthly revenue, expense, payroll and profit chart"></canvas></div>
+        {% if revenue_total == 0 and expense_total == 0 and payroll_total == 0 %}
+            <div class="finance-empty-state"><strong>No finance activity in this period</strong>Charts will populate as paid invoices, payroll and expenses are recorded.</div>
+        {% endif %}
+    </section>
+    <div class="finance-grid" style="margin-top:15px">
+        <section class="finance-panel span-6">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Explore</span><h3>Supporting registers</h3></div></header>
+            <div class="finance-inline-actions">
+                <a class="finance-button-secondary" href="{% url 'expense_list' %}">Expenses</a>
+                <a class="finance-button-secondary" href="{% url 'invoice_list' %}">Invoices</a>
+                <a class="finance-button-secondary" href="{% url 'job_profitability_dashboard' %}">Job profitability</a>
+            </div>
+        </section>
+        <aside class="finance-panel span-6">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Reading the chart</span><h3>Dates matter</h3></div></header>
+            <p class="finance-callout">Revenue is recognized here on the invoice payment date, expenses on their recorded expense date, and payroll on the payroll period end date. Treat this as a management trend view, not a reconciled accounting statement.</p>
+        </aside>
     </div>
-    <canvas id="expenseChart"></canvas>
-</section>
-
-<section class="crm-panel chart-panel">
-    <div class="crm-panel-header">
-        <h2>Monthly Payroll</h2>
-    </div>
-    <canvas id="payrollChart"></canvas>
-</section>
-
-<section class="crm-panel chart-panel">
-    <div class="crm-panel-header">
-        <h2>Monthly Profit</h2>
-    </div>
-    <canvas id="profitChart"></canvas>
-</section>
-
-{{ months|json_script:"finance-months" }}
-{{ revenue_values|json_script:"finance-revenue" }}
-{{ expense_values|json_script:"finance-expenses" }}
-{{ payroll_values|json_script:"finance-payroll" }}
-{{ profit_values|json_script:"finance-profit" }}
-
+</div>
+{{ months|json_script:"trend-months" }}
+{{ revenue_values|json_script:"trend-revenue" }}
+{{ expense_values|json_script:"trend-expenses" }}
+{{ payroll_values|json_script:"trend-payroll" }}
+{{ profit_values|json_script:"trend-profit" }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-const months = JSON.parse(document.getElementById("finance-months").textContent);
-const revenueValues = JSON.parse(document.getElementById("finance-revenue").textContent);
-const expenseValues = JSON.parse(document.getElementById("finance-expenses").textContent);
-const payrollValues = JSON.parse(document.getElementById("finance-payroll").textContent);
-const profitValues = JSON.parse(document.getElementById("finance-profit").textContent);
-
-function createFinanceChart(canvasId, label, data) {
-    new Chart(
-        document.getElementById(canvasId),
-        {
-            type: "bar",
-            data: {
-                labels: months,
-                datasets: [{
-                    label: label,
-                    data: data
-                }]
-            }
-        }
-    );
-}
-
-createFinanceChart("revenueChart", "Revenue", revenueValues);
-createFinanceChart("expenseChart", "Expenses", expenseValues);
-createFinanceChart("payrollChart", "Payroll", payrollValues);
-createFinanceChart("profitChart", "Profit", profitValues);
+    const canvas = document.getElementById("financeTrendChart");
+    if (!window.Chart || !canvas) return;
+    const data = (id) => JSON.parse(document.getElementById(id).textContent);
+    new Chart(canvas, {
+        type: "line",
+        data: {
+            labels: data("trend-months"),
+            datasets: [
+                { label: "Revenue", data: data("trend-revenue"), borderColor: "#1769aa", backgroundColor: "rgba(23,105,170,.10)", fill: true, tension: .32, borderWidth: 3 },
+                { label: "Expenses", data: data("trend-expenses"), borderColor: "#ef9b43", backgroundColor: "rgba(239,155,67,.08)", fill: false, tension: .32, borderWidth: 2 },
+                { label: "Payroll", data: data("trend-payroll"), borderColor: "#8067b7", backgroundColor: "transparent", fill: false, tension: .32, borderWidth: 2 },
+                { label: "Operating result", data: data("trend-profit"), borderColor: "#087e78", backgroundColor: "transparent", fill: false, tension: .32, borderWidth: 2 }
+            ]
+        },
+        options: { maintainAspectRatio: false, interaction: { intersect: false, mode: "index" }, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: { callbacks: { label: (context) => `${context.dataset.label}: $${Number(context.parsed.y).toLocaleString(undefined, { minimumFractionDigits: 2 })}` } }, scales: { y: { ticks: { callback: (value) => "$" + Number(value).toLocaleString() } }, x: { grid: { display: false } } } }
+    });
 });
 </script>
-
 {% endblock %}

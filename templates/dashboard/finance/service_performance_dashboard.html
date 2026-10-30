@@ -1,166 +1,38 @@
-{% extends 'dashboard_base.html' %}
-
-{% block title %}Service Performance{% endblock %}
-
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Service performance | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Service performance{% endblock %}
+{% block page_subtitle %}Compare completed job volume and quoted value by service type.{% endblock %}
 {% block content %}
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Revenue by Service</h2>
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Completed jobs only</span><h2>Understand which services are driving work.</h2><p>Revenue figures represent completed bookings' quoted values, not cash collected or net profit.</p></div><div class="finance-hero-actions"><a class="finance-button-secondary" href="{% url 'job_profitability_dashboard' %}">Job finance</a></div></section>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Completed jobs</span><strong class="finance-metric-value">{{ total_completed_jobs }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Completed-job quoted value</span><strong class="finance-metric-value">${{ total_completed_revenue|floatformat:2 }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Average job value</span><strong class="finance-metric-value">${{ average_job_value|floatformat:2 }}</strong></article>
     </div>
-
-    <div style="height:400px;">
-        <canvas id="serviceRevenueChart"></canvas>
-    
+    <div class="finance-grid">
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Service mix</span><h3>Quoted value by service</h3></div></header><div style="height:300px"><canvas id="serviceRevenueChart" aria-label="Quoted value by service"></canvas></div></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Trend</span><h3>Completed-job quoted value by month</h3></div></header><div style="height:300px"><canvas id="monthlyRevenueChart" aria-label="Completed-job quoted value by month"></canvas></div></section>
     </div>
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Monthly Revenue Trend</h2>
-    </div>
-
-    <div style="height:400px;">
-        <canvas id="monthlyRevenueChart"></canvas>
-    </div>
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Service Performance</h2>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Service</th>
-                    <th>Total Jobs</th>
-                    <th>Total Revenue</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for row in service_rows %}
-
-                <tr>
-                    <td>{{ row.service }}</td>
-                    <td>{{ row.jobs }}</td>
-                    <td>${{ row.revenue }}</td>
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-
+    <section class="finance-panel"><header class="finance-panel-heading"><div><span class="finance-overline">Breakdown</span><h3>Service results</h3></div></header><div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Service</th><th class="numeric">Completed jobs</th><th class="numeric">Quoted value</th></tr></thead><tbody>{% for row in service_rows %}<tr><td>{{ row.service_type }}</td><td class="numeric">{{ row.jobs }}</td><td class="numeric">${{ row.revenue|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="3"><div class="finance-empty-state"><strong>No completed bookings yet</strong>Service performance will appear once jobs are completed.</div></td></tr>{% endfor %}</tbody></table></div></section>
+</div>
+{{ service_labels|json_script:"service-chart-labels" }}{{ service_revenues|json_script:"service-chart-values" }}
+{{ revenue_labels|json_script:"service-month-labels" }}{{ revenue_values|json_script:"service-month-values" }}
 <script>
-
-const ctx = document.getElementById(
-    "serviceRevenueChart"
-);
-
-new Chart(ctx, {
-
-    type: "bar",
-
-    data: {
-
-        labels: [
-            {% for item in service_labels %}
-                "{{ item }}",
-            {% endfor %}
-        ],
-
-        datasets: [{
-            label: "Revenue ($)",
-
-            data: [
-                {% for item in service_revenues %}
-                    {{ item }},
-                {% endfor %}
-            ]
-        }]
-    },
-
-    options: {
-
-        responsive: true,
-
-        maintainAspectRatio: false,
-
-        plugins: {
-
-            legend: {
-                display: true
-            }
-
-        }
-
-    }
-
+document.addEventListener("DOMContentLoaded", function () {
+    if (!window.Chart) return;
+    const read = (id) => JSON.parse(document.getElementById(id).textContent);
+    const charts = [
+        ["serviceRevenueChart", "service-chart-labels", "service-chart-values", "Quoted job value ($)", "bar"],
+        ["monthlyRevenueChart", "service-month-labels", "service-month-values", "Quoted job value ($)", "line"]
+    ];
+    charts.forEach(([canvasId, labelsId, valuesId, label, type]) => {
+        const canvas = document.getElementById(canvasId);
+        if (canvas) new Chart(canvas, {type, data: {labels: read(labelsId), datasets: [{label, data: read(valuesId), borderColor: "#087e78", backgroundColor: "rgba(8,126,120,.16)", tension: .3}]}, options: {responsive: true, maintainAspectRatio: false}});
+    });
 });
-
 </script>
-
-<script>
-
-const revenueCtx = document.getElementById(
-    "monthlyRevenueChart"
-);
-
-new Chart(revenueCtx, {
-
-    type: "line",
-
-    data: {
-
-        labels: [
-            {% for item in revenue_labels %}
-                "{{ item }}",
-            {% endfor %}
-        ],
-
-        datasets: [{
-
-            label: "Monthly Revenue",
-
-            data: [
-                {% for item in revenue_values %}
-                    {{ item }},
-                {% endfor %}
-            ],
-
-            fill: false
-
-        }]
-
-    },
-
-    options: {
-
-        responsive: true,
-
-        maintainAspectRatio: false
-
-    }
-
-});
-
-</script>
-
 {% endblock %}

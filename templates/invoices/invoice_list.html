@@ -1,4 +1,5 @@
 {% extends 'dashboard_base.html' %}
+{% load static %}
 
 {% block title %}Financial Operations | YD Commercial Cleaning{% endblock %}
 
@@ -624,8 +625,22 @@
     }
 </style>
 
+<link rel="stylesheet" href="{% static 'css/dashboard/invoice-register.css' %}">
 
 <div class="invoice-page">
+
+    <section class="invoice-register-hero">
+        <div>
+            <span>FINANCE / ACCOUNTS RECEIVABLE</span>
+            <h1>Invoice register</h1>
+            <p>A clear view of customer billing, payment progress, and outstanding balances.</p>
+        </div>
+        <div class="invoice-register-hero-total">
+            <span>Portfolio value</span>
+            <strong>${{ stats.total_invoiced|default:"0.00"|floatformat:2 }}</strong>
+            <small>{{ stats.invoice_count|default:"0" }} active invoices</small>
+        </div>
+    </section>
 
     <!-- =====================================================
          TOP ACTIONS

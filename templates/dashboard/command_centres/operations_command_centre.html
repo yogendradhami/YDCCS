@@ -1,156 +1,32 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Operations centre | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Operations centre{% endblock %}
+{% block page_subtitle %}Surface work allocation, service schedules, stock, purchasing and unpaid invoices.{% endblock %}
 {% block content %}
-
-<h1>Operations Command Centre</h1>
-
-<div class="dashboard-card">
-
-    <h2>Overdue Equipment</h2>
-
-    <p>{{ overdue_equipment.count }}</p>
-
-    <ul>
-
-    {% for item in overdue_equipment|slice:":5" %}
-
-        <li>
-            {{ item.name }}
-        </li>
-
-    {% empty %}
-
-        <li>No overdue equipment</li>
-
-    {% endfor %}
-
-    </ul>
-
-    <a href="/dashboard/equipment/">
-        View Equipment
-    </a>
-
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Daily operations · {{ today|date:"j F Y" }}</span><h2>Keep jobs and assets moving.</h2><p>These registers show current open tasks. Use each action to continue in the relevant dashboard workflow.</p></div><div class="finance-hero-actions"><a class="finance-button-secondary" href="{% url 'owner_alert_centre' %}">Owner alerts</a></div></section>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Unassigned future jobs</span><strong class="finance-metric-value">{{ unassigned_jobs.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Open purchase orders</span><strong class="finance-metric-value">{{ open_purchase_orders.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Outstanding invoices</span><strong class="finance-metric-value">{{ outstanding_invoices.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Low-stock supplies</span><strong class="finance-metric-value">{{ low_stock_supplies.count }}</strong></article>
+    </div>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Equipment service overdue</span><strong class="finance-metric-value">{{ overdue_equipment.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Equipment due within 30 days</span><strong class="finance-metric-value">{{ upcoming_equipment.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Vehicle service overdue</span><strong class="finance-metric-value">{{ vehicles_due_service.count }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Vehicle due within 30 days</span><strong class="finance-metric-value">{{ vehicles_due_soon.count }}</strong></article>
+    </div>
+    <div class="finance-grid">
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Job allocation</span><h3>Upcoming unassigned bookings</h3></div><a class="finance-button-secondary" href="{% url 'booking_list' %}">Bookings</a></header><div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Date</th><th>Customer</th><th>Service</th></tr></thead><tbody>{% for booking in unassigned_jobs|slice:":8" %}<tr><td>{{ booking.booking_date|date:"j M Y" }}</td><td>{{ booking.customer.full_name|default:"No customer" }}</td><td>{{ booking.get_service_type_display|default:booking.service_type }}</td></tr>{% empty %}<tr><td colspan="3"><div class="finance-empty-state"><strong>All future jobs are assigned</strong>New unassigned work will appear here.</div></td></tr>{% endfor %}</tbody></table></div></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Accounts receivable</span><h3>Outstanding invoices</h3></div><a class="finance-button-secondary" href="{% url 'invoice_list' %}">Invoices</a></header><div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th class="numeric">Amount</th></tr></thead><tbody>{% for invoice in outstanding_invoices|slice:":8" %}<tr><td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td><td>{{ invoice.booking.customer.full_name|default:"No customer" }}</td><td>{{ invoice.due_date|date:"j M Y"|default:"—" }}</td><td class="numeric">${{ invoice.total_amount|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="4"><div class="finance-empty-state"><strong>No outstanding invoices</strong>Unpaid invoices will appear here.</div></td></tr>{% endfor %}</tbody></table></div></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Maintenance</span><h3>Equipment service</h3></div><a class="finance-button-secondary" href="{% url 'equipment_list' %}">Equipment register</a></header><ul class="finance-record-list">{% for item in overdue_equipment|slice:":5" %}<li><strong>{{ item.name }}</strong><span>Overdue · {{ item.next_service_date|date:"j M Y" }}</span></li>{% endfor %}{% for item in upcoming_equipment|slice:":5" %}<li><strong>{{ item.name }}</strong><span>Due {{ item.next_service_date|date:"j M Y" }}</span></li>{% empty %}{% if not overdue_equipment %}<li>No equipment service due.</li>{% endif %}{% endfor %}</ul></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Fleet</span><h3>Vehicle servicing</h3></div><a class="finance-button-secondary" href="{% url 'vehicle_list' %}">Vehicle register</a></header><ul class="finance-record-list">{% for vehicle in vehicles_due_service|slice:":5" %}<li><strong>{{ vehicle.vehicle_name }}</strong><span>{{ vehicle.registration_number }} · overdue {{ vehicle.service_due_date|date:"j M Y" }}</span></li>{% endfor %}{% for vehicle in vehicles_due_soon|slice:":5" %}<li><strong>{{ vehicle.vehicle_name }}</strong><span>{{ vehicle.registration_number }} · due {{ vehicle.service_due_date|date:"j M Y" }}</span></li>{% empty %}{% if not vehicles_due_service %}<li>No vehicle service due.</li>{% endif %}{% endfor %}</ul></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Inventory</span><h3>Low-stock supplies</h3></div><a class="finance-button-secondary" href="{% url 'supplies_list' %}">Supplies</a></header><ul class="finance-record-list">{% for item in low_stock_supplies|slice:":8" %}<li><strong>{{ item.name }}</strong><span>{{ item.current_stock }} {{ item.get_unit_display }} · minimum {{ item.minimum_stock }}</span></li>{% empty %}<li>Stock levels are healthy.</li>{% endfor %}</ul></section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Procurement</span><h3>Open purchase orders</h3></div><a class="finance-button-secondary" href="{% url 'purchase_orders' %}">Purchase orders</a></header><ul class="finance-record-list">{% for po in open_purchase_orders|slice:":8" %}<li><strong>PO #{{ po.pk }} · {{ po.supplier_name }}</strong><span>{{ po.get_status_display }} · {{ po.quantity }} × {{ po.supply.name }}</span></li>{% empty %}<li>No open purchase orders.</li>{% endfor %}</ul></section>
+    </div>
 </div>
-
-<div class="dashboard-card">
-
-    <h2>Vehicles Due Service</h2>
-
-    <p>{{ vehicles_due_service.count }}</p>
-
-    <ul>
-
-    {% for vehicle in vehicles_due_service|slice:":5" %}
-
-        <li>
-            {{ vehicle.name }}
-        </li>
-
-    {% empty %}
-
-        <li>No vehicles due</li>
-
-    {% endfor %}
-
-    </ul>
-
-    <a href="/dashboard/vehicles/">
-        View Vehicles
-    </a>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Low Stock Supplies</h2>
-
-    <p>{{ low_stock_supplies.count }}</p>
-
-    <ul>
-
-    {% for item in low_stock_supplies|slice:":5" %}
-
-        <li>
-            {{ item.name }}
-            ({{ item.current_stock }})
-        </li>
-
-    {% empty %}
-
-        <li>No low stock items</li>
-
-    {% endfor %}
-
-    </ul>
-
-    <a href="/dashboard/supplies/">
-        View Supplies
-    </a>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Draft Purchase Orders</h2>
-
-    <p>{{ draft_purchase_orders.count }}</p>
-
-    <ul>
-
-    {% for po in draft_purchase_orders|slice:":5" %}
-
-        <li>
-            {{ po.supplier }}
-        </li>
-
-    {% empty %}
-
-        <li>No draft orders</li>
-
-    {% endfor %}
-
-    </ul>
-
-    <a href="/dashboard/purchase-orders/">
-        View Purchase Orders
-    </a>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Outstanding Invoices</h2>
-
-    <p>{{ outstanding_invoices.count }}</p>
-
-    <ul>
-
-    {% for invoice in outstanding_invoices|slice:":5" %}
-
-        <li>
-            {{ invoice.invoice_number }}
-        </li>
-
-    {% empty %}
-
-        <li>No outstanding invoices</li>
-
-    {% endfor %}
-
-    </ul>
-
-    <a href="/invoices/">
-        View Invoices
-    </a>
-
-</div>
-
-<div class="dashboard-card">
-
-    <h2>Unassigned Jobs</h2>
-
-    <p>{{ unassigned_jobs.count }}</p>
-
-</div>
-
 {% endblock %}

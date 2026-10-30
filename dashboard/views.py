@@ -11,7 +11,7 @@ def create_activity_log(user, action_type, title, description=""):
 from datetime import timedelta
 import csv
 from collections import defaultdict
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from functools import wraps
 
@@ -35,7 +35,7 @@ from urllib.parse import quote as urlquote, urlencode
 from django.db.models import Avg, Count, DecimalField, ExpressionWrapper, F, Max, Q, Sum
 from django.core.paginator import Paginator
 from django.db.models.functions import TruncDate, TruncMonth
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -56,6 +56,10 @@ from employees.forms import (
     PropertyDamageReportReplyForm,
 )
 from employees.models import Employee, PropertyDamageReport
+from employees.damage_report_chat import (
+    conversation_response,
+    update_report_presence,
+)
 from employees.services import create_employee_from_form
 from expenses.models import Expense
 from gallery.forms import GalleryItemForm
@@ -159,6 +163,11 @@ def dashboard_home(request):
     week_start = today - timedelta(days=7)
     overdue_date = today - timedelta(days=2)
     month_start = today.replace(day=1)
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
 
     vehicle_metrics = Vehicle.objects.aggregate(
         active=Count("pk", filter=Q(status="active")),
@@ -2282,8 +2291,11 @@ def send_invoice_email(request, invoice):
 
     if invoice.status not in {"paid", "cancelled"}:
         try:
+            Invoice.objects.filter(pk=invoice.pk).update(
+                status="sent",
+                updated_at=timezone.now(),
+            )
             invoice.status = "sent"
-            invoice.save(update_fields=["status", "updated_at"])
         except Exception:
             logger.exception(
                 "Invoice email was sent but invoice status could not "
@@ -2507,7 +2519,7 @@ def gallery_list(request):
 def property_damage_report_list(request):
     reports = (
         PropertyDamageReport.objects
-        .select_related("employee", "booking")
+        .select_related("employee__user", "booking", "closed_by")
         .prefetch_related("images", "replies__responder")
         .order_by("-created_at")
     )
@@ -2524,6 +2536,12 @@ def property_damage_report_list(request):
         {
             "page_obj": page_obj,
             "report_count": reports.count(),
+            "open_report_count": reports.filter(
+                status=PropertyDamageReport.STATUS_OPEN
+            ).count(),
+            "closed_report_count": reports.filter(
+                status=PropertyDamageReport.STATUS_CLOSED
+            ).count(),
             "today_report_count": reports.filter(
                 created_at__date=timezone.localdate()
             ).count(),
@@ -2539,6 +2557,73 @@ def property_damage_report_list(request):
 
 @admin_required
 @require_POST
+def property_damage_report_set_status(request, report_id):
+    with transaction.atomic():
+        report = get_object_or_404(
+            PropertyDamageReport.objects.select_for_update(),
+            pk=report_id,
+        )
+        if report.status == PropertyDamageReport.STATUS_OPEN:
+            report.status = PropertyDamageReport.STATUS_CLOSED
+            report.closed_at = timezone.now()
+            report.closed_by = request.user
+            action = "closed"
+        else:
+            report.status = PropertyDamageReport.STATUS_OPEN
+            report.closed_at = None
+            report.closed_by = None
+            action = "reopened"
+        report.save(update_fields=["status", "closed_at", "closed_by"])
+
+    employee_user = report.employee.user if report.employee else None
+    if employee_user:
+        notify_user(
+            employee_user,
+            f"Property damage report #{report.pk} {action}",
+            (
+                f"The dashboard team {action} your property damage report "
+                f"#{report.pk}."
+            ),
+            notification_type="damage_report",
+            link=f"/employee/damage-report/#report-{report.pk}",
+        )
+
+    messages.success(
+        request,
+        (
+            f"Property damage report #{report.pk} "
+            f"{'resolved and closed' if action == 'closed' else 'reopened'}."
+        ),
+    )
+    return redirect(f"{reverse('property_damage_report_list')}#report-{report.pk}")
+
+
+@admin_required
+@require_http_methods(["GET", "POST"])
+def property_damage_report_conversation(request, report_id):
+    report = get_object_or_404(
+        PropertyDamageReport.objects.select_related("employee__user"),
+        pk=report_id,
+    )
+    if request.method == "POST":
+        typing_value = request.POST.get("is_typing")
+        if typing_value not in {"true", "false"}:
+            return JsonResponse(
+                {"error": "A valid typing state is required."},
+                status=400,
+            )
+        update_report_presence(
+            report,
+            request.user,
+            is_typing=typing_value == "true",
+        )
+    else:
+        update_report_presence(report, request.user)
+    return conversation_response(report, request.user, other_side="employee")
+
+
+@admin_required
+@require_POST
 def property_damage_report_reply(request, report_id):
     report = get_object_or_404(
         PropertyDamageReport.objects.select_related("employee__user"),
@@ -2549,13 +2634,25 @@ def property_damage_report_reply(request, report_id):
         prefix=f"reply-{report.pk}",
     )
     if not form.is_valid():
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse(
+                {"error": "Please enter a reply before sending it."},
+                status=400,
+            )
         messages.error(request, "Please enter a reply before sending it.")
         return redirect(f"{reverse('property_damage_report_list')}#report-{report.pk}")
 
-    reply = form.save(commit=False)
-    reply.report = report
-    reply.responder = request.user
-    reply.save()
+    with transaction.atomic():
+        report = PropertyDamageReport.objects.select_for_update().get(pk=report.pk)
+        reply = form.save(commit=False)
+        reply.report = report
+        reply.responder = request.user
+        reply.save()
+        if report.status == PropertyDamageReport.STATUS_CLOSED:
+            report.status = PropertyDamageReport.STATUS_OPEN
+            report.closed_at = None
+            report.closed_by = None
+            report.save(update_fields=["status", "closed_at", "closed_by"])
 
     employee_user = report.employee.user if report.employee else None
     if employee_user:
@@ -2579,8 +2676,12 @@ def property_damage_report_reply(request, report_id):
             request,
             "Reply saved, but the employee has no linked portal account for notification.",
         )
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"ok": True})
         return redirect(f"{reverse('property_damage_report_list')}#report-{report.pk}")
 
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True})
     messages.success(request, "Your reply was sent to the employee.")
     return redirect(f"{reverse('property_damage_report_list')}#report-{report.pk}")
 
@@ -2785,8 +2886,37 @@ def delete_gallery_item(request, item_id):
 
 @login_required
 def review_list(request):
-    reviews = Review.objects.all().order_by("-id")
-    return render(request, "dashboard/reviews/dashboard_review_list.html", {"reviews": reviews})
+    reviews = Review.objects.all().order_by("-created_at", "-pk")
+    query = request.GET.get("q", "").strip()
+    rating = request.GET.get("rating", "").strip()
+    if query:
+        reviews = reviews.filter(
+            Q(customer_name__icontains=query)
+            | Q(suburb__icontains=query)
+            | Q(review_text__icontains=query)
+        )
+    if rating in {"1", "2", "3", "4", "5"}:
+        reviews = reviews.filter(rating=int(rating))
+    else:
+        rating = ""
+    paginator = Paginator(reviews, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    return render(
+        request,
+        "dashboard/reviews/dashboard_review_list.html",
+        {
+            "reviews": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+            "rating": rating,
+            "rating_choices": Review.RATING_CHOICES,
+            "total_reviews": Review.objects.count(),
+            "featured_count": Review.objects.filter(featured=True).count(),
+            "average_rating": Review.objects.aggregate(average=Avg("rating"))[
+                "average"
+            ] or 0,
+        },
+    )
 
 
 @login_required
@@ -2868,8 +2998,8 @@ def edit_review(request, review_id):
     )
 
 
-@require_POST
 @admin_required
+@require_http_methods(["GET", "POST"])
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
 
@@ -2890,10 +3020,9 @@ def delete_review(request, review_id):
 
     return render(
         request,
-        "shared/confirm_delete.html",
+        "dashboard/reviews/review_confirm_delete.html",
         {
-            "object_name": str(review),
-            "cancel_url": "/dashboard/reviews/",
+            "review": review,
         },
     )
 
@@ -3139,8 +3268,13 @@ def activity_log_list(request):
 
 @login_required
 def business_health(request):
-    today = timezone.now().date()
+    today = timezone.localdate()
     month_start = today.replace(day=1)
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
     total_revenue = (
         Booking.objects.filter(status="completed").aggregate(total=Sum("quoted_price"))[
             "total"
@@ -3150,7 +3284,9 @@ def business_health(request):
 
     monthly_revenue = (
         Booking.objects.filter(
-            status="completed", booking_date__gte=month_start
+            status="completed",
+            booking_date__gte=month_start,
+            booking_date__lt=next_month_start,
         ).aggregate(total=Sum("quoted_price"))["total"]
         or 0
     )
@@ -3163,7 +3299,9 @@ def business_health(request):
         average_job_value = round(float(total_revenue) / completed_jobs, 2)
 
     total_quotes = QuoteRequest.objects.count()
-    booked_quotes = QuoteRequest.objects.filter(status="booked").count()
+    booked_quotes = QuoteRequest.objects.filter(
+        status__in=["booked", "completed"]
+    ).count()
 
     quote_conversion_rate = 0
 
@@ -3209,6 +3347,7 @@ def business_health(request):
         request,
         "dashboard/finance/business_health.html",
         {
+            "today": today,
             "total_revenue": total_revenue,
             "monthly_revenue": monthly_revenue,
             "completed_jobs": completed_jobs,
@@ -3226,43 +3365,50 @@ def business_health(request):
 
 @login_required
 def financial_dashboard(request):
-    today = timezone.now().date()
-    week_start = today - timedelta(days=7)
+    today = timezone.localdate()
+    week_start = today - timedelta(days=today.weekday())
     week_due_end = today + timedelta(days=7)
 
     month_start = today.replace(day=1)
     year_start = today.replace(month=1, day=1)
-
-    today_revenue = (
-        Invoice.objects.filter(status="paid", paid_at__date=today).aggregate(
-            total=Sum("total_amount")
-        )["total"]
-        or 0
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
     )
+    next_year_start = year_start.replace(year=year_start.year + 1)
+
+    paid_invoice_qs = Invoice.objects.filter(status="paid")
+    today_revenue = paid_invoice_qs.filter(
+        paid_at__date=today
+    ).aggregate(total=Sum("total_amount"))["total"] or 0
 
     week_revenue = (
-        Invoice.objects.filter(status="paid", paid_at__date__gte=week_start).aggregate(
-            total=Sum("total_amount")
-        )["total"]
+        paid_invoice_qs.filter(
+            paid_at__date__gte=week_start,
+            paid_at__date__lte=today,
+        ).aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
 
     month_revenue = (
-        Invoice.objects.filter(status="paid", paid_at__date__gte=month_start).aggregate(
-            total=Sum("total_amount")
-        )["total"]
+        paid_invoice_qs.filter(
+            paid_at__date__gte=month_start,
+            paid_at__date__lt=next_month_start,
+        ).aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
 
     year_revenue = (
-        Invoice.objects.filter(status="paid", paid_at__date__gte=year_start).aggregate(
-            total=Sum("total_amount")
-        )["total"]
+        paid_invoice_qs.filter(
+            paid_at__date__gte=year_start,
+            paid_at__date__lt=next_year_start,
+        ).aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
 
-    paid_invoices = Invoice.objects.filter(status="paid").count()
-    unpaid_invoices = Invoice.objects.exclude(status="paid").count()
+    paid_invoices = paid_invoice_qs.count()
+    unpaid_invoices = Invoice.objects.exclude(status__in=["paid", "cancelled"]).count()
     overdue_invoices = Invoice.objects.filter(status="overdue").count()
 
     due_this_week = Invoice.objects.filter(
@@ -3272,20 +3418,27 @@ def financial_dashboard(request):
     ).count()
 
     outstanding_balance = (
-        Invoice.objects.exclude(status="paid").aggregate(total=Sum("total_amount"))[
-            "total"
-        ]
+        Invoice.objects.exclude(status__in=["paid", "cancelled"]).aggregate(
+            total=Sum("total_amount")
+        )["total"]
         or 0
     )
 
     payroll_total = (
-        PayrollRecord.objects.aggregate(total=Sum("gross_pay"))["total"] or 0
+        PayrollRecord.objects.filter(
+            period_end__gte=year_start,
+            period_end__lt=next_year_start,
+        ).aggregate(total=Sum("gross_pay"))["total"]
+        or 0
     )
-
-    estimated_profit = float(year_revenue) - float(payroll_total)
+    year_expenses = Expense.objects.filter(
+        date__gte=year_start,
+        date__lt=next_year_start,
+    ).aggregate(total=Sum("amount"))["total"] or 0
+    estimated_profit = year_revenue - payroll_total - year_expenses
 
     recent_outstanding_invoices = (
-        Invoice.objects.exclude(status="paid")
+        Invoice.objects.exclude(status__in=["paid", "cancelled"])
         .select_related("booking", "booking__customer")
         .order_by("due_date", "-created_at")[:10]
     )
@@ -3294,7 +3447,10 @@ def financial_dashboard(request):
     # Revenue Trend Chart
     # -----------------------------
     revenue_trend = (
-        Invoice.objects.filter(status="paid")
+        paid_invoice_qs.filter(
+            paid_at__date__gte=year_start,
+            paid_at__date__lt=next_year_start,
+        )
         .annotate(day=TruncDate("paid_at"))
         .values("day")
         .annotate(total=Sum("total_amount"))
@@ -3321,6 +3477,7 @@ def financial_dashboard(request):
         "dashboard/finance/financial_dashboard.html",
         {
             "today_revenue": today_revenue,
+            "today": today,
             "week_revenue": week_revenue,
             "month_revenue": month_revenue,
             "year_revenue": year_revenue,
@@ -3330,6 +3487,7 @@ def financial_dashboard(request):
             "due_this_week": due_this_week,
             "outstanding_balance": outstanding_balance,
             "payroll_total": payroll_total,
+            "year_expenses": year_expenses,
             "estimated_profit": estimated_profit,
             "recent_outstanding_invoices": recent_outstanding_invoices,
             "revenue_labels": revenue_labels,
@@ -3342,7 +3500,7 @@ def financial_dashboard(request):
 
 @login_required
 def executive_dashboard(request):
-    today = timezone.now().date()
+    today = timezone.localdate()
     month_start = today.replace(day=1)
 
     total_revenue = (
@@ -3360,9 +3518,9 @@ def executive_dashboard(request):
     )
 
     outstanding_balance = (
-        Invoice.objects.exclude(status="paid").aggregate(total=Sum("total_amount"))[
-            "total"
-        ]
+        Invoice.objects.exclude(status__in=["paid", "cancelled"]).aggregate(
+            total=Sum("total_amount")
+        )["total"]
         or 0
     )
 
@@ -3377,7 +3535,9 @@ def executive_dashboard(request):
         payroll_percent = round((float(payroll_total) / float(total_revenue)) * 100, 2)
 
     total_quotes = QuoteRequest.objects.count()
-    booked_quotes = QuoteRequest.objects.filter(status="booked").count()
+    booked_quotes = QuoteRequest.objects.filter(
+        status__in=["booked", "completed"]
+    ).count()
 
     conversion_rate = 0
     if total_quotes:
@@ -4104,16 +4264,44 @@ def customer_behaviour(request):
 
 @login_required
 def review_requests(request):
-
-    completed_bookings = (
-        Booking.objects
-        .filter(status="completed")
-        .select_related("customer")
-        .order_by("-booking_date")
-    )
+    completed_bookings = Booking.objects.filter(status="completed").select_related(
+        "customer", "review_request_log"
+    ).order_by("-booking_date", "-pk")
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+    if query:
+        completed_bookings = completed_bookings.filter(
+            Q(customer__full_name__icontains=query)
+            | Q(customer__email__icontains=query)
+            | Q(service_type__icontains=query)
+        )
+    if status_filter == "sent":
+        completed_bookings = completed_bookings.filter(
+            review_request_log__isnull=False
+        )
+    elif status_filter == "not_sent":
+        completed_bookings = completed_bookings.filter(
+            review_request_log__isnull=True
+        )
+    else:
+        status_filter = ""
+    paginator = Paginator(completed_bookings, 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
 
     return render(
-        request, "dashboard/reviews/review_requests.html", {"completed_bookings": completed_bookings}
+        request,
+        "dashboard/reviews/review_requests.html",
+        {
+            "completed_bookings": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+            "status_filter": status_filter,
+            "eligible_count": Booking.objects.filter(
+                status="completed",
+                review_request_log__isnull=True,
+            ).exclude(customer__email="").exclude(customer__email__isnull=True).count(),
+            "requests_sent": ReviewRequestLog.objects.count(),
+        },
     )
 
 @require_POST
@@ -4237,10 +4425,16 @@ def review_analytics(request):
 
     review_requests_sent = ReviewRequestLog.objects.count()
 
-    review_conversion_rate = 0
-
-    if review_requests_sent > 0:
-        review_conversion_rate = round((total_reviews / review_requests_sent) * 100, 2)
+    completed_booking_queryset = Booking.objects.filter(status="completed")
+    completed_bookings = completed_booking_queryset.count()
+    completed_bookings_with_request = completed_booking_queryset.filter(
+        review_request_log__isnull=False
+    ).count()
+    review_request_coverage = (
+        round((completed_bookings_with_request / completed_bookings) * 100, 2)
+        if completed_bookings
+        else 0
+    )
 
     rating_breakdown = {
         "five": Review.objects.filter(rating=5).count(),
@@ -4249,6 +4443,15 @@ def review_analytics(request):
         "two": Review.objects.filter(rating=2).count(),
         "one": Review.objects.filter(rating=1).count(),
     }
+    lower_rating_reviews = (
+        rating_breakdown["three"]
+        + rating_breakdown["two"]
+        + rating_breakdown["one"]
+    )
+    rating_rows = [
+        (rating, rating_breakdown[label])
+        for rating, label in ((5, "five"), (4, "four"), (3, "three"), (2, "two"), (1, "one"))
+    ]
 
     latest_reviews = Review.objects.order_by("-created_at")[:10]
 
@@ -4261,8 +4464,12 @@ def review_analytics(request):
             "average_rating": average_rating,
             "five_star_reviews": five_star_reviews,
             "review_requests_sent": review_requests_sent,
-            "review_conversion_rate": review_conversion_rate,
+            "review_request_coverage": review_request_coverage,
+            "completed_bookings_with_request": completed_bookings_with_request,
+            "completed_bookings": completed_bookings,
             "rating_breakdown": rating_breakdown,
+            "lower_rating_reviews": lower_rating_reviews,
+            "rating_rows": rating_rows,
             "latest_reviews": latest_reviews,
         },
     )
@@ -4718,7 +4925,10 @@ def edit_newsletter_subscriber(request, subscriber_id):
                 "✅ Newsletter subscriber updated successfully.",
             )
 
-            return redirect("campaign_center")
+            return redirect(
+                "newsletter_subscriber_detail",
+                subscriber_id=updated_subscriber.pk,
+            )
 
         messages.error(
             request,
@@ -4740,8 +4950,8 @@ def edit_newsletter_subscriber(request, subscriber_id):
     )
 
 
-@require_POST
 @admin_required
+@require_http_methods(["GET", "POST"])
 def delete_newsletter_subscriber(request, subscriber_id):
     subscriber = get_object_or_404(
         MarketingSubscriber,
@@ -4769,12 +4979,26 @@ def delete_newsletter_subscriber(request, subscriber_id):
 
     return render(
         request,
-        "shared/confirm_delete.html",
+        "dashboard/marketing/newsletter_subscriber_confirm_delete.html",
         {
-            "object_name": subscriber_email,
-            "cancel_url": "/dashboard/campaigns/",
+            "subscriber": subscriber,
         },
     )
+
+
+def _customers_with_marketing_consent(customers):
+    consenting_emails = {
+        email.casefold()
+        for email in MarketingSubscriber.objects.filter(
+            is_active=True,
+            consent_given=True,
+        ).values_list("email", flat=True)
+    }
+    return [
+        customer
+        for customer in customers
+        if customer.email and customer.email.casefold() in consenting_emails
+    ]
 
 
 @login_required
@@ -4821,7 +5045,10 @@ def edit_campaign_history(request, campaign_id):
                 "✅ Campaign history updated successfully.",
             )
 
-            return redirect("campaign_center")
+            return redirect(
+                "campaign_history_detail",
+                campaign_id=updated_campaign.pk,
+            )
 
         messages.error(
             request,
@@ -4843,8 +5070,8 @@ def edit_campaign_history(request, campaign_id):
     )
 
 
-@require_POST
 @admin_required
+@require_http_methods(["GET", "POST"])
 def delete_campaign_history(request, campaign_id):
     campaign = get_object_or_404(
         CampaignLog,
@@ -4872,20 +5099,27 @@ def delete_campaign_history(request, campaign_id):
 
     return render(
         request,
-        "shared/confirm_delete.html",
+        "dashboard/marketing/campaign_confirm_delete.html",
         {
-            "object_name": campaign_title,
-            "cancel_url": "/dashboard/campaigns/",
+            "campaign": campaign,
         },
     )
 
 
 @login_required
 def campaign_center(request):
-    vip_customers = Customer.objects.filter(total_revenue__gte=1000)
+    vip_customers = _customers_with_marketing_consent(
+        Customer.objects.filter(total_revenue__gte=1000)
+        .exclude(email="")
+        .exclude(email__isnull=True)
+        .order_by("-total_revenue")
+    )
 
-    inactive_customers = Customer.objects.annotate(
-        last_booking=Max("bookings__booking_date")
+    inactive_customers = _customers_with_marketing_consent(
+        Customer.objects.filter(jobs_completed__lte=1)
+        .exclude(email="")
+        .exclude(email__isnull=True)
+        .order_by("full_name")
     )
 
     # -----------------------------------------------------
@@ -4920,14 +5154,23 @@ def campaign_center(request):
 
     campaigns_sent = CampaignLog.objects.count()
 
-    campaign_history = CampaignLog.objects.all()[:20]
+    campaign_history_paginator = Paginator(CampaignLog.objects.all(), 10)
+    campaign_history_page = campaign_history_paginator.get_page(
+        request.GET.get("campaign_page")
+    )
 
-    newsletter_subscribers = MarketingSubscriber.objects.all()
+    newsletter_subscriber_paginator = Paginator(
+        MarketingSubscriber.objects.all(),
+        15,
+    )
+    newsletter_subscriber_page = newsletter_subscriber_paginator.get_page(
+        request.GET.get("subscriber_page")
+    )
 
-    newsletter_subscriber_count = newsletter_subscribers.count()
+    newsletter_subscriber_count = MarketingSubscriber.objects.count()
 
     active_newsletter_subscriber_count = (
-        newsletter_subscribers.filter(
+        MarketingSubscriber.objects.filter(
             is_active=True,
             consent_given=True,
         ).count()
@@ -4937,8 +5180,8 @@ def campaign_center(request):
         request,
         "dashboard/marketing/campaign_center.html",
         {
-            "vip_count": vip_customers.count(),
-            "inactive_count": inactive_customers.count(),
+            "vip_count": len(vip_customers),
+            "inactive_count": len(inactive_customers),
 
             # Review campaign metrics
             "review_count": review_opportunities.count(),
@@ -4947,8 +5190,10 @@ def campaign_center(request):
             "review_missing_email": review_missing_email,
 
             "campaigns_sent": campaigns_sent,
-            "campaign_history": campaign_history,
-            "newsletter_subscribers": newsletter_subscribers,
+            "campaign_history": campaign_history_page.object_list,
+            "campaign_history_page": campaign_history_page,
+            "newsletter_subscribers": newsletter_subscriber_page.object_list,
+            "newsletter_subscriber_page": newsletter_subscriber_page,
             "newsletter_subscriber_count": newsletter_subscriber_count,
             "active_newsletter_subscriber_count": active_newsletter_subscriber_count,
         },
@@ -4962,7 +5207,12 @@ def campaign_center(request):
     raise_exception=True,
 )
 def send_vip_campaign(request):
-    vip_customers = Customer.objects.filter(total_revenue__gte=1000).exclude(email="")
+    vip_customers = _customers_with_marketing_consent(
+        Customer.objects.filter(total_revenue__gte=1000)
+        .exclude(email="")
+        .exclude(email__isnull=True)
+        .order_by("-total_revenue")
+    )
 
     sent_count = 0
 
@@ -5028,8 +5278,11 @@ YD Commercial Cleaning Services
     raise_exception=True,
 )
 def send_inactive_campaign(request):
-    inactive_customers = Customer.objects.filter(jobs_completed__lte=1).exclude(
-        email=""
+    inactive_customers = _customers_with_marketing_consent(
+        Customer.objects.filter(jobs_completed__lte=1)
+        .exclude(email="")
+        .exclude(email__isnull=True)
+        .order_by("full_name")
     )
 
     sent_count = 0
@@ -5237,7 +5490,7 @@ def campaign_preview(request, campaign_type):
     if campaign_type == "vip":
         title = "VIP Campaign Recipients"
 
-        recipients = (
+        recipients = _customers_with_marketing_consent(
             Customer.objects
             .filter(total_revenue__gte=1000)
             .exclude(email="")
@@ -5245,12 +5498,12 @@ def campaign_preview(request, campaign_type):
             .order_by("-total_revenue")
         )
 
-        recipient_count = recipients.count()
+        recipient_count = len(recipients)
 
     elif campaign_type == "inactive":
         title = "Inactive Campaign Recipients"
 
-        recipients = (
+        recipients = _customers_with_marketing_consent(
             Customer.objects
             .filter(jobs_completed__lte=1)
             .exclude(email="")
@@ -5258,7 +5511,7 @@ def campaign_preview(request, campaign_type):
             .order_by("full_name")
         )
 
-        recipient_count = recipients.count()
+        recipient_count = len(recipients)
 
     elif campaign_type == "review":
         title = "Review Campaign Recipients"
@@ -5296,14 +5549,17 @@ def campaign_preview(request, campaign_type):
         messages.error(request, "Invalid campaign type.")
         return redirect("campaign_center")
 
+    paginator = Paginator(recipients, 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
     return render(
         request,
         "dashboard/marketing/campaign_preview.html",
         {
             "campaign_type": campaign_type,
             "title": title,
-            "recipients": recipients,
+            "recipients": page_obj.object_list,
             "recipient_count": recipient_count,
+            "page_obj": page_obj,
         },
     )
 
@@ -5314,8 +5570,19 @@ def campaign_performance(request):
     campaigns = CampaignLog.objects.all()
 
     total_campaigns = campaigns.count()
+    email_logs_related_to_campaigns = EmailLog.objects.filter(
+        related_object__icontains="campaign"
+    ).count()
+    general_email_log_count = EmailLog.objects.exclude(
+        related_object__icontains="campaign"
+    ).count()
+    standalone_review_requests = ReviewRequestLog.objects.aggregate(
+        total=Sum("sent_count")
+    )["total"] or 0
 
-    total_emails_sent = sum(campaign.recipients_count for campaign in campaigns)
+    total_emails_sent = campaigns.aggregate(total=Sum("recipients_count"))[
+        "total"
+    ] or 0
 
     vip_campaigns = campaigns.filter(campaign_type="vip").count()
 
@@ -5335,63 +5602,89 @@ def campaign_performance(request):
         else "N/A"
     )
 
+    campaign_type_filter = request.GET.get("type", "").strip()
+    if campaign_type_filter in {"vip", "inactive", "review"}:
+        campaigns = campaigns.filter(campaign_type=campaign_type_filter)
+    else:
+        campaign_type_filter = ""
+    paginator = Paginator(campaigns.select_related("sent_by"), 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
     return render(
         request,
         "dashboard/marketing/campaign_performance.html",
         {
-            "campaigns": campaigns[:50],
+            "campaigns": page_obj.object_list,
+            "page_obj": page_obj,
+            "campaign_type_filter": campaign_type_filter,
             "total_campaigns": total_campaigns,
             "total_emails_sent": total_emails_sent,
             "vip_campaigns": vip_campaigns,
             "inactive_campaigns": inactive_campaigns,
             "review_campaigns": review_campaigns,
             "most_used_campaign_type": most_used_campaign_type,
+            "email_logs_related_to_campaigns": email_logs_related_to_campaigns,
+            "general_email_log_count": general_email_log_count,
+            "standalone_review_requests": standalone_review_requests,
         },
     )
 
 
 @login_required
 def profit_loss_dashboard(request):
+    current_year = timezone.localdate().year
+    try:
+        selected_year = int(request.GET.get("year", current_year))
+    except (TypeError, ValueError):
+        selected_year = current_year
+    if selected_year < current_year - 10 or selected_year > current_year:
+        selected_year = current_year
+    period_start = date(selected_year, 1, 1)
+    period_end = date(selected_year + 1, 1, 1)
+
     paid_revenue = (
-        Invoice.objects.filter(status="paid").aggregate(total=Sum("total_amount"))[
-            "total"
-        ]
+        Invoice.objects.filter(
+            status="paid",
+            paid_at__date__gte=period_start,
+            paid_at__date__lt=period_end,
+        ).aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
 
-    payroll_cost = PayrollRecord.objects.aggregate(total=Sum("gross_pay"))["total"] or 0
+    payroll_cost = PayrollRecord.objects.filter(
+        period_end__gte=period_start,
+        period_end__lt=period_end,
+    ).aggregate(total=Sum("gross_pay"))["total"] or 0
 
-    completed_bookings = Booking.objects.filter(status="completed")
-
-    bonus_cost = 0
-
-    for employee in Employee.objects.filter(active=True):
-        employee_bookings = completed_bookings.filter(assigned_employee=employee)
-
-        revenue_generated = (
-            employee_bookings.aggregate(total=Sum("quoted_price"))["total"] or 0
-        )
-
-        jobs_completed = employee_bookings.count()
-
-        revenue_bonus = float(revenue_generated) * 0.05
-        job_bonus = jobs_completed * 10
-
-        bonus_cost += revenue_bonus + job_bonus
-
-    expense_cost = Expense.objects.aggregate(total=Sum("amount"))["total"] or 0
-
-    estimated_profit = (
-        float(paid_revenue)
-        - float(payroll_cost)
-        - float(bonus_cost)
-        - float(expense_cost)
+    completed_bookings = Booking.objects.filter(
+        status="completed",
+        assigned_employee__active=True,
     )
+    completed_bookings = completed_bookings.filter(
+        booking_date__gte=period_start,
+        booking_date__lt=period_end,
+    )
+    bonus_basis = completed_bookings.aggregate(
+        revenue=Sum("quoted_price"),
+        jobs=Count("pk"),
+    )
+    bonus_cost = (
+        (bonus_basis["revenue"] or Decimal("0.00")) * Decimal("0.05")
+        + Decimal(bonus_basis["jobs"] or 0) * Decimal("10.00")
+    )
+    expense_cost = Expense.objects.filter(
+        date__gte=period_start,
+        date__lt=period_end,
+    ).aggregate(total=Sum("amount"))["total"] or 0
 
-    profit_margin = 0
-
-    if paid_revenue:
-        profit_margin = round((estimated_profit / float(paid_revenue)) * 100, 2)
+    estimated_profit = paid_revenue - payroll_cost - bonus_cost - expense_cost
+    profit_margin = (
+        (estimated_profit / paid_revenue * Decimal("100")).quantize(
+            Decimal("0.01")
+        )
+        if paid_revenue
+        else Decimal("0.00")
+    )
 
     return render(
         request,
@@ -5399,18 +5692,26 @@ def profit_loss_dashboard(request):
         {
             "paid_revenue": paid_revenue,
             "payroll_cost": payroll_cost,
-            "bonus_cost": round(bonus_cost, 2),
+            "bonus_cost": bonus_cost,
             "expense_cost": expense_cost,
-            "estimated_profit": round(estimated_profit, 2),
+            "estimated_profit": estimated_profit,
             "profit_margin": profit_margin,
+            "total_costs": payroll_cost + bonus_cost + expense_cost,
+            "selected_year": selected_year,
+            "years": range(current_year, current_year - 6, -1),
         },
     )
 
 
 @login_required
 def business_kpis(request):
-    today = timezone.now().date()
+    today = timezone.localdate()
     month_start = today.replace(day=1)
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
 
     today_revenue = (
         Invoice.objects.filter(status="paid", paid_at__date=today).aggregate(
@@ -5419,26 +5720,30 @@ def business_kpis(request):
         or 0
     )
 
-    month_revenue = (
-        Invoice.objects.filter(status="paid", paid_at__date__gte=month_start).aggregate(
+    month_revenue = Invoice.objects.filter(
+        status="paid",
+        paid_at__date__gte=month_start,
+        paid_at__date__lt=next_month_start,
+    ).aggregate(total=Sum("total_amount"))["total"] or 0
+
+    outstanding_invoices = (
+        Invoice.objects.exclude(status__in=["paid", "cancelled"]).aggregate(
             total=Sum("total_amount")
         )["total"]
         or 0
     )
 
-    outstanding_invoices = (
-        Invoice.objects.exclude(status="paid").aggregate(total=Sum("total_amount"))[
-            "total"
-        ]
-        or 0
-    )
-
     payroll_month = (
-        PayrollRecord.objects.filter(period_end__gte=month_start).aggregate(
-            total=Sum("gross_pay")
-        )["total"]
+        PayrollRecord.objects.filter(
+            period_start__lte=today,
+            period_end__gte=month_start,
+        ).aggregate(total=Sum("gross_pay"))["total"]
         or 0
     )
+    expenses_month = Expense.objects.filter(
+        date__gte=month_start,
+        date__lt=next_month_start,
+    ).aggregate(total=Sum("amount"))["total"] or 0
 
     completed_jobs_month = Booking.objects.filter(
         status="completed", booking_date__gte=month_start
@@ -5468,7 +5773,9 @@ def business_kpis(request):
 
     vip_customers = Customer.objects.filter(total_revenue__gte=1000).count()
 
-    estimated_profit_month = float(month_revenue) - float(payroll_month)
+    estimated_profit_month = (
+        float(month_revenue) - float(payroll_month) - float(expenses_month)
+    )
 
     profit_margin = 0
 
@@ -5515,6 +5822,7 @@ def business_kpis(request):
             "month_revenue": month_revenue,
             "outstanding_invoices": outstanding_invoices,
             "payroll_month": payroll_month,
+            "expenses_month": expenses_month,
             "completed_jobs_month": completed_jobs_month,
             "upcoming_jobs": upcoming_jobs,
             "active_customers": active_customers,
@@ -5616,25 +5924,40 @@ def employee_schedule(request):
 
 @login_required
 def gst_report(request):
-
-    from expenses.models import Expense
-
+    current_year = timezone.localdate().year
+    try:
+        selected_year = int(request.GET.get("year", current_year))
+    except (TypeError, ValueError):
+        selected_year = current_year
+    if selected_year < current_year - 10 or selected_year > current_year:
+        selected_year = current_year
+    period_start = date(selected_year, 1, 1)
+    period_end = date(selected_year + 1, 1, 1)
     company_gst_rate = 10
 
     paid_revenue = (
-        Invoice.objects.filter(status="paid").aggregate(total=Sum("total_amount"))[
-            "total"
-        ]
+        Invoice.objects.filter(
+            status="paid",
+            paid_at__date__gte=period_start,
+            paid_at__date__lt=period_end,
+        ).aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
 
-    total_expenses = Expense.objects.aggregate(total=Sum("amount"))["total"] or 0
-
-    gst_collected = round(float(paid_revenue) / 11, 2)
-
-    gst_paid = round(float(total_expenses) / 11, 2)
-
-    net_gst_payable = round(gst_collected - gst_paid, 2)
+    gst_collected = (
+        Invoice.objects.filter(
+            status="paid",
+            paid_at__date__gte=period_start,
+            paid_at__date__lt=period_end,
+        ).aggregate(total=Sum("gst_amount"))["total"]
+        or Decimal("0.00")
+    )
+    total_expenses = Expense.objects.filter(
+        date__gte=period_start,
+        date__lt=period_end,
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+    gst_paid = (total_expenses / Decimal("11")).quantize(Decimal("0.01"))
+    net_gst_payable = gst_collected - gst_paid
 
     return render(
         request,
@@ -5646,6 +5969,8 @@ def gst_report(request):
             "gst_paid": gst_paid,
             "net_gst_payable": net_gst_payable,
             "company_gst_rate": company_gst_rate,
+            "selected_year": selected_year,
+            "years": range(current_year, current_year - 6, -1),
         },
     )
 
@@ -5654,10 +5979,28 @@ def gst_report(request):
 def finance_trends(request):
     from django.db.models.functions import TruncMonth
 
-    from expenses.models import Expense
-
+    today = timezone.localdate()
+    month_starts = []
+    year, month = today.year, today.month
+    for _ in range(12):
+        month_starts.append(date(year, month, 1))
+        month -= 1
+        if month == 0:
+            year -= 1
+            month = 12
+    month_starts.reverse()
+    range_start = month_starts[0]
+    range_end = (
+        date(today.year + 1, 1, 1)
+        if today.month == 12
+        else date(today.year, today.month + 1, 1)
+    )
     revenue_data = (
-        Invoice.objects.filter(status="paid")
+        Invoice.objects.filter(
+            status="paid",
+            paid_at__date__gte=range_start,
+            paid_at__date__lt=range_end,
+        )
         .annotate(month=TruncMonth("paid_at"))
         .values("month")
         .annotate(total=Sum("total_amount"))
@@ -5665,53 +6008,52 @@ def finance_trends(request):
     )
 
     expense_data = (
-        Expense.objects.annotate(month=TruncMonth("date"))
+        Expense.objects.filter(
+            date__gte=range_start,
+            date__lt=range_end,
+        ).annotate(month=TruncMonth("date"))
         .values("month")
         .annotate(total=Sum("amount"))
         .order_by("month")
     )
 
     payroll_data = (
-        PayrollRecord.objects.annotate(month=TruncMonth("period_end"))
+        PayrollRecord.objects.filter(
+            period_end__gte=range_start,
+            period_end__lt=range_end,
+        ).annotate(month=TruncMonth("period_end"))
         .values("month")
         .annotate(total=Sum("gross_pay"))
         .order_by("month")
     )
 
-    months = []
     revenue_map = {}
     expense_map = {}
     payroll_map = {}
 
     for item in revenue_data:
         if item["month"]:
-            label = item["month"].strftime("%b %Y")
-            months.append(label)
-            revenue_map[label] = float(item["total"] or 0)
+            revenue_map[(item["month"].year, item["month"].month)] = float(item["total"] or 0)
 
     for item in expense_data:
         if item["month"]:
-            label = item["month"].strftime("%b %Y")
-            months.append(label)
-            expense_map[label] = float(item["total"] or 0)
+            expense_map[(item["month"].year, item["month"].month)] = float(item["total"] or 0)
 
     for item in payroll_data:
         if item["month"]:
-            label = item["month"].strftime("%b %Y")
-            months.append(label)
-            payroll_map[label] = float(item["total"] or 0)
+            payroll_map[(item["month"].year, item["month"].month)] = float(item["total"] or 0)
 
-    months = sorted(set(months))
-
+    months = [month_start.strftime("%b %Y") for month_start in month_starts]
     revenue_values = []
     expense_values = []
     payroll_values = []
     profit_values = []
 
-    for month in months:
-        revenue = revenue_map.get(month, 0)
-        expenses = expense_map.get(month, 0)
-        payroll = payroll_map.get(month, 0)
+    for month_start in month_starts:
+        key = (month_start.year, month_start.month)
+        revenue = revenue_map.get(key, 0)
+        expenses = expense_map.get(key, 0)
+        payroll = payroll_map.get(key, 0)
         profit = revenue - expenses - payroll
 
         revenue_values.append(revenue)
@@ -5728,6 +6070,11 @@ def finance_trends(request):
             "expense_values": expense_values,
             "payroll_values": payroll_values,
             "profit_values": profit_values,
+            "period_label": f"{month_starts[0].strftime('%b %Y')} – {today.strftime('%b %Y')}",
+            "revenue_total": sum(revenue_values),
+            "expense_total": sum(expense_values),
+            "payroll_total": sum(payroll_values),
+            "profit_total": sum(profit_values),
         },
     )
 
@@ -5915,26 +6262,69 @@ def equipment_list(request):
     today = timezone.localdate()
     due_limit = today + timedelta(days=30)
 
-    equipment_items = Equipment.objects.all().order_by("-created_at")
+    equipment = Equipment.objects.select_related("assigned_employee").all()
+    query = request.GET.get("q", "").strip()
+    condition = request.GET.get("condition", "").strip()
+    service_filter = request.GET.get("service", "").strip()
+    if query:
+        equipment = equipment.filter(
+            Q(name__icontains=query)
+            | Q(serial_number__icontains=query)
+            | Q(assigned_employee__full_name__icontains=query)
+        )
+    if condition in {value for value, _ in Equipment.CONDITION_CHOICES}:
+        equipment = equipment.filter(condition=condition)
+    else:
+        condition = ""
+    if service_filter == "overdue":
+        equipment = equipment.filter(next_service_date__lt=today)
+    elif service_filter == "due_soon":
+        equipment = equipment.filter(
+            next_service_date__gte=today,
+            next_service_date__lte=due_limit,
+        )
+    elif service_filter == "not_scheduled":
+        equipment = equipment.filter(next_service_date__isnull=True)
+    else:
+        service_filter = ""
 
-    for item in equipment_items:
-        item.service_status = ""
-
-        if item.next_service_date:
-            if item.next_service_date < today:
-                item.service_status = "overdue"
-            elif item.next_service_date == today:
-                item.service_status = "today"
-            elif item.next_service_date <= due_limit:
-                item.service_status = "upcoming"
-            else:
-                item.service_status = "ok"
+    page_obj = Paginator(equipment.order_by("name", "pk"), 25).get_page(
+        request.GET.get("page")
+    )
+    for item in page_obj.object_list:
+        if not item.next_service_date:
+            item.service_status = "not_scheduled"
+        elif item.next_service_date < today:
+            item.service_status = "overdue"
+        elif item.next_service_date == today:
+            item.service_status = "today"
+        elif item.next_service_date <= due_limit:
+            item.service_status = "upcoming"
+        else:
+            item.service_status = "ok"
+    all_equipment = Equipment.objects.all()
 
     return render(
         request,
         "dashboard/inventory/equipment_list.html",
         {
-            "equipment_items": equipment_items,
+            "equipment_items": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+            "condition": condition,
+            "service_filter": service_filter,
+            "condition_choices": Equipment.CONDITION_CHOICES,
+            "total_equipment": all_equipment.count(),
+            "overdue_equipment": all_equipment.filter(
+                next_service_date__lt=today
+            ).count(),
+            "due_soon_equipment": all_equipment.filter(
+                next_service_date__gte=today,
+                next_service_date__lte=due_limit,
+            ).count(),
+            "equipment_needing_repair": all_equipment.filter(
+                condition="repair"
+            ).count(),
             "today": today,
         },
     )
@@ -5997,8 +6387,8 @@ def edit_equipment(request, equipment_id):
     )
 
 
-@require_POST
 @admin_required
+@require_http_methods(["GET", "POST"])
 def delete_equipment(request, equipment_id):
     from .models import Equipment
 
@@ -6011,10 +6401,9 @@ def delete_equipment(request, equipment_id):
 
     return render(
         request,
-        "shared/confirm_delete.html",
+        "dashboard/inventory/equipment_confirm_delete.html",
         {
-            "object_name": equipment.name,
-            "cancel_url": "/dashboard/equipment/",
+            "equipment": equipment,
         },
     )
 
@@ -6024,13 +6413,57 @@ def supplies_list(request):
 
     from .models import CleaningSupply
 
-    supplies = CleaningSupply.objects.all().order_by("name")
+    supplies = CleaningSupply.objects.all()
+    query = request.GET.get("q", "").strip()
+    stock_filter = request.GET.get("stock", "").strip()
+    category = request.GET.get("category", "").strip()
+    if query:
+        supplies = supplies.filter(
+            Q(name__icontains=query)
+            | Q(category__icontains=query)
+            | Q(supplier_name__icontains=query)
+        )
+    if stock_filter == "low":
+        supplies = supplies.filter(current_stock__lte=F("minimum_stock"))
+    elif stock_filter == "healthy":
+        supplies = supplies.filter(current_stock__gt=F("minimum_stock"))
+    else:
+        stock_filter = ""
+    if category:
+        supplies = supplies.filter(category=category)
+    page_obj = Paginator(supplies.order_by("name", "pk"), 25).get_page(
+        request.GET.get("page")
+    )
+    all_supplies = CleaningSupply.objects.all()
+    stock_value = all_supplies.aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("current_stock") * F("unit_cost"),
+                output_field=DecimalField(max_digits=14, decimal_places=2),
+            )
+        )
+    )["total"] or 0
 
     return render(
         request,
         "dashboard/inventory/supplies_list.html",
         {
-            "supplies": supplies,
+            "supplies": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+            "stock_filter": stock_filter,
+            "category": category,
+            "categories": CleaningSupply.objects.exclude(
+                category=""
+            ).order_by("category").values_list("category", flat=True).distinct(),
+            "total_supplies": all_supplies.count(),
+            "low_stock_count": all_supplies.filter(
+                current_stock__lte=F("minimum_stock")
+            ).count(),
+            "total_stock_units": all_supplies.aggregate(
+                total=Sum("current_stock")
+            )["total"] or 0,
+            "stock_value": stock_value,
         },
     )
 
@@ -6102,15 +6535,56 @@ def purchase_orders(request):
 
     from .models import PurchaseOrder
 
-    orders = PurchaseOrder.objects.all().order_by("-id")
+    orders = PurchaseOrder.objects.select_related("supply").all()
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+    if query:
+        orders = orders.filter(
+            Q(supply__name__icontains=query)
+            | Q(supplier_name__icontains=query)
+            | Q(notes__icontains=query)
+        )
+    if status_filter in {value for value, _ in PurchaseOrder.STATUS_CHOICES}:
+        orders = orders.filter(status=status_filter)
+    else:
+        status_filter = ""
+    page_obj = Paginator(orders.order_by("-order_date", "-pk"), 25).get_page(
+        request.GET.get("page")
+    )
+    all_orders = PurchaseOrder.objects.all()
+    order_value = all_orders.aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("quantity") * F("unit_cost"),
+                output_field=DecimalField(max_digits=14, decimal_places=2),
+            )
+        )
+    )["total"] or 0
 
-    return render(request, "dashboard/inventory/purchase_orders.html", {"orders": orders})
+    return render(
+        request,
+        "dashboard/inventory/purchase_orders.html",
+        {
+            "orders": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+            "status_filter": status_filter,
+            "status_choices": PurchaseOrder.STATUS_CHOICES,
+            "total_orders": all_orders.count(),
+            "open_orders": all_orders.filter(
+                status__in=("draft", "ordered")
+            ).count(),
+            "received_orders": all_orders.filter(status="received").count(),
+            "order_value": order_value,
+        },
+    )
 
 
 @login_required
 def add_purchase_order(request):
 
     from .forms import PurchaseOrderForm
+    from .models import Supplier
 
     if request.method == "POST":
 
@@ -6127,7 +6601,14 @@ def add_purchase_order(request):
 
         form = PurchaseOrderForm()
 
-    return render(request, "dashboard/inventory/purchase_order_form.html", {"form": form})
+    return render(
+        request,
+        "dashboard/inventory/purchase_order_form.html",
+        {
+            "form": form,
+            "active_suppliers": Supplier.objects.filter(active=True).order_by("name"),
+        },
+    )
 
 
 @login_required
@@ -6140,19 +6621,35 @@ def receive_purchase_order(request, order_id):
 
     from .models import PurchaseOrder
 
-    order = get_object_or_404(PurchaseOrder, id=order_id)
+    with transaction.atomic():
+        order = get_object_or_404(
+            PurchaseOrder.objects.select_for_update(),
+            id=order_id,
+        )
+        if order.status in {"draft", "ordered"}:
+            supply = get_object_or_404(
+                CleaningSupply.objects.select_for_update(),
+                id=order.supply_id,
+            )
+            supply.current_stock += order.quantity
+            supply.save(update_fields=["current_stock"])
 
-    if order.status != "received":
+            order.status = "received"
+            order.save(update_fields=["status"])
+            received_quantity = order.quantity
+        else:
+            received_quantity = 0
 
-        supply = order.supply
-
-        supply.current_stock += order.quantity
-        supply.save()
-
-        order.status = "received"
-        order.save()
-
-        messages.success(request, f"{order.quantity} units added to stock.")
+    if received_quantity:
+        messages.success(
+            request,
+            f"{received_quantity} units added to stock.",
+        )
+    elif order.status == "cancelled":
+        messages.warning(
+            request,
+            "Cancelled purchase orders cannot be received.",
+        )
 
     return redirect("purchase_orders")
 
@@ -6161,13 +6658,41 @@ def receive_purchase_order(request, order_id):
 def supplier_list(request):
     from .models import Supplier
 
-    suppliers = Supplier.objects.all().order_by("name")
+    suppliers = Supplier.objects.all()
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+    if query:
+        suppliers = suppliers.filter(
+            Q(name__icontains=query)
+            | Q(contact_person__icontains=query)
+            | Q(email__icontains=query)
+            | Q(phone__icontains=query)
+        )
+    if status_filter == "active":
+        suppliers = suppliers.filter(active=True)
+    elif status_filter == "inactive":
+        suppliers = suppliers.filter(active=False)
+    else:
+        status_filter = ""
+    page_obj = Paginator(suppliers.order_by("name", "pk"), 25).get_page(
+        request.GET.get("page")
+    )
+    all_suppliers = Supplier.objects.all()
 
     return render(
         request,
         "dashboard/inventory/supplier_list.html",
         {
-            "suppliers": suppliers,
+            "suppliers": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+            "status_filter": status_filter,
+            "total_suppliers": all_suppliers.count(),
+            "active_suppliers": all_suppliers.filter(active=True).count(),
+            "inactive_suppliers": all_suppliers.filter(active=False).count(),
+            "contactable_suppliers": all_suppliers.exclude(email="")
+            .exclude(phone="")
+            .count(),
         },
     )
 
@@ -6227,8 +6752,87 @@ def edit_supplier(request, supplier_id):
 def vehicle_list(request):
     from .models import Vehicle
 
-    vehicles = Vehicle.objects.all().order_by("vehicle_name")
-    return render(request, "dashboard/inventory/vehicle_list.html", {"vehicles": vehicles})
+    today = timezone.localdate()
+    vehicles = Vehicle.objects.select_related("assigned_employee").all()
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+    alert_filter = request.GET.get("alert", "").strip()
+    if query:
+        vehicles = vehicles.filter(
+            Q(vehicle_name__icontains=query)
+            | Q(registration_number__icontains=query)
+            | Q(make__icontains=query)
+            | Q(model__icontains=query)
+            | Q(assigned_employee__full_name__icontains=query)
+        )
+    if status_filter in {value for value, _ in Vehicle.STATUS_CHOICES}:
+        vehicles = vehicles.filter(status=status_filter)
+    else:
+        status_filter = ""
+    if alert_filter == "overdue":
+        vehicles = vehicles.filter(
+            Q(service_due_date__lt=today)
+            | Q(insurance_expiry__lt=today)
+            | Q(registration_expiry__lt=today)
+        )
+    elif alert_filter == "due_soon":
+        due_limit = today + timedelta(days=30)
+        vehicles = vehicles.filter(
+            Q(
+                service_due_date__gte=today,
+                service_due_date__lte=due_limit,
+            )
+            | Q(
+                insurance_expiry__gte=today,
+                insurance_expiry__lte=due_limit,
+            )
+            | Q(
+                registration_expiry__gte=today,
+                registration_expiry__lte=due_limit,
+            )
+        )
+    else:
+        alert_filter = ""
+    page_obj = Paginator(vehicles.order_by("vehicle_name", "pk"), 25).get_page(
+        request.GET.get("page")
+    )
+    all_vehicles = Vehicle.objects.all()
+    due_limit = today + timedelta(days=30)
+    for vehicle in page_obj.object_list:
+        vehicle.date_alerts = []
+        for label, due_date in (
+            ("Insurance", vehicle.insurance_expiry),
+            ("Registration", vehicle.registration_expiry),
+            ("Service", vehicle.service_due_date),
+        ):
+            if due_date and due_date < today:
+                vehicle.date_alerts.append((label, due_date, "overdue"))
+            elif due_date and due_date <= due_limit:
+                vehicle.date_alerts.append((label, due_date, "due_soon"))
+
+    return render(
+        request,
+        "dashboard/inventory/vehicle_list.html",
+        {
+            "vehicles": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+            "status_filter": status_filter,
+            "alert_filter": alert_filter,
+            "status_choices": Vehicle.STATUS_CHOICES,
+            "today": today,
+            "total_vehicles": all_vehicles.count(),
+            "active_vehicles": all_vehicles.filter(status="active").count(),
+            "vehicles_in_maintenance": all_vehicles.filter(
+                status="maintenance"
+            ).count(),
+            "vehicle_alerts": all_vehicles.filter(
+                Q(service_due_date__lte=due_limit)
+                | Q(insurance_expiry__lte=due_limit)
+                | Q(registration_expiry__lte=due_limit)
+            ).count(),
+        },
+    )
 
 
 @login_required
@@ -6285,9 +6889,46 @@ def maintenance_list(request):
 
     from .models import MaintenanceHistory
 
-    records = MaintenanceHistory.objects.all().order_by("-maintenance_date")
+    today = timezone.localdate()
+    records = MaintenanceHistory.objects.all()
+    query = request.GET.get("q", "").strip()
+    asset_type = request.GET.get("type", "").strip()
+    if query:
+        records = records.filter(
+            Q(asset_name__icontains=query)
+            | Q(description__icontains=query)
+            | Q(performed_by__icontains=query)
+        )
+    if asset_type in {value for value, _ in MaintenanceHistory.ASSET_TYPE_CHOICES}:
+        records = records.filter(asset_type=asset_type)
+    else:
+        asset_type = ""
+    page_obj = Paginator(records.order_by("-maintenance_date", "-pk"), 25).get_page(
+        request.GET.get("page")
+    )
+    all_records = MaintenanceHistory.objects.all()
 
-    return render(request, "dashboard/inventory/maintenance_list.html", {"records": records})
+    return render(
+        request,
+        "dashboard/inventory/maintenance_list.html",
+        {
+            "records": page_obj.object_list,
+            "page_obj": page_obj,
+            "today": today,
+            "query": query,
+            "asset_type": asset_type,
+            "asset_type_choices": MaintenanceHistory.ASSET_TYPE_CHOICES,
+            "total_records": all_records.count(),
+            "vehicle_records": all_records.filter(asset_type="vehicle").count(),
+            "equipment_records": all_records.filter(asset_type="equipment").count(),
+            "overdue_services": all_records.filter(
+                next_service_date__lt=today
+            ).count(),
+            "maintenance_cost": all_records.aggregate(total=Sum("cost"))[
+                "total"
+            ] or 0,
+        },
+    )
 
 
 @login_required
@@ -6345,18 +6986,26 @@ def business_intelligence(request):
         previous_month = current_month - 1
         previous_year = current_year
     month_start = today.replace(day=1)
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
 
     monthly_expenses = (
-        Expense.objects.filter(date__gte=month_start).aggregate(total=Sum("amount"))[
-            "total"
-        ]
+        Expense.objects.filter(
+            date__gte=month_start,
+            date__lt=next_month_start,
+        ).aggregate(total=Sum("amount"))["total"]
         or 0
     )
 
     monthly_revenue = (
-        Invoice.objects.filter(status="paid").aggregate(total=Sum("total_amount"))[
-            "total"
-        ]
+        Invoice.objects.filter(
+            status="paid",
+            paid_at__date__gte=month_start,
+            paid_at__date__lt=next_month_start,
+        ).aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
 
@@ -6463,7 +7112,9 @@ def business_intelligence(request):
 
     total_quotes = QuoteRequest.objects.count()
 
-    accepted_quotes = QuoteRequest.objects.filter(status="accepted").count()
+    accepted_quotes = QuoteRequest.objects.filter(
+        status__in=["booked", "completed"]
+    ).count()
 
     quote_conversion_rate = 0
 
@@ -6475,13 +7126,23 @@ def business_intelligence(request):
         created_at__month=current_month, created_at__year=current_year
     ).count()
 
-    completed_jobs_count = Booking.objects.filter(status="completed").count()
+    completed_jobs = Booking.objects.filter(
+        status="completed",
+        booking_date__gte=month_start,
+        booking_date__lt=next_month_start,
+    )
+    completed_jobs_count = completed_jobs.count()
+    completed_job_value = completed_jobs.aggregate(
+        total=Sum("quoted_price")
+    )["total"] or 0
 
     average_job_value = 0
 
     if completed_jobs_count > 0:
-
-        average_job_value = round(monthly_revenue / completed_jobs_count, 2)
+        average_job_value = round(
+            float(completed_job_value) / completed_jobs_count,
+            2,
+        )
 
     revenue_by_service = (
         Booking.objects.filter(status="completed")
@@ -6530,69 +7191,69 @@ def business_intelligence(request):
     repeat_customer_rate = 0
 
     if total_customer_count > 0:
-
         repeat_customer_rate = round(
             (repeat_customer_count / total_customer_count) * 100, 2
         )
 
-        health_score = 0
+    health_score = 0
 
-        # Revenue Growth
+    # Revenue Growth
 
-        if monthly_growth >= 20:
-            health_score += 25
-        elif monthly_growth >= 10:
-            health_score += 20
-        elif monthly_growth > 0:
-            health_score += 15
+    if monthly_growth >= 20:
+        health_score += 25
+    elif monthly_growth >= 10:
+        health_score += 20
+    elif monthly_growth > 0:
+        health_score += 15
 
-        # Repeat Customer Rate
+    # Repeat Customer Rate
 
-        if repeat_customer_rate >= 50:
-            health_score += 25
-        elif repeat_customer_rate >= 30:
-            health_score += 20
-        elif repeat_customer_rate >= 15:
-            health_score += 10
+    if repeat_customer_rate >= 50:
+        health_score += 25
+    elif repeat_customer_rate >= 30:
+        health_score += 20
+    elif repeat_customer_rate >= 15:
+        health_score += 10
 
-        # Quote Conversion
+    # Quote Conversion
 
-        if quote_conversion_rate >= 50:
-            health_score += 25
-        elif quote_conversion_rate >= 30:
-            health_score += 20
-        elif quote_conversion_rate >= 15:
-            health_score += 10
+    if quote_conversion_rate >= 50:
+        health_score += 25
+    elif quote_conversion_rate >= 30:
+        health_score += 20
+    elif quote_conversion_rate >= 15:
+        health_score += 10
 
-        # Average Job Value
+    # Average Job Value
 
-        if average_job_value >= 1000:
-            health_score += 25
-        elif average_job_value >= 500:
-            health_score += 20
-        elif average_job_value >= 250:
-            health_score += 10
+    if average_job_value >= 1000:
+        health_score += 25
+    elif average_job_value >= 500:
+        health_score += 20
+    elif average_job_value >= 250:
+        health_score += 10
 
-            # STEP 3 — Add
-        if health_score >= 80:
+    if health_score >= 80:
 
-            health_status = "Excellent"
+        health_status = "Excellent"
 
-        elif health_score >= 60:
+    elif health_score >= 60:
 
-            health_status = "Good"
+        health_status = "Good"
 
-        elif health_score >= 40:
+    elif health_score >= 40:
 
-            health_status = "Average"
+        health_status = "Average"
 
-        else:
+    else:
 
-            health_status = "Needs Attention"
+        health_status = "Needs Attention"
 
     today_jobs = Booking.objects.filter(booking_date=today).count()
 
-    outstanding_invoices = Invoice.objects.exclude(status="paid").count()
+    outstanding_invoices = Invoice.objects.exclude(
+        status__in=["paid", "cancelled"]
+    ).count()
 
     low_stock_items = CleaningSupply.objects.filter(
         current_stock__lte=F("minimum_stock")
@@ -6763,26 +7424,46 @@ def email_business_report(request):
 def operations_command_centre(request):
 
     today = timezone.localdate()
+    due_limit = today + timedelta(days=30)
 
     overdue_equipment = Equipment.objects.filter(next_service_date__lt=today)
-
     vehicles_due_service = Vehicle.objects.filter(service_due_date__lt=today)
 
     low_stock_supplies = CleaningSupply.objects.filter(
         current_stock__lte=F("minimum_stock")
     )
 
-    draft_purchase_orders = PurchaseOrder.objects.filter(status="draft")
+    open_purchase_orders = PurchaseOrder.objects.filter(
+        status__in=["draft", "ordered"]
+    )
 
-    outstanding_invoices = Invoice.objects.exclude(status="paid")
+    outstanding_invoices = Invoice.objects.exclude(
+        status__in=["paid", "cancelled"]
+    ).select_related("booking", "booking__customer").order_by("due_date")
 
-    unassigned_jobs = Booking.objects.filter(assigned_employee__isnull=True)
+    unassigned_jobs = Booking.objects.filter(
+        assigned_employee__isnull=True,
+        booking_date__gte=today,
+    ).exclude(status="cancelled").select_related("customer").order_by(
+        "booking_date", "booking_time"
+    )
+    upcoming_equipment = Equipment.objects.filter(
+        next_service_date__gte=today,
+        next_service_date__lte=due_limit,
+    )
+    vehicles_due_soon = Vehicle.objects.filter(
+        service_due_date__gte=today,
+        service_due_date__lte=due_limit,
+    )
 
     context = {
+        "today": today,
         "overdue_equipment": overdue_equipment,
+        "upcoming_equipment": upcoming_equipment,
         "vehicles_due_service": vehicles_due_service,
+        "vehicles_due_soon": vehicles_due_soon,
         "low_stock_supplies": low_stock_supplies,
-        "draft_purchase_orders": draft_purchase_orders,
+        "open_purchase_orders": open_purchase_orders,
         "outstanding_invoices": outstanding_invoices,
         "unassigned_jobs": unassigned_jobs,
     }
@@ -7297,29 +7978,69 @@ def employee_attendance_analytics(request):
 def owner_command_centre(request):
 
     today = timezone.localdate()
-
-    overdue_equipment = Equipment.objects.filter(next_service_date__lt=today)
-
-    vehicles_due_service = Vehicle.objects.filter(service_due_date__lt=today)
+    month_start = today.replace(day=1)
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
+    due_limit = today + timedelta(days=30)
 
     low_stock_supplies = CleaningSupply.objects.filter(
         current_stock__lte=F("minimum_stock")
     )
-
-    draft_purchase_orders = PurchaseOrder.objects.filter(status="draft")
-
-    outstanding_invoices = Invoice.objects.exclude(status="paid")
-
-    unassigned_jobs = Booking.objects.filter(assigned_employee__isnull=True)
+    overdue_equipment = Equipment.objects.filter(next_service_date__lt=today)
+    vehicles_due_service = Vehicle.objects.filter(service_due_date__lt=today)
+    draft_purchase_orders = PurchaseOrder.objects.filter(
+        status__in=["draft", "ordered"]
+    )
+    outstanding_invoices = Invoice.objects.exclude(
+        status__in=["paid", "cancelled"]
+    )
+    unassigned_jobs = Booking.objects.filter(
+        assigned_employee__isnull=True,
+        booking_date__gte=today,
+    ).exclude(status="cancelled")
+    today_jobs = Booking.objects.filter(booking_date=today).exclude(
+        status="cancelled"
+    ).count()
+    monthly_revenue = Invoice.objects.filter(
+        status="paid",
+        paid_at__date__gte=month_start,
+        paid_at__date__lt=next_month_start,
+    ).aggregate(total=Sum("total_amount"))["total"] or 0
+    monthly_expenses = Expense.objects.filter(
+        date__gte=month_start,
+        date__lt=next_month_start,
+    ).aggregate(total=Sum("amount"))["total"] or 0
+    payroll_month = PayrollRecord.objects.filter(
+        period_start__lte=today,
+        period_end__gte=month_start,
+    ).aggregate(total=Sum("gross_pay"))["total"] or 0
 
     context = {
         "today": today,
-        "overdue_equipment": overdue_equipment,
-        "vehicles_due_service": vehicles_due_service,
-        "low_stock_supplies": low_stock_supplies,
-        "draft_purchase_orders": draft_purchase_orders,
-        "outstanding_invoices": outstanding_invoices,
-        "unassigned_jobs": unassigned_jobs,
+        "today_jobs": today_jobs,
+        "outstanding_invoices": outstanding_invoices.count(),
+        "monthly_revenue": monthly_revenue,
+        "monthly_expenses": monthly_expenses,
+        "estimated_profit": monthly_revenue - monthly_expenses - payroll_month,
+        "low_stock_items": low_stock_supplies.count(),
+        "overdue_equipment": overdue_equipment.count(),
+        "vehicles_due_service": vehicles_due_service.count(),
+        "pending_leave_requests": LeaveRequest.objects.filter(
+            status="pending"
+        ).count(),
+        "draft_purchase_orders": draft_purchase_orders.count(),
+        "unassigned_jobs": unassigned_jobs.count(),
+        "equipment_due_soon": Equipment.objects.filter(
+            next_service_date__gte=today,
+            next_service_date__lte=due_limit,
+        ).count(),
+        "vehicle_due_soon": Vehicle.objects.filter(
+            service_due_date__gte=today,
+            service_due_date__lte=due_limit,
+        ).count(),
     }
 
     return render(request, "dashboard/command_centres/owner_command_centre.html", context)
@@ -7329,52 +8050,94 @@ def owner_command_centre(request):
 def business_forecasting_centre(request):
 
     today = timezone.localdate()
+    month_start = today.replace(day=1)
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
+    days_in_month = (next_month_start - month_start).days
+    elapsed_days = today.day
 
-    current_revenue = (
-        Invoice.objects.filter(created_at__month=today.month)
-        .exclude(status="cancelled")
-        .aggregate(total=Sum("total_amount"))["total"]
-        or 0
+    current_revenue = Decimal(
+        str(
+            Invoice.objects.filter(
+                status="paid",
+                paid_at__date__gte=month_start,
+                paid_at__date__lt=next_month_start,
+            ).aggregate(total=Sum("total_amount"))["total"]
+            or 0
+        )
+    )
+    current_expenses = Decimal(
+        str(
+            Expense.objects.filter(
+                date__gte=month_start,
+                date__lt=next_month_start,
+            ).aggregate(total=Sum("amount"))["total"]
+            or 0
+        )
+    )
+    current_payroll = Decimal(
+        str(
+            PayrollRecord.objects.filter(
+                period_start__lte=today,
+                period_end__gte=month_start,
+            ).aggregate(total=Sum("gross_pay"))["total"]
+            or 0
+        )
     )
 
-    current_expenses = (
-        Expense.objects.filter(date__month=today.month).aggregate(total=Sum("amount"))[
-            "total"
-        ]
-        or 0
+    current_profit = current_revenue - current_expenses - current_payroll
+    current_total_costs = current_expenses + current_payroll
+
+    projected_revenue = round(
+        (current_revenue / elapsed_days) * days_in_month,
+        2,
+    )
+    projected_expenses = round(
+        (current_expenses / elapsed_days) * days_in_month,
+        2,
+    )
+    projected_payroll = round(
+        (current_payroll / elapsed_days) * days_in_month,
+        2,
     )
 
-    current_profit = current_revenue - current_expenses
-
-    day_of_month = max(today.day, 1)
-
-    projected_revenue = round((current_revenue / day_of_month) * 30, 2)
-
-    projected_expenses = round((current_expenses / day_of_month) * 30, 2)
-
-    projected_profit = round(projected_revenue - projected_expenses, 2)
+    projected_profit = round(
+        projected_revenue - projected_expenses - projected_payroll,
+        2,
+    )
+    projected_costs = projected_expenses + projected_payroll
 
     return render(
         request,
         "dashboard/command_centres/business_forecasting_centre.html",
         {
+            "today": today,
+            "days_in_month": days_in_month,
+            "elapsed_days": elapsed_days,
             "current_revenue": current_revenue,
             "current_expenses": current_expenses,
+            "current_payroll": current_payroll,
+            "current_total_costs": current_total_costs,
             "current_profit": current_profit,
             "projected_revenue": projected_revenue,
             "projected_expenses": projected_expenses,
+            "projected_payroll": projected_payroll,
+            "projected_costs": projected_costs,
             "projected_profit": projected_profit,
             "revenue_chart": [
-                current_revenue,
-                projected_revenue,
+                float(current_revenue),
+                float(projected_revenue),
             ],
             "expense_chart": [
-                current_expenses,
-                projected_expenses,
+                float(current_total_costs),
+                float(projected_costs),
             ],
             "profit_chart": [
-                current_profit,
-                projected_profit,
+                float(current_profit),
+                float(projected_profit),
             ],
         },
     )
@@ -7383,77 +8146,102 @@ def business_forecasting_centre(request):
 @login_required
 def ai_quote_estimator(request):
 
+    from .forms import QuoteEstimateForm
+
     estimated_price = None
     confidence_level = None
+    estimate_basis = ""
+    historical_job_count = Booking.objects.filter(status="completed").count()
 
     if request.method == "POST":
+        form = QuoteEstimateForm(request.POST)
+        if form.is_valid():
+            bedrooms = form.cleaned_data["bedrooms"]
+            bathrooms = form.cleaned_data["bathrooms"]
+            property_type = form.cleaned_data["property_type"]
 
-        bedrooms = int(request.POST.get("bedrooms", 0))
+            completed_jobs = Booking.objects.filter(status="completed")
+            historical_average = completed_jobs.aggregate(
+                avg=Avg("quoted_price")
+            )["avg"]
+            pricing_history_count = historical_job_count
+            if historical_average is not None:
+                estimate_basis = (
+                    "Based on the average quoted value across "
+                    f"{historical_job_count} completed jobs."
+                )
+                confidence_level = (
+                    "High"
+                    if historical_job_count >= 100
+                    else "Medium"
+                    if historical_job_count >= 25
+                    else "Low"
+                )
+            else:
+                paid_invoices = Invoice.objects.filter(status="paid")
+                historical_average = paid_invoices.aggregate(
+                    avg=Avg("total_amount")
+                )["avg"]
+                pricing_history_count = paid_invoices.count()
+                if historical_average is not None:
+                    estimate_basis = (
+                        "Based on average paid invoice value across "
+                        f"{pricing_history_count} paid invoices."
+                    )
+                    confidence_level = "Low"
 
-        bathrooms = int(request.POST.get("bathrooms", 0))
+            if historical_average is None:
+                average_job_value = Decimal("250.00")
+                estimate_basis = (
+                    "No completed-job or paid-invoice pricing history is available. "
+                    "A starter baseline is used; treat this as a rough guide only."
+                )
+                confidence_level = "No history"
+            else:
+                average_job_value = historical_average
 
-        property_type = request.POST.get("property_type", "")
+            estimated_price = average_job_value
+            estimated_price += Decimal(bedrooms) * Decimal("20.00")
+            estimated_price += Decimal(bathrooms) * Decimal("15.00")
 
-        # completed_bookings = Booking.objects.filter(status="completed")  # unused in estimator
+            if property_type == "house":
+                estimated_price += Decimal("50.00")
+            elif property_type == "commercial":
+                estimated_price += Decimal("150.00")
 
-        average_job_value = (
-            Invoice.objects.filter(status="paid").aggregate(avg=Avg("total_amount"))[
-                "avg"
-            ]
-            or 250
-        )
-
-        estimated_price = average_job_value
-
-        estimated_price += bedrooms * 20
-        estimated_price += bathrooms * 15
-
-        if property_type == "house":
-            estimated_price += 50
-
-        elif property_type == "commercial":
-            estimated_price += 150
-
-        estimated_price = round(estimated_price, 2)
-
-        confidence_level = "Medium"
-
-        paid_invoice_count = Invoice.objects.filter(status="paid").count()
-
-        if paid_invoice_count > 100:
-            confidence_level = "High"
-
-        elif paid_invoice_count > 25:
-            confidence_level = "Medium"
-
-        else:
-            confidence_level = "Low"
+            estimated_price = estimated_price.quantize(Decimal("0.01"))
+    else:
+        form = QuoteEstimateForm()
 
     return render(
         request,
         "dashboard/marketing/ai_quote_estimator.html",
         {
+            "form": form,
             "estimated_price": estimated_price,
             "confidence_level": confidence_level,
+            "estimate_basis": estimate_basis,
+            "historical_job_count": historical_job_count,
         },
     )
 
 
 @login_required
 def quote_conversion_analytics(request):
-
-    total_quotes = QuoteRequest.objects.count()
-
-    accepted_quotes = QuoteRequest.objects.filter(status="accepted").count()
-
-    declined_quotes = QuoteRequest.objects.filter(status="declined").count()
+    quotes = QuoteRequest.objects.all()
+    total_quotes = quotes.count()
+    booked_quotes = quotes.filter(status__in=["booked", "completed"]).count()
+    declined_quotes = quotes.filter(status="lost").count()
+    open_quotes = quotes.filter(
+        status__in=["new", "contacted", "quoted"]
+    ).count()
 
     total_quote_value = (
         QuoteRequest.objects.aggregate(total=Sum("estimated_price"))["total"] or 0
     )
 
     booked_revenue = (
-        QuoteRequest.objects.filter(status="booked").aggregate(
+        QuoteRequest.objects.filter(status__in=["booked", "completed"]).aggregate(
             total=Sum("estimated_price")
         )["total"]
         or 0
@@ -7471,7 +8259,7 @@ def quote_conversion_analytics(request):
     )
 
     lost_quote_value = (
-        QuoteRequest.objects.filter(status="declined").aggregate(
+        QuoteRequest.objects.filter(status="lost").aggregate(
             total=Sum("estimated_price")
         )["total"]
         or 0
@@ -7481,40 +8269,47 @@ def quote_conversion_analytics(request):
 
     source_rows = []
 
-    sources = QuoteRequest.objects.values_list("lead_source", flat=True).distinct()
-
-    for source in sources:
-
-        source_total = QuoteRequest.objects.filter(lead_source=source).count()
-
-        source_accepted = QuoteRequest.objects.filter(
-            lead_source=source, status="booked"
-        ).count()
-
-        source_rate = 0
-
-        if source_total > 0:
-            source_rate = round((source_accepted / source_total) * 100, 2)
+    source_aggregates = (
+        QuoteRequest.objects.values("lead_source")
+        .annotate(
+            total=Count("pk"),
+            booked=Count("pk", filter=Q(status__in=["booked", "completed"])),
+        )
+        .order_by("lead_source")
+    )
+    for aggregate in source_aggregates:
+        source_total = aggregate["total"]
+        source_booked = aggregate["booked"]
+        source_rate = (
+            round((source_booked / source_total) * 100, 2)
+            if source_total
+            else 0
+        )
 
         source_rows.append(
             {
-                "source": source,
+                "source": dict(QuoteRequest.LEAD_SOURCE_CHOICES).get(
+                    aggregate["lead_source"],
+                    aggregate["lead_source"] or "Unknown",
+                ),
                 "total": source_total,
-                "accepted": source_accepted,
+                "booked": source_booked,
                 "rate": source_rate,
             }
         )
 
     if total_quotes > 0:
-        conversion_rate = round((accepted_quotes / total_quotes) * 100, 2)
+        conversion_rate = round((booked_quotes / total_quotes) * 100, 2)
 
     return render(
         request,
         "dashboard/marketing/quote_conversion_analytics.html",
         {
             "total_quotes": total_quotes,
-            "accepted_quotes": accepted_quotes,
+            "accepted_quotes": booked_quotes,
+            "booked_quotes": booked_quotes,
             "declined_quotes": declined_quotes,
+            "open_quotes": open_quotes,
             "conversion_rate": conversion_rate,
             "lost_quote_value": lost_quote_value,
             "source_rows": source_rows,
@@ -7534,8 +8329,25 @@ def quote_followup_centre(request):
     quotes = QuoteRequest.objects.filter(
         status="quoted", created_at__lte=followup_date
     ).order_by("-created_at")
+    query = request.GET.get("q", "").strip()
+    if query:
+        quotes = quotes.filter(
+            Q(name__icontains=query)
+            | Q(email__icontains=query)
+            | Q(property_type__icontains=query)
+            | Q(suburb_postcode__icontains=query)
+        )
+    page_obj = Paginator(quotes, 25).get_page(request.GET.get("page"))
 
-    return render(request, "dashboard/marketing/quote_followup_centre.html", {"quotes": quotes})
+    return render(
+        request,
+        "dashboard/marketing/quote_followup_centre.html",
+        {
+            "quotes": page_obj.object_list,
+            "page_obj": page_obj,
+            "query": query,
+        },
+    )
 
 
 @login_required
@@ -7626,13 +8438,48 @@ def create_invoice_from_booking(request, booking_id):
 
 @login_required
 def owner_alert_centre(request):
-
+    today = timezone.localdate()
+    due_limit = today + timedelta(days=30)
+    overdue_invoices = Invoice.objects.exclude(
+        status__in=["paid", "cancelled"]
+    ).filter(due_date__lt=today)
+    expiring_contracts = CleaningContract.objects.filter(
+        status="active",
+        end_date__gte=today,
+        end_date__lte=due_limit,
+    )
+    overdue_equipment = Equipment.objects.filter(next_service_date__lt=today)
+    low_stock_supplies = CleaningSupply.objects.filter(
+        current_stock__lte=F("minimum_stock")
+    )
+    vehicles_due_service = Vehicle.objects.filter(
+        Q(service_due_date__lt=today)
+        | Q(insurance_expiry__lt=today)
+        | Q(registration_expiry__lt=today)
+    )
+    pending_leave = LeaveRequest.objects.filter(status="pending")
+    unassigned_jobs = Booking.objects.filter(
+        assigned_employee__isnull=True,
+        booking_date__gte=today,
+    ).exclude(status="cancelled")
     context = {
-        "overdue_invoices": Invoice.objects.filter(status="overdue").count(),
-        "expiring_contracts": CleaningContract.objects.filter(status="active").count(),
-        "pending_leave_requests": LeaveRequest.objects.filter(status="pending").count(),
-        "low_stock_items": 0,
-        "vehicles_due_service": 0,
+        "today": today,
+        "overdue_invoices": overdue_invoices,
+        "expiring_contracts": expiring_contracts,
+        "pending_leave_requests": pending_leave,
+        "low_stock_items": low_stock_supplies,
+        "overdue_equipment": overdue_equipment,
+        "vehicles_due_service": vehicles_due_service,
+        "unassigned_jobs": unassigned_jobs,
+        "alert_count": (
+            overdue_invoices.count()
+            + expiring_contracts.count()
+            + pending_leave.count()
+            + low_stock_supplies.count()
+            + overdue_equipment.count()
+            + vehicles_due_service.count()
+            + unassigned_jobs.count()
+        ),
     }
 
     return render(request, "dashboard/command_centres/owner_alert_centre.html", context)
@@ -7690,84 +8537,113 @@ def vip_campaigns(request):
 
 @login_required
 def job_profitability_dashboard(request):
-
-    bookings = Booking.objects.all().order_by("-booking_date")
+    bookings = Booking.objects.select_related("customer").prefetch_related(
+        "invoices"
+    )
+    query = request.GET.get("q", "").strip()
+    if query:
+        bookings = bookings.filter(
+            Q(customer__full_name__icontains=query)
+            | Q(service_type__icontains=query)
+            | Q(suburb_postcode__icontains=query)
+        )
+    status_filter = request.GET.get("status", "").strip()
+    if status_filter in {value for value, _ in Booking.STATUS_CHOICES}:
+        bookings = bookings.filter(status=status_filter)
+    else:
+        status_filter = ""
+    bookings = bookings.order_by("-booking_date", "-pk")
+    paginator = Paginator(bookings, 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
 
     job_rows = []
 
-    for booking in bookings:
-
-        invoice_total = (
-            Invoice.objects.filter(booking=booking).aggregate(
-                total=Sum("total_amount")
-            )["total"]
-            or 0
+    for booking in page_obj.object_list:
+        invoices = [
+            invoice
+            for invoice in booking.invoices.all()
+            if invoice.status != "cancelled"
+        ]
+        invoice_total = sum(
+            (invoice.total_amount for invoice in invoices),
+            Decimal("0.00"),
         )
 
-        estimated_profit = invoice_total - booking.quoted_price
+        invoice_variance = invoice_total - (booking.quoted_price or Decimal("0.00"))
 
         job_rows.append(
             {
                 "booking": booking,
+                "invoices": invoices,
                 "invoice_total": invoice_total,
                 "quoted_price": booking.quoted_price,
-                "estimated_profit": estimated_profit,
+                "invoice_variance": invoice_variance,
             }
         )
 
-    return render(request, "dashboard/finance/job_profitability_dashboard.html", {"job_rows": job_rows})
+    all_bookings = Booking.objects.exclude(status="cancelled")
+    booking_total = all_bookings.aggregate(
+        total=Sum("quoted_price")
+    )["total"] or Decimal("0.00")
+    invoice_total = Invoice.objects.exclude(status="cancelled").aggregate(
+        total=Sum("total_amount")
+    )["total"] or Decimal("0.00")
+    completed_jobs = Booking.objects.filter(status="completed").count()
+    return render(
+        request,
+        "dashboard/finance/job_profitability_dashboard.html",
+        {
+            "job_rows": job_rows,
+            "page_obj": page_obj,
+            "booking_total": booking_total,
+            "invoice_total": invoice_total,
+            "invoice_variance_total": invoice_total - booking_total,
+            "completed_jobs": completed_jobs,
+            "query": query,
+            "status_filter": status_filter,
+            "status_choices": Booking.STATUS_CHOICES,
+        },
+    )
 
 
 @login_required
 def service_performance_dashboard(request):
-
-    bookings = Booking.objects.all()
-
-    services = defaultdict(
-        lambda: {
-            "jobs": 0,
-            "revenue": 0,
-        }
-    )
-
-    for booking in bookings:
-
-        services[booking.service_type]["jobs"] += 1
-
-        services[booking.service_type]["revenue"] += booking.quoted_price or 0
-
-    service_rows = []
-
-    for service, data in services.items():
-
-        service_rows.append(
-            {
-                "service": service,
-                "jobs": data["jobs"],
-                "revenue": data["revenue"],
-            }
+    completed_bookings = Booking.objects.filter(status="completed")
+    service_rows = list(
+        completed_bookings.values("service_type")
+        .annotate(
+            jobs=Count("pk"),
+            revenue=Sum("quoted_price"),
         )
-
-    service_rows = sorted(service_rows, key=lambda x: x["revenue"], reverse=True)
-
-    service_labels = [row["service"] for row in service_rows]
-
-    service_revenues = [float(row["revenue"]) for row in service_rows]
-
-    monthly_revenue = defaultdict(float)
-
-    for booking in Booking.objects.all():
-
-        month_name = booking.booking_date.strftime("%b %Y")
-
-        if month_name not in monthly_revenue:
-            monthly_revenue[month_name] = 0
-
-        monthly_revenue[month_name] += float(booking.quoted_price or 0)
-
-    revenue_labels = list(monthly_revenue.keys())
-
-    revenue_values = list(monthly_revenue.values())
+        .order_by("-revenue", "service_type")
+    )
+    monthly_rows = list(
+        completed_bookings.annotate(month=TruncMonth("booking_date"))
+        .values("month")
+        .annotate(revenue=Sum("quoted_price"))
+        .order_by("month")
+    )
+    revenue_labels = [
+        row["month"].strftime("%b %Y")
+        for row in monthly_rows
+        if row["month"]
+    ]
+    revenue_values = [
+        float(row["revenue"] or 0)
+        for row in monthly_rows
+        if row["month"]
+    ]
+    total_completed_jobs = completed_bookings.count()
+    total_completed_revenue = completed_bookings.aggregate(
+        total=Sum("quoted_price")
+    )["total"] or 0
+    average_job_value = (
+        total_completed_revenue / total_completed_jobs
+        if total_completed_jobs
+        else 0
+    )
+    service_labels = [row["service_type"] for row in service_rows]
+    service_revenues = [float(row["revenue"] or 0) for row in service_rows]
 
     return render(
         request,
@@ -7778,108 +8654,126 @@ def service_performance_dashboard(request):
             "service_revenues": service_revenues,
             "revenue_labels": revenue_labels,
             "revenue_values": revenue_values,
+            "total_completed_jobs": total_completed_jobs,
+            "total_completed_revenue": total_completed_revenue,
+            "average_job_value": average_job_value,
         },
     )
 
 
 @login_required
 def executive_bi_dashboard(request):
+    today = timezone.localdate()
+    month_start = today.replace(day=1)
+    next_month_start = (
+        month_start.replace(year=month_start.year + 1, month=1)
+        if month_start.month == 12
+        else month_start.replace(month=month_start.month + 1)
+    )
+    completed_bookings = Booking.objects.filter(status="completed")
+    total_revenue = Invoice.objects.filter(status="paid").aggregate(
+        total=Sum("total_amount")
+    )["total"] or 0
+    monthly_revenue = Invoice.objects.filter(
+        status="paid",
+        paid_at__date__gte=month_start,
+        paid_at__date__lt=next_month_start,
+    ).aggregate(total=Sum("total_amount"))["total"] or 0
 
-    total_customers = Customer.objects.count()
+    booking_months = list(
+        completed_bookings.annotate(month=TruncMonth("booking_date"))
+        .values("month")
+        .annotate(revenue=Sum("quoted_price"), bookings=Count("pk"))
+        .order_by("month")
+    )
+    monthly_booking_labels = [
+        row["month"].strftime("%b %Y")
+        for row in booking_months
+        if row["month"]
+    ]
+    monthly_booking_values = [
+        row["bookings"]
+        for row in booking_months
+        if row["month"]
+    ]
+    invoice_months = list(
+        Invoice.objects.filter(status="paid")
+        .annotate(month=TruncMonth("paid_at"))
+        .values("month")
+        .annotate(revenue=Sum("total_amount"))
+        .order_by("month")
+    )
+    monthly_revenue_labels = [
+        row["month"].strftime("%b %Y")
+        for row in invoice_months
+        if row["month"]
+    ]
+    monthly_revenue_values = [
+        float(row["revenue"] or 0)
+        for row in invoice_months
+        if row["month"]
+    ]
 
-    total_bookings = Booking.objects.count()
-
-    total_contracts = CleaningContract.objects.filter(status="active").count()
-
-    total_revenue = Customer.objects.aggregate(total=Sum("total_revenue"))["total"] or 0
-
-    vip_customers = Customer.objects.filter(total_revenue__gte=1000).count()
+    customer_months = list(
+        Customer.objects.annotate(month=TruncMonth("created_at"))
+        .values("month")
+        .annotate(customers=Count("pk"))
+        .order_by("month")
+    )
+    service_rows = list(
+        completed_bookings.values("service_type")
+        .annotate(revenue=Sum("quoted_price"))
+        .order_by("-revenue", "service_type")
+    )
+    contract_rows = list(
+        CleaningContract.objects.filter(status="active")
+        .values("frequency")
+        .annotate(revenue=Sum("price_per_visit"))
+        .order_by("frequency")
+    )
 
     context = {
-        "total_customers": total_customers,
-        "total_bookings": total_bookings,
-        "total_contracts": total_contracts,
+        "today": today,
+        "total_customers": Customer.objects.count(),
+        "total_bookings": Booking.objects.exclude(status="cancelled").count(),
+        "completed_bookings": completed_bookings.count(),
+        "total_contracts": CleaningContract.objects.filter(status="active").count(),
         "total_revenue": total_revenue,
-        "vip_customers": vip_customers,
+        "monthly_revenue": monthly_revenue,
+        "vip_customers": Customer.objects.filter(total_revenue__gte=1000).count(),
+        "monthly_revenue_labels": monthly_revenue_labels,
+        "monthly_revenue_values": monthly_revenue_values,
+        "monthly_booking_labels": monthly_booking_labels,
+        "monthly_booking_values": monthly_booking_values,
+        "customer_growth_labels": [
+            row["month"].strftime("%b %Y")
+            for row in customer_months
+            if row["month"]
+        ],
+        "customer_growth_values": [
+            row["customers"] for row in customer_months if row["month"]
+        ],
+        "service_revenue_labels": [row["service_type"] for row in service_rows],
+        "service_revenue_values": [
+            float(row["revenue"] or 0) for row in service_rows
+        ],
+        "contract_revenue_labels": [
+            dict(CleaningContract.FREQUENCY_CHOICES).get(
+                row["frequency"],
+                row["frequency"],
+            )
+            for row in contract_rows
+        ],
+        "contract_revenue_values": [
+            float(row["revenue"] or 0) for row in contract_rows
+        ],
     }
 
-    # monthly_revenue_labels/values removed; build monthly_revenue below
-
-    bookings_by_month = {}
-
-    for booking in Booking.objects.all():
-
-        month = booking.booking_date.strftime("%b %Y")
-
-        if month not in bookings_by_month:
-            bookings_by_month[month] = 0
-
-        bookings_by_month[month] += float(booking.quoted_price or 0)
-
-    # monthly_revenue_labels/values not used later; use `monthly_revenue` instead
-
-    monthly_revenue = {}
-    monthly_bookings = {}
-    customer_growth = {}
-    service_revenue = {}
-
-    for booking in Booking.objects.all().order_by("booking_date"):
-
-        month = booking.booking_date.strftime("%b %Y")
-
-        if month not in monthly_revenue:
-            monthly_revenue[month] = 0
-
-        if month not in monthly_bookings:
-            monthly_bookings[month] = 0
-
-        monthly_revenue[month] += float(booking.quoted_price or 0)
-
-        monthly_bookings[month] += 1
-
-        service = booking.service_type
-
-        if service not in service_revenue:
-            service_revenue[service] = 0
-
-        service_revenue[service] += float(booking.quoted_price or 0)
-
-    for customer in Customer.objects.all().order_by("created_at"):
-
-        month = customer.created_at.strftime("%b %Y")
-
-        if month not in customer_growth:
-            customer_growth[month] = 0
-
-        customer_growth[month] += 1
-
-    contract_revenue = {}
-
-    for contract in CleaningContract.objects.filter(status="active"):
-
-        frequency = contract.frequency
-
-        if frequency not in contract_revenue:
-            contract_revenue[frequency] = 0
-
-        contract_revenue[frequency] += float(contract.price_per_visit or 0)
-
-        context.update(
-            {
-                "monthly_revenue_labels": list(monthly_revenue.keys()),
-                "monthly_revenue_values": list(monthly_revenue.values()),
-                "monthly_booking_labels": list(monthly_bookings.keys()),
-                "monthly_booking_values": list(monthly_bookings.values()),
-                "customer_growth_labels": list(customer_growth.keys()),
-                "customer_growth_values": list(customer_growth.values()),
-                "service_revenue_labels": list(service_revenue.keys()),
-                "service_revenue_values": list(service_revenue.values()),
-                "contract_revenue_labels": list(contract_revenue.keys()),
-                "contract_revenue_values": list(contract_revenue.values()),
-            }
-        )
-
-    return render(request, "dashboard/finance/executive_bi_dashboard.html", context)
+    return render(
+        request,
+        "dashboard/finance/executive_bi_dashboard.html",
+        context,
+    )
 
 
 @login_required

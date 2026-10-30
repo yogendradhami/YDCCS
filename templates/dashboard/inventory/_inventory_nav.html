@@ -1,0 +1,8 @@
+<nav class="inventory-nav" aria-label="Operations inventory navigation">
+    <a href="{% url 'equipment_list' %}" {% if request.resolver_match.url_name == "equipment_list" or request.resolver_match.url_name == "add_equipment" or request.resolver_match.url_name == "edit_equipment" or request.resolver_match.url_name == "delete_equipment" %}aria-current="page"{% endif %}>Equipment</a>
+    <a href="{% url 'supplies_list' %}" {% if request.resolver_match.url_name == "supplies_list" or request.resolver_match.url_name == "add_supply" or request.resolver_match.url_name == "edit_supply" %}aria-current="page"{% endif %}>Supplies</a>
+    <a href="{% url 'purchase_orders' %}" {% if request.resolver_match.url_name == "purchase_orders" or request.resolver_match.url_name == "add_purchase_order" or request.resolver_match.url_name == "receive_purchase_order" %}aria-current="page"{% endif %}>Purchase orders</a>
+    <a href="{% url 'supplier_list' %}" {% if request.resolver_match.url_name == "supplier_list" or request.resolver_match.url_name == "add_supplier" or request.resolver_match.url_name == "edit_supplier" %}aria-current="page"{% endif %}>Suppliers</a>
+    <a href="{% url 'vehicle_list' %}" {% if request.resolver_match.url_name == "vehicle_list" or request.resolver_match.url_name == "add_vehicle" or request.resolver_match.url_name == "edit_vehicle" %}aria-current="page"{% endif %}>Vehicles</a>
+    <a href="{% url 'maintenance_list' %}" {% if request.resolver_match.url_name == "maintenance_list" or request.resolver_match.url_name == "add_maintenance" %}aria-current="page"{% endif %}>Maintenance</a>
+</nav>

@@ -1,8 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 
 from .forms import ExpenseForm
 from .models import Expense
@@ -13,22 +15,65 @@ def expense_list(request):
     today = timezone.now().date()
     month_start = today.replace(day=1)
 
-    expenses = Expense.objects.select_related("paid_by").all()
+    all_expenses = Expense.objects.select_related("paid_by").all()
+    expenses = all_expenses
+    query = request.GET.get("q", "").strip()
+    category = request.GET.get("category", "").strip()
+    date_from_value = request.GET.get("date_from", "").strip()
+    date_to_value = request.GET.get("date_to", "").strip()
 
-    total_expenses = expenses.aggregate(total=Sum("amount"))["total"] or 0
+    total_expenses = all_expenses.aggregate(total=Sum("amount"))["total"] or 0
 
     month_expenses = (
-        expenses.filter(date__gte=month_start).aggregate(total=Sum("amount"))["total"]
+        all_expenses.filter(
+            date__gte=month_start,
+            date__lte=today,
+        ).aggregate(total=Sum("amount"))["total"]
         or 0
     )
+
+    if query:
+        expenses = expenses.filter(description__icontains=query)
+    if category in dict(Expense.CATEGORY_CHOICES):
+        expenses = expenses.filter(category=category)
+    else:
+        category = ""
+    date_from = parse_date(date_from_value) if date_from_value else None
+    date_to = parse_date(date_to_value) if date_to_value else None
+    filter_error = ""
+    if date_from_value and not date_from:
+        filter_error = "Enter a valid start date."
+        date_from_value = ""
+    if date_to_value and not date_to:
+        filter_error = "Enter a valid end date."
+        date_to_value = ""
+    if date_from and date_to and date_from > date_to:
+        filter_error = "The start date must be on or before the end date."
+    else:
+        if date_from:
+            expenses = expenses.filter(date__gte=date_from)
+        if date_to:
+            expenses = expenses.filter(date__lte=date_to)
+
+    paginator = Paginator(expenses, 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
 
     return render(
         request,
         "expenses/expense_list.html",
         {
-            "expenses": expenses,
+            "expenses": page_obj.object_list,
+            "page_obj": page_obj,
+            "category_choices": Expense.CATEGORY_CHOICES,
             "total_expenses": total_expenses,
             "month_expenses": month_expenses,
+            "today": today,
+            "filtered_total": expenses.aggregate(total=Sum("amount"))["total"] or 0,
+            "query": query,
+            "category": category,
+            "date_from": date_from_value,
+            "date_to": date_to_value,
+            "filter_error": filter_error,
         },
     )
 
@@ -57,6 +102,7 @@ def add_expense(request):
             "form": form,
             "page_title": "Add Expense",
             "button_text": "Save Expense",
+            "expense": None,
         },
     )
 
@@ -84,6 +130,7 @@ def edit_expense(request, expense_id):
             "form": form,
             "page_title": "Edit Expense",
             "button_text": "Update Expense",
+            "expense": expense,
         },
     )
 
@@ -99,7 +146,7 @@ def delete_expense(request, expense_id):
 
     return render(
         request,
-        "shared/confirm_delete.html",
+        "expenses/expense_confirm_delete.html",
         {
             "object_name": str(expense),
             "cancel_url": "/dashboard/expenses/",

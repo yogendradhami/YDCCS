@@ -17,8 +17,6 @@ from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
-from io import BytesIO
-
 import stripe
 from django.conf import settings
 from django.contrib import messages
@@ -29,12 +27,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-
 from .forms import InvoiceForm
 from .forms import InvoiceWorkOrderFormSet
 from .models import Invoice
+from .pdf_utils import generate_invoice_pdf
 
 from django.db.models import Q, Sum
 
@@ -50,7 +46,6 @@ from bookings.models import Booking
 from customers.models import Customer
 from google_reviews.calendar_utils import delete_booking_event, delete_roster_event
 from .services import get_booking_work_order_initial, replace_invoice_work_orders
-
 
 
 def get_accessible_invoice(request, invoice_id):
@@ -309,20 +304,6 @@ def create_invoice(request):
             if work_orders:
                 with transaction.atomic():
                     booking = Booking.objects.select_for_update().get(pk=booking.pk)
-                    existing_invoice = (
-                        Invoice.objects.filter(booking=booking).order_by("pk").first()
-                    )
-                    if existing_invoice:
-                        messages.warning(
-                            request,
-                            f"An invoice already exists for this booking "
-                            f"({existing_invoice.invoice_number}).",
-                        )
-                        return redirect(
-                            "invoice_detail",
-                            invoice_id=existing_invoice.pk,
-                        )
-
                     invoice = form.save(commit=False)
                     invoice.booking = booking
                     invoice.amount = sum(
@@ -332,25 +313,33 @@ def create_invoice(request):
                     invoice.save()
                     replace_invoice_work_orders(invoice, work_orders)
 
-                # Keep manual invoices on the same PDF-email workflow as
-                # automatically generated invoices.
-                from dashboard.views import send_invoice_email
+                if request.POST.get("send_invoice_email") == "on":
+                    from dashboard.views import send_invoice_email
 
-                if send_invoice_email(request, invoice):
+                    if send_invoice_email(request, invoice):
+                        messages.success(
+                            request,
+                            (
+                                f"Invoice {invoice.invoice_number} created and emailed "
+                                f"to {invoice.booking.customer.email}."
+                            ),
+                        )
+                    else:
+                        messages.warning(
+                            request,
+                            (
+                                f"Invoice {invoice.invoice_number} was created, but the "
+                                "customer email could not be sent. Check the customer's "
+                                "email address and mail service settings."
+                            ),
+                        )
+                else:
                     messages.success(
                         request,
                         (
-                            f"Invoice {invoice.invoice_number} created and emailed "
-                            f"to {invoice.booking.customer.email}."
-                        ),
-                    )
-                else:
-                    messages.warning(
-                        request,
-                        (
-                            f"Invoice {invoice.invoice_number} was created, but the "
-                            "customer email could not be sent. Check the customer's "
-                            "email address and mail service settings."
+                            f"Invoice {invoice.invoice_number} was created. "
+                            "No email was sent. You can choose email delivery when "
+                            "creating another invoice."
                         ),
                     )
 
@@ -410,6 +399,10 @@ def create_invoice(request):
             "work_order_formset": work_order_formset,
             "booking_work_orders_json": _booking_work_orders_json(),
             "is_edit": False,
+            "send_invoice_email_requested": (
+                request.method == "POST"
+                and request.POST.get("send_invoice_email") == "on"
+            ),
         },
     )
 
@@ -1093,407 +1086,14 @@ def stripe_payment_cancel(request, invoice_id):
 
 @login_required
 def download_invoice_pdf(request, invoice_id):
-
-    import os
-
-    invoice = get_accessible_invoice(
-        request,
-        invoice_id,
-    )
-
-    booking = invoice.booking
-    customer = booking.customer
-
-    buffer = BytesIO()
-
-    pdf = canvas.Canvas(
-        buffer,
-        pagesize=A4,
-    )
-
-    width, height = A4
-
-    # --------------------------------------------------
-    # Logo
-    # --------------------------------------------------
-
-    logo_path = os.path.join(
-        settings.BASE_DIR,
-        "static",
-        "images",
-        "logo.jpeg",
-    )
-
-    if os.path.exists(logo_path):
-
-        pdf.drawImage(
-            logo_path,
-            45,
-            height - 120,
-            width=85,
-            height=85,
-            preserveAspectRatio=True,
-            mask="auto",
-        )
-
-    # --------------------------------------------------
-    # Company details
-    # --------------------------------------------------
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        20,
-    )
-
-    pdf.drawString(
-        145,
-        height - 55,
-        "YD Commercial Cleaning Services",
-    )
-
-    pdf.setFont(
-        "Helvetica",
-        9,
-    )
-
-    pdf.drawString(
-        145,
-        height - 75,
-        "ABN: 95 916 203 175",
-    )
-
-    pdf.drawString(
-        145,
-        height - 90,
-        "2/10 Da Costa Avenue, Prospect SA 5082",
-    )
-
-    pdf.drawString(
-        145,
-        height - 105,
-        "Phone: 0430 049 865",
-    )
-
-    pdf.drawString(
-        145,
-        height - 120,
-        "Email: info@ydcleaning.com.au",
-    )
-
-    # --------------------------------------------------
-    # Invoice details
-    # --------------------------------------------------
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        18,
-    )
-
-    pdf.drawRightString(
-        width - 45,
-        height - 95,
-        invoice.invoice_number,
-    )
-
-    pdf.setFont(
-        "Helvetica",
-        10,
-    )
-
-    pdf.drawRightString(
-        width - 45,
-        height - 115,
-        f"Issue Date: {invoice.issue_date}",
-    )
-
-    if invoice.due_date:
-
-        pdf.drawRightString(
-            width - 45,
-            height - 133,
-            f"Due Date: {invoice.due_date}",
-        )
-
-    else:
-
-        pdf.drawRightString(
-            width - 45,
-            height - 133,
-            "Due Date: Not set",
-        )
-
-    pdf.drawRightString(
-        width - 45,
-        height - 151,
-        f"Status: {invoice.get_status_display()}",
-    )
-
-    pdf.line(
-        45,
-        height - 170,
-        width - 45,
-        height - 170,
-    )
-
-    # --------------------------------------------------
-    # Client information
-    # --------------------------------------------------
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        13,
-    )
-
-    pdf.drawString(
-        45,
-        height - 185,
-        "CLIENT INFORMATION",
-    )
-
-    pdf.setFont(
-        "Helvetica",
-        10,
-    )
-
-    y = height - 205
-
-    pdf.drawString(
-        45,
-        y,
-        f"Name: {customer.full_name}",
-    )
-
-    y -= 16
-
-    pdf.drawString(
-        45,
-        y,
-        f"Phone: {customer.phone}",
-    )
-
-    y -= 16
-
-    if customer.email:
-
-        pdf.drawString(
-            45,
-            y,
-            f"Email: {customer.email}",
-        )
-
-        y -= 16
-
-    if customer.address:
-
-        pdf.drawString(
-            45,
-            y,
-            f"Address: {customer.address}",
-        )
-
-    # --------------------------------------------------
-    # Job details
-    # --------------------------------------------------
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        13,
-    )
-
-    pdf.drawString(
-        330,
-        height - 185,
-        "JOB DETAILS",
-    )
-
-    pdf.setFont(
-        "Helvetica",
-        10,
-    )
-
-    y2 = height - 205
-
-    pdf.drawString(
-        330,
-        y2,
-        f"Service: {booking.service_type}",
-    )
-
-    y2 -= 16
-
-    pdf.drawString(
-        330,
-        y2,
-        f"Date: {booking.booking_date}",
-    )
-
-    y2 -= 16
-
-    pdf.drawString(
-        330,
-        y2,
-        f"Time: {booking.booking_time}",
-    )
-
-    y2 -= 16
-
-    pdf.drawString(
-        330,
-        y2,
-        f"Suburb: {booking.suburb_postcode}",
-    )
-
-    y2 -= 16
-
-    pdf.drawString(
-        330,
-        y2,
-        f"Address: {booking.address[:38]}",
-    )
-
-    # --------------------------------------------------
-    # Invoice table
-    # --------------------------------------------------
-
-    table_top = height - 330
-
-    pdf.setFillColorRGB(
-        0.94,
-        0.96,
-        0.98,
-    )
-
-    pdf.rect(
-        45,
-        table_top,
-        width - 90,
-        28,
-        fill=True,
-        stroke=False,
-    )
-
-    pdf.setFillColorRGB(
-        0,
-        0,
-        0,
-    )
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        10,
-    )
-
-    pdf.drawString(
-        55,
-        table_top + 9,
-        "Description",
-    )
-
-    pdf.drawRightString(
-        385,
-        table_top + 9,
-        "Qty",
-    )
-
-    pdf.drawRightString(
-        470,
-        table_top + 9,
-        "Price",
-    )
-
-    pdf.drawRightString(
-        width - 55,
-        table_top + 9,
-        "Total",
-    )
-
-    row_y = table_top - 32
-
-    pdf.setFont(
-        "Helvetica",
-        10,
-    )
-
-    pdf.drawString(
-        55,
-        row_y,
-        booking.service_type[:45],
-    )
-
-    pdf.drawRightString(
-        385,
-        row_y,
-        "1",
-    )
-
-    pdf.drawRightString(
-        470,
-        row_y,
-        f"${invoice.amount:.2f}",
-    )
-
-    pdf.drawRightString(
-        width - 55,
-        row_y,
-        f"${invoice.amount:.2f}",
-    )
-
-    pdf.line(
-        45,
-        row_y - 18,
-        width - 45,
-        row_y - 18,
-    )
-
-    # --------------------------------------------------
-    # Description
-    # --------------------------------------------------
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        12,
-    )
-
-    pdf.drawString(
-        45,
-        row_y - 55,
-        "Description",
-    )
-
-    pdf.setFont(
-        "Helvetica",
-        10,
-    )
-
-    desc_y = row_y - 75
-
-    description = (
-        invoice.description
-        or "Cleaning service"
-    )
-
-    for line in description.split("\n"):
-
-        pdf.drawString(
-            45,
-            desc_y,
-            line[:80],
-        )
-
-        desc_y -= 14
-
-        if desc_y < 180:
-            break
-
-    buffer.seek(0)
-
+    invoice = get_accessible_invoice(request, invoice_id)
+    pdf_buffer = generate_invoice_pdf(invoice)
     return FileResponse(
-        buffer,
+        pdf_buffer,
         as_attachment=True,
         filename=f"{invoice.invoice_number}.pdf",
+        content_type="application/pdf",
     )
-
-
 
 def send_payment_received_email(invoice):
     """

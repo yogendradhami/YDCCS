@@ -1,55 +1,41 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Vehicle management | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Vehicle management{% endblock %}
+{% block page_subtitle %}Track fleet assignments, registration, insurance and service dates.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <div class="crm-panel-header">
-        <h1>Vehicle Management</h1>
-
-        <a href="{% url 'add_vehicle' %}" class="btn-fill">
-            Add Vehicle
-        </a>
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Fleet</span><h2>Keep every vehicle road-ready.</h2><p>Review assignments and catch registration, insurance or service dates that need attention.</p></div><a class="inventory-button" href="{% url 'add_vehicle' %}">＋ Add vehicle</a></section>
+    <div class="inventory-metrics">
+        <article class="inventory-metric is-accent"><span class="inventory-metric-label">Vehicles</span><strong class="inventory-metric-value">{{ total_vehicles }}</strong><small class="inventory-metric-foot">All fleet records</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Active</span><strong class="inventory-metric-value">{{ active_vehicles }}</strong><small class="inventory-metric-foot">Available fleet</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">In maintenance</span><strong class="inventory-metric-value">{{ vehicles_in_maintenance }}</strong><small class="inventory-metric-foot">Unavailable for assignment</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Date alerts</span><strong class="inventory-metric-value">{{ vehicle_alerts }}</strong><small class="inventory-metric-foot">Due within 30 days or overdue</small></article>
     </div>
-
-    <table class="dashboard-table">
-        <thead>
-            <tr>
-                <th>Vehicle</th>
-                <th>Registration</th>
-                <th>Assigned Employee</th>
-                <th>Insurance Expiry</th>
-                <th>Registration Expiry</th>
-                <th>Service Due</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for vehicle in vehicles %}
+    {% if not total_vehicles %}<div class="inventory-callout"><strong>No vehicle records exist yet.</strong> The fleet metrics are zero because there are no vehicles recorded in the current database. Add a vehicle to track assignment and expiry dates.</div>{% endif %}
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Fleet register</span><h3>Vehicles and compliance dates</h3><p>{{ page_obj.paginator.count }} matching vehicles · as of {{ today|date:"j M Y" }}</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="vehicle-query">Search</label><input id="vehicle-query" type="search" name="q" value="{{ query }}" placeholder="Vehicle, rego or employee"></div>
+            <div class="inventory-filter-field"><label for="vehicle-status">Status</label><select id="vehicle-status" name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <div class="inventory-filter-field"><label for="vehicle-alert">Date alerts</label><select id="vehicle-alert" name="alert"><option value="">All dates</option><option value="overdue" {% if alert_filter == "overdue" %}selected{% endif %}>Overdue</option><option value="due_soon" {% if alert_filter == "due_soon" %}selected{% endif %}>Due within 30 days</option></select></div>
+            <button type="submit" class="inventory-button">Filter fleet</button><a class="inventory-button-secondary" href="{% url 'vehicle_list' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Vehicle</th><th>Registration</th><th>Employee</th><th>Insurance</th><th>Registration expiry</th><th>Service due</th><th>Status / alerts</th><th>Action</th></tr></thead>
+            <tbody>{% for vehicle in vehicles %}
                 <tr>
-                    <td>{{ vehicle.vehicle_name }}</td>
-                    <td>{{ vehicle.registration_number }}</td>
-                    <td>{{ vehicle.assigned_employee|default:"Not Assigned" }}</td>
-                    <td>{{ vehicle.insurance_expiry }}</td>
-                    <td>{{ vehicle.registration_expiry }}</td>
-                    <td>{{ vehicle.service_due_date }}</td>
-                    <td>{{ vehicle.get_status_display }}</td>
-                    <td>
-                        <a href="{% url 'edit_vehicle' vehicle.id %}">
-                            Edit
-                        </a>
-                    </td>
+                    <td><strong>{{ vehicle.vehicle_name }}</strong>{% if vehicle.make or vehicle.model %}<br><small>{{ vehicle.make }} {{ vehicle.model }}{% if vehicle.year %} · {{ vehicle.year }}{% endif %}</small>{% endif %}</td>
+                    <td>{{ vehicle.registration_number }}</td><td>{{ vehicle.assigned_employee|default:"Not assigned" }}</td>
+                    <td>{{ vehicle.insurance_expiry|date:"j M Y"|default:"—" }}</td><td>{{ vehicle.registration_expiry|date:"j M Y"|default:"—" }}</td><td>{{ vehicle.service_due_date|date:"j M Y"|default:"—" }}</td>
+                    <td><span class="inventory-status {% if vehicle.status == 'active' %}is-good{% elif vehicle.status == 'maintenance' %}is-warning{% else %}is-danger{% endif %}">{{ vehicle.get_status_display }}</span>{% for label,due_date,alert in vehicle.date_alerts %}<br><small>{% if alert == "overdue" %}<span class="inventory-status is-danger">{{ label }} overdue · {{ due_date|date:"j M Y" }}</span>{% else %}<span class="inventory-status is-warning">{{ label }} due soon · {{ due_date|date:"j M Y" }}</span>{% endif %}</small>{% endfor %}</td>
+                    <td><a class="inventory-button-secondary" href="{% url 'edit_vehicle' vehicle.pk %}">Edit</a></td>
                 </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="8">No vehicles found.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+            {% empty %}<tr><td colspan="8"><div class="inventory-empty"><strong>{% if query or status_filter or alert_filter %}No vehicles match these filters{% else %}No vehicles have been added{% endif %}</strong>Adjust your filters or add a vehicle to populate the fleet register.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Vehicle pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;alert={{ alert_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;alert={{ alert_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
 </div>
-
 {% endblock %}

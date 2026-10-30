@@ -52,7 +52,7 @@ class ManualInvoiceEmailTests(TestCase):
         }
 
     @patch("dashboard.views.send_invoice_email", return_value=True)
-    def test_manual_invoice_is_emailed_after_creation(self, send_invoice_email):
+    def test_manual_invoice_email_is_opt_in_and_off_by_default(self, send_invoice_email):
         response = self.client.post(reverse("create_invoice"), self.form_data)
 
         self.assertEqual(response.status_code, 302, response.content[:500])
@@ -62,11 +62,14 @@ class ManualInvoiceEmailTests(TestCase):
             reverse("invoice_detail", args=[invoice.pk]),
             fetch_redirect_response=False,
         )
-        send_invoice_email.assert_called_once_with(response.wsgi_request, invoice)
+        send_invoice_email.assert_not_called()
         self.assertEqual(invoice.booking_id, self.booking.pk)
         messages = list(response.wsgi_request._messages)
         self.assertTrue(
-            any("created and emailed" in message.message for message in messages)
+            any(
+                "No email was sent" in message.message
+                for message in messages
+            )
         )
 
     def test_create_invoice_page_renders_work_order_formset(self):
@@ -75,6 +78,34 @@ class ManualInvoiceEmailTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Work orders")
         self.assertContains(response, 'id="id_work_orders-TOTAL_FORMS"')
+        self.assertContains(
+            response,
+            'name="send_invoice_email"',
+        )
+        self.assertContains(
+            response,
+            "Email this invoice to the customer after creation",
+        )
+
+    @patch("dashboard.views.send_invoice_email", return_value=True)
+    def test_manual_invoice_can_be_emailed_when_explicitly_selected(
+        self, send_invoice_email
+    ):
+        response = self.client.post(
+            reverse("create_invoice"),
+            {**self.form_data, "send_invoice_email": "on"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        invoice = Invoice.objects.get()
+        send_invoice_email.assert_called_once_with(response.wsgi_request, invoice)
+        self.assertTrue(
+            any(
+                f"Invoice {invoice.invoice_number} created and emailed"
+                in message.message
+                for message in response.wsgi_request._messages
+            )
+        )
 
     @override_settings(
         EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
@@ -96,28 +127,91 @@ class ManualInvoiceEmailTests(TestCase):
         self.assertEqual(sent_email.to, ["recipient@example.com"])
         self.assertEqual(sent_email.attachments[0][0], f"{invoice.invoice_number}.pdf")
         self.assertEqual(sent_email.attachments[0][2], "application/pdf")
+        self.assertTrue(sent_email.attachments[0][1].startswith(b"%PDF-"))
+        self.assertGreater(len(sent_email.attachments[0][1]), 1000)
+        invoice.refresh_from_db()
+        self.assertEqual(invoice.status, "sent")
+        self.assertContains(
+            self.client.get(reverse("invoice_detail", args=[invoice.pk])),
+            "Sent",
+        )
+        self.assertContains(
+            self.client.get(reverse("invoice_list")),
+            "Sent",
+        )
+
+    def test_dashboard_invoice_download_returns_a_complete_pdf(self):
+        invoice = Invoice.objects.create(
+            booking=self.booking,
+            description="Office cleaning",
+            amount=Decimal("250.00"),
+        )
+
+        response = self.client.get(
+            reverse("download_invoice_pdf", args=[invoice.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertIn(
+            f'filename="{invoice.invoice_number}.pdf"',
+            response["Content-Disposition"],
+        )
+        pdf_content = b"".join(response.streaming_content)
+        self.assertTrue(pdf_content.startswith(b"%PDF-"))
+        self.assertGreater(len(pdf_content), 1000)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    )
+    def test_successful_invoice_email_keeps_sent_status_after_due_date(self):
+        invoice = Invoice.objects.create(
+            booking=self.booking,
+            description="Office cleaning",
+            amount=Decimal("250.00"),
+            issue_date=date.today() - timedelta(days=30),
+            due_date=date.today() - timedelta(days=16),
+        )
+        request = RequestFactory().get("/")
+        request.user = self.user
+
+        from dashboard.views import send_invoice_email
+
+        self.assertTrue(send_invoice_email(request, invoice))
+        invoice.refresh_from_db()
+        self.assertEqual(invoice.status, "sent")
 
     @patch("dashboard.views.send_invoice_email", return_value=True)
-    def test_manual_invoice_creation_does_not_duplicate_a_booking_invoice(
+    def test_manual_invoice_creation_allows_multiple_invoices_for_one_booking(
         self, send_invoice_email
     ):
         first_response = self.client.post(reverse("create_invoice"), self.form_data)
-        invoice = Invoice.objects.get()
+        first_invoice = Invoice.objects.get()
 
         second_response = self.client.post(reverse("create_invoice"), self.form_data)
+        invoices = list(Invoice.objects.order_by("pk"))
+        second_invoice = invoices[-1]
 
         self.assertRedirects(
             first_response,
-            reverse("invoice_detail", args=[invoice.pk]),
+            reverse("invoice_detail", args=[first_invoice.pk]),
             fetch_redirect_response=False,
         )
         self.assertRedirects(
             second_response,
-            reverse("invoice_detail", args=[invoice.pk]),
+            reverse("invoice_detail", args=[second_invoice.pk]),
             fetch_redirect_response=False,
         )
-        self.assertEqual(Invoice.objects.count(), 1)
-        send_invoice_email.assert_called_once()
+        self.assertEqual(len(invoices), 2)
+        self.assertEqual(
+            {invoice.booking_id for invoice in invoices},
+            {self.booking.pk},
+        )
+        self.assertNotEqual(
+            first_invoice.invoice_number,
+            second_invoice.invoice_number,
+        )
+        send_invoice_email.assert_not_called()
 
     @patch("dashboard.views.send_invoice_email", return_value=True)
     def test_manual_invoice_sums_multiple_work_orders(
@@ -155,18 +249,23 @@ class ManualInvoiceEmailTests(TestCase):
         )
         self.assertContains(detail_response, "1. Office Cleaning")
         self.assertContains(detail_response, "2. Carpet Cleaning")
-        send_invoice_email.assert_called_once()
+        send_invoice_email.assert_not_called()
 
     @patch("dashboard.views.send_invoice_email", return_value=False)
-    def test_failed_email_reports_invoice_was_created(self, send_invoice_email):
-        response = self.client.post(reverse("create_invoice"), self.form_data)
+    def test_manual_invoice_email_failure_does_not_undo_invoice(
+        self, send_invoice_email
+    ):
+        response = self.client.post(
+            reverse("create_invoice"),
+            {**self.form_data, "send_invoice_email": "on"},
+        )
 
         self.assertEqual(response.status_code, 302, response.content[:500])
         self.assertEqual(Invoice.objects.count(), 1)
         send_invoice_email.assert_called_once()
         messages = list(response.wsgi_request._messages)
         self.assertTrue(
-            any("could not be sent" in message.message for message in messages)
+            any("customer email could not be sent" in message.message for message in messages)
         )
 
 
@@ -196,6 +295,13 @@ class InvoiceBookingServiceTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "$110.00")
         self.assertNotContains(response, "$110.0000")
+        self.assertIn(b"<!DOCTYPE html>", response.content)
+        self.assertContains(response, "YD Commercial Cleaning Services")
+        self.assertContains(response, "class=\"invoice-card\"")
+        self.assertNotContains(response, "crm-sidebar")
+        self.assertNotContains(response, "crm-topbar")
+        self.assertNotContains(response, "Pay Now with Stripe")
+        self.assertNotContains(response, "Back to Invoices")
 
     def test_invoice_creation_is_idempotent_for_a_booking(self):
         booking = Booking.objects.create(

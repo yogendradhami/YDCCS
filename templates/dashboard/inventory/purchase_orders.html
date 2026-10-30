@@ -1,76 +1,40 @@
 {% extends "dashboard_base.html" %}
-
+{% load static %}
+{% block title %}Purchase orders | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Purchase orders{% endblock %}
+{% block page_subtitle %}Track supply orders through draft, ordered and received status.{% endblock %}
 {% block content %}
-
-<div class="dashboard-card">
-
-    <div class="crm-panel-header">
-        <h1>Purchase Orders</h1>
-
-        <a href="/dashboard/purchase-orders/add/"
-           class="btn-fill">
-            Create Order
-        </a>
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Procurement</span><h2>Every order, accounted for.</h2><p>Review open orders, record receipts and keep stock quantities in step with deliveries.</p></div><a class="inventory-button" href="{% url 'add_purchase_order' %}">＋ Create order</a></section>
+    <div class="inventory-metrics">
+        <article class="inventory-metric is-accent"><span class="inventory-metric-label">Purchase orders</span><strong class="inventory-metric-value">{{ total_orders }}</strong><small class="inventory-metric-foot">All recorded orders</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Open orders</span><strong class="inventory-metric-value">{{ open_orders }}</strong><small class="inventory-metric-foot">Draft or ordered</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Received</span><strong class="inventory-metric-value">{{ received_orders }}</strong><small class="inventory-metric-foot">Stock receipt recorded</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Recorded order value</span><strong class="inventory-metric-value">${{ order_value|floatformat:2 }}</strong><small class="inventory-metric-foot">Quantity × unit cost</small></article>
     </div>
-
-    <table class="dashboard-table">
-
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Supply</th>
-                <th>Supplier</th>
-                <th>Qty</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-        {% for order in orders %}
-
-            <tr>
-
-                <td>#{{ order.id }}</td>
-
-                <td>{{ order.supply }}</td>
-
-                <td>{{ order.supplier_name }}</td>
-
-                <td>{{ order.quantity }}</td>
-
-                <td>{{ order.get_status_display }}</td>
-
-                <td>
-
-                    {% if order.status != "received" %}
-
-                        <a href="{% url 'receive_purchase_order' order.id %}"
-                        class="btn-fill">
-
-                            Receive Stock
-
-                        </a>
-
-                    {% else %}
-
-                        <span class="status-badge success">
-                            Received
-                        </span>
-
-                    {% endif %}
-
-                </td>
-
-            </tr>
-
-        {% endfor %}
-
-        </tbody>
-
-    </table>
-
+    {% if not total_orders %}<div class="inventory-callout"><strong>No purchase orders exist yet.</strong> The totals are zero because there are no purchase-order records in this database. Create an order to begin tracking deliveries.</div>{% endif %}
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Order register</span><h3>Order history</h3><p>{{ page_obj.paginator.count }} matching orders</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="order-query">Search</label><input id="order-query" type="search" name="q" value="{{ query }}" placeholder="Supply, supplier or notes"></div>
+            <div class="inventory-filter-field"><label for="order-status">Status</label><select id="order-status" name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <button type="submit" class="inventory-button">Filter orders</button><a class="inventory-button-secondary" href="{% url 'purchase_orders' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Order</th><th>Supply</th><th>Supplier</th><th>Quantity</th><th>Unit cost</th><th>Total</th><th>Ordered</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{% for order in orders %}
+                <tr>
+                    <td><strong>PO-{{ order.pk|stringformat:"05d" }}</strong></td><td>{{ order.supply.name }}</td><td>{{ order.supplier_name }}</td>
+                    <td>{{ order.quantity }} {{ order.supply.get_unit_display|lower }}</td><td>${{ order.unit_cost|floatformat:2 }}</td><td>${{ order.total_cost|floatformat:2 }}</td>
+                    <td>{{ order.order_date|date:"j M Y" }}</td>
+                    <td>{% if order.status == "received" %}<span class="inventory-status is-good">{{ order.get_status_display }}</span>{% elif order.status == "cancelled" %}<span class="inventory-status is-danger">{{ order.get_status_display }}</span>{% elif order.status == "ordered" %}<span class="inventory-status is-warning">{{ order.get_status_display }}</span>{% else %}<span class="inventory-status">{{ order.get_status_display }}</span>{% endif %}</td>
+                    <td>{% if order.status == "draft" or order.status == "ordered" %}<form method="post" action="{% url 'receive_purchase_order' order.pk %}" onsubmit="return confirm('Record this delivery and add {{ order.quantity }} units of {{ order.supply.name }} to stock?');">{% csrf_token %}<button type="submit" class="inventory-button">Receive stock</button></form>{% elif order.status == "received" %}<span class="inventory-status is-good">Stock received</span>{% else %}<span class="inventory-status">No action</span>{% endif %}</td>
+                </tr>
+            {% empty %}<tr><td colspan="9"><div class="inventory-empty"><strong>{% if query or status_filter %}No orders match these filters{% else %}No purchase orders have been created{% endif %}</strong>Adjust your filters or create a purchase order.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Purchase order pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
 </div>
-
 {% endblock %}

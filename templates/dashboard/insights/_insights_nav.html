@@ -1,0 +1,17 @@
+<nav class="finance-nav" aria-label="Business and operations insights">
+    <a href="{% url 'business_health' %}" {% if request.resolver_match.url_name == "business_health" %}aria-current="page"{% endif %}>Business health</a>
+    <a href="{% url 'analytics:dashboard' %}" {% if request.resolver_match.namespace == "analytics" %}aria-current="page"{% endif %}>Website analytics</a>
+    <a href="{% url 'business_kpis' %}" {% if request.resolver_match.url_name == "business_kpis" %}aria-current="page"{% endif %}>Business KPIs</a>
+    <a href="{% url 'business_intelligence' %}" {% if request.resolver_match.url_name == "business_intelligence" %}aria-current="page"{% endif %}>Business intelligence</a>
+    <a href="{% url 'job_profitability_dashboard' %}" {% if request.resolver_match.url_name == "job_profitability_dashboard" %}aria-current="page"{% endif %}>Job finance</a>
+    <a href="{% url 'executive_bi_dashboard' %}" {% if request.resolver_match.url_name == "executive_bi_dashboard" %}aria-current="page"{% endif %}>Executive BI</a>
+    <a href="{% url 'service_performance_dashboard' %}" {% if request.resolver_match.url_name == "service_performance_dashboard" %}aria-current="page"{% endif %}>Service performance</a>
+    <a href="{% url 'ai_quote_estimator' %}" {% if request.resolver_match.url_name == "ai_quote_estimator" %}aria-current="page"{% endif %}>Quote estimator</a>
+    <a href="{% url 'quote_conversion_analytics' %}" {% if request.resolver_match.url_name == "quote_conversion_analytics" %}aria-current="page"{% endif %}>Quote analytics</a>
+    <a href="{% url 'quote_followup_centre' %}" {% if request.resolver_match.url_name == "quote_followup_centre" %}aria-current="page"{% endif %}>Quote follow-ups</a>
+    <a href="{% url 'owner_command_centre' %}" {% if request.resolver_match.url_name == "owner_command_centre" %}aria-current="page"{% endif %}>Owner overview</a>
+    <a href="{% url 'owner_alert_centre' %}" {% if request.resolver_match.url_name == "owner_alert_centre" %}aria-current="page"{% endif %}>Owner alerts</a>
+    <a href="{% url 'executive_dashboard' %}" {% if request.resolver_match.url_name == "executive_dashboard" %}aria-current="page"{% endif %}>Executive</a>
+    <a href="{% url 'business_forecasting_centre' %}" {% if request.resolver_match.url_name == "business_forecasting_centre" %}aria-current="page"{% endif %}>Forecast</a>
+    <a href="{% url 'operations_command_centre' %}" {% if request.resolver_match.url_name == "operations_command_centre" %}aria-current="page"{% endif %}>Operations</a>
+</nav>

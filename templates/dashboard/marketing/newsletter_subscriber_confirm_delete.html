@@ -1,0 +1,29 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Delete subscriber | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Delete newsletter subscriber{% endblock %}
+{% block page_subtitle %}Confirm removal of the subscriber record.{% endblock %}
+
+{% block content %}
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-panel reputation-confirm">
+        <span class="reputation-eyebrow">Permanent action</span>
+        <h2>Remove this subscriber?</h2>
+        <p>The subscriber record will be permanently deleted. This will not send an email.</p>
+        <div class="reputation-detail-list">
+            <div class="reputation-detail-item"><span>Email</span><strong>{{ subscriber.email }}</strong></div>
+            <div class="reputation-detail-item"><span>Consent</span><strong>{% if subscriber.consent_given %}Recorded{% else %}Not recorded{% endif %}</strong></div>
+            <div class="reputation-detail-item"><span>Status</span><strong>{% if subscriber.is_active %}Active{% else %}Inactive{% endif %}</strong></div>
+            <div class="reputation-detail-item"><span>Added</span><strong>{{ subscriber.created_at|date:"j F Y" }}</strong></div>
+        </div>
+        <form method="post" class="reputation-actions" style="margin-top:16px">
+            {% csrf_token %}
+            <button type="submit" class="reputation-button-danger">Delete subscriber</button>
+            <a href="{% url 'newsletter_subscriber_detail' subscriber.pk %}" class="reputation-button-secondary">Keep subscriber</a>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,271 @@
+.reputation-page {
+    --rep-ink: #122235;
+    --rep-muted: #637487;
+    --rep-line: #dce5ed;
+    --rep-paper: #fff;
+    --rep-teal: #087e78;
+    --rep-blue: #1769aa;
+    color: var(--rep-ink);
+    padding: 8px 0 36px;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.reputation-nav {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+    padding: 6px;
+    border: 1px solid var(--rep-line);
+    border-radius: 14px;
+    background: var(--rep-paper);
+    scrollbar-width: thin;
+}
+
+.reputation-nav a {
+    display: inline-flex;
+    min-height: 39px;
+    flex: 0 0 auto;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: 10px;
+    color: var(--rep-muted);
+    font-size: .8rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.reputation-nav a:hover { background: #f0f5f8; color: var(--rep-ink); }
+.reputation-nav a[aria-current="page"] { background: #102b46; color: #fff; }
+
+.reputation-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+    padding: 22px 24px;
+    border: 1px solid #d5e5ee;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 90% 15%, rgba(19, 130, 153, .15), transparent 35%),
+        linear-gradient(120deg, #fff, #f5fafc);
+}
+
+.reputation-hero-copy { max-width: 720px; }
+.reputation-eyebrow,
+.reputation-overline {
+    color: var(--rep-teal);
+    font-size: .68rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.reputation-hero h2 {
+    margin: 6px 0;
+    color: var(--rep-ink);
+    font-size: clamp(1.45rem, 3vw, 2rem);
+    letter-spacing: -.035em;
+}
+
+.reputation-hero p {
+    margin: 0;
+    color: var(--rep-muted);
+    font-size: .86rem;
+    line-height: 1.6;
+}
+
+.reputation-actions,
+.reputation-inline-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.reputation-button,
+.reputation-button-secondary,
+.reputation-button-danger {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 13px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: #102b46;
+    color: #fff;
+    font: inherit;
+    font-size: .76rem;
+    font-weight: 850;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .16s ease, background .16s ease;
+}
+
+.reputation-button:hover,
+.reputation-button-secondary:hover,
+.reputation-button-danger:hover { transform: translateY(-1px); }
+.reputation-button-secondary { border-color: var(--rep-line); background: #fff; color: var(--rep-ink); }
+.reputation-button-secondary:hover { background: #f5f8fa; }
+.reputation-button-danger { background: #b42332; }
+.reputation-button-danger:hover { background: #941b28; }
+
+.reputation-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.reputation-metric {
+    min-width: 0;
+    padding: 17px;
+    border: 1px solid var(--rep-line);
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 7px 22px rgba(16, 43, 70, .035);
+}
+
+.reputation-metric-label { display: block; color: var(--rep-muted); font-size: .73rem; font-weight: 800; }
+.reputation-metric-value { display: block; margin-top: 8px; color: var(--rep-ink); font-size: clamp(1.25rem, 2.2vw, 1.7rem); font-weight: 950; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.reputation-metric-foot { display: block; margin-top: 5px; color: #8492a1; font-size: .69rem; }
+.reputation-metric.is-accent .reputation-metric-value { color: var(--rep-teal); }
+
+.reputation-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; margin-bottom: 15px; }
+.reputation-panel {
+    min-width: 0;
+    padding: 19px;
+    border: 1px solid var(--rep-line);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 7px 24px rgba(16, 43, 70, .035);
+}
+
+.reputation-panel.span-12 { grid-column: span 12; }
+.reputation-panel.span-8 { grid-column: span 8; }
+.reputation-panel.span-7 { grid-column: span 7; }
+.reputation-panel.span-6 { grid-column: span 6; }
+.reputation-panel.span-5 { grid-column: span 5; }
+.reputation-panel.span-4 { grid-column: span 4; }
+
+.reputation-panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 15px;
+}
+
+.reputation-panel-heading h3 { margin: 3px 0 0; color: var(--rep-ink); font-size: 1.02rem; }
+.reputation-panel-heading p { margin: 5px 0 0; color: var(--rep-muted); font-size: .76rem; line-height: 1.5; }
+
+.reputation-table-wrap { overflow-x: auto; border: 1px solid var(--rep-line); border-radius: 12px; }
+.reputation-table { width: 100%; border-collapse: collapse; background: #fff; text-align: left; }
+.reputation-table th { padding: 11px 13px; background: #f1f5f8; color: #637487; font-size: .65rem; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+.reputation-table td { padding: 12px 13px; border-top: 1px solid #edf1f4; color: #405366; font-size: .78rem; vertical-align: middle; }
+.reputation-table tbody tr:hover { background: #f8fbfc; }
+.reputation-table td small { color: var(--rep-muted); font-size: .68rem; }
+.reputation-table .numeric { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.reputation-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #edf2f6;
+    color: #536978;
+    font-size: .65rem;
+    font-weight: 850;
+    white-space: nowrap;
+}
+.reputation-status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; }
+.reputation-status.is-active,
+.reputation-status.is-sent { background: #e8f7f0; color: #147052; }
+.reputation-status.is-warning { background: #fff6e8; color: #92631b; }
+.reputation-status.is-danger { background: #fff0ef; color: #b42332; }
+
+.reputation-filter-bar { display: flex; flex-wrap: wrap; align-items: end; gap: 9px; margin-bottom: 14px; }
+.reputation-filter-field { display: grid; gap: 5px; }
+.reputation-filter-field label,
+.reputation-field label { color: var(--rep-ink); font-size: .73rem; font-weight: 800; }
+.reputation-filter-field input,
+.reputation-filter-field select,
+.reputation-field input,
+.reputation-field select,
+.reputation-field textarea {
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 9px 11px;
+    border: 1px solid #d4dfe7;
+    border-radius: 9px;
+    background: #fff;
+    color: var(--rep-ink);
+    font: inherit;
+    font-size: .79rem;
+}
+
+.reputation-field input,
+.reputation-field select,
+.reputation-field textarea { width: 100%; }
+.reputation-field input[type="checkbox"] { width: auto; min-height: auto; }
+.reputation-field textarea { min-height: 130px; resize: vertical; }
+.reputation-filter-field input:focus,
+.reputation-filter-field select:focus,
+.reputation-field input:focus,
+.reputation-field select:focus,
+.reputation-field textarea:focus { border-color: #3b91ba; outline: 3px solid rgba(59,145,186,.14); }
+
+.reputation-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.reputation-field { display: grid; align-content: start; gap: 6px; }
+.reputation-field.full-width { grid-column: 1 / -1; }
+.reputation-field-error,
+.reputation-errors { color: #b42332; font-size: .74rem; font-weight: 700; }
+.reputation-field .helptext { color: var(--rep-muted); font-size: .69rem; }
+
+.reputation-review-card {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--rep-line);
+    border-radius: 14px;
+    background: linear-gradient(145deg, #fff, #f8fbfc);
+}
+.reputation-review-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.reputation-review-author { color: var(--rep-ink); font-weight: 900; }
+.reputation-stars { color: #dc9a20; letter-spacing: .08em; white-space: nowrap; }
+.reputation-review-text { margin: 0; color: #536678; font-size: .84rem; line-height: 1.7; white-space: pre-wrap; }
+.reputation-review-meta { color: #8291a0; font-size: .7rem; }
+
+.reputation-star-bars { display: grid; gap: 12px; }
+.reputation-star-row { display: grid; grid-template-columns: 58px minmax(60px,1fr) 34px; align-items: center; gap: 9px; color: var(--rep-muted); font-size: .73rem; font-weight: 750; }
+.reputation-star-track { height: 9px; overflow: hidden; border-radius: 999px; background: #edf1f4; }
+.reputation-star-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #eeb64d, #d98d22); }
+
+.reputation-callout { padding: 13px 15px; border: 1px solid #d5e5ee; border-radius: 12px; background: #f3f9fc; color: #536978; font-size: .77rem; line-height: 1.6; }
+.reputation-callout.is-warning { border-color: #f3dfb5; background: #fff9ed; }
+.reputation-empty { padding: 26px 15px; color: var(--rep-muted); text-align: center; }
+.reputation-empty strong { display: block; margin-bottom: 5px; color: var(--rep-ink); }
+.reputation-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; color: var(--rep-muted); font-size: .76rem; }
+.reputation-pagination a { color: var(--rep-blue); font-weight: 850; text-decoration: none; }
+.reputation-confirm { max-width: 720px; margin: 32px auto; }
+.reputation-confirm h2 { margin: 7px 0; }
+.reputation-confirm p { color: var(--rep-muted); line-height: 1.6; }
+.reputation-detail-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.reputation-detail-item { padding: 13px; border: 1px solid var(--rep-line); border-radius: 11px; background: #f8fafc; }
+.reputation-detail-item span { display: block; color: var(--rep-muted); font-size: .67rem; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
+.reputation-detail-item strong { display: block; margin-top: 5px; color: var(--rep-ink); font-size: .86rem; overflow-wrap: anywhere; }
+
+@media (max-width: 1000px) {
+    .reputation-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .reputation-panel.span-8,
+    .reputation-panel.span-7,
+    .reputation-panel.span-5,
+    .reputation-panel.span-4 { grid-column: span 6; }
+}
+@media (max-width: 700px) {
+    .reputation-hero { align-items: flex-start; flex-direction: column; padding: 18px; }
+    .reputation-grid { display: block; }
+    .reputation-panel { margin-bottom: 13px; padding: 16px; }
+    .reputation-form-grid { grid-template-columns: 1fr; }
+    .reputation-field.full-width { grid-column: auto; }
+    .reputation-detail-list { grid-template-columns: 1fr; }
+}

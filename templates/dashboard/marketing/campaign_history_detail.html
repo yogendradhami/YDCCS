@@ -1,100 +1,38 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}
-Campaign History
-{% endblock %}
-
-{% block page_title %}
-Campaign History
-{% endblock %}
-
-{% block page_subtitle %}
-View campaign history details.
-{% endblock %}
+{% block title %}Campaign details | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/reputation-suite.css' %}">{% endblock %}
+{% block page_title %}Campaign send details{% endblock %}
+{% block page_subtitle %}Review the recorded send information for this campaign.{% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <div>
-            <h2>Campaign Details</h2>
-            <p style="margin:6px 0 0;">
-                Historical campaign information.
-            </p>
+<div class="reputation-page">
+    {% include "dashboard/reviews/_reputation_nav.html" %}
+    <section class="reputation-hero">
+        <div class="reputation-hero-copy"><span class="reputation-eyebrow">Campaign history</span><h2>{{ campaign.title }}</h2><p>{{ campaign.get_campaign_type_display }} · sent {{ campaign.sent_at|date:"j F Y, g:i A" }}</p></div>
+        <div class="reputation-actions">
+            <a class="reputation-button-secondary" href="{% url 'edit_campaign_history' campaign.pk %}">Edit record</a>
+            <a class="reputation-button-danger" href="{% url 'delete_campaign_history' campaign.pk %}">Delete record</a>
+            <a class="reputation-button-secondary" href="{% url 'campaign_center' %}">Back to center</a>
         </div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-
-            <a
-                href="{% url 'edit_campaign_history' campaign.id %}"
-                class="small-link-btn"
-            >
-                Edit
-            </a>
-
-            <a
-                href="{% url 'delete_campaign_history' campaign.id %}"
-                class="small-link-btn"
-            >
-                Delete
-            </a>
-
-            <a
-                href="{% url 'campaign_center' %}"
-                class="small-link-btn"
-            >
-                Back to Campaign Center
-            </a>
-
+    </section>
+    <div class="reputation-metrics">
+        <article class="reputation-metric is-accent"><span class="reputation-metric-label">Recipients recorded</span><strong class="reputation-metric-value">{{ campaign.recipients_count }}</strong><small class="reputation-metric-foot">Application send log</small></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Campaign type</span><strong class="reputation-metric-value">{{ campaign.get_campaign_type_display }}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Sent by</span><strong class="reputation-metric-value">{% if campaign.sent_by %}{{ campaign.sent_by.get_full_name|default:campaign.sent_by.username }}{% else %}System{% endif %}</strong></article>
+        <article class="reputation-metric"><span class="reputation-metric-label">Sent at</span><strong class="reputation-metric-value">{{ campaign.sent_at|date:"j M Y" }}</strong><small class="reputation-metric-foot">{{ campaign.sent_at|date:"g:i A" }}</small></article>
+    </div>
+    <section class="reputation-panel">
+        <header class="reputation-panel-heading"><div><span class="reputation-overline">Send record</span><h3>Campaign details</h3></div></header>
+        <div class="reputation-detail-list">
+            <div class="reputation-detail-item"><span>Campaign title</span><strong>{{ campaign.title }}</strong></div>
+            <div class="reputation-detail-item"><span>Type</span><strong>{{ campaign.get_campaign_type_display }}</strong></div>
+            <div class="reputation-detail-item"><span>Recipient count</span><strong>{{ campaign.recipients_count }}</strong></div>
+            <div class="reputation-detail-item"><span>Sent by</span><strong>{% if campaign.sent_by %}{{ campaign.sent_by.get_full_name|default:campaign.sent_by.username }}{% else %}System{% endif %}</strong></div>
+            <div class="reputation-detail-item"><span>Date and time</span><strong>{{ campaign.sent_at|date:"j F Y, g:i A" }}</strong></div>
         </div>
-    </div>
-
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <tbody>
-
-                <tr>
-                    <th>Campaign</th>
-                    <td>{{ campaign.title }}</td>
-                </tr>
-
-                <tr>
-                    <th>Campaign Type</th>
-                    <td>{{ campaign.get_campaign_type_display }}</td>
-                </tr>
-
-                <tr>
-                    <th>Recipients</th>
-                    <td>{{ campaign.recipients_count }}</td>
-                </tr>
-
-                <tr>
-                    <th>Sent By</th>
-                    <td>
-                        {% if campaign.sent_by %}
-                            {{ campaign.sent_by.username }}
-                        {% else %}
-                            System
-                        {% endif %}
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Sent At</th>
-                    <td>
-                        {{ campaign.sent_at|date:"d M Y H:i" }}
-                    </td>
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+        <p class="reputation-callout" style="margin-top:14px">This record contains the campaign type, time and recipient count. Delivery status, opens, clicks and recipient-level history are not tracked here.</p>
+    </section>
+</div>
 {% endblock %}

@@ -1,150 +1,29 @@
 {% extends "dashboard_base.html" %}
-
-{% block title %}
-Executive Dashboard
-{% endblock %}
-
-{% block page_title %}
-Executive Dashboard
-{% endblock %}
-
-{% block page_subtitle %}
-Owner-level overview of revenue, profit, payroll, bookings and business performance.
-{% endblock %}
-
+{% load static %}
+{% block title %}Executive dashboard | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Executive dashboard{% endblock %}
+{% block page_subtitle %}A concise overview of cash collection, profit and work in progress.{% endblock %}
 {% block content %}
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Revenue</span>
-        <h2>${{ total_revenue }}</h2>
-        <p>Paid invoice revenue</p>
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero"><div class="finance-hero-copy"><span class="finance-eyebrow">Leadership snapshot</span><h2>Performance at a glance.</h2><p>Paid invoices are used for revenue; profit estimate is revenue less recorded payroll.</p></div><div class="finance-hero-actions"><a class="finance-button-secondary" href="{% url 'business_intelligence' %}">Explore business intelligence</a></div></section>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Paid invoice revenue</span><strong class="finance-metric-value">${{ total_revenue|floatformat:2 }}</strong><small class="finance-metric-foot">All time</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Paid this month</span><strong class="finance-metric-value">${{ monthly_revenue|floatformat:2 }}</strong></article>
+        <article class="finance-metric {% if profit_estimate < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Estimated profit</span><strong class="finance-metric-value">${{ profit_estimate|floatformat:2 }}</strong><small class="finance-metric-foot">Revenue less payroll</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Outstanding balance</span><strong class="finance-metric-value">${{ outstanding_balance|floatformat:2 }}</strong><small class="finance-metric-foot">Cancelled invoices excluded</small></article>
     </div>
-
-    <div class="crm-card">
-        <span>This Month Revenue</span>
-        <h2>${{ monthly_revenue }}</h2>
-        <p>Paid this month</p>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Payroll recorded</span><strong class="finance-metric-value">${{ payroll_total|floatformat:2 }}</strong><small class="finance-metric-foot">{{ payroll_percent|floatformat:1 }}% of paid revenue</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Quote conversion</span><strong class="finance-metric-value">{{ conversion_rate|floatformat:1 }}%</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Upcoming jobs</span><strong class="finance-metric-value">{{ upcoming_jobs }}</strong></article>
+        <article class="finance-metric"><span class="finance-metric-label">Pending bookings</span><strong class="finance-metric-value">{{ pending_bookings }}</strong></article>
     </div>
-
-    <div class="crm-card">
-        <span>Estimated Profit</span>
-        <h2>${{ profit_estimate }}</h2>
-        <p>Revenue minus payroll</p>
+    <div class="finance-grid">
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Service delivery</span><h3>Top service</h3></div></header>{% if top_service %}<p><strong>{{ top_service.service_type }}</strong> · {{ top_service.total }} completed jobs</p>{% else %}<div class="finance-empty-state"><strong>No completed services</strong>Service performance will appear here.</div>{% endif %}</section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Team delivery</span><h3>Top employee</h3></div></header>{% if top_employee %}<p><strong>{{ top_employee.assigned_employee__full_name }}</strong> · {{ top_employee.total }} completed jobs</p>{% else %}<div class="finance-empty-state"><strong>No employee jobs</strong>Assigned completed jobs will appear here.</div>{% endif %}</section>
     </div>
-
-    <div class="crm-card">
-        <span>Outstanding Balance</span>
-        <h2>${{ outstanding_balance }}</h2>
-        <p>Unpaid invoices</p>
-    </div>
-
+    <section class="finance-panel"><header class="finance-panel-heading"><div><span class="finance-overline">Activity</span><h3>Recent updates</h3></div><a class="finance-button-secondary" href="{% url 'activity_log_list' %}">View all activity</a></header><div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Date</th><th>User</th><th>Type</th><th>Activity</th></tr></thead><tbody>{% for activity in recent_activity %}<tr><td>{{ activity.created_at|date:"j M Y H:i" }}</td><td>{{ activity.user.username|default:"System" }}</td><td>{{ activity.get_action_type_display }}</td><td>{{ activity.title }}</td></tr>{% empty %}<tr><td colspan="4"><div class="finance-empty-state"><strong>No recent activity</strong>Dashboard activity will appear here.</div></td></tr>{% endfor %}</tbody></table></div></section>
 </div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Payroll</span>
-        <h2>${{ payroll_total }}</h2>
-        <p>{{ payroll_percent }}% of revenue</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Quote Conversion</span>
-        <h2>{{ conversion_rate }}%</h2>
-        <p>Booked quotes</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Upcoming Jobs</span>
-        <h2>{{ upcoming_jobs }}</h2>
-        <p>Future scheduled work</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Pending Bookings</span>
-        <h2>{{ pending_bookings }}</h2>
-        <p>Need attention</p>
-    </div>
-
-</div>
-
-<section class="crm-two-column">
-
-    <div class="crm-panel">
-        <div class="crm-panel-header">
-            <h2>Top Service</h2>
-        </div>
-
-        {% if top_service %}
-            <div class="crm-list-item">
-                <strong>{{ top_service.service_type }}</strong>
-                <span>{{ top_service.total }} completed jobs</span>
-            </div>
-        {% else %}
-            <p>No completed services yet.</p>
-        {% endif %}
-    </div>
-
-    <div class="crm-panel">
-        <div class="crm-panel-header">
-            <h2>Top Employee</h2>
-        </div>
-
-        {% if top_employee %}
-            <div class="crm-list-item">
-                <strong>{{ top_employee.assigned_employee__full_name }}</strong>
-                <span>{{ top_employee.total }} completed jobs</span>
-            </div>
-        {% else %}
-            <p>No completed employee jobs yet.</p>
-        {% endif %}
-    </div>
-
-</section>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Recent Activity</h2>
-        <a href="/dashboard/activity/">View All</a>
-    </div>
-
-    {% if recent_activity %}
-        <div class="table-wrapper">
-            <table class="dashboard-table advanced-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>User</th>
-                        <th>Type</th>
-                        <th>Activity</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for activity in recent_activity %}
-                        <tr>
-                            <td>{{ activity.created_at|date:"d M Y H:i" }}</td>
-                            <td>
-                                {% if activity.user %}
-                                    {{ activity.user.username }}
-                                {% else %}
-                                    System
-                                {% endif %}
-                            </td>
-                            <td>{{ activity.get_action_type_display }}</td>
-                            <td>{{ activity.title }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p>No recent activity found.</p>
-    {% endif %}
-
-</section>
-
 {% endblock %}

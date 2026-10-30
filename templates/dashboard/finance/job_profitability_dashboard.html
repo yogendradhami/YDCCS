@@ -1,59 +1,72 @@
-{% extends 'dashboard_base.html' %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Job Profitability{% endblock %}
+{% block title %}Job finance | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Job finance{% endblock %}
+{% block page_subtitle %}Compare booking quotes with invoices raised for each job.{% endblock %}
 
 {% block content %}
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero">
+        <div class="finance-hero-copy">
+            <span class="finance-eyebrow">Booking-to-invoice overview</span>
+            <h2>Follow the value of every job.</h2>
+            <p>This page compares quoted booking value with invoice totals. It is not a net-profit calculation because job-level labour and materials costs are not assigned here.</p>
+        </div>
+        <div class="finance-hero-actions">
+            <a class="finance-button-secondary" href="{% url 'booking_list' %}">Bookings</a>
+            <a class="finance-button-secondary" href="{% url 'invoice_list' %}">Invoices</a>
+        </div>
+    </section>
 
-<h1>Job Profitability Dashboard</h1>
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Job Profitability</h2>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Quoted booking value</span><strong class="finance-metric-value">${{ booking_total|floatformat:2 }}</strong><small class="finance-metric-foot">All bookings</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Invoice value</span><strong class="finance-metric-value">${{ invoice_total|floatformat:2 }}</strong><small class="finance-metric-foot">Cancelled invoices excluded</small></article>
+        <article class="finance-metric {% if invoice_variance_total < 0 %}is-negative{% else %}is-positive{% endif %}"><span class="finance-metric-label">Invoice-to-quote difference</span><strong class="finance-metric-value">${{ invoice_variance_total|floatformat:2 }}</strong><small class="finance-metric-foot">Invoice value less quoted value</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Bookings shown</span><strong class="finance-metric-value">{{ page_obj.paginator.count }}</strong><small class="finance-metric-foot">All booking records</small></article>
     </div>
 
-    <div class="table-wrapper">
-
-        <table class="dashboard-table advanced-table">
-
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Service</th>
-                    <th>Date</th>
-                    <th>Quoted Price</th>
-                    <th>Invoice Total</th>
-                    <th>Estimated Profit</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for row in job_rows %}
-
-                <tr>
-                    <td>{{ row.booking.customer.full_name }}</td>
-                    <td>{{ row.booking.service_type }}</td>
-                    <td>{{ row.booking.booking_date }}</td>
-                    <td>${{ row.quoted_price }}</td>
-                    <td>${{ row.invoice_total }}</td>
-                    <td>${{ row.estimated_profit }}</td>
-                </tr>
-
-                {% empty %}
-
-                <tr>
-                    <td colspan="6">No job data found.</td>
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+    <section class="finance-panel">
+        <header class="finance-panel-heading"><div><span class="finance-overline">Job register</span><h3>Quotes and invoices</h3><p>Each row can have multiple separate invoices.</p></div></header>
+        <div class="finance-table-wrap">
+            <table class="finance-table">
+                <thead><tr><th>Customer / booking</th><th>Service</th><th>Date</th><th class="numeric">Quoted</th><th class="numeric">Invoiced</th><th class="numeric">Difference</th><th>Invoice links</th></tr></thead>
+                <tbody>
+                    {% for row in job_rows %}
+                        <tr>
+                            <td><strong>{{ row.booking.customer.full_name|default:"No customer" }}</strong><br><small>Booking #{{ row.booking.pk }}</small></td>
+                            <td>{{ row.booking.get_service_type_display|default:row.booking.service_type }}</td>
+                            <td>{{ row.booking.booking_date|date:"j M Y" }}</td>
+                            <td class="numeric">${{ row.quoted_price|default:0|floatformat:2 }}</td>
+                            <td class="numeric"><strong>${{ row.invoice_total|floatformat:2 }}</strong></td>
+                            <td class="numeric {% if row.invoice_variance < 0 %}finance-negative{% endif %}">${{ row.invoice_variance|floatformat:2 }}</td>
+                            <td>
+                                {% if row.invoices %}
+                                    <div class="finance-inline-actions">
+                                        {% for invoice in row.invoices %}
+                                            <a class="finance-button-secondary" href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="finance-overline">No invoice</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7"><div class="finance-empty-state"><strong>No bookings found</strong>Booking quote and invoice comparisons will appear here.</div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+            <nav class="finance-pagination" aria-label="Booking pages">
+                {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">← Newer</a>{% else %}<span></span>{% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Older →</a>{% else %}<span></span>{% endif %}
+            </nav>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

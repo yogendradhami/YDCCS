@@ -194,8 +194,69 @@ textarea.damage-report-control {
 .damage-report-history-card > header {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     gap: 16px;
     color: var(--portal-text);
+}
+
+.employee-damage-case-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.employee-damage-case-status {
+    display: inline-flex;
+    min-height: 25px;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px;
+    border: 1px solid #cce8df;
+    border-radius: 999px;
+    background: #effaf5;
+    color: #177052;
+    font-size: .67rem;
+    font-weight: 850;
+}
+
+.employee-damage-case-status i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1ba66f;
+}
+
+.employee-damage-case-status.is-closed {
+    border-color: #d7e3e8;
+    background: #edf2f5;
+    color: #536978;
+}
+
+.employee-damage-case-status.is-closed i {
+    background: #748596;
+}
+
+.employee-damage-case-resolution {
+    display: grid;
+    gap: 4px;
+    margin: 14px 0;
+    padding: 13px 15px;
+    border: 1px solid #d6e4e9;
+    border-radius: 12px;
+    background: #f2f6f8;
+}
+
+.employee-damage-case-resolution strong {
+    color: var(--portal-text);
+    font-size: .84rem;
+}
+
+.employee-damage-case-resolution span,
+.employee-damage-case-resolution small {
+    color: var(--portal-text-soft);
+    font-size: .76rem;
+    line-height: 1.5;
 }
 
 .damage-report-history-card time {
@@ -239,16 +300,60 @@ textarea.damage-report-control {
     font-size: 1rem;
 }
 
+.damage-report-history-replies .damage-conversation-presence {
+    min-height: 20px;
+    margin: -4px 0 12px;
+    color: var(--portal-text-soft);
+    font-size: .74rem;
+    font-weight: 700;
+}
+
+.damage-report-history-replies .damage-conversation-presence.is-active {
+    color: #177052;
+}
+
+.damage-report-history-replies .damage-conversation-presence.is-typing {
+    color: #0759c9;
+}
+
 .damage-report-history-replies article {
+    max-width: 90%;
     margin-top: 10px;
     padding: 12px;
+    border: 1px solid var(--portal-border);
     border-radius: 10px;
-    background: var(--portal-surface-soft);
+    background: var(--portal-surface);
+}
+
+.damage-report-history-replies article.is-employee {
+    margin-left: auto;
+    border-color: #cfe7e4;
+    background: #eff8f7;
+}
+
+.employee-damage-reply-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .damage-report-history-replies article > strong {
     margin-right: 10px;
     color: var(--portal-text);
+}
+
+.employee-damage-reply-meta > span {
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--portal-surface-soft);
+    color: var(--portal-text-soft);
+    font-size: .65rem;
+    font-weight: 800;
+}
+
+.employee-damage-reply-meta time {
+    margin-left: auto;
 }
 
 .damage-report-history-replies article p {
@@ -278,10 +383,26 @@ textarea.damage-report-control {
     border-radius: 10px;
     color: var(--portal-text);
     font: inherit;
+    white-space: pre-wrap;
 }
 
 .employee-damage-report-reply-form button {
     justify-self: start;
+}
+
+.employee-damage-report-reply-form button:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+.employee-damage-report-reply-form .damage-chat-feedback {
+    min-height: 18px;
+    color: #177052;
+    font-size: .74rem;
+}
+
+.employee-damage-report-reply-form .damage-chat-feedback.is-error {
+    color: #b42318;
 }
 
 @media (max-width: 600px) {
@@ -296,6 +417,10 @@ textarea.damage-report-control {
     .damage-report-actions > * {
         justify-content: center;
         text-align: center;
+    }
+
+    .damage-report-history-replies article {
+        max-width: 100%;
     }
 }
 

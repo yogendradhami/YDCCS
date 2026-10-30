@@ -1,107 +1,31 @@
 {% extends "dashboard_base.html" %}
-
-{% block title %}
-Business Health
-{% endblock %}
-
-{% block page_title %}
-Business Health
-{% endblock %}
-
-{% block page_subtitle %}
-Owner-level overview of revenue, payroll, quotes and operations.
-{% endblock %}
-
+{% load static %}
+{% block title %}Business health | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/finance-suite.css' %}">{% endblock %}
+{% block page_title %}Business health{% endblock %}
+{% block page_subtitle %}A clear, at-a-glance view of financial momentum, customers and delivery.{% endblock %}
 {% block content %}
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Revenue</span>
-        <h2>${{ total_revenue }}</h2>
-        <p>From completed jobs</p>
+<div class="finance-page">
+    {% include "dashboard/insights/_insights_nav.html" %}
+    <section class="finance-hero">
+        <div class="finance-hero-copy"><span class="finance-eyebrow">Owner overview · {{ today|date:"j F Y" }}</span><h2>Know where the business stands.</h2><p>Revenue and operating signals are based on recorded bookings, invoices, payroll and quote activity.</p></div>
+        <div class="finance-hero-actions"><a class="finance-button-secondary" href="{% url 'business_kpis' %}">View business KPIs</a></div>
+    </section>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Completed-job value</span><strong class="finance-metric-value">${{ total_revenue|floatformat:2 }}</strong><small class="finance-metric-foot">All completed jobs</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">This month</span><strong class="finance-metric-value">${{ monthly_revenue|floatformat:2 }}</strong><small class="finance-metric-foot">Completed-job value</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Average job value</span><strong class="finance-metric-value">${{ average_job_value|floatformat:2 }}</strong><small class="finance-metric-foot">Completed jobs</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Quote conversion</span><strong class="finance-metric-value">{{ quote_conversion_rate|floatformat:1 }}%</strong><small class="finance-metric-foot">Booked or completed quotes</small></article>
     </div>
-
-    <div class="crm-card">
-        <span>This Month Revenue</span>
-        <h2>${{ monthly_revenue }}</h2>
-        <p>Current month completed jobs</p>
+    <div class="finance-metric-grid">
+        <article class="finance-metric"><span class="finance-metric-label">Payroll recorded</span><strong class="finance-metric-value">${{ payroll_total|floatformat:2 }}</strong><small class="finance-metric-foot">{{ payroll_cost_percent|floatformat:1 }}% of completed-job value</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Completed jobs</span><strong class="finance-metric-value">{{ completed_jobs }}</strong><small class="finance-metric-foot">All-time</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Upcoming jobs</span><strong class="finance-metric-value">{{ upcoming_jobs }}</strong><small class="finance-metric-foot">Scheduled future work</small></article>
+        <article class="finance-metric"><span class="finance-metric-label">Pending bookings</span><strong class="finance-metric-value">{{ pending_bookings }}</strong><small class="finance-metric-foot">Awaiting action</small></article>
     </div>
-
-    <div class="crm-card">
-        <span>Average Job Value</span>
-        <h2>${{ average_job_value }}</h2>
-        <p>Revenue per completed job</p>
+    <div class="finance-grid">
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Service delivery</span><h3>Top service</h3></div></header>{% if top_service %}<p><strong>{{ top_service.service_type }}</strong> · {{ top_service.total }} completed jobs</p>{% else %}<div class="finance-empty-state"><strong>No completed services yet</strong>Completed service data will appear here.</div>{% endif %}</section>
+        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Team delivery</span><h3>Top employee</h3></div></header>{% if top_employee %}<p><strong>{{ top_employee.assigned_employee__full_name }}</strong> · {{ top_employee.total }} completed jobs</p>{% else %}<div class="finance-empty-state"><strong>No employee jobs yet</strong>Assigned completed jobs will appear here.</div>{% endif %}</section>
     </div>
-
-    <div class="crm-card">
-        <span>Quote Conversion</span>
-        <h2>{{ quote_conversion_rate }}%</h2>
-        <p>Quotes converted to bookings</p>
-    </div>
-
 </div>
-
-<div class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Payroll Cost</span>
-        <h2>${{ payroll_total }}</h2>
-        <p>{{ payroll_cost_percent }}% of revenue</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Completed Jobs</span>
-        <h2>{{ completed_jobs }}</h2>
-        <p>Total completed cleaning jobs</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Upcoming Jobs</span>
-        <h2>{{ upcoming_jobs }}</h2>
-        <p>Scheduled future jobs</p>
-    </div>
-
-    <div class="crm-card">
-        <span>Pending Bookings</span>
-        <h2>{{ pending_bookings }}</h2>
-        <p>Need confirmation or follow-up</p>
-    </div>
-
-</div>
-
-<section class="crm-two-column">
-
-    <div class="crm-panel">
-        <div class="crm-panel-header">
-            <h2>Top Service</h2>
-        </div>
-
-        {% if top_service %}
-            <div class="crm-list-item">
-                <strong>{{ top_service.service_type }}</strong>
-                <span>{{ top_service.total }} completed jobs</span>
-            </div>
-        {% else %}
-            <p>No completed services yet.</p>
-        {% endif %}
-    </div>
-
-    <div class="crm-panel">
-        <div class="crm-panel-header">
-            <h2>Top Employee</h2>
-        </div>
-
-        {% if top_employee %}
-            <div class="crm-list-item">
-                <strong>{{ top_employee.assigned_employee__full_name }}</strong>
-                <span>{{ top_employee.total }} completed jobs</span>
-            </div>
-        {% else %}
-            <p>No completed employee jobs yet.</p>
-        {% endif %}
-    </div>
-
-</section>
-
 {% endblock %}
