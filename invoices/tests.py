@@ -38,6 +38,7 @@ class ManualInvoiceEmailTests(TestCase):
         grant_dashboard_permissions(
             self.user,
             "invoices.add_invoice",
+            "invoices.change_invoice",
             "invoices.view_invoice",
         )
         self.client.force_login(self.user)
@@ -69,6 +70,62 @@ class ManualInvoiceEmailTests(TestCase):
             any(
                 "No email was sent" in message.message
                 for message in messages
+            )
+        )
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    )
+    def test_creating_paid_invoice_completes_booking_and_updates_customer_without_email(
+        self,
+    ):
+        response = self.client.post(
+            reverse("create_invoice"),
+            {**self.form_data, "status": "paid"},
+        )
+
+        self.assertEqual(response.status_code, 302, response.content[:500])
+        invoice = Invoice.objects.get()
+        self.booking.refresh_from_db()
+        self.customer.refresh_from_db()
+
+        self.assertEqual(invoice.status, "paid")
+        self.assertIsNotNone(invoice.paid_at)
+        self.assertEqual(self.booking.status, "completed")
+        self.assertEqual(self.booking.quoted_price, Decimal("250.00"))
+        self.assertEqual(self.customer.jobs_completed, 1)
+        self.assertEqual(self.customer.total_revenue, Decimal("275.000"))
+        self.assertEqual(mail.outbox, [])
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    )
+    def test_marking_invoice_paid_completes_booking_without_email(self):
+        invoice = Invoice.objects.create(
+            booking=self.booking,
+            amount=Decimal("250.00"),
+        )
+
+        response = self.client.post(
+            reverse("mark_invoice_paid", args=[invoice.pk]),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        invoice.refresh_from_db()
+        self.booking.refresh_from_db()
+        self.customer.refresh_from_db()
+
+        self.assertEqual(invoice.status, "paid")
+        self.assertIsNotNone(invoice.paid_at)
+        self.assertEqual(self.booking.status, "completed")
+        self.assertEqual(self.booking.quoted_price, Decimal("250.00"))
+        self.assertEqual(self.customer.jobs_completed, 1)
+        self.assertEqual(self.customer.total_revenue, Decimal("275.000"))
+        self.assertEqual(mail.outbox, [])
+        self.assertTrue(
+            any(
+                "No email was sent" in message.message
+                for message in response.wsgi_request._messages
             )
         )
 

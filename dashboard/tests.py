@@ -296,7 +296,6 @@ class DashboardBookingEmailTests(TestCase):
 		self.assertIn("New booking created", company_email.subject)
 		self.assertIn("Office Cleaning", company_email.body)
 
-
 class QuoteLeadManagementTests(TestCase):
     def setUp(self):
         self.admin = get_user_model().objects.create_user(
@@ -1052,6 +1051,42 @@ class BookingReassignmentFailureTests(TestCase):
         messages = list(response.wsgi_request._messages)
         self.assertTrue(
             any("Customer notified by email" in str(message) for message in messages)
+        )
+
+    @patch("dashboard.views.create_or_update_booking_event")
+    @patch("rosters.services.sync_booking_roster", return_value=None)
+    @patch("dashboard.views.send_invoice_email")
+    @patch("dashboard.views.send_booking_confirmation_email")
+    def test_completing_booking_does_not_email_customer(
+        self,
+        send_status_email,
+        send_invoice,
+        _sync_roster,
+        _sync_booking_event,
+    ):
+        self.booking.customer = Customer.objects.create(
+            full_name="Completed Job Customer",
+            email="completed-customer@example.com",
+            phone="0400000000",
+        )
+        self.booking.save(update_fields=["customer"])
+
+        response = self.client.post(
+            reverse(
+                "update_booking_quick_status",
+                args=[self.booking.pk, "completed"],
+            ),
+        )
+
+        self.booking.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.booking.status, "completed")
+        self.assertTrue(Invoice.objects.filter(booking=self.booking).exists())
+        send_status_email.assert_not_called()
+        send_invoice.assert_not_called()
+        messages = list(response.wsgi_request._messages)
+        self.assertTrue(
+            any("No email was sent" in str(message) for message in messages)
         )
 
     @patch("dashboard.views.create_or_update_booking_event")

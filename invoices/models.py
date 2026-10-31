@@ -5,10 +5,12 @@
 
 from decimal import Decimal
 
-from django.db import models
+from django.db import models, transaction
+from django.db.models import Sum
 from django.utils import timezone
 
 from bookings.models import Booking
+from customers.models import Customer
 
 
 class Invoice(models.Model):
@@ -63,6 +65,26 @@ class Invoice(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        previous = None
+        if self.pk:
+            previous = (
+                Invoice.objects.filter(pk=self.pk)
+                .values("status", "booking_id")
+                .first()
+            )
+        previous_customer_id = None
+        if previous:
+            previous_customer_id = (
+                Booking.objects.filter(pk=previous["booking_id"])
+                .values_list("customer_id", flat=True)
+                .first()
+            )
+
+        if self.status == "paid" and not self.paid_at:
+            self.paid_at = timezone.now()
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {"paid_at"}
+
         if not self.invoice_number:
             next_number = 1
 
@@ -116,7 +138,53 @@ class Invoice(models.Model):
         ):
             self.status = "overdue"
 
-        super().save(*args, **kwargs)
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+
+            customer_ids_to_sync = set()
+            if self.status == "paid":
+                booking = Booking.objects.select_for_update().get(pk=self.booking_id)
+                paid_amounts = Invoice.objects.filter(
+                    booking_id=self.booking_id,
+                    status="paid",
+                ).aggregate(
+                    amount=Sum("amount"),
+                    discounts=Sum("discount_amount"),
+                )
+                booking.status = "completed"
+                booking.quoted_price = max(
+                    (paid_amounts["amount"] or Decimal("0.00"))
+                    - (paid_amounts["discounts"] or Decimal("0.00")),
+                    Decimal("0.00"),
+                )
+                booking.save(update_fields=["status", "quoted_price"])
+                if booking.customer_id:
+                    customer_ids_to_sync.add(booking.customer_id)
+
+            if previous and (
+                previous["status"] == "paid" or self.status == "paid"
+            ):
+                if previous_customer_id:
+                    customer_ids_to_sync.add(previous_customer_id)
+                current_customer_id = Booking.objects.filter(
+                    pk=self.booking_id
+                ).values_list("customer_id", flat=True).first()
+                if current_customer_id:
+                    customer_ids_to_sync.add(current_customer_id)
+
+            for customer_id in customer_ids_to_sync:
+                completed_jobs = Booking.objects.filter(
+                    customer_id=customer_id,
+                    status="completed",
+                ).count()
+                total_revenue = Invoice.objects.filter(
+                    booking__customer_id=customer_id,
+                    status="paid",
+                ).aggregate(total=Sum("total_amount"))["total"] or Decimal("0.00")
+                Customer.objects.filter(pk=customer_id).update(
+                    jobs_completed=completed_jobs,
+                    total_revenue=total_revenue,
+                )
 
     def __str__(self):
         customer = self.booking.customer

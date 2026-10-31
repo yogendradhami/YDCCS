@@ -37,11 +37,9 @@ from django.db.models import Q, Sum
 from bookings.models import Booking
 from dashboard.decorators import admin_required
 from dashboard.models import ActivityLog
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
 from django.db import transaction
 from django.db.models import Sum, Q
-from dashboard.models import ActivityLog, EmailLog
+from dashboard.models import ActivityLog
 from bookings.models import Booking
 from customers.models import Customer
 from google_reviews.calendar_utils import delete_booking_event, delete_roster_event
@@ -694,26 +692,14 @@ def mark_invoice_paid(request, invoice_id):
         )
         return redirect("invoice_detail", invoice_id=invoice.id)
 
-    # Record the payment.
     invoice.status = "paid"
     invoice.paid_at = timezone.now()
     invoice.save()
 
-    # Send payment confirmation to the customer.
-    email_sent = send_payment_received_email(invoice)
-
-    if email_sent:
-        messages.success(
-            request,
-            f"Invoice {invoice.invoice_number} marked as paid. "
-            "Payment confirmation email sent to the customer.",
-        )
-    else:
-        messages.warning(
-            request,
-            f"Invoice {invoice.invoice_number} was marked as paid, "
-            "but the payment confirmation email could not be sent.",
-        )
+    messages.success(
+        request,
+        f"Invoice {invoice.invoice_number} marked as paid. No email was sent.",
+    )
 
     return redirect("invoice_detail", invoice_id=invoice.id)
 
@@ -1095,84 +1081,6 @@ def download_invoice_pdf(request, invoice_id):
         content_type="application/pdf",
     )
 
-def send_payment_received_email(invoice):
-    """
-    Send a single payment-received email to the invoice customer.
-
-    Returns True when the email is sent successfully.
-    Returns False when the customer has no email or sending fails.
-    """
-
-    try:
-        customer = invoice.booking.customer
-
-        customer_email = getattr(customer, "email", None)
-
-        if not customer_email:
-            logger.warning(
-                "Payment received email skipped: customer has no email. "
-                "Invoice=%s",
-                invoice.invoice_number,
-            )
-            return False
-
-        customer_name = (
-            getattr(customer, "full_name", None)
-            or getattr(customer, "name", None)
-            or "Customer"
-        )
-
-        context = {
-            "invoice": invoice,
-            "customer": customer,
-            "customer_name": customer_name,
-        }
-
-        subject = (
-            f"Payment Received - Invoice {invoice.invoice_number} "
-            f"| YD Commercial Cleaning Services"
-        )
-
-        text_content = render_to_string(
-            "emails/invoices/payment_received.txt",
-            context,
-        )
-
-        html_content = render_to_string(
-            "emails/invoices/payment_received.html",
-            context,
-        )
-
-        email = EmailMultiAlternatives(
-            subject=subject,
-            body=text_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[customer_email],
-        )
-
-        email.attach_alternative(
-            html_content,
-            "text/html",
-        )
-
-        email.send(fail_silently=False)
-
-        logger.info(
-            "Payment received email sent successfully. "
-            "Invoice=%s Customer=%s",
-            invoice.invoice_number,
-            customer_email,
-        )
-
-        return True
-
-    except Exception:
-        logger.exception(
-            "Failed to send payment received email. Invoice=%s",
-            invoice.invoice_number,
-        )
-        return False
-    
 @login_required
 @require_POST
 @admin_required

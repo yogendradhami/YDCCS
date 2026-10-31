@@ -1918,7 +1918,11 @@ def edit_booking(request, booking_id):
                             link=f"/portal/bookings/{updated_booking.pk}/",
                         )
 
-                if not reassignment_failed and old_status != new_status:
+                if (
+                    not reassignment_failed
+                    and old_status != new_status
+                    and new_status != "completed"
+                ):
                     logger.info(
                         "Booking status transition detected: booking=%s old=%s new=%s",
                         updated_booking.id,
@@ -1952,20 +1956,9 @@ def edit_booking(request, booking_id):
                     else:
                         messages.success(
                             request,
-                            f"Invoice automatically created: {invoice.invoice_number}",
+                            f"Invoice automatically created: {invoice.invoice_number}. "
+                            "No email was sent.",
                         )
-                        if send_invoice_email(request, invoice):
-                            messages.success(
-                                request,
-                                f"Invoice {invoice.invoice_number} emailed to "
-                                f"{invoice.booking.customer.email}.",
-                            )
-                        else:
-                            messages.warning(
-                                request,
-                                f"Invoice {invoice.invoice_number} was created, "
-                                "but the customer invoice email could not be sent.",
-                            )
 
                 if not reassignment_failed:
                     try:
@@ -6225,7 +6218,11 @@ def update_booking_quick_status(request, booking_id, new_status):
         )
         return redirect("booking_calendar")
 
-    if roster_sync_succeeded and old_status != new_status:
+    if (
+        roster_sync_succeeded
+        and old_status != new_status
+        and new_status != "completed"
+    ):
         logger.info(
             "Booking status transition detected: booking=%s old=%s new=%s",
             booking.id,
@@ -6251,17 +6248,10 @@ def update_booking_quick_status(request, booking_id, new_status):
                 request,
                 f"Invoice already exists: {invoice.invoice_number}",
             )
-        elif send_invoice_email(request, invoice):
+        else:
             messages.success(
                 request,
-                f"Invoice {invoice.invoice_number} created and emailed "
-                f"to {invoice.booking.customer.email}.",
-            )
-        else:
-            messages.warning(
-                request,
-                f"Invoice {invoice.invoice_number} was created, "
-                "but the customer invoice email could not be sent.",
+                f"Invoice {invoice.invoice_number} was created. No email was sent.",
             )
 
     create_activity_log(
