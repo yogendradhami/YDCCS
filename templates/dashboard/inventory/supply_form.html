@@ -3,11 +3,11 @@
 {% block title %}{{ title }} | YD Cleaning{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
-{% block page_subtitle %}Maintain item details, stock levels and supplier information.{% endblock %}
+{% block page_subtitle %}Maintain supply item details and reorder information. All stock changes are recorded in the inventory ledger.{% endblock %}
 {% block content %}
 <div class="inventory-page">
     {% include "dashboard/inventory/_inventory_nav.html" %}
-    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Stock control</span><h2>{% if form.instance.pk %}Update supply item.{% else %}Add a supply to stock.{% endif %}</h2><p>Set the current quantity and minimum reorder threshold to keep stock alerts useful.</p></div><a class="inventory-button-secondary" href="{% url 'supplies_list' %}">← Back to supplies</a></section>
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Stock control</span><h2>{% if form.instance.pk %}Update supply item.{% else %}Add a supply to stock.{% endif %}</h2><p>{% if form.instance.pk %}Use Inventory Transactions to adjust on-hand quantities with a reason and immutable audit record.{% else %}The opening quantity will be recorded in the inventory ledger.{% endif %}</p></div><a class="inventory-button-secondary" href="{% url 'supplies_list' %}">← Back to supplies</a></section>
     <form method="post" class="inventory-panel">
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="inventory-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}

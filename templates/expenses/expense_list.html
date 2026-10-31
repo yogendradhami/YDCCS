@@ -59,25 +59,26 @@
 
         <div class="finance-table-wrap">
             <table class="finance-table">
-                <thead><tr><th>Date</th><th>Category</th><th>Description</th><th class="numeric">Amount</th><th>Paid by</th><th>Receipt</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Date</th><th>Category</th><th>Description / source</th><th class="numeric">Amount</th><th>Payment status</th><th>Paid by</th><th>Receipt</th><th>Actions</th></tr></thead>
                 <tbody>
                     {% for expense in expenses %}
                         <tr>
                             <td>{{ expense.date|date:"j M Y" }}</td>
                             <td><span class="finance-status">{{ expense.get_category_display }}</span></td>
-                            <td><strong>{{ expense.description }}</strong>{% if expense.notes %}<br><small>{{ expense.notes|truncatechars:90 }}</small>{% endif %}</td>
+                            <td><strong>{{ expense.description }}</strong>{% if expense.invoice_review_id %}<br><small>Supplier invoice {{ expense.invoice_number }} · {{ expense.supplier.name }}{% if perms.company_documents.review_invoice_documents %} · <a href="{% url 'company_documents:invoice_review_detail' expense.invoice_review_id %}">Source document</a>{% endif %}</small>{% endif %}{% if expense.notes %}<br><small>{{ expense.notes|truncatechars:90 }}</small>{% endif %}</td>
                             <td class="numeric"><strong>${{ expense.amount|floatformat:2 }}</strong></td>
+                            <td><span class="finance-status">{{ expense.get_payment_status_display }}</span>{% if expense.gst_amount is not None %}<br><small>GST ${{ expense.gst_amount|floatformat:2 }}</small>{% endif %}</td>
                             <td>{% if expense.paid_by %}{{ expense.paid_by.get_full_name|default:expense.paid_by.username }}{% else %}—{% endif %}</td>
                             <td>{% if expense.receipt %}<a class="finance-button-secondary" href="{{ expense.receipt.url }}" target="_blank" rel="noopener noreferrer">Open receipt</a>{% else %}<span class="finance-overline">None</span>{% endif %}</td>
                             <td>
                                 <div class="finance-inline-actions">
                                     <a class="finance-button-secondary" href="{% url 'edit_expense' expense.id %}">Edit</a>
-                                    <a class="finance-button-danger" href="{% url 'delete_expense' expense.id %}">Delete</a>
+                                    {% if not expense.invoice_review_id %}<a class="finance-button-danger" href="{% url 'delete_expense' expense.id %}">Delete</a>{% else %}<span class="finance-overline">Audit retained</span>{% endif %}
                                 </div>
                             </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="7"><div class="finance-empty-state"><strong>No matching expenses</strong>Adjust your filters or add your first business expense.</div></td></tr>
+                        <tr><td colspan="8"><div class="finance-empty-state"><strong>No matching expenses</strong>Adjust your filters or add your first business expense.</div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>

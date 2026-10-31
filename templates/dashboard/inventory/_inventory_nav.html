@@ -1,4 +1,16 @@
 <nav class="inventory-nav" aria-label="Operations inventory navigation">
+    {% if perms.employees.manage_supply_requests %}
+        <a href="{% url 'supply_request_management' %}" {% if request.resolver_match.url_name == "supply_request_management" or request.resolver_match.url_name == "supply_request_detail" %}aria-current="page"{% endif %}>Supply requests</a>
+        <a href="{% url 'inventory_transactions' %}" {% if request.resolver_match.url_name == "inventory_transactions" %}aria-current="page"{% endif %}>Transactions</a>
+        <a href="{% url 'goods_received' %}" {% if request.resolver_match.url_name == "goods_received" %}aria-current="page"{% endif %}>Goods received</a>
+    {% endif %}
+    {% if perms.company_documents.review_invoice_documents %}
+        <a href="{% url 'company_documents:invoice_review_list' %}" {% if request.resolver_match.url_name == "invoice_review_list" or request.resolver_match.url_name == "invoice_review_detail" %}aria-current="page"{% endif %}>Invoice review</a>
+    {% endif %}
+    {% if perms.employees.manage_supply_requests and perms.expenses.view_expense %}
+        <a href="{% url 'operations_automation' %}" {% if request.resolver_match.url_name == "operations_automation" %}aria-current="page"{% endif %}>Operations automation</a>
+        <a href="{% url 'operations_automation_history' %}" {% if request.resolver_match.url_name == "operations_automation_history" %}aria-current="page"{% endif %}>Automation history</a>
+    {% endif %}
     <a href="{% url 'equipment_list' %}" {% if request.resolver_match.url_name == "equipment_list" or request.resolver_match.url_name == "add_equipment" or request.resolver_match.url_name == "edit_equipment" or request.resolver_match.url_name == "delete_equipment" %}aria-current="page"{% endif %}>Equipment</a>
     <a href="{% url 'supplies_list' %}" {% if request.resolver_match.url_name == "supplies_list" or request.resolver_match.url_name == "add_supply" or request.resolver_match.url_name == "edit_supply" %}aria-current="page"{% endif %}>Supplies</a>
     <a href="{% url 'purchase_orders' %}" {% if request.resolver_match.url_name == "purchase_orders" or request.resolver_match.url_name == "add_purchase_order" or request.resolver_match.url_name == "receive_purchase_order" %}aria-current="page"{% endif %}>Purchase orders</a>

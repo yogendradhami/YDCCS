@@ -12,6 +12,7 @@ from dashboard.models import (
     CleaningSupply,
     EmailLog,
     Equipment,
+    InventoryMovement,
     MaintenanceHistory,
     PurchaseOrder,
     Supplier,
@@ -110,6 +111,23 @@ class OperationsInventoryDashboardTests(TestCase):
             [supply.name for supply in response.context["supplies"]],
             ["Floor cleaner"],
         )
+
+    def test_inventory_transactions_render_movements_without_an_actor(self):
+        supply = CleaningSupply.objects.create(name="Sanitiser", current_stock=2)
+        InventoryMovement.objects.create(
+            supply=supply,
+            movement_type=InventoryMovement.MovementType.ADJUSTMENT,
+            quantity_delta=1,
+            balance_before=1,
+            balance_after=2,
+            idempotency_key="f635c4b8-bef9-4475-99d5-3d3cc2206077",
+            actor=None,
+        )
+
+        response = self.client.get(reverse("inventory_transactions"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "System")
 
     def test_receiving_purchase_order_is_post_only_and_adds_stock_once(self):
         supply = CleaningSupply.objects.create(

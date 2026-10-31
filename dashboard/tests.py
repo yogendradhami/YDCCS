@@ -447,14 +447,15 @@ class QuoteLeadManagementTests(TestCase):
         storage = QuoteImage._meta.get_field("image").storage
 
         with patch.object(storage, "delete") as delete_image:
-            response = self.client.post(
-                reverse("delete_quote_request", args=[quote.pk])
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client.post(
+                    reverse("delete_quote_request", args=[quote.pk])
+                )
+            delete_image.assert_called_once_with("quote_images/test-lead.jpg")
 
         self.assertRedirects(response, reverse("lead_list"))
         self.assertFalse(QuoteRequest.objects.filter(pk=quote.pk).exists())
         self.assertFalse(QuoteImage.objects.filter(quote_id=quote.pk).exists())
-        delete_image.assert_called_once_with("quote_images/test-lead.jpg")
 
     def test_delete_lead_rejects_get(self):
         quote = self.make_quote()

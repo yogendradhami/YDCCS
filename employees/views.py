@@ -26,10 +26,11 @@ import cloudinary
 from cloudinary import api as cloudinary_api
 from cloudinary.utils import api_sign_request
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import DatabaseError, transaction
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from google_auth_oauthlib.flow import Flow
 
 from .models import (
@@ -38,6 +39,9 @@ from .models import (
     PropertyDamageImage,
     PropertyDamageReport,
     PropertyDamageReportReply,
+    SupplyRequest,
+    SupplyRequestAttachment,
+    SupplyRequestItem,
 )
 from .damage_report_chat import conversation_response, update_report_presence
 from .decorators import employee_required
@@ -50,6 +54,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from bookings.forms import JobPhotoForm
 from bookings.models import Booking, JobPhoto
+from dashboard.models import CleaningSupply, Equipment
 
 from .forms import (
     EmployeeJobStatusForm,
@@ -57,6 +62,7 @@ from .forms import (
     EmployeePropertyDamageReportReplyForm,
     PropertyDamageReportForm,
     PropertyDamageReportReplyForm,
+    SupplyRequestForm,
 )
 from .models import Employee
 from .profile_forms import (
@@ -141,6 +147,10 @@ def _destroy_job_photo_assets(public_ids):
 
     with ThreadPoolExecutor(max_workers=min(3, len(public_ids))) as executor:
         list(executor.map(destroy, public_ids))
+
+
+def _safe_upload_filename(filename):
+    return Path(filename.replace("\\", "/")).name or "attachment"
 
 
 def _verify_job_photo_uploads(supplied_uploads, expected_ids, booking_id):
@@ -560,6 +570,152 @@ def employee_dashboard(request):
                 employee=employee,
             ).exists(),
         },
+    )
+
+
+@employee_required
+def employee_supply_requests(request):
+    employee = get_object_or_404(Employee, user=request.user)
+
+    if request.method == "POST":
+        form = SupplyRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            saved_assets = []
+            try:
+                with transaction.atomic():
+                    existing = SupplyRequest.objects.filter(
+                        idempotency_key=form.cleaned_data["idempotency_key"]
+                    ).first()
+                    if existing:
+                        if existing.employee_id != employee.pk:
+                            form.add_error(
+                                None,
+                                "This request token is no longer valid. Reload the page and retry.",
+                            )
+                        else:
+                            messages.info(request, "This request was already submitted.")
+                            return redirect("employee_supply_requests")
+                    else:
+                        supply_request = SupplyRequest.objects.create(
+                            employee=employee,
+                            idempotency_key=form.cleaned_data["idempotency_key"],
+                            job_location=form.cleaned_data["job_location"].strip(),
+                            reason=form.cleaned_data["reason"].strip(),
+                            urgency=form.cleaned_data["urgency"],
+                        )
+                        for kind, asset, quantity in form.cleaned_data["request_items"]:
+                            SupplyRequestItem.objects.create(
+                                request=supply_request,
+                                supply=asset if kind == "supply" else None,
+                                equipment=asset if kind == "equipment" else None,
+                                requested_quantity=quantity,
+                                unit=asset.unit if kind == "supply" else "unit",
+                            )
+                        for uploaded_file in form.cleaned_data["attachments"]:
+                            attachment = SupplyRequestAttachment(
+                                request=supply_request,
+                                original_filename=_safe_upload_filename(
+                                    uploaded_file.name
+                                )[:255],
+                                content_type=uploaded_file.content_type or "",
+                            )
+                            attachment.file.save(
+                                _safe_upload_filename(uploaded_file.name),
+                                uploaded_file,
+                                save=False,
+                            )
+                            saved_assets.append(
+                                (attachment.file.storage, attachment.file.name)
+                            )
+                            attachment.save()
+                        from dashboard.operations_automation import (
+                            record_operations_event,
+                        )
+
+                        record_operations_event(
+                            module="Supply Requests",
+                            event=f"Employee supply request #{supply_request.pk} submitted",
+                            trigger="Employee submitted a supply request in the portal.",
+                            action_taken=(
+                                f"{employee.full_name} requested supplies or equipment "
+                                f"for {supply_request.job_location}."
+                            ),
+                            result="Request saved and waiting for management review.",
+                            actor=request.user,
+                            metadata={"request_id": supply_request.pk},
+                            idempotency_key=(
+                                f"supply-request-submit:"
+                                f"{supply_request.idempotency_key}"
+                            ),
+                        )
+                if not form.errors:
+                    messages.success(request, "Your supply request was submitted.")
+                    return redirect("employee_supply_requests")
+            except Exception:
+                logger.exception(
+                    "Could not save a supply request for employee %s.",
+                    employee.pk,
+                )
+                for storage, name in saved_assets:
+                    try:
+                        storage.delete(name)
+                    except Exception:
+                        logger.exception(
+                            "Could not clean up supply request attachment %s.",
+                            name,
+                        )
+                messages.error(
+                    request,
+                    "The supply request could not be saved. Please review the form and retry.",
+                )
+    else:
+        form = SupplyRequestForm(initial={"idempotency_key": uuid.uuid4()})
+
+    requests = (
+        SupplyRequest.objects.filter(employee=employee)
+        .prefetch_related("items__supply", "items__equipment", "attachments")
+        .select_related("decided_by")
+    )
+    return render(
+        request,
+        "employees/employee_supply_requests.html",
+        {
+            "employee": employee,
+            "form": form,
+            "requests": requests,
+            "supplies": CleaningSupply.objects.order_by("name"),
+            "available_equipment": Equipment.objects.filter(
+                assigned_employee__isnull=True
+            )
+            .exclude(condition__in=("repair", "retired"))
+            .order_by("name"),
+        },
+    )
+
+
+@login_required(login_url="employee_login")
+def employee_supply_request_attachment(request, attachment_id):
+    attachments = SupplyRequestAttachment.objects.select_related("request")
+    if request.user.is_staff and request.user.has_perm(
+        "employees.manage_supply_requests"
+    ):
+        attachment = get_object_or_404(attachments, pk=attachment_id)
+    else:
+        employee = get_object_or_404(
+            Employee,
+            user=request.user,
+            active=True,
+        )
+        attachment = get_object_or_404(
+            attachments,
+            pk=attachment_id,
+            request__employee=employee,
+        )
+    attachment.file.open("rb")
+    return FileResponse(
+        attachment.file,
+        as_attachment=True,
+        filename=_safe_upload_filename(attachment.original_filename),
     )
 
 

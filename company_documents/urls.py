@@ -7,6 +7,36 @@ app_name = "company_documents"
 
 
 urlpatterns = [
+    path(
+        "invoice-review/",
+        views.invoice_review_list,
+        name="invoice_review_list",
+    ),
+    path(
+        "invoice-review/<int:review_id>/",
+        views.invoice_review_detail,
+        name="invoice_review_detail",
+    ),
+    path(
+        "invoice-review/<int:review_id>/preview/",
+        views.invoice_document_preview,
+        name="invoice_document_preview",
+    ),
+    path(
+        "invoice-review/<int:review_id>/verify/",
+        views.invoice_review_verify,
+        name="invoice_review_verify",
+    ),
+    path(
+        "invoice-review/<int:review_id>/reject/",
+        views.invoice_review_reject,
+        name="invoice_review_reject",
+    ),
+    path(
+        "invoice-review/<int:review_id>/approve/",
+        views.invoice_review_approve,
+        name="invoice_review_approve",
+    ),
 
     # ------------------------------------------------------
     # DOCUMENT CENTRE

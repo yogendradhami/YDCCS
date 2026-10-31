@@ -7,6 +7,9 @@
 # - Employee job status form
 # ====================================================
 
+import json
+import uuid
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
@@ -16,11 +19,181 @@ from django.db.models import Q
 
 from bookings.models import Booking
 
-from .models import Employee, PropertyDamageReport, PropertyDamageReportReply
+from dashboard.models import CleaningSupply, Equipment
+
+from .models import (
+    Employee,
+    PropertyDamageReport,
+    PropertyDamageReportReply,
+    SupplyRequest,
+    SupplyRequestItem,
+)
 
 MAX_DAMAGE_REPORT_IMAGES = 12
 MAX_DAMAGE_REPORT_IMAGE_SIZE = 25 * 1024 * 1024
 ALLOWED_DAMAGE_REPORT_IMAGE_FORMATS = {"JPEG", "PNG", "WEBP"}
+MAX_SUPPLY_REQUEST_ATTACHMENTS = 5
+MAX_SUPPLY_REQUEST_ATTACHMENT_SIZE = 15 * 1024 * 1024
+
+
+class SupplyRequestMultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class SupplyRequestAttachmentField(forms.FileField):
+    widget = SupplyRequestMultipleFileInput
+
+    def clean(self, data, initial=None):
+        uploaded = data if isinstance(data, (list, tuple)) else ([data] if data else [])
+        if len(uploaded) > MAX_SUPPLY_REQUEST_ATTACHMENTS:
+            raise ValidationError(
+                f"Upload no more than {MAX_SUPPLY_REQUEST_ATTACHMENTS} files."
+            )
+        valid_signatures = (
+            lambda content: content.startswith(b"%PDF-"),
+            lambda content: content.startswith(b"\xff\xd8\xff"),
+            lambda content: content.startswith(b"\x89PNG\r\n\x1a\n"),
+            lambda content: (
+                len(content) >= 12
+                and content[:4] == b"RIFF"
+                and content[8:12] == b"WEBP"
+            ),
+        )
+        files = []
+        for item in uploaded:
+            if item.size > MAX_SUPPLY_REQUEST_ATTACHMENT_SIZE:
+                raise ValidationError("Each attachment must be 15 MB or smaller.")
+            content = item.read(16)
+            item.seek(0)
+            if not any(signature(content) for signature in valid_signatures):
+                raise ValidationError(
+                    "Attachments must be a PDF, JPEG, PNG, or WebP file."
+                )
+            files.append(item)
+        return files
+
+
+class SupplyRequestForm(forms.Form):
+    idempotency_key = forms.UUIDField(widget=forms.HiddenInput)
+    job_location = forms.CharField(max_length=255)
+    reason = forms.CharField(widget=forms.Textarea(attrs={"rows": 4}))
+    urgency = forms.ChoiceField(choices=SupplyRequest.Urgency.choices)
+    request_items = forms.CharField(widget=forms.HiddenInput)
+    attachments = SupplyRequestAttachmentField(required=False)
+
+    def clean_request_items(self):
+        raw_items = self.cleaned_data["request_items"]
+        try:
+            values = json.loads(raw_items)
+        except (TypeError, ValueError) as exc:
+            raise ValidationError("Choose at least one valid item.") from exc
+        if not isinstance(values, list) or not values:
+            raise ValidationError("Choose at least one supply or equipment item.")
+        if len(values) > 30:
+            raise ValidationError("A request can contain no more than 30 items.")
+
+        parsed = []
+        seen = set()
+        for value in values:
+            if not isinstance(value, dict) or value.get("kind") not in {
+                "supply",
+                "equipment",
+            }:
+                raise ValidationError("The selected request item is invalid.")
+            try:
+                item_id = int(value["id"])
+                quantity = int(value["quantity"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValidationError("Enter a valid item and quantity.") from exc
+            if item_id <= 0 or quantity <= 0 or quantity > 10000:
+                raise ValidationError("Item quantities must be between 1 and 10,000.")
+            if value["kind"] == "equipment" and quantity != 1:
+                raise ValidationError("Equipment is individually tracked; request one unit.")
+            unique_item = (value["kind"], item_id)
+            if unique_item in seen:
+                raise ValidationError("Each item may only appear once per request.")
+            seen.add(unique_item)
+
+            model = CleaningSupply if value["kind"] == "supply" else Equipment
+            try:
+                item = model.objects.get(pk=item_id)
+            except model.DoesNotExist as exc:
+                raise ValidationError("One of the selected items no longer exists.") from exc
+            if value["kind"] == "equipment" and (
+                item.assigned_employee_id or item.condition in {"repair", "retired"}
+            ):
+                raise ValidationError("One of the selected equipment items is unavailable.")
+            parsed.append((value["kind"], item, quantity))
+        return parsed
+
+
+class SupplyRequestApprovalForm(forms.Form):
+    comments = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
+
+    def __init__(self, *args, request_record, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request_record = request_record
+        self.request_items = list(request_record.items.select_related("supply", "equipment"))
+        for item in self.request_items:
+            self.fields[f"quantity_{item.pk}"] = forms.IntegerField(
+                min_value=0,
+                max_value=item.requested_quantity,
+                initial=item.requested_quantity,
+                label=f"{item.item_name} (requested {item.requested_quantity})",
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        quantities = [
+            cleaned.get(f"quantity_{item.pk}") or 0
+            for item in self.request_items
+        ]
+        if not any(quantities):
+            raise ValidationError("Approve at least one positive item quantity.")
+        if any(
+            quantity < item.requested_quantity
+            for item, quantity in zip(self.request_items, quantities)
+        ) and not cleaned.get("comments", "").strip():
+            raise ValidationError("Explain any reduced or declined quantities.")
+        return cleaned
+
+
+class SupplyRequestRejectForm(forms.Form):
+    comments = forms.CharField(
+        min_length=3,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        label="Reason for rejection",
+    )
+
+
+class SupplyRequestIssueForm(forms.Form):
+    notes = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 2}))
+    idempotency_key = forms.UUIDField(required=False, widget=forms.HiddenInput)
+
+    def __init__(self, *args, request_record, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request_items = list(request_record.items.select_related("supply", "equipment"))
+        for item in self.request_items:
+            remaining = item.remaining_to_issue
+            if remaining:
+                self.fields[f"quantity_{item.pk}"] = forms.IntegerField(
+                    min_value=0,
+                    max_value=remaining,
+                    initial=remaining,
+                    label=f"{item.item_name} (remaining {remaining})",
+                )
+
+    def clean(self):
+        cleaned = super().clean()
+        if not any(
+            cleaned.get(f"quantity_{item.pk}", 0)
+            for item in self.request_items
+        ):
+            raise ValidationError("Enter at least one quantity to hand over.")
+        return cleaned
+
+    def clean_idempotency_key(self):
+        return self.cleaned_data.get("idempotency_key") or uuid.uuid4()
 
 
 class MultipleFileInput(forms.ClearableFileInput):

@@ -14,13 +14,16 @@ from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from functools import wraps
+import uuid
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 from .decorators import admin_required
+from .inventory_services import build_low_stock_suggestions
 import logging
 
 from django.core.exceptions import ValidationError
@@ -99,6 +102,21 @@ from django.db.models import Count
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+
+
+def _record_operations_notification(request, *, module, event, result, link, key):
+    from .operations_automation import record_operations_event
+
+    record_operations_event(
+        module=module,
+        event=event,
+        trigger="A manager completed an action in the Operations dashboard.",
+        action_taken=result,
+        result=result,
+        actor=request.user,
+        idempotency_key=key,
+        link=link,
+    )
 
 
 def _lock_booking_mutations(failure_route):
@@ -5952,11 +5970,30 @@ def gst_report(request):
         ).aggregate(total=Sum("gst_amount"))["total"]
         or Decimal("0.00")
     )
-    total_expenses = Expense.objects.filter(
+    expenses_for_period = Expense.objects.filter(
         date__gte=period_start,
         date__lt=period_end,
-    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
-    gst_paid = (total_expenses / Decimal("11")).quantize(Decimal("0.01"))
+    )
+    total_expenses = (
+        expenses_for_period.aggregate(total=Sum("amount"))["total"]
+        or Decimal("0.00")
+    )
+    recorded_gst = (
+        expenses_for_period.filter(gst_amount__isnull=False).aggregate(
+            total=Sum("gst_amount")
+        )["total"]
+        or Decimal("0.00")
+    )
+    legacy_expenses = (
+        expenses_for_period.filter(gst_amount__isnull=True).aggregate(
+            total=Sum("amount")
+        )["total"]
+        or Decimal("0.00")
+    )
+    estimated_legacy_gst = (legacy_expenses / Decimal("11")).quantize(
+        Decimal("0.01")
+    )
+    gst_paid = recorded_gst + estimated_legacy_gst
     net_gst_payable = gst_collected - gst_paid
 
     return render(
@@ -6338,7 +6375,15 @@ def add_equipment(request):
         form = EquipmentForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            equipment = form.save()
+            _record_operations_notification(
+                request,
+                module="Equipment",
+                event=f"Equipment added: {equipment.name}",
+                result=f"Added equipment inventory record #{equipment.pk}.",
+                link="/dashboard/equipment/",
+                key=f"dashboard-equipment-added:{equipment.pk}",
+            )
             messages.success(request, "✅ Equipment added successfully.")
             return redirect("equipment_list")
 
@@ -6368,7 +6413,15 @@ def edit_equipment(request, equipment_id):
         form = EquipmentForm(request.POST, instance=equipment)
 
         if form.is_valid():
-            form.save()
+            equipment = form.save()
+            _record_operations_notification(
+                request,
+                module="Equipment",
+                event=f"Equipment updated: {equipment.name}",
+                result=f"Updated equipment inventory record #{equipment.pk}.",
+                link="/dashboard/equipment/",
+                key=f"dashboard-equipment-updated:{equipment.pk}:{timezone.now().isoformat()}",
+            )
             messages.success(request, "✅ Equipment updated successfully.")
             return redirect("equipment_list")
 
@@ -6472,13 +6525,31 @@ def supplies_list(request):
 def add_supply(request):
 
     from .forms import CleaningSupplyForm
+    from .inventory_services import record_opening_supply_stock
 
     if request.method == "POST":
 
         form = CleaningSupplyForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                initial_stock = form.cleaned_data["current_stock"]
+                supply = form.save(commit=False)
+                supply.current_stock = 0
+                supply.save()
+                record_opening_supply_stock(
+                    supply_id=supply.pk,
+                    quantity=initial_stock,
+                    actor=request.user,
+                )
+            _record_operations_notification(
+                request,
+                module="Inventory",
+                event=f"Cleaning supply added: {supply.name}",
+                result=f"Added supply inventory record #{supply.pk}.",
+                link="/dashboard/supplies/",
+                key=f"dashboard-supply-added:{supply.pk}",
+            )
 
             messages.success(request, "Supply added successfully.")
 
@@ -6510,7 +6581,15 @@ def edit_supply(request, supply_id):
         form = CleaningSupplyForm(request.POST, instance=supply)
 
         if form.is_valid():
-            form.save()
+            supply = form.save()
+            _record_operations_notification(
+                request,
+                module="Inventory",
+                event=f"Cleaning supply updated: {supply.name}",
+                result=f"Updated supply inventory record #{supply.pk}.",
+                link="/dashboard/supplies/",
+                key=f"dashboard-supply-updated:{supply.pk}:{timezone.now().isoformat()}",
+            )
 
             messages.success(request, "Supply updated successfully.")
 
@@ -6531,10 +6610,369 @@ def edit_supply(request, supply_id):
 
 
 @login_required
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def supply_request_management(request):
+    from employees.models import SupplyRequest
+
+    requests = SupplyRequest.objects.select_related("employee", "decided_by").prefetch_related(
+        "items__supply", "items__equipment"
+    )
+    status_filter = request.GET.get("status", "").strip()
+    urgency_filter = request.GET.get("urgency", "").strip()
+    employee_query = request.GET.get("employee", "").strip()
+    date_from = parse_date(request.GET.get("from", ""))
+    date_to = parse_date(request.GET.get("to", ""))
+    if status_filter in SupplyRequest.Status.values:
+        requests = requests.filter(status=status_filter)
+    else:
+        status_filter = ""
+    if urgency_filter in SupplyRequest.Urgency.values:
+        requests = requests.filter(urgency=urgency_filter)
+    else:
+        urgency_filter = ""
+    if employee_query:
+        requests = requests.filter(employee__full_name__icontains=employee_query)
+    if date_from:
+        requests = requests.filter(submitted_at__date__gte=date_from)
+    if date_to:
+        requests = requests.filter(submitted_at__date__lte=date_to)
+    page_obj = Paginator(requests.order_by("-submitted_at"), 25).get_page(
+        request.GET.get("page")
+    )
+    return render(
+        request,
+        "dashboard/inventory/supply_request_management.html",
+        {
+            "requests": page_obj.object_list,
+            "page_obj": page_obj,
+            "status_filter": status_filter,
+            "urgency_filter": urgency_filter,
+            "employee_query": employee_query,
+            "date_from": date_from,
+            "date_to": date_to,
+            "status_choices": SupplyRequest.Status.choices,
+            "urgency_choices": SupplyRequest.Urgency.choices,
+        },
+    )
+
+
+@login_required
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def supply_request_detail(request, request_id):
+    from employees.forms import SupplyRequestApprovalForm, SupplyRequestIssueForm
+    from employees.models import SupplyRequest
+
+    request_record = get_object_or_404(
+        SupplyRequest.objects.select_related("employee", "decided_by").prefetch_related(
+            "items__supply", "items__equipment", "attachments"
+        ),
+        pk=request_id,
+    )
+    approval_form = (
+        SupplyRequestApprovalForm(request_record=request_record)
+        if request_record.status == SupplyRequest.Status.PENDING
+        else None
+    )
+    issue_form = (
+        SupplyRequestIssueForm(
+            request_record=request_record,
+            initial={"idempotency_key": uuid.uuid4()},
+        )
+        if request_record.status
+        in {
+            SupplyRequest.Status.APPROVED,
+            SupplyRequest.Status.PARTIALLY_APPROVED,
+            SupplyRequest.Status.PARTIALLY_ISSUED,
+        }
+        else None
+    )
+    return render(
+        request,
+        "dashboard/inventory/supply_request_detail.html",
+        {
+            "request_record": request_record,
+            "approval_form": approval_form,
+            "issue_form": issue_form,
+        },
+    )
+
+
+@login_required
+@require_POST
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def supply_request_approve(request, request_id):
+    from employees.forms import SupplyRequestApprovalForm
+    from employees.models import SupplyRequest
+    from employees.supply_services import approve_supply_request
+
+    request_record = get_object_or_404(SupplyRequest, pk=request_id)
+    form = SupplyRequestApprovalForm(request.POST, request_record=request_record)
+    if not form.is_valid():
+        messages.error(request, form.errors.as_text())
+        return redirect("supply_request_detail", request_id=request_id)
+    quantities = {
+        item.pk: form.cleaned_data[f"quantity_{item.pk}"]
+        for item in form.request_items
+    }
+    try:
+        approve_supply_request(
+            request_id=request_id,
+            actor=request.user,
+            quantities=quantities,
+            comments=form.cleaned_data["comments"],
+        )
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    else:
+        messages.success(request, "Supply request approval has been recorded.")
+    return redirect("supply_request_detail", request_id=request_id)
+
+
+@login_required
+@require_POST
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def supply_request_reject(request, request_id):
+    from employees.forms import SupplyRequestRejectForm
+    from employees.models import SupplyRequest
+    from employees.supply_services import reject_supply_request
+
+    get_object_or_404(SupplyRequest, pk=request_id)
+    form = SupplyRequestRejectForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, form.errors.as_text())
+        return redirect("supply_request_detail", request_id=request_id)
+    try:
+        reject_supply_request(
+            request_id=request_id,
+            actor=request.user,
+            comments=form.cleaned_data["comments"],
+        )
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    else:
+        messages.success(request, "Supply request rejected with a recorded reason.")
+    return redirect("supply_request_detail", request_id=request_id)
+
+
+@login_required
+@require_POST
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def supply_request_issue(request, request_id):
+    from employees.forms import SupplyRequestIssueForm
+    from employees.models import SupplyRequest
+    from employees.supply_services import issue_supply_request
+
+    request_record = get_object_or_404(SupplyRequest, pk=request_id)
+    form = SupplyRequestIssueForm(request.POST, request_record=request_record)
+    if not form.is_valid():
+        messages.error(request, form.errors.as_text())
+        return redirect("supply_request_detail", request_id=request_id)
+    quantities = {
+        item.pk: form.cleaned_data.get(f"quantity_{item.pk}", 0)
+        for item in form.request_items
+    }
+    try:
+        _, issued = issue_supply_request(
+            request_id=request_id,
+            actor=request.user,
+            quantities=quantities,
+            idempotency_key=form.cleaned_data["idempotency_key"],
+            notes=form.cleaned_data["notes"],
+        )
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    else:
+        messages.success(
+            request,
+            "Supply handover recorded." if issued else "This handover was already recorded.",
+        )
+    return redirect("supply_request_detail", request_id=request_id)
+
+
+@login_required
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def inventory_transactions(request):
+    import uuid
+
+    from .models import EquipmentAllocation, InventoryMovement
+
+    movements = InventoryMovement.objects.select_related(
+        "supply",
+        "equipment",
+        "actor",
+        "employee",
+        "request_item__request",
+        "goods_receipt",
+    )
+    movement_type = request.GET.get("type", "").strip()
+    query = request.GET.get("q", "").strip()
+    if movement_type in InventoryMovement.MovementType.values:
+        movements = movements.filter(movement_type=movement_type)
+    else:
+        movement_type = ""
+    if query:
+        movements = movements.filter(
+            Q(supply__name__icontains=query)
+            | Q(equipment__name__icontains=query)
+            | Q(employee__full_name__icontains=query)
+            | Q(actor__username__icontains=query)
+            | Q(notes__icontains=query)
+        )
+    page_obj = Paginator(movements.order_by("-created_at"), 50).get_page(
+        request.GET.get("page")
+    )
+    active_allocations = EquipmentAllocation.objects.filter(
+        returned_at__isnull=True
+    ).select_related("equipment", "employee", "issued_by")
+    supplies = CleaningSupply.objects.order_by("name")
+    return render(
+        request,
+        "dashboard/inventory/inventory_transactions.html",
+        {
+            "movements": page_obj.object_list,
+            "page_obj": page_obj,
+            "movement_type": movement_type,
+            "query": query,
+            "movement_types": InventoryMovement.MovementType.choices,
+            "active_allocations": active_allocations,
+            "supplies": supplies,
+            "employees": Employee.objects.filter(active=True).order_by("full_name"),
+            "low_stock_suggestions": build_low_stock_suggestions(),
+            "adjustment_token": uuid.uuid4(),
+            "return_token": uuid.uuid4(),
+        },
+    )
+
+
+@login_required
+@require_POST
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def inventory_transaction_action(request):
+    import uuid
+
+    from employees.models import Employee
+    from employees.supply_services import return_equipment_allocation, return_supply_stock
+    from .inventory_services import adjust_supply_stock, reverse_supply_movement
+    from .models import EquipmentAllocation, InventoryMovement
+
+    action = request.POST.get("action", "")
+    try:
+        if action == "adjust":
+            movement = adjust_supply_stock(
+                supply_id=int(request.POST.get("supply_id", "")),
+                quantity_delta=int(request.POST.get("quantity_delta", "")),
+                actor=request.user,
+                notes=request.POST.get("notes", ""),
+                idempotency_key=uuid.UUID(request.POST.get("idempotency_key", "")),
+            )
+            messages.success(request, f"Inventory movement #{movement.pk} recorded.")
+        elif action == "reverse":
+            movement = reverse_supply_movement(
+                movement_id=int(request.POST.get("movement_id", "")),
+                actor=request.user,
+                notes=request.POST.get("notes", ""),
+                idempotency_key=uuid.UUID(request.POST.get("idempotency_key", "")),
+            )
+            messages.success(request, f"Movement #{movement.pk} reversed.")
+        elif action == "return_supply":
+            employee = get_object_or_404(Employee, pk=int(request.POST.get("employee_id", "")))
+            movement = return_supply_stock(
+                supply_id=int(request.POST.get("supply_id", "")),
+                quantity=int(request.POST.get("quantity", "")),
+                employee=employee,
+                actor=request.user,
+                notes=request.POST.get("notes", ""),
+                idempotency_key=uuid.UUID(request.POST.get("idempotency_key", "")),
+            )
+            messages.success(request, f"Supply return movement #{movement.pk} recorded.")
+        elif action == "return_equipment":
+            allocation = return_equipment_allocation(
+                allocation_id=int(request.POST.get("allocation_id", "")),
+                actor=request.user,
+                notes=request.POST.get("notes", ""),
+            )
+            messages.success(
+                request,
+                f"{allocation.equipment.name} returned from {allocation.employee.full_name}.",
+            )
+        else:
+            raise ValidationError("Select a valid inventory action.")
+    except (ValueError, TypeError):
+        messages.error(request, "Enter valid inventory item and quantity values.")
+    except ObjectDoesNotExist:
+        messages.error(request, "The selected inventory record no longer exists.")
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    return redirect("inventory_transactions")
+
+
+@login_required
+@permission_required("employees.manage_supply_requests", raise_exception=True)
+def goods_received(request):
+    from .models import GoodsReceipt, PurchaseOrder
+
+    orders = list(
+        PurchaseOrder.objects.filter(status__in=("draft", "ordered"))
+        .select_related("supply")
+        .order_by("order_date", "pk")
+    )
+    for order in orders:
+        order.receipt_token = uuid.uuid4()
+    receipts = GoodsReceipt.objects.select_related(
+        "purchase_order__supply", "received_by"
+    ).prefetch_related("items")[:50]
+    return render(
+        request,
+        "dashboard/inventory/goods_received.html",
+        {"orders": orders, "receipts": receipts},
+    )
+
+
+@login_required
+@require_POST
+@permission_required(
+    ("dashboard.change_purchaseorder", "dashboard.change_cleaningsupply"),
+    raise_exception=True,
+)
+def record_goods_receipt(request, order_id):
+    from .forms import GoodsReceiptForm
+    from .inventory_services import receive_purchase_order_goods
+    from .models import PurchaseOrder
+
+    order = get_object_or_404(PurchaseOrder.objects.select_related("supply"), pk=order_id)
+    form = GoodsReceiptForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Enter a valid receipt quantity and retry.")
+        return redirect("goods_received")
+    quantity = form.cleaned_data["quantity"]
+    if quantity is None:
+        quantity = order.quantity - order.quantity_received
+    try:
+        receipt, created = receive_purchase_order_goods(
+            order_id=order.pk,
+            quantity=quantity,
+            actor=request.user,
+            idempotency_key=form.cleaned_data["idempotency_key"],
+            notes=form.cleaned_data["notes"],
+        )
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    else:
+        messages.success(
+            request,
+            f"Goods receipt #{receipt.pk} recorded."
+            if created
+            else f"Goods receipt #{receipt.pk} was already recorded.",
+        )
+    return redirect("goods_received")
+
+
+@login_required
 def purchase_orders(request):
 
     from .models import PurchaseOrder
 
+    today = timezone.localdate()
     orders = PurchaseOrder.objects.select_related("supply").all()
     query = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "").strip()
@@ -6576,6 +7014,7 @@ def purchase_orders(request):
             ).count(),
             "received_orders": all_orders.filter(status="received").count(),
             "order_value": order_value,
+            "today": today,
         },
     )
 
@@ -6591,7 +7030,15 @@ def add_purchase_order(request):
         form = PurchaseOrderForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            order = form.save()
+            _record_operations_notification(
+                request,
+                module="Purchasing",
+                event=f"Purchase order #{order.pk} created",
+                result=f"Created purchase order for {order.supply.name}.",
+                link="/dashboard/purchase-orders/",
+                key=f"dashboard-purchase-order-created:{order.pk}",
+            )
 
             messages.success(request, "Purchase Order Created.")
 
@@ -6618,39 +7065,35 @@ def add_purchase_order(request):
     raise_exception=True,
 )
 def receive_purchase_order(request, order_id):
-
+    from .forms import GoodsReceiptForm
+    from .inventory_services import receive_purchase_order_goods
     from .models import PurchaseOrder
 
-    with transaction.atomic():
-        order = get_object_or_404(
-            PurchaseOrder.objects.select_for_update(),
-            id=order_id,
+    order = get_object_or_404(PurchaseOrder, pk=order_id)
+    form = GoodsReceiptForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Enter a valid receipt quantity and retry.")
+        return redirect("purchase_orders")
+    quantity = form.cleaned_data["quantity"]
+    if quantity is None:
+        quantity = order.quantity - order.quantity_received
+    try:
+        receipt, created = receive_purchase_order_goods(
+            order_id=order.pk,
+            quantity=quantity,
+            actor=request.user,
+            idempotency_key=form.cleaned_data["idempotency_key"],
+            notes=form.cleaned_data["notes"],
         )
-        if order.status in {"draft", "ordered"}:
-            supply = get_object_or_404(
-                CleaningSupply.objects.select_for_update(),
-                id=order.supply_id,
-            )
-            supply.current_stock += order.quantity
-            supply.save(update_fields=["current_stock"])
-
-            order.status = "received"
-            order.save(update_fields=["status"])
-            received_quantity = order.quantity
-        else:
-            received_quantity = 0
-
-    if received_quantity:
+    except ValidationError as exc:
+        messages.warning(request, " ".join(exc.messages))
+    else:
         messages.success(
             request,
-            f"{received_quantity} units added to stock.",
+            f"{quantity} units received."
+            if created
+            else f"Goods receipt #{receipt.pk} was already recorded.",
         )
-    elif order.status == "cancelled":
-        messages.warning(
-            request,
-            "Cancelled purchase orders cannot be received.",
-        )
-
     return redirect("purchase_orders")
 
 
@@ -6705,7 +7148,15 @@ def add_supplier(request):
         form = SupplierForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            supplier = form.save()
+            _record_operations_notification(
+                request,
+                module="Suppliers",
+                event=f"Supplier added: {supplier.name}",
+                result=f"Added supplier record #{supplier.pk}.",
+                link="/dashboard/suppliers/",
+                key=f"dashboard-supplier-added:{supplier.pk}",
+            )
             messages.success(request, "✅ Supplier added successfully.")
             return redirect("supplier_list")
     else:
@@ -6732,7 +7183,15 @@ def edit_supplier(request, supplier_id):
         form = SupplierForm(request.POST, instance=supplier)
 
         if form.is_valid():
-            form.save()
+            supplier = form.save()
+            _record_operations_notification(
+                request,
+                module="Suppliers",
+                event=f"Supplier updated: {supplier.name}",
+                result=f"Updated supplier record #{supplier.pk}.",
+                link="/dashboard/suppliers/",
+                key=f"dashboard-supplier-updated:{supplier.pk}:{timezone.now().isoformat()}",
+            )
             messages.success(request, "✅ Supplier updated successfully.")
             return redirect("supplier_list")
     else:
@@ -6842,7 +7301,15 @@ def add_vehicle(request):
     if request.method == "POST":
         form = VehicleForm(request.POST)
         if form.is_valid():
-            form.save()
+            vehicle = form.save()
+            _record_operations_notification(
+                request,
+                module="Fleet",
+                event=f"Vehicle added: {vehicle.vehicle_name}",
+                result=f"Added vehicle record #{vehicle.pk}.",
+                link="/dashboard/vehicles/",
+                key=f"dashboard-vehicle-added:{vehicle.pk}",
+            )
             messages.success(request, "✅ Vehicle added successfully.")
             return redirect("vehicle_list")
     else:
@@ -6868,7 +7335,15 @@ def edit_vehicle(request, vehicle_id):
     if request.method == "POST":
         form = VehicleForm(request.POST, instance=vehicle)
         if form.is_valid():
-            form.save()
+            vehicle = form.save()
+            _record_operations_notification(
+                request,
+                module="Fleet",
+                event=f"Vehicle updated: {vehicle.vehicle_name}",
+                result=f"Updated vehicle record #{vehicle.pk}.",
+                link="/dashboard/vehicles/",
+                key=f"dashboard-vehicle-updated:{vehicle.pk}:{timezone.now().isoformat()}",
+            )
             messages.success(request, "✅ Vehicle updated successfully.")
             return redirect("vehicle_list")
     else:
@@ -6942,7 +7417,15 @@ def add_maintenance(request):
 
         if form.is_valid():
 
-            form.save()
+            maintenance = form.save()
+            _record_operations_notification(
+                request,
+                module="Maintenance",
+                event=f"Maintenance recorded: {maintenance.asset_name}",
+                result=f"Added maintenance history record #{maintenance.pk}.",
+                link="/dashboard/maintenance/",
+                key=f"dashboard-maintenance-recorded:{maintenance.pk}",
+            )
 
             messages.success(request, "Maintenance record added.")
 
@@ -7469,6 +7952,201 @@ def operations_command_centre(request):
     }
 
     return render(request, "dashboard/command_centres/operations_command_centre.html", context)
+
+
+@login_required
+@permission_required(
+    ("employees.manage_supply_requests", "expenses.view_expense"),
+    raise_exception=True,
+)
+def operations_automation(request):
+    from django.db.models import Sum
+
+    from dashboard.inventory_services import build_low_stock_suggestions
+    from dashboard.models import (
+        CleaningSupply,
+        Equipment,
+        EquipmentAllocation,
+        InventoryMovement,
+        MaintenanceHistory,
+        OperationsAutomationEvent,
+        PurchaseOrder,
+        Vehicle,
+    )
+    from employees.models import SupplyRequest
+    from expenses.models import Expense
+
+    today = timezone.localdate()
+    reminder_cutoff = today + timedelta(days=14)
+    month_start = today.replace(day=1)
+    thirty_days_ago = today - timedelta(days=30)
+    open_requests = SupplyRequest.objects.filter(
+        status=SupplyRequest.Status.PENDING
+    ).select_related("employee").order_by("submitted_at")[:10]
+    low_stock = build_low_stock_suggestions()
+    overdue_orders = PurchaseOrder.objects.filter(
+        status__in=("draft", "ordered"),
+        expected_delivery_date__lt=today,
+    ).select_related("supply").order_by("expected_delivery_date", "pk")
+    maintenance_due = MaintenanceHistory.objects.filter(
+        next_service_date__isnull=False,
+        next_service_date__lte=reminder_cutoff,
+    ).order_by("next_service_date", "pk")
+    equipment_service_history = MaintenanceHistory.objects.filter(
+        asset_type="equipment",
+        next_service_date__isnull=False,
+        next_service_date__lte=reminder_cutoff,
+    ).values("asset_name")
+    equipment_service_due = Equipment.objects.filter(
+        next_service_date__isnull=False,
+        next_service_date__lte=reminder_cutoff,
+    ).exclude(name__in=equipment_service_history).order_by(
+        "next_service_date", "pk"
+    )
+    vehicle_due = []
+    for vehicle in Vehicle.objects.filter(status="active").order_by("vehicle_name"):
+        for field_name, label in (
+            ("registration_expiry", "Registration"),
+            ("insurance_expiry", "Insurance"),
+            ("service_due_date", "Service"),
+        ):
+            due_date = getattr(vehicle, field_name)
+            if due_date and due_date <= reminder_cutoff:
+                vehicle_due.append(
+                    {
+                        "vehicle": vehicle,
+                        "label": label,
+                        "due_date": due_date,
+                    }
+                )
+    due_invoices = Expense.objects.filter(
+        invoice_review__isnull=False,
+        due_date__isnull=False,
+        due_date__lte=reminder_cutoff,
+    ).exclude(payment_status=Expense.PaymentStatus.PAID).select_related(
+        "supplier"
+    ).order_by("due_date", "pk")
+    monthly_expenses = (
+        Expense.objects.filter(date__gte=month_start, date__lte=today).aggregate(
+            total=Sum("amount")
+        )["total"]
+        or Decimal("0.00")
+    )
+    supplier_period_start = today - timedelta(days=365)
+    supplier_spending = (
+        Expense.objects.filter(
+            date__gte=supplier_period_start,
+            supplier__isnull=False,
+        )
+        .values("supplier__id", "supplier__name")
+        .annotate(total=Sum("amount"))
+        .order_by("-total", "supplier__name")[:10]
+    )
+    inventory_consumption = (
+        InventoryMovement.objects.filter(
+            movement_type=InventoryMovement.MovementType.ISSUE,
+            supply__isnull=False,
+            created_at__date__gte=thirty_days_ago,
+        )
+        .values("supply__name", "supply__unit")
+        .annotate(quantity_delta=Sum("quantity_delta"))
+        .order_by("quantity_delta")[:10]
+    )
+    for row in inventory_consumption:
+        row["quantity_issued"] = abs(row["quantity_delta"])
+    allocations = EquipmentAllocation.objects.select_related(
+        "equipment", "employee", "issued_by", "returned_by"
+    ).order_by("-issued_at")[:15]
+
+    return render(
+        request,
+        "dashboard/inventory/operations_automation.html",
+        {
+            "today": today,
+            "reminder_cutoff": reminder_cutoff,
+            "open_requests": open_requests,
+            "pending_request_count": SupplyRequest.objects.filter(
+                status=SupplyRequest.Status.PENDING
+            ).count(),
+            "low_stock": low_stock,
+            "overdue_orders": overdue_orders,
+            "maintenance_due": maintenance_due,
+            "equipment_service_due": equipment_service_due,
+            "vehicle_due": vehicle_due,
+            "due_invoices": due_invoices,
+            "monthly_expenses": monthly_expenses,
+            "supplier_spending": supplier_spending,
+            "inventory_consumption": inventory_consumption,
+            "allocations": allocations,
+            "recent_events": OperationsAutomationEvent.objects.select_related(
+                "actor"
+            )[:10],
+            "automation_event_count": OperationsAutomationEvent.objects.count(),
+            "last_automation_run": OperationsAutomationEvent.objects.filter(
+                module="Automation"
+            ).order_by("-occurred_at").first(),
+        },
+    )
+
+
+@login_required
+@require_POST
+@permission_required(
+    ("employees.manage_supply_requests", "expenses.view_expense"),
+    raise_exception=True,
+)
+def run_operations_automation_now(request):
+    from .operations_automation import run_operations_automation
+
+    result = run_operations_automation()
+    messages.success(
+        request,
+        (
+            f"Automation checks completed: {result['events_created']} new alerts; "
+            f"{result['duplicates_skipped']} duplicate alerts skipped."
+        ),
+    )
+    return redirect("operations_automation")
+
+
+@login_required
+@permission_required(
+    ("employees.manage_supply_requests", "expenses.view_expense"),
+    raise_exception=True,
+)
+def operations_automation_history(request):
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+
+    from .models import OperationsAutomationEvent
+
+    events = OperationsAutomationEvent.objects.select_related("actor")
+    module = request.GET.get("module", "").strip()
+    query = request.GET.get("q", "").strip()
+    if module:
+        events = events.filter(module=module)
+    if query:
+        events = events.filter(
+            Q(event__icontains=query)
+            | Q(trigger__icontains=query)
+            | Q(action_taken__icontains=query)
+            | Q(result__icontains=query)
+            | Q(actor__username__icontains=query)
+        )
+    page_obj = Paginator(events, 50).get_page(request.GET.get("page"))
+    return render(
+        request,
+        "dashboard/inventory/operations_automation_history.html",
+        {
+            "events": page_obj.object_list,
+            "page_obj": page_obj,
+            "module": module,
+            "query": query,
+            "modules": OperationsAutomationEvent.objects.order_by()
+            .values_list("module", flat=True)
+            .distinct(),
+        },
+    )
 
 
 @login_required

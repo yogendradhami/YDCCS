@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -15,7 +15,11 @@ def expense_list(request):
     today = timezone.now().date()
     month_start = today.replace(day=1)
 
-    all_expenses = Expense.objects.select_related("paid_by").all()
+    all_expenses = Expense.objects.select_related(
+        "paid_by",
+        "supplier",
+        "invoice_review__document",
+    ).all()
     expenses = all_expenses
     query = request.GET.get("q", "").strip()
     category = request.GET.get("category", "").strip()
@@ -33,7 +37,11 @@ def expense_list(request):
     )
 
     if query:
-        expenses = expenses.filter(description__icontains=query)
+        expenses = expenses.filter(
+            Q(description__icontains=query)
+            | Q(invoice_number__icontains=query)
+            | Q(supplier__name__icontains=query)
+        )
     if category in dict(Expense.CATEGORY_CHOICES):
         expenses = expenses.filter(category=category)
     else:
@@ -86,6 +94,7 @@ def add_expense(request):
         if form.is_valid():
             expense = form.save(commit=False)
             expense.paid_by = request.user
+            expense.recorded_by = request.user
             expense.save()
 
             messages.success(request, "✅ Expense added successfully.")
@@ -115,7 +124,26 @@ def edit_expense(request, expense_id):
         form = ExpenseForm(request.POST, request.FILES, instance=expense)
 
         if form.is_valid():
+            previous_payment_status = expense.payment_status
             form.save()
+            if expense.payment_status != previous_payment_status:
+                from dashboard.operations_automation import record_operations_event
+
+                record_operations_event(
+                    module="Finance",
+                    event=f"Expense #{expense.pk} payment status confirmed",
+                    trigger="Authorised user changed the payment status.",
+                    action_taken=(
+                        f"Payment status changed from {previous_payment_status} "
+                        f"to {expense.payment_status}."
+                    ),
+                    actor=request.user,
+                    metadata={
+                        "expense_id": expense.pk,
+                        "old_payment_status": previous_payment_status,
+                        "payment_status": expense.payment_status,
+                    },
+                )
             messages.success(request, "✅ Expense updated successfully.")
             return redirect("expense_list")
 
@@ -138,6 +166,13 @@ def edit_expense(request, expense_id):
 @login_required
 def delete_expense(request, expense_id):
     expense = get_object_or_404(Expense, id=expense_id)
+
+    if expense.invoice_review_id:
+        messages.error(
+            request,
+            "This expense is linked to a supplier invoice and is retained for audit.",
+        )
+        return redirect("expense_list")
 
     if request.method == "POST":
         expense.delete()

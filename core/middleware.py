@@ -55,6 +55,7 @@ DASHBOARD_PERMISSION_SECTIONS = {
     "/dashboard/contracts/": (("contracts", "cleaningcontract"),),
     "/dashboard/reports/": (("reports", "cleaningreport"),),
     "/dashboard/gallery/": (("gallery", "galleryitem"),),
+    "/dashboard/testimonials/": (("core", "testimonialvideo"),),
     "/dashboard/property-damage-reports/": (
         ("employees", "employee"),
     ),
@@ -160,8 +161,14 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     security_user_edit security_user_list send_booking_reminder send_contract_renewal_email send_customer_followup send_inactive_campaign
     send_invoice_reminder send_quote_followup send_quote_followup_email send_review_campaign send_review_request send_vip_campaign
     send_vip_campaign_legacy service_performance_dashboard staff_schedule_dashboard stripe_payment_cancel stripe_payment_success supplier_list
-    supplies_list support_dashboard ticket_update update_booking_quick_status update_finding update_quote_status upload
-    vehicle_list vip_campaigns
+    supplies_list support_dashboard testimonial_video_list add_testimonial_videos
+    edit_testimonial_video delete_testimonial_video ticket_update update_booking_quick_status update_finding update_quote_status upload
+    vehicle_list vip_campaigns supply_request_management supply_request_detail
+    supply_request_approve supply_request_reject supply_request_issue
+    inventory_transactions inventory_transaction_action goods_received
+    record_goods_receipt invoice_review_list invoice_review_detail
+    invoice_document_preview invoice_review_verify invoice_review_reject invoice_review_approve
+    operations_automation operations_automation_history run_operations_automation_now
     """.split()
 )
 
@@ -276,6 +283,100 @@ DASHBOARD_PERMISSION_ROUTE_OVERRIDES = {
     "email": {"GET": ("company_documents.view_companydocument",), "HEAD": ("company_documents.view_companydocument",), "POST": ("company_documents.change_companydocument",)},
     "archive": {"POST": ("company_documents.change_companydocument",)},
     "delete": {"POST": ("company_documents.delete_companydocument",)},
+    "supply_request_management": {
+        "GET": ("employees.manage_supply_requests",),
+        "HEAD": ("employees.manage_supply_requests",),
+    },
+    "supply_request_detail": {
+        "GET": ("employees.manage_supply_requests",),
+        "HEAD": ("employees.manage_supply_requests",),
+    },
+    "supply_request_approve": {
+        "POST": ("employees.manage_supply_requests",),
+    },
+    "supply_request_reject": {
+        "POST": ("employees.manage_supply_requests",),
+    },
+    "supply_request_issue": {
+        "POST": ("employees.manage_supply_requests",),
+    },
+    "inventory_transactions": {
+        "GET": ("employees.manage_supply_requests",),
+        "HEAD": ("employees.manage_supply_requests",),
+    },
+    "inventory_transaction_action": {
+        "POST": ("employees.manage_supply_requests",),
+    },
+    "goods_received": {
+        "GET": ("employees.manage_supply_requests",),
+        "HEAD": ("employees.manage_supply_requests",),
+    },
+    "record_goods_receipt": {
+        "POST": (
+            "dashboard.change_purchaseorder",
+            "dashboard.change_cleaningsupply",
+        ),
+    },
+    "invoice_review_list": {
+        "GET": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+        "HEAD": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+    },
+    "invoice_review_detail": {
+        "GET": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+        "HEAD": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+    },
+    "invoice_document_preview": {
+        "GET": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+        "HEAD": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+    },
+    "invoice_review_verify": {
+        "POST": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+    },
+    "invoice_review_reject": {
+        "POST": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+        ),
+    },
+    "invoice_review_approve": {
+        "POST": (
+            "company_documents.review_invoice_documents",
+            "company_documents.view_companydocument",
+            "expenses.add_expense",
+        ),
+    },
+    "operations_automation": {
+        "GET": ("employees.manage_supply_requests", "expenses.view_expense"),
+        "HEAD": ("employees.manage_supply_requests", "expenses.view_expense"),
+    },
+    "operations_automation_history": {
+        "GET": ("employees.manage_supply_requests", "expenses.view_expense"),
+        "HEAD": ("employees.manage_supply_requests", "expenses.view_expense"),
+    },
+    "run_operations_automation_now": {
+        "POST": ("employees.manage_supply_requests", "expenses.view_expense"),
+    },
 }
 
 
@@ -288,6 +389,7 @@ DASHBOARD_POST_ROUTE_NAMES = frozenset(
         "add_booking", "edit_booking", "delete_booking", "update_booking_quick_status",
         "create_invoice_from_booking", "add_employee", "edit_employee", "delete_employee",
         "add_gallery_item", "edit_gallery_item", "delete_gallery_item", "add_review",
+        "add_testimonial_videos", "edit_testimonial_video", "delete_testimonial_video",
         "edit_review", "delete_review", "send_customer_followup", "send_review_request",
         "dashboard_newsletter_subscribe", "edit_newsletter_subscriber",
         "delete_newsletter_subscriber", "add_equipment", "edit_equipment",
@@ -309,6 +411,8 @@ DASHBOARD_POST_ROUTE_NAMES = frozenset(
         "email", "archive", "delete", "bulk_import_delete", "bulk_import_upload",
         "bulk_import_analyse", "bulk_import_approve", "bulk_import_import",
         "bulk_import_item_edit", "update_finding", "run_audit",
+        "invoice_review_approve",
+        "run_operations_automation_now",
     }
 )
 

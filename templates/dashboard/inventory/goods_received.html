@@ -1,0 +1,32 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Goods received | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Goods received{% endblock %}
+{% block page_subtitle %}Confirm full or partial physical deliveries against purchase orders before stock is updated.{% endblock %}
+{% block content %}
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Receiving</span><h2>Confirm what arrived.</h2><p>An uploaded invoice never changes inventory. Stock is adjusted only after a manager confirms quantities received.</p></div></section>
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Open purchase orders</span><h3>Receive a delivery</h3></div></header>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Order</th><th>Supply</th><th>Supplier</th><th>Ordered</th><th>Received</th><th>Remaining</th><th>Confirm receipt</th></tr></thead>
+            <tbody>{% for order in orders %}
+                <tr>
+                    <td><strong>PO-{{ order.pk|stringformat:"05d" }}</strong></td><td>{{ order.supply.name }}</td><td>{{ order.supplier_name }}</td>
+                    <td>{{ order.quantity }}</td><td>{{ order.quantity_received }}</td><td>{{ order.quantity_remaining }}</td>
+                    <td><form method="post" action="{% url 'record_goods_receipt' order.pk %}" class="inventory-filter-bar">{% csrf_token %}<input type="hidden" name="idempotency_key" value="{{ order.receipt_token }}"><label>Quantity<input type="number" name="quantity" min="1" max="{{ order.quantity_remaining }}" required></label><label>Notes<input type="text" name="notes" maxlength="2000" placeholder="Delivery condition or discrepancy"></label><button class="inventory-button" type="submit">Record received</button></form></td>
+                </tr>
+            {% empty %}<tr><td colspan="7"><div class="inventory-empty"><strong>No open purchase orders</strong>Open orders will appear here when they are ready to receive.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+    </section>
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Immutable receipt history</span><h3>Recent goods receipts</h3></div></header>
+        <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Receipt</th><th>Purchase order</th><th>Supply</th><th>Quantity</th><th>Recorded by</th><th>Received at</th><th>Notes</th></tr></thead><tbody>
+            {% for receipt in receipts %}{% for item in receipt.items.all %}<tr><td>GR-{{ receipt.pk|stringformat:"05d" }}</td><td>PO-{{ item.purchase_order_id|stringformat:"05d" }}</td><td>{{ item.purchase_order.supply.name }}</td><td>{{ item.quantity }}</td><td>{{ receipt.received_by.get_full_name|default:receipt.received_by.username }}</td><td>{{ receipt.received_at|date:"j M Y, g:i A" }}</td><td>{{ receipt.notes|default:"—" }}</td></tr>{% endfor %}
+            {% empty %}<tr><td colspan="7"><div class="inventory-empty"><strong>No goods receipts have been recorded</strong>Confirmed deliveries will be retained here for audit.</div></td></tr>{% endfor %}
+        </tbody></table></div>
+    </section>
+</div>
+{% endblock %}

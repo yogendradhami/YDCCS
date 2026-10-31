@@ -10,13 +10,15 @@ import requests
 
 import cloudinary
 
-from cloudinary.utils import cloudinary_url
+from cloudinary.utils import cloudinary_url, private_download_url
 
 import hashlib
 
 import os
 
 import secrets
+
+import time
 
 from datetime import datetime
 
@@ -2185,7 +2187,27 @@ def analyse_item(item, uploaded_file=None):
 
 
 
-        if "404 Client Error" in error_message:
+        if isinstance(exc, requests.RequestException) and exc.response is not None:
+            status_code = exc.response.status_code
+            if status_code == 401:
+                error_message = (
+                    "Cloudinary denied access to the staged document (HTTP 401). "
+                    "Analysis uses a signed delivery URL; verify Cloudinary API "
+                    "credentials and asset access settings, then retry analysis."
+                )
+            elif status_code == 404:
+                error_message = (
+                    "The temporary Cloudinary staging file could not be found. "
+                    "Upload the document again before analysing it."
+                )
+            else:
+                error_message = (
+                    f"Cloudinary could not download the staged document "
+                    f"(HTTP {status_code}). Retry analysis; if it persists, "
+                    "check Cloudinary availability and delivery settings."
+                )
+
+        elif "404 Client Error" in error_message:
 
 
 
@@ -2591,6 +2613,8 @@ def validate_staged_file(item):
 
             secure=True,
 
+            sign_url=True,
+
         )
 
 
@@ -2626,6 +2650,8 @@ def validate_staged_file(item):
             timeout=20,
 
             stream=True,
+
+            allow_redirects=True,
 
         )
 
@@ -2679,25 +2705,34 @@ def get_staged_file_for_extraction(item):
 
 
 
-    raw_url, _ = cloudinary_url(
-
-        file_name,
-
-        resource_type="raw",
-
-        type="upload",
-
-        secure=True,
-
+    file_format = os.path.splitext(file_name)[1].lstrip(".")
+    public_id = (
+        file_name[: -(len(file_format) + 1)]
+        if file_format
+        else file_name
     )
+    from django.conf import settings
 
-
+    cloudinary_settings = settings.CLOUDINARY_STORAGE
+    download_url = private_download_url(
+        public_id,
+        file_format,
+        resource_type="raw",
+        type="upload",
+        expires_at=int(time.time()) + 300,
+        attachment=True,
+        cloud_name=cloudinary_settings["CLOUD_NAME"],
+        api_key=cloudinary_settings["API_KEY"],
+        api_secret=cloudinary_settings["API_SECRET"],
+    )
 
     response = requests.get(
 
-        raw_url,
+        download_url,
 
         timeout=60,
+
+        allow_redirects=True,
 
     )
 
@@ -3556,17 +3591,7 @@ def import_bulk_item(item, user):
 
         # --------------------------------------------------
 
-        # VALIDATE STAGED FILE
 
-        # --------------------------------------------------
-
-
-
-        validate_staged_file(locked_item)
-
-
-
-        # --------------------------------------------------
 
         # CHECK EXACT EXISTING DUPLICATE
 

@@ -10,6 +10,32 @@ from django.utils import timezone
 from .models import Notification
 
 
+NOTIFICATION_AREAS = {
+    "supply_requests": "/dashboard/supply-requests/",
+    "inventory_transactions": "/dashboard/inventory-transactions/",
+    "goods_received": "/dashboard/goods-received/",
+    "invoice_review": "/dashboard/company-documents/invoice-review/",
+    "automation_history": "/dashboard/operations-automation/history/",
+    "operations_automation": "/dashboard/operations-automation/",
+    "equipment": "/dashboard/equipment/",
+    "supplies": "/dashboard/supplies/",
+    "purchase_orders": "/dashboard/purchase-orders/",
+    "suppliers": "/dashboard/suppliers/",
+    "vehicles": "/dashboard/vehicles/",
+    "maintenance": "/dashboard/maintenance/",
+}
+
+
+def notifications_for_area(user, area):
+    path = NOTIFICATION_AREAS[area]
+    notifications = user.notifications.filter(link__startswith=path)
+    if area == "operations_automation":
+        notifications = notifications.exclude(
+            link__startswith=NOTIFICATION_AREAS["automation_history"]
+        )
+    return notifications
+
+
 _instance_flag_locks = {}
 _instance_flag_locks_guard = RLock()
 _unweakrefable_flag_lock = RLock()

@@ -12,6 +12,7 @@ class ExpenseForm(forms.ModelForm):
             "category",
             "description",
             "amount",
+            "payment_status",
             "receipt",
             "notes",
         ]
@@ -37,3 +38,13 @@ class ExpenseForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs.update({"class": "form-control"})
+        self.fields["payment_status"].help_text = (
+            "Choose Paid only after confirming the payment. Automation never changes this status."
+        )
+        if self.instance.pk and self.instance.invoice_review_id:
+            for field_name in ("date", "category", "description", "amount"):
+                self.fields[field_name].disabled = True
+            self.fields["notes"].help_text = (
+                "The source invoice is retained for audit. Correct invoice amounts "
+                "through the invoice review workflow."
+            )

@@ -1,0 +1,87 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Operations Automation | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Operations automation{% endblock %}
+{% block page_subtitle %}One control centre for inventory, approvals, supplier invoices, maintenance and fleet reminders.{% endblock %}
+{% block content %}
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero">
+        <div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Automation</span><h2>Act on exceptions before they interrupt service.</h2><p>Suggestions and reminders are logged for management. Stock only changes through a confirmed receipt, issue, return or adjustment.</p></div>
+        <form method="post" action="{% url 'run_operations_automation_now' %}">{% csrf_token %}<button class="inventory-button" type="submit">Run checks now</button></form>
+    </section>
+    <div class="inventory-callout"><strong>Automated reminders:</strong> schedule <code>python manage.py run_operations_automation</code> daily. Running checks creates deduplicated in-app alerts; it never creates purchase orders, approves requests, posts invoices or marks payments.</div>
+    <div class="inventory-metrics">
+        <article class="inventory-metric is-accent"><span class="inventory-metric-label">Low-stock items</span><strong class="inventory-metric-value">{{ low_stock|length }}</strong><small class="inventory-metric-foot">Suggested reorder quantities only</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Supply approvals</span><strong class="inventory-metric-value">{{ pending_request_count }}</strong><small class="inventory-metric-foot">Waiting for management</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Overdue purchase orders</span><strong class="inventory-metric-value">{{ overdue_orders|length }}</strong><small class="inventory-metric-foot">Expected delivery date passed</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">Supplier invoices due soon</span><strong class="inventory-metric-value">{{ due_invoices|length }}</strong><small class="inventory-metric-foot">Due within 14 days or overdue</small></article>
+        <article class="inventory-metric"><span class="inventory-metric-label">This month’s expenses</span><strong class="inventory-metric-value">${{ monthly_expenses|floatformat:2 }}</strong><small class="inventory-metric-foot">Approved and manually recorded expenses</small></article>
+    </div>
+    <div class="inventory-grid">
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Inventory</span><h3>Reorder suggestions</h3></div><a class="inventory-button-secondary" href="{% url 'supplies_list' %}">Manage supplies</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Supply</th><th>Available</th><th>Minimum</th><th>Suggested reorder</th></tr></thead><tbody>
+                {% for item in low_stock %}<tr><td>{{ item.supply.name }}</td><td>{{ item.supply.current_stock }} {{ item.supply.get_unit_display|lower }}</td><td>{{ item.supply.minimum_stock }}</td><td><strong>{{ item.suggested_quantity }}</strong></td></tr>{% empty %}<tr><td colspan="4">No items are currently at or below minimum stock.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Employee requests</span><h3>Pending approvals</h3></div><a class="inventory-button-secondary" href="{% url 'supply_request_management' %}">Review requests</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Employee</th><th>Submitted</th><th>Urgency</th><th>Request</th></tr></thead><tbody>
+                {% for request in open_requests %}<tr><td>{{ request.employee.full_name }}</td><td>{{ request.submitted_at|date:"j M Y" }}</td><td>{{ request.get_urgency_display }}</td><td><a href="{% url 'supply_request_detail' request.pk %}">Review #{{ request.pk }}</a></td></tr>{% empty %}<tr><td colspan="4">No supply requests need approval.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Procurement</span><h3>Overdue purchase orders</h3></div><a class="inventory-button-secondary" href="{% url 'purchase_orders' %}">Order register</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Order</th><th>Supply</th><th>Supplier</th><th>Expected</th><th>Unreceived</th></tr></thead><tbody>
+                {% for order in overdue_orders %}<tr><td>PO-{{ order.pk|stringformat:"05d" }}</td><td>{{ order.supply.name }}</td><td>{{ order.supplier_name }}</td><td>{{ order.expected_delivery_date|date:"j M Y" }}</td><td>{{ order.quantity_remaining }}</td></tr>{% empty %}<tr><td colspan="5">No open purchase orders are overdue.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Finance</span><h3>Supplier invoices due</h3></div><a class="inventory-button-secondary" href="{% url 'expense_list' %}">View expenses</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Supplier</th><th>Invoice</th><th>Due</th><th>Total</th><th>Payment</th></tr></thead><tbody>
+                {% for expense in due_invoices %}<tr><td>{{ expense.supplier.name }}</td><td>{{ expense.invoice_number }}</td><td>{{ expense.due_date|date:"j M Y" }}</td><td>${{ expense.amount|floatformat:2 }}</td><td>{{ expense.get_payment_status_display }}</td></tr>{% empty %}<tr><td colspan="5">No verified supplier invoices are due in the next 14 days.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Maintenance</span><h3>Equipment service reminders</h3></div><a class="inventory-button-secondary" href="{% url 'maintenance_list' %}">Maintenance records</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Asset</th><th>Next service</th><th>Details</th></tr></thead><tbody>
+                {% for maintenance in maintenance_due %}<tr><td>{{ maintenance.asset_name }}</td><td>{{ maintenance.next_service_date|date:"j M Y" }}</td><td>{{ maintenance.description|truncatechars:90 }}</td></tr>{% endfor %}
+                {% for equipment in equipment_service_due %}<tr><td>{{ equipment.name }}</td><td>{{ equipment.next_service_date|date:"j M Y" }}</td><td>Equipment register</td></tr>{% endfor %}
+                {% if not maintenance_due and not equipment_service_due %}<tr><td colspan="3">No equipment or maintenance-record service dates are due within 14 days.</td></tr>{% endif %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Fleet</span><h3>Vehicle expiry and service</h3></div><a class="inventory-button-secondary" href="{% url 'vehicle_list' %}">Vehicle register</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Vehicle</th><th>Reminder</th><th>Due</th></tr></thead><tbody>
+                {% for item in vehicle_due %}<tr><td>{{ item.vehicle.vehicle_name }} ({{ item.vehicle.registration_number }})</td><td>{{ item.label }}</td><td>{{ item.due_date|date:"j M Y" }}</td></tr>{% empty %}<tr><td colspan="3">No vehicle dates fall within the reminder window.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Supplier spending</span><h3>Last 12 months</h3></div><a class="inventory-button-secondary" href="{% url 'supplier_list' %}">Manage suppliers</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Supplier</th><th>Recorded spend</th></tr></thead><tbody>
+                {% for supplier in supplier_spending %}<tr><td>{{ supplier.supplier__name }}</td><td>${{ supplier.total|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="2">No supplier-linked expenses have been recorded.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Inventory usage</span><h3>Supply issues · 30 days</h3></div><a class="inventory-button-secondary" href="{% url 'inventory_transactions' %}">View ledger</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Supply</th><th>Issued</th></tr></thead><tbody>
+                {% for item in inventory_consumption %}<tr><td>{{ item.supply__name }}</td><td>{{ item.quantity_issued }} {{ item.supply__unit }}</td></tr>{% empty %}<tr><td colspan="2">No supply issues have been recorded in the last 30 days.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <section class="inventory-panel">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Equipment custody</span><h3>Recent allocations and returns</h3></div><a class="inventory-button-secondary" href="{% url 'inventory_transactions' %}">Asset ledger</a></header>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Equipment</th><th>Employee</th><th>Issued</th><th>Status</th></tr></thead><tbody>
+                {% for allocation in allocations %}<tr><td>{{ allocation.equipment.name }}</td><td>{{ allocation.employee.full_name }}</td><td>{{ allocation.issued_at|date:"j M Y" }}</td><td>{% if allocation.is_active %}Assigned{% else %}Returned {{ allocation.returned_at|date:"j M Y" }}{% endif %}</td></tr>{% empty %}<tr><td colspan="4">No equipment allocations are recorded.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+    </div>
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Audit trail</span><h3>Recent automation activity</h3><p>{{ automation_event_count }} immutable event records</p></div><a class="inventory-button-secondary" href="{% url 'operations_automation_history' %}">Open history</a></header>
+        <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Event</th><th>Module</th><th>Trigger</th><th>Date/time</th><th>Responsible user</th><th>Result</th></tr></thead><tbody>
+            {% for event in recent_events %}<tr><td>{{ event.event }}</td><td>{{ event.module }}</td><td>{{ event.trigger }}</td><td>{{ event.occurred_at|date:"j M Y, g:i A" }}</td><td>{{ event.actor.get_full_name|default:event.actor.username|default:"System" }}</td><td>{{ event.result|truncatechars:140 }}</td></tr>{% empty %}<tr><td colspan="6">No automation history yet. Run checks or complete an inventory transaction to start the audit trail.</td></tr>{% endfor %}
+        </tbody></table></div>
+    </section>
+</div>
+{% endblock %}

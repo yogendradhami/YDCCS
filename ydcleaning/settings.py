@@ -245,6 +245,18 @@ STORAGES = {
 # ==========================================================
 
 COMPANY_DOCUMENT_MAX_SIZE = 50 * 1024 * 1024
+COMPANY_DOCUMENT_TESSERACT_CMD = env.str(
+    "COMPANY_DOCUMENT_TESSERACT_CMD",
+    default="tesseract",
+)
+COMPANY_DOCUMENT_OCR_LANGUAGE = env.str(
+    "COMPANY_DOCUMENT_OCR_LANGUAGE",
+    default="eng",
+)
+COMPANY_DOCUMENT_OCR_MAX_PAGES = env.int(
+    "COMPANY_DOCUMENT_OCR_MAX_PAGES",
+    default=20,
+)
 
 # ==========================================================
 # TEST MEDIA STORAGE

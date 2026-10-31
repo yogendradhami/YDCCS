@@ -2,10 +2,12 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+import requests
 
 from core.test_utils import grant_dashboard_permissions
 from employees.models import Employee
@@ -18,7 +20,11 @@ from .models import (
 )
 from .services.compliance_requirements import evaluate_requirement
 from .services.compliance_resolution import resolve_document_compliance
-from .services.bulk_import import create_batch
+from .services.bulk_import import (
+    analyse_item,
+    create_batch,
+    get_staged_file_for_extraction,
+)
 
 
 class ComplianceResolutionTests(TestCase):
@@ -429,6 +435,85 @@ class BulkImportUploadSafetyTests(TestCase):
         self.assertEqual(batch.items.count(), 2)
         self.assertTrue(all(item.staging_file.name for item in batch.items.all()))
         self.assertTrue(all(call.kwargs["resource_type"] == "raw" for call in upload.call_args_list))
+
+    @patch("company_documents.services.bulk_import.requests.get")
+    @patch("company_documents.services.bulk_import.private_download_url")
+    def test_staged_raw_document_download_uses_signed_delivery_url(
+        self, private_download_url, get
+    ):
+        private_download_url.return_value = (
+            "https://api.cloudinary.com/v1_1/example/raw/download?signature=signed"
+        )
+        response = get.return_value
+        response.content = b"%PDF-1.4 invoice"
+
+        batch = BulkImportBatch.objects.create(
+            batch_reference="SIGNED-DOWNLOAD",
+            uploaded_by=self.user,
+            total_files=1,
+        )
+        item = BulkImportItem.objects.create(
+            batch=batch,
+            original_filename="invoice.pdf",
+            staging_file="company_document_staging/2026/10/invoice.pdf",
+        )
+
+        downloaded = get_staged_file_for_extraction(item)
+
+        private_download_url.assert_called_once_with(
+            "company_document_staging/2026/10/invoice",
+            "pdf",
+            resource_type="raw",
+            type="upload",
+            expires_at=private_download_url.call_args.kwargs["expires_at"],
+            attachment=True,
+            cloud_name=settings.CLOUDINARY_STORAGE["CLOUD_NAME"],
+            api_key=settings.CLOUDINARY_STORAGE["API_KEY"],
+            api_secret=settings.CLOUDINARY_STORAGE["API_SECRET"],
+        )
+        get.assert_called_once_with(
+            private_download_url.return_value,
+            timeout=60,
+            allow_redirects=True,
+        )
+        self.assertEqual(downloaded.read(), b"%PDF-1.4 invoice")
+        self.assertEqual(downloaded.name, "invoice.pdf")
+
+    @patch("company_documents.services.bulk_import.requests.get")
+    @patch("company_documents.services.bulk_import.private_download_url")
+    def test_analysis_reports_sanitized_cloudinary_401_for_retry(
+        self, private_download_url, get
+    ):
+        private_download_url.return_value = (
+            "https://api.cloudinary.com/private-signed-download"
+        )
+        response = get.return_value
+        response.status_code = 401
+        response.raise_for_status.side_effect = requests.HTTPError(
+            "401 Client Error: Unauthorized for url: "
+            "https://api.cloudinary.com/private-signed-download?signature=secret",
+            response=response,
+        )
+
+        batch = BulkImportBatch.objects.create(
+            batch_reference="SIGNED-401",
+            uploaded_by=self.user,
+            total_files=1,
+        )
+        item = BulkImportItem.objects.create(
+            batch=batch,
+            original_filename="invoice.pdf",
+            staging_file="company_document_staging/2026/10/invoice.pdf",
+        )
+
+        with self.assertRaises(requests.HTTPError):
+            analyse_item(item)
+
+        item.refresh_from_db()
+        self.assertEqual(item.status, BulkImportItem.Status.FAILED)
+        self.assertIn("HTTP 401", item.error_message)
+        self.assertNotIn("api.cloudinary.com", item.error_message)
+        self.assertNotIn("signature=secret", item.error_message)
 
     @patch("company_documents.services.bulk_import._cleanup_staging_assets")
     @patch("company_documents.services.bulk_import.cloudinary.uploader.upload")

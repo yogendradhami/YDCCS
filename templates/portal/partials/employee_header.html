@@ -12,6 +12,7 @@
             <nav class="employee-portal-nav" aria-label="Employee portal navigation">
                 <a href="{% url 'employee_dashboard' %}">Overview</a>
                 <a href="{% url 'employee_jobs' %}">Jobs</a>
+                <a href="{% url 'employee_supply_requests' %}">Request supplies</a>
                 <a href="{% url 'employee_damage_report' %}">Report damage</a>
                 <a href="{% url 'employee_roster' %}">Schedule</a>
                 <a href="{% url 'attendance_dashboard' %}">Attendance</a>
@@ -31,6 +32,7 @@
                         {% if global_unread_notifications %}<span class="portal-notification-count">{{ global_unread_notifications }}</span>{% endif %}
                     </summary>
                     <div class="portal-notification-dropdown">
+                        <form hidden>{% csrf_token %}</form>
                         <strong>Notifications</strong>
                         {% for notification in global_notifications %}
                             <a href="{{ notification.link|default:'#' }}" class="{% if not notification.is_read %}unread{% endif %}">
@@ -59,3 +61,43 @@
         </div>
     </div>
 </header>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menu = document.querySelector(".portal-notification-menu");
+    const count = menu && menu.querySelector(".portal-notification-count");
+    if (!menu || !count) return;
+
+    function getCookie(name) {
+        return document.cookie.split(";").map(function (cookie) {
+            return cookie.trim();
+        }).find(function (cookie) {
+            return cookie.indexOf(name + "=") === 0;
+        })?.slice(name.length + 1) || "";
+    }
+
+    menu.addEventListener("toggle", function () {
+        if (!menu.open || !count.isConnected) return;
+        const csrfToken = menu.querySelector("[name=csrfmiddlewaretoken]").value;
+        fetch("{% url 'mark_notifications_read' %}", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": csrfToken || getCookie("csrftoken"),
+                "X-Requested-With": "XMLHttpRequest",
+                "Accept": "application/json"
+            }
+        }).then(function (response) {
+            if (!response.ok) throw new Error("Notification update request failed");
+            return response.json();
+        }).then(function (data) {
+            if (!data.success) throw new Error("Notification update response was unsuccessful");
+            count.remove();
+            menu.querySelectorAll("a.unread").forEach(function (notification) {
+                notification.classList.remove("unread");
+            });
+        }).catch(function (error) {
+            console.error("Unable to mark employee notifications as read.", error);
+        });
+    });
+});
+</script>

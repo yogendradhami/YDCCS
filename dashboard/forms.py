@@ -6,6 +6,7 @@
 # ==========================================================
 
 from django import forms
+import uuid
 from django.core.files.uploadedfile import UploadedFile
 from core.models import TestimonialVideo
 from core.testimonial_uploads import (
@@ -66,6 +67,15 @@ class TestimonialVideoUploadForm(forms.Form):
             except ValueError as exc:
                 raise forms.ValidationError(f"{video.name}: {exc}") from exc
         return videos
+
+
+class GoodsReceiptForm(forms.Form):
+    quantity = forms.IntegerField(required=False, min_value=1)
+    idempotency_key = forms.UUIDField(required=False, widget=forms.HiddenInput)
+    notes = forms.CharField(required=False, max_length=2000, widget=forms.Textarea(attrs={"rows": 2}))
+
+    def clean_idempotency_key(self):
+        return self.cleaned_data.get("idempotency_key") or uuid.uuid4()
 
 
 class TestimonialVideoEditForm(forms.ModelForm):
@@ -233,7 +243,15 @@ class EquipmentForm(forms.ModelForm):
     class Meta:
         model = Equipment
 
-        fields = "__all__"
+        fields = [
+            "name",
+            "serial_number",
+            "purchase_date",
+            "purchase_cost",
+            "condition",
+            "next_service_date",
+            "notes",
+        ]
 
         widgets = {
             "purchase_date": forms.DateInput(
@@ -262,6 +280,15 @@ class CleaningSupplyForm(forms.ModelForm):
             ),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields.pop("current_stock", None)
+        else:
+            self.fields["current_stock"].help_text = (
+                "The starting quantity is recorded as an opening inventory movement."
+            )
+
 
 class PurchaseOrderForm(forms.ModelForm):
     status = forms.ChoiceField(
@@ -280,6 +307,7 @@ class PurchaseOrderForm(forms.ModelForm):
             "supplier_name",
             "quantity",
             "unit_cost",
+            "expected_delivery_date",
             "status",
             "notes",
         ]
@@ -287,6 +315,9 @@ class PurchaseOrderForm(forms.ModelForm):
         widgets = {
             "supplier_name": forms.TextInput(
                 attrs={"list": "active-supplier-names"}
+            ),
+            "expected_delivery_date": forms.DateInput(
+                attrs={"type": "date"},
             ),
         }
 

@@ -1,0 +1,39 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Supply request management | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">{% endblock %}
+{% block page_title %}Supply request management{% endblock %}
+{% block page_subtitle %}Review employee requests, approve quantities, and record physical handovers.{% endblock %}
+{% block content %}
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Employee requests</span><h2>Requests from the field.</h2><p>Approvals do not change stock. Inventory is deducted only when a manager records a handover.</p></div></section>
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Request register</span><h3>Employee requests</h3><p>{{ page_obj.paginator.count }} matching requests</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="request-employee">Employee</label><input id="request-employee" type="search" name="employee" value="{{ employee_query }}" placeholder="Employee name"></div>
+            <div class="inventory-filter-field"><label for="request-status">Status</label><select id="request-status" name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <div class="inventory-filter-field"><label for="request-urgency">Urgency</label><select id="request-urgency" name="urgency"><option value="">All priorities</option>{% for value,label in urgency_choices %}<option value="{{ value }}" {% if urgency_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <div class="inventory-filter-field"><label for="request-from">From</label><input id="request-from" type="date" name="from" value="{{ date_from|date:'Y-m-d' }}"></div>
+            <div class="inventory-filter-field"><label for="request-to">To</label><input id="request-to" type="date" name="to" value="{{ date_to|date:'Y-m-d' }}"></div>
+            <button type="submit" class="inventory-button">Filter</button><a class="inventory-button-secondary" href="{% url 'supply_request_management' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table">
+            <thead><tr><th>Request</th><th>Employee</th><th>Job location</th><th>Items</th><th>Urgency</th><th>Submitted</th><th>Status</th><th>Review</th></tr></thead>
+            <tbody>{% for request_record in requests %}
+                <tr>
+                    <td><strong>#{{ request_record.pk }}</strong></td>
+                    <td>{{ request_record.employee.full_name }}</td>
+                    <td>{{ request_record.job_location }}</td>
+                    <td>{% for item in request_record.items.all %}{% if item.supply %}{{ item.supply.name }}{% else %}{{ item.equipment.name }}{% endif %}: {{ item.requested_quantity }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
+                    <td><span class="inventory-status {% if request_record.urgency == 'urgent' or request_record.urgency == 'high' %}is-warning{% endif %}">{{ request_record.get_urgency_display }}</span></td>
+                    <td>{{ request_record.submitted_at|date:"j M Y, g:i A" }}</td>
+                    <td><span class="inventory-status {% if request_record.status == 'rejected' %}is-danger{% elif request_record.status == 'issued' %}is-good{% elif request_record.status == 'pending' %}is-warning{% endif %}">{{ request_record.get_status_display }}</span></td>
+                    <td><a class="inventory-button-secondary" href="{% url 'supply_request_detail' request_record.pk %}">Open request</a></td>
+                </tr>
+            {% empty %}<tr><td colspan="8"><div class="inventory-empty"><strong>{% if employee_query or status_filter or urgency_filter or date_from or date_to %}No requests match these filters{% else %}No employee supply requests yet{% endif %}</strong>New employee requests will appear in this register.</div></td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Supply request pages">{% if page_obj.has_previous %}<a href="?employee={{ employee_query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;urgency={{ urgency_filter|urlencode }}&amp;from={{ date_from|date:'Y-m-d' }}&amp;to={{ date_to|date:'Y-m-d' }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?employee={{ employee_query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;urgency={{ urgency_filter|urlencode }}&amp;from={{ date_from|date:'Y-m-d' }}&amp;to={{ date_to|date:'Y-m-d' }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
+</div>
+{% endblock %}

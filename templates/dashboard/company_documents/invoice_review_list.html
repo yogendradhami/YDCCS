@@ -1,0 +1,42 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Invoice Review | YD Cleaning{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">
+<style>
+    .invoice-review-page{max-width:1500px;margin:0 auto}.invoice-review-page .review-note{padding:1rem 1.2rem;background:#edf5f0;border-left:4px solid #176345;border-radius:8px;color:#294a3a;margin:1rem 0}.review-duplicate{color:#9e4c0d;font-weight:650}.review-status-verified{background:#e2f1e8;color:#135d3f}.review-status-rejected{background:#fae8e8;color:#8b2f2f}
+</style>
+{% endblock %}
+{% block page_title %}Invoice Review{% endblock %}
+{% block page_subtitle %}Extracted information stays pending until an authorised manager verifies it.{% endblock %}
+{% block content %}
+<div class="inventory-page invoice-review-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Document intelligence</span><h2>Review invoices before they reach Finance.</h2><p>Supplier invoices, receipts and bills uploaded into Company Documents appear here for human verification.</p></div><a class="inventory-button-secondary" href="{% url 'company_documents:list' %}">Company Documents</a></section>
+    <div class="inventory-callout review-note"><strong>Nothing is posted automatically.</strong> Extraction suggestions are unverified. Reviewing a document does not create an expense, add stock, mark an invoice paid, or place a purchase order.</div>
+    <section class="inventory-panel">
+        <header class="inventory-panel-heading"><div><span class="inventory-overline">Invoice register</span><h3>Document reviews</h3><p>{{ page_obj.paginator.count }} matching reviews</p></div></header>
+        <form class="inventory-filter-bar" method="get">
+            <div class="inventory-filter-field"><label for="review-query">Search</label><input id="review-query" type="search" name="q" value="{{ query }}" placeholder="Document, invoice number or supplier"></div>
+            <div class="inventory-filter-field"><label for="review-status">Review status</label><select id="review-status" name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <button type="submit" class="inventory-button">Filter reviews</button><a class="inventory-button-secondary" href="{% url 'company_documents:invoice_review_list' %}">Clear</a>
+        </form>
+        <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Uploaded document</th><th>Invoice number</th><th>Supplier</th><th>Invoice date</th><th>Total</th><th>Extraction</th><th>Status</th><th>Flags</th><th></th></tr></thead><tbody>
+            {% for review in reviews %}
+                <tr>
+                    <td><strong>{{ review.document.name }}</strong><br><small>{{ review.document.original_filename }}</small></td>
+                    <td>{{ review.extracted_data.invoice_number|default:"Not found" }}</td>
+                    <td>{{ review.supplier.name|default:review.suggested_supplier.name|default:review.extracted_data.supplier_name|default:"Needs matching" }}</td>
+                    <td>{{ review.extracted_data.invoice_date|default:"Not found" }}</td>
+                    <td>{% if review.extracted_data.total %}${{ review.extracted_data.total }}{% else %}Not found{% endif %}</td>
+                    <td>{{ review.get_extraction_method_display|default:review.extraction_method|default:"Unavailable" }}{% if review.extraction_error %}<br><span class="review-duplicate">OCR/extraction issue</span>{% endif %}</td>
+                    <td><span class="inventory-status {% if review.status == 'verified' or review.status == 'approved' %}review-status-verified{% elif review.status == 'rejected' %}review-status-rejected{% else %}is-warning{% endif %}">{{ review.get_status_display }}</span></td>
+                    <td>{% if review.duplicate_of_id %}<span class="review-duplicate">Possible duplicate</span>{% elif review.validation_errors %}<span class="review-duplicate">{{ review.validation_errors|length }} validation notice(s)</span>{% else %}—{% endif %}</td>
+                    <td><a class="inventory-button-secondary" href="{% url 'company_documents:invoice_review_detail' review.pk %}">Review</a></td>
+                </tr>
+            {% empty %}<tr><td colspan="9"><div class="inventory-empty"><strong>{% if query or status_filter %}No invoice reviews match these filters{% else %}No invoice documents need review{% endif %}</strong>Upload a supplier invoice, receipt, bill or finance document through the existing Company Documents system.</div></td></tr>{% endfor %}
+        </tbody></table></div>
+        {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Invoice review pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+    </section>
+</div>
+{% endblock %}

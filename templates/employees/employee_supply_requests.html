@@ -1,0 +1,171 @@
+{% extends 'employees/employee_portal_base.html' %}
+
+{% block title %}Cleaning Supply Requests | Employee Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .supply-request-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 1.25rem; align-items: start; }
+    .supply-request-card { background: #fff; border: 1px solid #e4e9e5; border-radius: 18px; padding: 1.25rem; box-shadow: 0 12px 32px #10241b0b; }
+    .supply-request-card h2 { margin: 0 0 1rem; color: #12392d; }
+    .supply-request-form { display: grid; gap: .85rem; }
+    .supply-request-form label { display: grid; gap: .35rem; font-weight: 650; color: #233b31; }
+    .supply-request-form input, .supply-request-form select, .supply-request-form textarea { width: 100%; padding: .7rem .8rem; border: 1px solid #d5ded8; border-radius: 9px; font: inherit; }
+    .supply-item-picker { display: grid; grid-template-columns: 1fr 90px auto; gap: .5rem; align-items: end; }
+    .supply-item-list { display: grid; gap: .5rem; margin: .25rem 0; }
+    .supply-item-row { display: flex; justify-content: space-between; gap: .6rem; padding: .65rem .75rem; background: #f3f7f4; border-radius: 9px; }
+    .supply-item-row button { border: 0; background: none; color: #a33333; cursor: pointer; font-weight: 700; }
+    .supply-submit { border: 0; border-radius: 10px; padding: .8rem 1rem; background: #14533d; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+    .supply-request-history { display: grid; gap: .8rem; }
+    .supply-request-entry { border: 1px solid #e5ebe6; border-radius: 12px; padding: 1rem; }
+    .supply-request-entry header { display: flex; justify-content: space-between; gap: .8rem; align-items: start; }
+    .supply-request-entry ul { padding-left: 1.15rem; }
+    .supply-status { display: inline-block; border-radius: 30px; padding: .25rem .65rem; background: #e8f1ec; color: #14533d; font-size: .82rem; font-weight: 700; }
+    .supply-request-help { color: #617267; font-size: .92rem; }
+    @media (max-width: 850px) { .supply-request-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .supply-item-picker { grid-template-columns: 1fr 80px; } .supply-item-picker button { grid-column: 1 / -1; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="employee-portal-hero">
+    <div class="container">
+        <div class="employee-hero-box">
+            <div>
+                <h1>Cleaning supply requests</h1>
+                <p>Request supplies or individually tracked equipment for a job. Stock changes only after handover.</p>
+            </div>
+            <a href="{% url 'employee_dashboard' %}" class="employee-back-btn">Dashboard</a>
+        </div>
+    </div>
+</section>
+
+<section class="section employee-dashboard-section">
+    <div class="container supply-request-layout">
+        <div class="supply-request-card">
+            <h2>New request</h2>
+            <p class="supply-request-help">Include the job location and reason so your manager can review the request.</p>
+            <form method="post" enctype="multipart/form-data" class="supply-request-form" id="supplyRequestForm">
+                {% csrf_token %}
+                {{ form.idempotency_key }}
+                {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+                <label>Item
+                    <select id="requestAsset">
+                        <option value="">Select a supply or equipment item</option>
+                        <optgroup label="Cleaning supplies">
+                            {% for supply in supplies %}
+                                <option value="supply:{{ supply.pk }}" data-unit="{{ supply.get_unit_display }}" data-kind="supply" data-id="{{ supply.pk }}">{{ supply.name }} · {{ supply.current_stock }} {{ supply.get_unit_display }} available</option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="Equipment">
+                            {% for equipment in available_equipment %}
+                                <option value="equipment:{{ equipment.pk }}" data-unit="unit" data-kind="equipment" data-id="{{ equipment.pk }}">{{ equipment.name }}{% if equipment.serial_number %} · {{ equipment.serial_number }}{% endif %}</option>
+                            {% endfor %}
+                        </optgroup>
+                    </select>
+                </label>
+                <div class="supply-item-picker">
+                    <label>Quantity<input id="requestQuantity" type="number" min="1" max="10000" value="1"></label>
+                    <button class="small-link-btn" type="button" id="addRequestItem">Add item</button>
+                </div>
+                <div class="supply-item-list" id="requestItemList" aria-live="polite"></div>
+                {{ form.request_items }}
+                {% if form.request_items.errors %}<div class="form-errors">{{ form.request_items.errors }}</div>{% endif %}
+                <label>Job location{{ form.job_location }}{% if form.job_location.errors %}{{ form.job_location.errors }}{% endif %}</label>
+                <label>Reason{{ form.reason }}{% if form.reason.errors %}{{ form.reason.errors }}{% endif %}</label>
+                <label>Urgency{{ form.urgency }}{% if form.urgency.errors %}{{ form.urgency.errors }}{% endif %}</label>
+                <label>Supporting files{{ form.attachments }}<span class="supply-request-help">Up to 5 PDF, JPEG, PNG, or WebP files; 15 MB each.</span>{% if form.attachments.errors %}{{ form.attachments.errors }}{% endif %}</label>
+                <button class="supply-submit" type="submit">Submit request</button>
+            </form>
+        </div>
+
+        <div class="supply-request-card">
+            <h2>Request history</h2>
+            <div class="supply-request-history">
+                {% for request_record in requests %}
+                    <article class="supply-request-entry">
+                        <header>
+                            <div>
+                                <strong>Request #{{ request_record.pk }}</strong>
+                                <div class="supply-request-help">{{ request_record.submitted_at|date:"d M Y, g:i A" }} · {{ request_record.job_location }}</div>
+                            </div>
+                            <span class="supply-status">{{ request_record.get_status_display }}</span>
+                        </header>
+                        <p>{{ request_record.reason }}</p>
+                        <ul>
+                            {% for item in request_record.items.all %}
+                                <li>
+                                    {% if item.supply %}{{ item.supply.name }}{% else %}{{ item.equipment.name }}{% endif %}
+                                    · requested {{ item.requested_quantity }} {{ item.unit }}
+                                    · approved {{ item.approved_quantity }}
+                                    · issued {{ item.issued_quantity }}
+                                    {% if item.approval_comment %}<br><small>{{ item.approval_comment }}</small>{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        {% if request_record.decision_comments %}<p><strong>Manager response:</strong> {{ request_record.decision_comments }}</p>{% endif %}
+                        {% if request_record.attachments.exists %}
+                            <p><strong>Attachments:</strong>
+                                {% for attachment in request_record.attachments.all %}
+                                    <a href="{% url 'employee_supply_request_attachment' attachment.pk %}">{{ attachment.original_filename }}</a>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        {% endif %}
+                    </article>
+                {% empty %}
+                    <div class="empty-box"><h3>No requests yet</h3><p>Your submitted requests and handover details will appear here.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+(() => {
+    const form = document.getElementById("supplyRequestForm");
+    const picker = document.getElementById("requestAsset");
+    const quantity = document.getElementById("requestQuantity");
+    const list = document.getElementById("requestItemList");
+    const hidden = document.getElementById("id_request_items");
+    const items = [];
+    const render = () => {
+        list.replaceChildren();
+        items.forEach((item, index) => {
+            const row = document.createElement("div");
+            row.className = "supply-item-row";
+            const text = document.createElement("span");
+            text.textContent = `${item.name} · ${item.quantity} ${item.unit}`;
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.textContent = "Remove";
+            remove.addEventListener("click", () => { items.splice(index, 1); render(); });
+            row.append(text, remove);
+            list.append(row);
+        });
+        hidden.value = JSON.stringify(items.map(({kind, id, quantity: count}) => ({kind, id, quantity: count})));
+    };
+    document.getElementById("addRequestItem").addEventListener("click", () => {
+        const option = picker.selectedOptions[0];
+        const count = Number(quantity.value);
+        if (!option || !option.dataset.kind || !Number.isInteger(count) || count < 1) return;
+        if (option.dataset.kind === "equipment" && count !== 1) return;
+        if (items.some(item => item.kind === option.dataset.kind && item.id === Number(option.dataset.id))) return;
+        items.push({
+            kind: option.dataset.kind,
+            id: Number(option.dataset.id),
+            quantity: count,
+            unit: option.dataset.unit,
+            name: option.textContent.trim()
+        });
+        render();
+    });
+    form.addEventListener("submit", event => {
+        render();
+        if (!items.length) {
+            event.preventDefault();
+            list.setAttribute("role", "alert");
+            list.textContent = "Add at least one supply or equipment item.";
+        }
+    });
+})();
+</script>
+{% endblock %}

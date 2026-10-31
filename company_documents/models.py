@@ -424,6 +424,100 @@ class CompanyDocument(models.Model):
         return str(obj)
 
 
+class InvoiceDocumentReview(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending verification"
+        VERIFIED = "verified", "Verified"
+        APPROVED = "approved", "Approved for posting"
+        REJECTED = "rejected", "Rejected"
+
+    document = models.OneToOneField(
+        CompanyDocument,
+        on_delete=models.PROTECT,
+        related_name="invoice_review",
+    )
+    extracted_data = models.JSONField(default=dict, blank=True)
+    verified_data = models.JSONField(default=dict, blank=True)
+    confidence = models.JSONField(default=dict, blank=True)
+    validation_errors = models.JSONField(default=list, blank=True)
+    extraction_method = models.CharField(max_length=30, blank=True)
+    extraction_error = models.TextField(blank=True)
+    suggested_expense_category = models.CharField(max_length=50, blank=True)
+    review_notes = models.TextField(blank=True)
+    normalized_invoice_number = models.CharField(
+        max_length=150,
+        blank=True,
+        db_index=True,
+    )
+    suggested_supplier = models.ForeignKey(
+        "dashboard.Supplier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="suggested_invoice_reviews",
+    )
+    supplier = models.ForeignKey(
+        "dashboard.Supplier",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="invoice_reviews",
+    )
+    suggested_purchase_order = models.ForeignKey(
+        "dashboard.PurchaseOrder",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="suggested_invoice_reviews",
+    )
+    duplicate_of = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="possible_duplicates",
+    )
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="reviewed_invoice_documents",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        permissions = [
+            (
+                "review_invoice_documents",
+                "Can verify and approve extracted invoice documents",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["supplier", "normalized_invoice_number"],
+                condition=models.Q(
+                    status__in=("verified", "approved"),
+                    supplier__isnull=False,
+                )
+                & ~models.Q(normalized_invoice_number=""),
+                name="unique_verified_supplier_invoice_number",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Invoice review for {self.document.name}"
+
+
 class CompanyDocumentAudit(models.Model):
     """
     Audit trail for Company Documents.

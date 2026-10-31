@@ -388,67 +388,67 @@
 
 
                 <div class="sidebar-submenu">
+                    {% if perms.employees.manage_supply_requests %}
+                        <a href="{% url 'supply_request_management' %}" data-notification-area="supply_requests">
+                            <span>Supply Request Management</span>
+                            <span class="side-badge" data-notification-area-badge="supply_requests" {% if not notification_counts.supply_requests %}hidden{% endif %}>{{ notification_counts.supply_requests|default:0 }}</span>
+                        </a>
+                        <a href="{% url 'inventory_transactions' %}" data-notification-area="inventory_transactions">
+                            <span>Inventory Transactions</span>
+                            <span class="side-badge" data-notification-area-badge="inventory_transactions" {% if not notification_counts.inventory_transactions %}hidden{% endif %}>{{ notification_counts.inventory_transactions|default:0 }}</span>
+                        </a>
+                        <a href="{% url 'goods_received' %}" data-notification-area="goods_received">
+                            <span>Goods Received</span>
+                            <span class="side-badge" data-notification-area-badge="goods_received" {% if not notification_counts.goods_received %}hidden{% endif %}>{{ notification_counts.goods_received|default:0 }}</span>
+                        </a>
+                    {% endif %}
+                    {% if perms.company_documents.review_invoice_documents %}
+                        <a href="{% url 'company_documents:invoice_review_list' %}" data-notification-area="invoice_review">
+                            <span>Invoice Review</span>
+                            <span class="side-badge" data-notification-area-badge="invoice_review" {% if not notification_counts.invoice_review %}hidden{% endif %}>{{ notification_counts.invoice_review|default:0 }}</span>
+                        </a>
+                    {% endif %}
+                    {% if perms.employees.manage_supply_requests and perms.expenses.view_expense %}
+                        <a href="{% url 'operations_automation' %}" data-notification-area="operations_automation">
+                            <span>Operations Automation</span>
+                            <span class="side-badge" data-notification-area-badge="operations_automation" {% if not notification_counts.operations_automation %}hidden{% endif %}>{{ notification_counts.operations_automation|default:0 }}</span>
+                        </a>
+                        <a href="{% url 'operations_automation_history' %}" data-notification-area="automation_history">
+                            <span>Automation History</span>
+                            <span class="side-badge" data-notification-area-badge="automation_history" {% if not notification_counts.automation_history %}hidden{% endif %}>{{ notification_counts.automation_history|default:0 }}</span>
+                        </a>
+                    {% endif %}
 
-                    <a href="/dashboard/equipment/">
+                    <a href="/dashboard/equipment/" data-notification-area="equipment">
                         <span>Equipment Inventory</span>
-
-                        {% if notification_counts.equipment %}
-                            <span class="side-badge">
-                                {{ notification_counts.equipment }}
-                            </span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-area-badge="equipment" {% if not notification_counts.equipment %}hidden{% endif %}>{{ notification_counts.equipment|default:0 }}</span>
                     </a>
 
-                    <a href="/dashboard/supplies/">
+                    <a href="/dashboard/supplies/" data-notification-area="supplies">
                         <span>Cleaning Supplies</span>
-
-                        {% if notification_counts.supplies %}
-                            <span class="side-badge">
-                                {{ notification_counts.supplies }}
-                            </span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-area-badge="supplies" {% if not notification_counts.supplies %}hidden{% endif %}>{{ notification_counts.supplies|default:0 }}</span>
                     </a>
 
 
-                    <a href="/dashboard/purchase-orders/">
+                    <a href="/dashboard/purchase-orders/" data-notification-area="purchase_orders">
                         <span>Purchase Orders</span>
-
-                        {% if notification_counts.purchase_orders %}
-                            <span class="side-badge">
-                                {{ notification_counts.purchase_orders }}
-                            </span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-area-badge="purchase_orders" {% if not notification_counts.purchase_orders %}hidden{% endif %}>{{ notification_counts.purchase_orders|default:0 }}</span>
                     </a>
 
 
-                    <a href="/dashboard/suppliers/">
+                    <a href="/dashboard/suppliers/" data-notification-area="suppliers">
                         <span>Suppliers</span>
-
-                        {% if notification_counts.suppliers %}
-                            <span class="side-badge">
-                                {{ notification_counts.suppliers }}
-                            </span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-area-badge="suppliers" {% if not notification_counts.suppliers %}hidden{% endif %}>{{ notification_counts.suppliers|default:0 }}</span>
                     </a>
 
-                    <a href="/dashboard/vehicles/">
+                    <a href="/dashboard/vehicles/" data-notification-area="vehicles">
                         <span>Vehicle Management</span>
-
-                        {% if notification_counts.vehicles %}
-                            <span class="side-badge">
-                                {{ notification_counts.vehicles }}
-                            </span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-area-badge="vehicles" {% if not notification_counts.vehicles %}hidden{% endif %}>{{ notification_counts.vehicles|default:0 }}</span>
                     </a>
 
-                   <a href="/dashboard/maintenance/">
+                   <a href="/dashboard/maintenance/" data-notification-area="maintenance">
                         <span>Maintenance History</span>
-
-                        {% if notification_counts.maintenance %}
-                            <span class="side-badge">
-                                {{ notification_counts.maintenance }}
-                            </span>
-                        {% endif %}
+                        <span class="side-badge" data-notification-area-badge="maintenance" {% if not notification_counts.maintenance %}hidden{% endif %}>{{ notification_counts.maintenance|default:0 }}</span>
                     </a>
 
 
@@ -728,9 +728,16 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function updateSidebarNotificationBadges(unreadByType) {
+    function updateSidebarNotificationBadges(unreadByType, unreadByArea) {
         document.querySelectorAll(".side-badge[data-notification-type]").forEach(function (badge) {
             const count = Number(unreadByType[badge.dataset.notificationType] || 0);
+            badge.textContent = count > 99 ? "99+" : String(count);
+            badge.hidden = count === 0;
+            badge.setAttribute("aria-label", count + " unread notifications");
+            badge.title = count + " unread notifications";
+        });
+        document.querySelectorAll(".side-badge[data-notification-area-badge]").forEach(function (badge) {
+            const count = Number(unreadByArea[badge.dataset.notificationAreaBadge] || 0);
             badge.textContent = count > 99 ? "99+" : String(count);
             badge.hidden = count === 0;
             badge.setAttribute("aria-label", count + " unread notifications");
@@ -753,7 +760,10 @@ document.addEventListener("DOMContentLoaded", function () {
             bell.setAttribute("aria-label", data.unread_count + " unread notifications");
             markRead.hidden = data.unread_count === 0;
             renderNotifications(data.notifications);
-            updateSidebarNotificationBadges(data.unread_by_type || {});
+            updateSidebarNotificationBadges(
+                data.unread_by_type || {},
+                data.unread_by_area || {}
+            );
         }).catch(function (error) {
             console.error("Unable to refresh dashboard notifications.", error);
         });
@@ -778,6 +788,38 @@ document.addEventListener("DOMContentLoaded", function () {
             return refreshNotifications();
         }).catch(function (error) {
             console.error("Unable to mark dashboard notifications as read.", error);
+        });
+    });
+
+    document.querySelectorAll("a[data-notification-area]").forEach(function (areaLink) {
+        areaLink.addEventListener("click", function (event) {
+            const area = areaLink.dataset.notificationArea;
+            const badge = areaLink.querySelector(
+                '[data-notification-area-badge="' + area + '"]'
+            );
+            if (!area || !badge || badge.hidden) return;
+
+            event.preventDefault();
+            const areaUrl = "{% url 'mark_notification_area_read' 'area' %}"
+                .replace("/area/", "/" + encodeURIComponent(area) + "/");
+            fetch(areaUrl, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
+                }
+            }).then(function (response) {
+                if (!response.ok) throw new Error("Area notification update failed");
+                return response.json();
+            }).then(function (data) {
+                if (!data.success) throw new Error("Area notification update was unsuccessful");
+                window.location.assign(areaLink.href);
+            }).catch(function (error) {
+                console.error("Unable to mark Operations notifications as read.", error);
+                window.location.assign(areaLink.href);
+            });
         });
     });
 

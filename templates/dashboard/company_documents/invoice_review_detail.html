@@ -1,0 +1,97 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Review {{ document.name }} | YD Cleaning{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}">
+<style>
+    .invoice-review-detail{max-width:1600px;margin:0 auto}.invoice-review-detail-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(420px,.95fr);gap:1rem;align-items:start}.invoice-review-card{background:#fff;border:1px solid #e3e9e4;border-radius:16px;padding:1.2rem}.invoice-review-card h2,.invoice-review-card h3{color:#14392d}.invoice-original{height:74vh;min-height:520px;width:100%;border:1px solid #dfe7e1;border-radius:12px;background:#f3f6f4}.invoice-original-image{display:block;width:100%;max-height:74vh;object-fit:contain;background:#f3f6f4;border-radius:12px}.invoice-review-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}.invoice-review-form label{display:grid;gap:.35rem;color:#284338;font-weight:650}.invoice-review-form input,.invoice-review-form select,.invoice-review-form textarea{width:100%;padding:.65rem .75rem;border:1px solid #d5ded8;border-radius:8px;font:inherit}.invoice-review-form .full{grid-column:1/-1}.invoice-confidence{display:inline-block;margin-left:.4rem;padding:.12rem .45rem;border-radius:30px;background:#edf3ee;font-size:.76rem;color:#426252}.invoice-review-errors{padding:.75rem 1rem;margin:.75rem 0;background:#fff2e4;color:#88420f;border-radius:9px}.invoice-review-warning{padding:.8rem 1rem;background:#fff5e8;border:1px solid #f1d8b8;border-radius:10px;color:#68451e;margin:.75rem 0}.invoice-readonly-table{width:100%;border-collapse:collapse}.invoice-readonly-table td,.invoice-readonly-table th{padding:.55rem;border-bottom:1px solid #e8ede9;text-align:left;vertical-align:top}.invoice-review-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}@media(max-width:1000px){.invoice-review-detail-grid{grid-template-columns:1fr}.invoice-original{height:60vh}}@media(max-width:600px){.invoice-review-form{grid-template-columns:1fr}.invoice-review-form .full{grid-column:auto}}
+</style>
+{% endblock %}
+{% block page_title %}Invoice document review{% endblock %}
+{% block page_subtitle %}Verify extracted information and supplier matching before it can enter any financial workflow.{% endblock %}
+{% block content %}
+<div class="inventory-page invoice-review-detail">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Company Documents · Invoice Review</span><h2>{{ document.name }}</h2><p>{{ document.original_filename }} · uploaded {{ document.uploaded_at|date:"j M Y, g:i A" }}</p></div><div class="inventory-actions"><span class="inventory-status {% if review.status == 'verified' %}review-status-verified{% elif review.status == 'rejected' %}review-status-rejected{% else %}is-warning{% endif %}">{{ review.get_status_display }}</span><a class="inventory-button-secondary" href="{% url 'company_documents:invoice_review_list' %}">Back to review queue</a></div></section>
+    <div class="inventory-callout" style="margin-bottom:1rem"><strong>Verification only:</strong> this screen does not create an expense, post a supplier invoice, receive goods, change stock, mark anything paid, or send an automatic payment.</div>
+    {% if review.extraction_error %}<div class="invoice-review-warning"><strong>Extraction issue:</strong> {{ review.extraction_error }} The original remains available for manual review.</div>{% endif %}
+    {% if review.validation_errors %}<div class="invoice-review-errors"><strong>Validation notices</strong><ul>{% for error in review.validation_errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+    {% if review.duplicate_of %}<div class="invoice-review-warning"><strong>Possible duplicate:</strong> this document resembles invoice review #{{ review.duplicate_of_id }} — <a href="{% url 'company_documents:invoice_review_detail' review.duplicate_of_id %}">open the other review</a>.</div>{% endif %}
+
+    <div class="invoice-review-detail-grid">
+        <section class="invoice-review-card">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Protected original</span><h3>{{ document.original_filename }}</h3></div><a class="inventory-button-secondary" href="{% url 'company_documents:download' document.pk %}">Download original</a></header>
+            {% if preview_kind == "pdf" %}<iframe class="invoice-original" src="{{ preview_url }}" title="Original invoice document"></iframe>
+            {% elif preview_kind == "image" %}<img class="invoice-original-image" src="{{ preview_url }}" alt="Original invoice document">
+            {% else %}<div class="inventory-empty"><strong>Preview not available</strong><a href="{% url 'company_documents:download' document.pk %}">Download the protected original</a></div>{% endif %}
+            {% if review.suggested_supplier %}<p><strong>Suggested supplier:</strong> {{ review.suggested_supplier.name }}{% if review.suggested_supplier.abn %} · ABN {{ review.suggested_supplier.abn }}{% endif %}</p>{% endif %}
+            {% if review.suggested_expense_category %}<p><strong>Suggested expense category:</strong> {{ suggested_expense_category_label }}</p>{% endif %}
+            {% if review.suggested_purchase_order %}<p><strong>Suggested purchase order:</strong> PO-{{ review.suggested_purchase_order_id|stringformat:"05d" }} · {{ review.suggested_purchase_order.supply.name }} ({{ review.suggested_purchase_order.quantity_remaining }} units still open)</p>{% endif %}
+            {% if purchase_reconciliation %}
+                <h3>Purchase / invoice / receipt reconciliation</h3>
+                <table class="invoice-readonly-table"><tbody>
+                    <tr><th>Quantity ordered</th><td>{{ purchase_reconciliation.ordered_quantity }}</td></tr>
+                    <tr><th>Quantity on invoice</th><td>{% if purchase_reconciliation.invoice_quantity is not None %}{{ purchase_reconciliation.invoice_quantity }}{% else %}No matching line item found — verify manually{% endif %}</td></tr>
+                    <tr><th>Quantity physically received</th><td>{{ purchase_reconciliation.received_quantity }}</td></tr>
+                    {% if purchase_reconciliation.invoice_vs_order is not None %}<tr><th>Invoice less ordered</th><td>{{ purchase_reconciliation.invoice_vs_order }}</td></tr><tr><th>Invoice less received</th><td>{{ purchase_reconciliation.invoice_vs_received }}</td></tr>{% endif %}
+                </tbody></table>
+                <p class="invoice-review-warning">Reconciliation is a comparison aid only. Confirm the goods receipt separately before stock changes.</p>
+            {% endif %}
+            {% if review.reviewed_by %}<p><strong>Last reviewed by:</strong> {{ review.reviewed_by.get_full_name|default:review.reviewed_by.username }} · {{ review.reviewed_at|date:"j M Y, g:i A" }}</p>{% endif %}
+            {% if review.review_notes %}<p><strong>Manager note:</strong> {{ review.review_notes }}</p>{% endif %}
+        </section>
+
+        <section class="invoice-review-card">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">Extracted suggestions</span><h3>Check and verify details</h3></div></header>
+            {% if extracted_data.payment_status and extracted_data.payment_status != "unknown" %}<div class="invoice-review-warning"><strong>Document payment claim: {{ extracted_data.payment_status|cut:"_claimed"|title }}.</strong> This is text found in the document only. It has not been confirmed and does not change any paid/unpaid system status.</div>{% endif %}
+            {% if verification_form %}
+                <form method="post" action="{% url 'company_documents:invoice_review_verify' review.pk %}">
+                    {% csrf_token %}
+                    <div class="invoice-review-form">
+                        {% for field in verification_form %}
+                            <label class="{% if field.name == 'line_items_json' %}full{% endif %}">{{ field.label }}
+                                {{ field }}
+                                {% for error in field.errors %}<span class="inventory-field-error">{{ error }}</span>{% endfor %}
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div class="invoice-review-actions"><button class="inventory-button" type="submit">Save verified information</button></div>
+                </form>
+                <form method="post" action="{% url 'company_documents:invoice_review_reject' review.pk %}" class="invoice-review-form" style="margin-top:1rem">
+                    {% csrf_token %}
+                    <label class="full">Reason for rejection<textarea name="review_notes" rows="3" minlength="3" maxlength="2000" required placeholder="Explain why this document cannot be verified"></textarea></label>
+                    <div class="invoice-review-actions"><button class="inventory-button-secondary" type="submit">Reject document</button></div>
+                </form>
+                {% if review.status == "verified" and posting_form %}
+                    <div class="invoice-review-warning" style="margin-top:1rem"><strong>Finance approval:</strong> approving creates one Expense record linked to this source document. The expense is not marked paid, and inventory is not changed. Record goods separately in Goods Received after confirming the delivery.</div>
+                    <form method="post" action="{% url 'company_documents:invoice_review_approve' review.pk %}">
+                        {% csrf_token %}
+                        <div class="invoice-review-form">
+                            {% for field in posting_form %}
+                                <label>{{ field.label }}{{ field }}{% for error in field.errors %}<span class="inventory-field-error">{{ error }}</span>{% endfor %}</label>
+                            {% endfor %}
+                        </div>
+                        <div class="invoice-review-actions"><button class="inventory-button" type="submit">Approve and post expense</button></div>
+                    </form>
+                {% endif %}
+            {% elif review.status == "verified" %}
+                <p>This invoice has been verified by {{ review.reviewed_by.get_full_name|default:review.reviewed_by.username }}. It remains unposted until Stage 3 approval.</p>
+                <table class="invoice-readonly-table"><tbody>{% for key,value in review.verified_data.items %}<tr><th>{{ key|title }}</th><td>{{ value }}</td></tr>{% endfor %}</tbody></table>
+            {% elif review.status == "approved" %}
+                <p>This review has been approved for posting. Inventory still changes only through a separate confirmed goods receipt.</p>
+                <table class="invoice-readonly-table"><tbody>
+                    <tr><th>Expense</th><td><a href="{% url 'expense_list' %}">Expense #{{ review.expense.pk }}</a></td></tr>
+                    <tr><th>Category</th><td>{{ review.expense.get_category_display }}</td></tr>
+                    <tr><th>Amount</th><td>${{ review.expense.amount|floatformat:2 }}</td></tr>
+                    <tr><th>GST</th><td>{% if review.expense.gst_amount is not None %}${{ review.expense.gst_amount|floatformat:2 }}{% else %}Not recorded{% endif %}</td></tr>
+                    <tr><th>Payment status</th><td>{{ review.expense.get_payment_status_display }}</td></tr>
+                    {% if review.expense.purchase_order %}<tr><th>Linked purchase order</th><td>PO-{{ review.expense.purchase_order_id|stringformat:"05d" }} · {{ review.expense.purchase_order.supply.name }}</td></tr>{% endif %}
+                </tbody></table>
+            {% else %}
+                <p>This document review was rejected and is retained for audit.</p>
+            {% endif %}
+            {% if confidence %}<h3>Extraction confidence</h3><table class="invoice-readonly-table"><tbody>{% for field,score in confidence.items %}<tr><th>{{ field|title }}</th><td>{{ score|floatformat:2 }}</td></tr>{% endfor %}</tbody></table>{% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

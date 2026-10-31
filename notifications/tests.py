@@ -129,6 +129,120 @@ class NotificationStatusTests(TestCase):
             {"quote": 2, "support": 1, "damage_report": 1},
         )
 
+    def test_status_groups_operations_notifications_by_destination(self):
+        user = User.objects.create_user("operations-notification-user")
+        for link in (
+            "/dashboard/supplies/",
+            "/dashboard/operations-automation/",
+            "/dashboard/operations-automation/history/",
+        ):
+            Notification.objects.create(
+                user=user,
+                title="Operations update",
+                message="An operation needs attention.",
+                link=link,
+            )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("notification_status"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["unread_by_area"]["supplies"], 1)
+        self.assertEqual(response.json()["unread_by_area"]["operations_automation"], 1)
+        self.assertEqual(response.json()["unread_by_area"]["automation_history"], 1)
+
+    def test_mark_cleaning_supply_notifications_read_does_not_clear_other_areas(self):
+        user = User.objects.create_user("operations-area-reader")
+        other_user = User.objects.create_user("operations-other-reader")
+        supply_notification = Notification.objects.create(
+            user=user,
+            title="Low stock",
+            message="Restock is needed.",
+            link="/dashboard/supplies/",
+        )
+        inventory_notification = Notification.objects.create(
+            user=user,
+            title="Inventory movement",
+            message="A transaction was recorded.",
+            link="/dashboard/inventory-transactions/",
+        )
+        other_supply_notification = Notification.objects.create(
+            user=other_user,
+            title="Low stock",
+            message="Private supply notification.",
+            link="/dashboard/supplies/",
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse(
+                "mark_notification_area_read",
+                kwargs={"area": "supplies"},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["updated"], 1)
+        supply_notification.refresh_from_db()
+        inventory_notification.refresh_from_db()
+        other_supply_notification.refresh_from_db()
+        self.assertTrue(supply_notification.is_read)
+        self.assertFalse(inventory_notification.is_read)
+        self.assertFalse(other_supply_notification.is_read)
+
+    def test_mark_operations_automation_read_preserves_history_notifications(self):
+        user = User.objects.create_user("automation-area-reader")
+        automation_notification = Notification.objects.create(
+            user=user,
+            title="Automation update",
+            message="A reminder was generated.",
+            link="/dashboard/operations-automation/",
+        )
+        history_notification = Notification.objects.create(
+            user=user,
+            title="Automation history",
+            message="An event was recorded.",
+            link="/dashboard/operations-automation/history/",
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse(
+                "mark_notification_area_read",
+                kwargs={"area": "operations_automation"},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        automation_notification.refresh_from_db()
+        history_notification.refresh_from_db()
+        self.assertTrue(automation_notification.is_read)
+        self.assertFalse(history_notification.is_read)
+
+    def test_mark_read_only_updates_the_authenticated_users_notifications(self):
+        user = User.objects.create_user("notification-owner")
+        other_user = User.objects.create_user("other-notification-owner")
+        owned_notification = Notification.objects.create(
+            user=user,
+            title="Supply request update",
+            message="Your request was approved.",
+        )
+        other_notification = Notification.objects.create(
+            user=other_user,
+            title="Private notification",
+            message="This belongs to another user.",
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(reverse("mark_notifications_read"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["unread_count"], 0)
+        owned_notification.refresh_from_db()
+        other_notification.refresh_from_db()
+        self.assertTrue(owned_notification.is_read)
+        self.assertFalse(other_notification.is_read)
+
 
 class ReminderCenterReadStateTests(TestCase):
     def test_opening_center_acknowledges_current_reminders_and_new_ones_reappear(self):

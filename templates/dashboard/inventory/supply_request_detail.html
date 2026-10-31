@@ -1,0 +1,55 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Supply request #{{ request_record.pk }} | YD Cleaning{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard/inventory-suite.css' %}"><style>.request-detail-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:1.2rem}.request-detail-card{padding:1.25rem;background:#fff;border:1px solid #e4e9e5;border-radius:16px}.request-detail-card form{display:grid;gap:.8rem;margin-top:1rem}.request-detail-card label{display:grid;gap:.35rem}.request-detail-card input,.request-detail-card textarea{padding:.65rem;border:1px solid #d5ded8;border-radius:8px}.request-detail-card ul{padding-left:1.2rem}.request-detail-danger{border-color:#ecd0d0}@media(max-width:850px){.request-detail-grid{grid-template-columns:1fr}}</style>{% endblock %}
+{% block page_title %}Supply request #{{ request_record.pk }}{% endblock %}
+{% block page_subtitle %}Review the request, record your decision, and only deduct stock when items are handed over.{% endblock %}
+{% block content %}
+<div class="inventory-page">
+    {% include "dashboard/inventory/_inventory_nav.html" %}
+    <section class="inventory-hero"><div class="inventory-hero-copy"><span class="inventory-eyebrow">Operations · Request detail</span><h2>{{ request_record.employee.full_name }}</h2><p>{{ request_record.job_location }} · submitted {{ request_record.submitted_at|date:"j M Y, g:i A" }}</p></div><a class="inventory-button-secondary" href="{% url 'supply_request_management' %}">Back to requests</a></section>
+    <div class="request-detail-grid">
+        <section class="request-detail-card">
+            <header class="inventory-panel-heading"><div><span class="inventory-overline">{{ request_record.get_urgency_display }} priority</span><h3>Requested items</h3></div><span class="inventory-status">{{ request_record.get_status_display }}</span></header>
+            <p><strong>Reason</strong><br>{{ request_record.reason }}</p>
+            <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Item</th><th>Requested</th><th>Approved</th><th>Issued</th><th>Unit</th></tr></thead><tbody>
+                {% for item in request_record.items.all %}<tr><td>{% if item.supply %}{{ item.supply.name }}{% else %}{{ item.equipment.name }}{% endif %}</td><td>{{ item.requested_quantity }}</td><td>{{ item.approved_quantity }}</td><td>{{ item.issued_quantity }}</td><td>{{ item.unit }}</td></tr>{% endfor %}
+            </tbody></table></div>
+            {% if request_record.decision_comments %}<p><strong>Manager response:</strong> {{ request_record.decision_comments }}{% if request_record.decided_by %}<br><small>By {{ request_record.decided_by.get_full_name|default:request_record.decided_by.username }} at {{ request_record.decided_at|date:"j M Y, g:i A" }}</small>{% endif %}</p>{% endif %}
+            {% if request_record.attachments.exists %}<p><strong>Supporting files</strong></p><ul>{% for attachment in request_record.attachments.all %}<li><a href="{% url 'employee_supply_request_attachment' attachment.pk %}">{{ attachment.original_filename }}</a></li>{% endfor %}</ul>{% endif %}
+        </section>
+
+        <div>
+            {% if approval_form %}
+                <section class="request-detail-card">
+                    <span class="inventory-overline">Decision</span><h3>Approve quantities</h3>
+                    <form method="post" action="{% url 'supply_request_approve' request_record.pk %}">
+                        {% csrf_token %}
+                        {% for field in approval_form %}{% if field.name != "comments" %}<label>{{ field.label }}{{ field }}</label>{% endif %}{% endfor %}
+                        <label>Manager comments{{ approval_form.comments }}</label>
+                        <p class="supply-request-help">Set any quantity to zero to decline that line. Explain reduced or declined quantities in the comment.</p>
+                        <button class="inventory-button" type="submit">Save approval</button>
+                    </form>
+                    <form method="post" action="{% url 'supply_request_reject' request_record.pk %}" class="request-detail-danger">
+                        {% csrf_token %}
+                        <label>Rejection reason<textarea name="comments" rows="3" minlength="3" required></textarea></label>
+                        <button class="inventory-button-secondary" type="submit">Reject request</button>
+                    </form>
+                </section>
+            {% endif %}
+            {% if issue_form %}
+                <section class="request-detail-card" style="margin-top:1rem">
+                    <span class="inventory-overline">Physical handover</span><h3>Issue approved items</h3>
+                    <p class="supply-request-help">Stock is reduced only when this handover is recorded. Enter zero for items not included in this handover.</p>
+                    <form method="post" action="{% url 'supply_request_issue' request_record.pk %}">
+                        {% csrf_token %}{{ issue_form.idempotency_key }}
+                        {% for field in issue_form %}{% if field.name != "notes" and field.name != "idempotency_key" %}<label>{{ field.label }}{{ field }}</label>{% endif %}{% endfor %}
+                        <label>Handover notes{{ issue_form.notes }}</label>
+                        <button class="inventory-button" type="submit">Record handover</button>
+                    </form>
+                </section>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

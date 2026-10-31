@@ -23,16 +23,17 @@
             <button type="submit" class="inventory-button">Filter orders</button><a class="inventory-button-secondary" href="{% url 'purchase_orders' %}">Clear</a>
         </form>
         <div class="inventory-table-wrap"><table class="inventory-table">
-            <thead><tr><th>Order</th><th>Supply</th><th>Supplier</th><th>Quantity</th><th>Unit cost</th><th>Total</th><th>Ordered</th><th>Status</th><th>Action</th></tr></thead>
+            <thead><tr><th>Order</th><th>Supply</th><th>Supplier</th><th>Quantity</th><th>Unit cost</th><th>Total</th><th>Ordered</th><th>Expected delivery</th><th>Status</th><th>Action</th></tr></thead>
             <tbody>{% for order in orders %}
                 <tr>
                     <td><strong>PO-{{ order.pk|stringformat:"05d" }}</strong></td><td>{{ order.supply.name }}</td><td>{{ order.supplier_name }}</td>
                     <td>{{ order.quantity }} {{ order.supply.get_unit_display|lower }}</td><td>${{ order.unit_cost|floatformat:2 }}</td><td>${{ order.total_cost|floatformat:2 }}</td>
                     <td>{{ order.order_date|date:"j M Y" }}</td>
+                    <td>{% if order.expected_delivery_date %}{{ order.expected_delivery_date|date:"j M Y" }}{% if order.expected_delivery_date < today and order.status != "received" and order.status != "cancelled" %}<br><span class="inventory-status is-danger">Overdue</span>{% endif %}{% else %}<span class="muted">Not set</span>{% endif %}</td>
                     <td>{% if order.status == "received" %}<span class="inventory-status is-good">{{ order.get_status_display }}</span>{% elif order.status == "cancelled" %}<span class="inventory-status is-danger">{{ order.get_status_display }}</span>{% elif order.status == "ordered" %}<span class="inventory-status is-warning">{{ order.get_status_display }}</span>{% else %}<span class="inventory-status">{{ order.get_status_display }}</span>{% endif %}</td>
                     <td>{% if order.status == "draft" or order.status == "ordered" %}<form method="post" action="{% url 'receive_purchase_order' order.pk %}" onsubmit="return confirm('Record this delivery and add {{ order.quantity }} units of {{ order.supply.name }} to stock?');">{% csrf_token %}<button type="submit" class="inventory-button">Receive stock</button></form>{% elif order.status == "received" %}<span class="inventory-status is-good">Stock received</span>{% else %}<span class="inventory-status">No action</span>{% endif %}</td>
                 </tr>
-            {% empty %}<tr><td colspan="9"><div class="inventory-empty"><strong>{% if query or status_filter %}No orders match these filters{% else %}No purchase orders have been created{% endif %}</strong>Adjust your filters or create a purchase order.</div></td></tr>{% endfor %}</tbody>
+            {% empty %}<tr><td colspan="10"><div class="inventory-empty"><strong>{% if query or status_filter %}No orders match these filters{% else %}No purchase orders have been created{% endif %}</strong>Adjust your filters or create a purchase order.</div></td></tr>{% endfor %}</tbody>
         </table></div>
         {% if page_obj.has_other_pages %}<nav class="inventory-pagination" aria-label="Purchase order pages">{% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;status={{ status_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
     </section>

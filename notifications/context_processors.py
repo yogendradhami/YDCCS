@@ -1,23 +1,16 @@
 from datetime import timedelta
 
 from django.core.cache import cache
-from django.db.models import Count, F
+from django.db.models import Count
 from django.utils import timezone
 
-from dashboard.models import (
-    CleaningSupply,
-    Equipment,
-    MaintenanceHistory,
-    PurchaseOrder,
-    Supplier,
-    Vehicle,
-)
 from dashboard.reminders import count_unseen_reminders, get_reminder_center_items
 from employees.models import Employee
 from leave_management.models import LeaveRequest
 from quotes.models import QuoteRequest
 from support.models import LiveChatConversation, SupportTicket
 from corporate.models import CorporateLead
+from .utils import NOTIFICATION_AREAS, notifications_for_area
 
 
 def notification_context(request):
@@ -89,17 +82,16 @@ def notification_context(request):
         ),
     }
 
-    notification_counts["equipment"] = Equipment.objects.filter(
-        next_service_date__lt=timezone.localdate()
-    ).count()
-
-    notification_counts["supplies"] = CleaningSupply.objects.filter(
-        current_stock__lte=F("minimum_stock")
-    ).count()
-
-    notification_counts["purchase_orders"] = PurchaseOrder.objects.filter(
-        status="draft"
-    ).count()
+    area_counts = {
+        area: notifications_for_area(request.user, area)
+        .filter(is_read=False)
+        .count()
+        for area in NOTIFICATION_AREAS
+    }
+    notification_counts.update(area_counts)
+    notification_counts["equipment"] = area_counts["equipment"]
+    notification_counts["supplies"] = area_counts["supplies"]
+    notification_counts["purchase_orders"] = area_counts["purchase_orders"]
 
     notification_counts["executive_alerts"] = (
         notification_counts["equipment"]
@@ -107,13 +99,8 @@ def notification_context(request):
         + notification_counts["purchase_orders"]
     )
 
-    notification_counts["suppliers"] = Supplier.objects.filter(active=False).count()
-
-    notification_counts["vehicles"] = (
-        Vehicle.objects.filter(insurance_expiry__lt=today).count()
-        + Vehicle.objects.filter(registration_expiry__lt=today).count()
-        + Vehicle.objects.filter(service_due_date__lt=today).count()
-    )
+    notification_counts["suppliers"] = area_counts["suppliers"]
+    notification_counts["vehicles"] = area_counts["vehicles"]
 
     notification_counts["forecasting"] = (
         notification_counts["equipment"]
@@ -121,9 +108,7 @@ def notification_context(request):
         + notification_counts["vehicles"]
     )
 
-    notification_counts["maintenance"] = MaintenanceHistory.objects.filter(
-        next_service_date__lt=today
-    ).count()
+    notification_counts["maintenance"] = area_counts["maintenance"]
 
     notification_counts["quote_followups"] = QuoteRequest.objects.filter(
         status="quoted", created_at__lte=timezone.now() - timedelta(days=2)

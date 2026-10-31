@@ -18,6 +18,7 @@ from django.db.models import (
 )
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from urllib.parse import urlencode
@@ -26,6 +27,7 @@ from .forms import CompanyDocumentForm
 from .models import (
     CompanyDocument,
     CompanyDocumentAudit,
+    InvoiceDocumentReview,
     BulkImportBatch,
     BulkImportItem,
 )
@@ -2215,80 +2217,90 @@ def document_upload(request):
                     )
 
                 else:
+                    document = form.save(commit=False)
+                    from company_documents.services.invoice_review import (
+                        is_invoice_document,
+                        validate_invoice_document_file,
+                    )
 
-                    cloudinary_public_id = None
+                    invoice_document = is_invoice_document(document)
+                    if invoice_document:
+                        try:
+                            validate_invoice_document_file(uploaded_file)
+                        except ValueError as exc:
+                            form.add_error("file", str(exc))
 
-                    try:
-                        # Upload directly to Cloudinary RAW.
-                        cloudinary_public_id = (
-                            upload_raw_document(
-                                uploaded_file
+                    if not form.errors:
+                        cloudinary_public_id = None
+
+                        try:
+                            cloudinary_public_id = upload_raw_document(uploaded_file)
+                            document.file.name = cloudinary_public_id
+                            document.file._committed = True
+                            document.uploaded_by = request.user
+                            document.original_filename = (
+                                uploaded_file.name.replace("\\", "/").rsplit("/", 1)[-1]
                             )
-                        )
-
-                        document = form.save(
-                            commit=False
-                        )
-
-                        document.file.name = (
-                            cloudinary_public_id
-                        )
-
-                        document.file._committed = True
-
-                        document.uploaded_by = (
-                            request.user
-                        )
-
-                        document.original_filename = (
-                            uploaded_file.name
-                        )
-
-                        document.file_size = (
-                            uploaded_file.size
-                        )
-
-                        document.mime_type = (
-                            uploaded_file.content_type
-                            or "application/octet-stream"
-                        )
-
-                        document.version = (
-                            document.version or 1
-                        )
-
-                        document.save()
-
-                        create_audit(
-                            document=document,
-                            user=request.user,
-                            action="uploaded",
-                        )
-
-                        messages.success(
-                            request,
-                            f'"{document.name}" was uploaded successfully.',
-                        )
-
-                        return redirect(
-                            "company_documents:detail",
-                            pk=document.pk,
-                        )
-
-                    except Exception as exc:
-
-                        if cloudinary_public_id:
-                            delete_raw_document(
-                                cloudinary_public_id
+                            document.file_size = uploaded_file.size
+                            document.mime_type = (
+                                uploaded_file.content_type
+                                or "application/octet-stream"
                             )
+                            document.version = document.version or 1
 
-                        form.add_error(
-                            "file",
-                            (
-                                "The document could not be uploaded. "
-                                f"Cloudinary returned: {exc}"
-                            ),
-                        )
+                            with transaction.atomic():
+                                document.save()
+                                create_audit(
+                                    document=document,
+                                    user=request.user,
+                                    action="uploaded",
+                                )
+                                if invoice_document:
+                                    from company_documents.services.invoice_review import (
+                                        create_invoice_review,
+                                    )
+
+                                    review, _ = create_invoice_review(
+                                        document,
+                                        uploaded_file,
+                                    )
+                                    create_audit(
+                                        document=document,
+                                        user=request.user,
+                                        action="updated",
+                                        metadata={
+                                            "event": "invoice_extraction_created",
+                                            "review_id": review.pk,
+                                            "extraction_method": review.extraction_method,
+                                            "extraction_error": review.extraction_error,
+                                        },
+                                    )
+
+                            if invoice_document:
+                                messages.success(
+                                    request,
+                                    (
+                                        f'"{document.name}" was uploaded and added to '
+                                        "Invoice Review for verification."
+                                    ),
+                                )
+                            else:
+                                messages.success(
+                                    request,
+                                    f'"{document.name}" was uploaded successfully.',
+                                )
+                            return redirect("company_documents:detail", pk=document.pk)
+
+                        except Exception as exc:
+                            if cloudinary_public_id:
+                                delete_raw_document(cloudinary_public_id)
+                            form.add_error(
+                                "file",
+                                (
+                                    "The document could not be uploaded or processed. "
+                                    f"Details: {exc}"
+                                ),
+                            )
 
     else:
 
@@ -2491,6 +2503,28 @@ def document_edit(request, pk):
                         },
                     )
 
+                updated_document = form.save(commit=False)
+                from company_documents.services.invoice_review import (
+                    is_invoice_document,
+                    validate_invoice_document_file,
+                )
+
+                replacement_is_invoice = is_invoice_document(updated_document)
+                if replacement_is_invoice:
+                    try:
+                        validate_invoice_document_file(replacement_file)
+                    except ValueError as exc:
+                        form.add_error("file", str(exc))
+                        return render(
+                            request,
+                            "dashboard/company_documents/form.html",
+                            {
+                                "form": form,
+                                "document": document,
+                                "is_edit": True,
+                            },
+                        )
+
                 # =================================================
                 # Upload replacement to Cloudinary
                 # =================================================
@@ -2537,13 +2571,25 @@ def document_edit(request, pk):
                     archived_at=timezone.now(),
                 )
 
+                previous_review = InvoiceDocumentReview.objects.filter(
+                    document=current_document,
+                ).first()
+                if previous_review:
+                    previous_review.document = previous_document
+                    previous_review.save(update_fields=["document", "updated_at"])
+                    create_audit(
+                        document=previous_document,
+                        user=request.user,
+                        action=CompanyDocumentAudit.Action.UPDATED,
+                        metadata={
+                            "event": "invoice_review_version_archived",
+                            "invoice_review_id": previous_review.pk,
+                        },
+                    )
+
                 # -------------------------------------------------
                 # Update database object
                 # -------------------------------------------------
-
-                updated_document = form.save(
-                    commit=False
-                )
 
                 updated_document.file.name = new_public_id
                 updated_document.file._committed = True
@@ -2578,6 +2624,28 @@ def document_edit(request, pk):
                 resolve_document_compliance(
                     updated_document,
                 )
+
+                if replacement_is_invoice:
+                    from company_documents.services.invoice_review import (
+                        create_invoice_review,
+                    )
+
+                    review, created = create_invoice_review(
+                        updated_document,
+                        replacement_file,
+                    )
+                    if created:
+                        create_audit(
+                            document=updated_document,
+                            user=request.user,
+                            action=CompanyDocumentAudit.Action.UPDATED,
+                            metadata={
+                                "event": "invoice_extraction_created",
+                                "review_id": review.pk,
+                                "extraction_method": review.extraction_method,
+                                "extraction_error": review.extraction_error,
+                            },
+                        )
 
                 # =================================================
                 # Audit
@@ -3074,6 +3142,13 @@ def document_delete(request, pk):
             status=403,
         )
 
+    if hasattr(document, "invoice_review"):
+        messages.error(
+            request,
+            "This document has an invoice review record and must be retained for audit.",
+        )
+        return redirect("company_documents:detail", pk=document.pk)
+
     document_name = document.name
 
     file_name = (
@@ -3284,4 +3359,392 @@ def employee_compliance_matrix(request):
         request,
         "dashboard/company_documents/employee-compliance-matrix.html",
         context,
+    )
+
+
+@login_required
+@permission_required(
+    (
+        "company_documents.review_invoice_documents",
+        "company_documents.view_companydocument",
+    ),
+    raise_exception=True,
+)
+def invoice_review_list(request):
+    from .models import InvoiceDocumentReview
+
+    reviews = InvoiceDocumentReview.objects.select_related(
+        "document",
+        "supplier",
+        "suggested_supplier",
+        "suggested_purchase_order",
+        "duplicate_of",
+    )
+    status_filter = request.GET.get("status", "").strip()
+    query = request.GET.get("q", "").strip()
+    if status_filter in InvoiceDocumentReview.Status.values:
+        reviews = reviews.filter(status=status_filter)
+    else:
+        status_filter = ""
+    if query:
+        reviews = reviews.filter(
+            Q(document__name__icontains=query)
+            | Q(document__original_filename__icontains=query)
+            | Q(supplier__name__icontains=query)
+            | Q(suggested_supplier__name__icontains=query)
+            | Q(normalized_invoice_number__icontains=query)
+        )
+    page_obj = Paginator(reviews.order_by("-created_at", "-pk"), 25).get_page(
+        request.GET.get("page")
+    )
+    return render(
+        request,
+        "dashboard/company_documents/invoice_review_list.html",
+        {
+            "reviews": page_obj.object_list,
+            "page_obj": page_obj,
+            "status_filter": status_filter,
+            "query": query,
+            "status_choices": InvoiceDocumentReview.Status.choices,
+        },
+    )
+
+
+@login_required
+@permission_required(
+    (
+        "company_documents.review_invoice_documents",
+        "company_documents.view_companydocument",
+    ),
+    raise_exception=True,
+)
+def invoice_review_detail(request, review_id):
+    import json
+    from pathlib import Path
+
+    from .forms import InvoicePostingForm, InvoiceReviewVerificationForm
+    from .models import InvoiceDocumentReview
+    from .services.invoice_review import build_purchase_order_reconciliation
+    from expenses.models import Expense
+
+    review = get_object_or_404(
+        InvoiceDocumentReview.objects.select_related(
+            "document",
+            "supplier",
+            "suggested_supplier",
+            "suggested_purchase_order__supply",
+            "duplicate_of__document",
+            "reviewed_by",
+            "expense__supplier",
+            "expense__purchase_order",
+        ),
+        pk=review_id,
+    )
+    if not can_access_document(request.user, review.document):
+        return render(request, "dashboard/403.html", status=403)
+
+    extracted = review.extracted_data
+    verified = review.verified_data
+    initial = {
+        "supplier": review.supplier or review.suggested_supplier,
+        "supplier_name": verified.get(
+            "supplier_name",
+            extracted.get("supplier_name", ""),
+        ),
+        "abn": verified.get("abn", extracted.get("abn", "")),
+        "invoice_number": verified.get(
+            "invoice_number",
+            extracted.get("invoice_number", ""),
+        ),
+        "invoice_date": verified.get(
+            "invoice_date",
+            extracted.get("invoice_date", ""),
+        ),
+        "due_date": verified.get("due_date", extracted.get("due_date", "")),
+        "description": verified.get(
+            "description",
+            extracted.get("description", review.document.name),
+        ),
+        "line_items_json": json.dumps(
+            verified.get("line_items", extracted.get("line_items", [])),
+            indent=2,
+        ),
+        "subtotal": verified.get("subtotal", extracted.get("subtotal", "")),
+        "gst": verified.get("gst", extracted.get("gst", "")),
+        "total": verified.get("total", extracted.get("total", "")),
+    }
+    verification_form = (
+        InvoiceReviewVerificationForm(initial=initial)
+        if review.status
+        in {
+            InvoiceDocumentReview.Status.PENDING,
+            InvoiceDocumentReview.Status.VERIFIED,
+        }
+        else None
+    )
+    posting_form = (
+        InvoicePostingForm(
+            supplier=review.supplier,
+            suggested_purchase_order=review.suggested_purchase_order,
+        )
+        if review.status == InvoiceDocumentReview.Status.VERIFIED
+        else None
+    )
+    return render(
+        request,
+        "dashboard/company_documents/invoice_review_detail.html",
+        {
+            "review": review,
+            "document": review.document,
+            "extracted_data": extracted,
+            "confidence": review.confidence,
+            "purchase_reconciliation": build_purchase_order_reconciliation(review),
+            "suggested_expense_category_label": dict(
+                Expense.CATEGORY_CHOICES
+            ).get(review.suggested_expense_category, "Other"),
+            "verification_form": verification_form,
+            "posting_form": posting_form,
+            "preview_url": reverse(
+                "company_documents:invoice_document_preview",
+                args=[review.pk],
+            ),
+            "preview_kind": (
+                "pdf"
+                if Path(review.document.original_filename).suffix.lower() == ".pdf"
+                else (
+                    "image"
+                    if Path(review.document.original_filename).suffix.lower()
+                    in {".jpg", ".jpeg", ".png", ".webp"}
+                    else "download"
+                )
+            ),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET"])
+@permission_required(
+    (
+        "company_documents.review_invoice_documents",
+        "company_documents.view_companydocument",
+    ),
+    raise_exception=True,
+)
+def invoice_document_preview(request, review_id):
+    from pathlib import Path
+    from urllib.parse import quote
+
+    from django.http import Http404, HttpResponse
+
+    from .models import InvoiceDocumentReview
+
+    review = get_object_or_404(
+        InvoiceDocumentReview.objects.select_related("document"),
+        pk=review_id,
+    )
+    document = review.document
+    if not can_access_document(request.user, document):
+        return render(request, "dashboard/403.html", status=403)
+
+    extension = Path(document.original_filename).suffix.lower()
+    content_types = {
+        ".pdf": "application/pdf",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+    }
+    content_type = content_types.get(extension)
+    if not document.file or not content_type:
+        raise Http404("This invoice document cannot be previewed.")
+    try:
+        content = download_raw_document(document.file.name)
+    except Exception as exc:
+        raise Http404(f"Unable to retrieve the invoice document: {exc}") from exc
+
+    create_audit(
+        document=document,
+        user=request.user,
+        action=CompanyDocumentAudit.Action.VIEWED,
+        metadata={"invoice_review_id": review.pk, "preview": True},
+    )
+    response = HttpResponse(content, content_type=content_type)
+    filename = Path(document.original_filename.replace("\\", "/")).name or "invoice"
+    response["Content-Disposition"] = f"inline; filename*=UTF-8''{quote(filename)}"
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@login_required
+@require_http_methods(["POST"])
+@permission_required(
+    (
+        "company_documents.review_invoice_documents",
+        "company_documents.view_companydocument",
+    ),
+    raise_exception=True,
+)
+def invoice_review_verify(request, review_id):
+    from django.db import IntegrityError
+    from django.core.exceptions import ValidationError
+
+    from .forms import InvoiceReviewVerificationForm
+    from .models import InvoiceDocumentReview
+    from .services.invoice_review import verify_invoice_review
+
+    review = get_object_or_404(
+        InvoiceDocumentReview.objects.select_related("document"),
+        pk=review_id,
+    )
+    if not can_access_document(request.user, review.document):
+        return render(request, "dashboard/403.html", status=403)
+    form = InvoiceReviewVerificationForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, form.errors.as_text())
+        return redirect(
+            "company_documents:invoice_review_detail",
+            review_id=review.pk,
+        )
+
+    try:
+        verify_invoice_review(
+            review_id=review.pk,
+            actor=request.user,
+            verified_data=form.cleaned_data,
+        )
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    except IntegrityError:
+        messages.error(
+            request,
+            "A verified invoice with this supplier and invoice number already exists.",
+        )
+    else:
+        messages.success(
+            request,
+            "Invoice details verified. No expense has been posted and no payment status changed.",
+        )
+    return redirect(
+        "company_documents:invoice_review_detail",
+        review_id=review.pk,
+    )
+
+
+@login_required
+@require_http_methods(["POST"])
+@permission_required(
+    (
+        "company_documents.review_invoice_documents",
+        "company_documents.view_companydocument",
+    ),
+    raise_exception=True,
+)
+def invoice_review_reject(request, review_id):
+    from django.core.exceptions import ValidationError
+
+    from .forms import InvoiceReviewRejectionForm
+    from .models import InvoiceDocumentReview
+    from .services.invoice_review import reject_invoice_review
+
+    review = get_object_or_404(
+        InvoiceDocumentReview.objects.select_related("document"),
+        pk=review_id,
+    )
+    if not can_access_document(request.user, review.document):
+        return render(request, "dashboard/403.html", status=403)
+    form = InvoiceReviewRejectionForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, form.errors.as_text())
+        return redirect(
+            "company_documents:invoice_review_detail",
+            review_id=review.pk,
+        )
+    try:
+        reject_invoice_review(
+            review_id=review.pk,
+            actor=request.user,
+            review_notes=form.cleaned_data["review_notes"],
+        )
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    else:
+        messages.success(request, "Invoice document rejected with a recorded reason.")
+    return redirect(
+        "company_documents:invoice_review_detail",
+        review_id=review.pk,
+    )
+
+
+@login_required
+@require_http_methods(["POST"])
+@permission_required(
+    (
+        "company_documents.review_invoice_documents",
+        "company_documents.view_companydocument",
+        "expenses.add_expense",
+    ),
+    raise_exception=True,
+)
+def invoice_review_approve(request, review_id):
+    from django.core.exceptions import ValidationError
+    from django.db import IntegrityError
+
+    from .forms import InvoicePostingForm
+    from .models import InvoiceDocumentReview
+    from .services.invoice_review import post_verified_invoice_review
+
+    review = get_object_or_404(
+        InvoiceDocumentReview.objects.select_related(
+            "document",
+            "supplier",
+            "suggested_purchase_order",
+        ),
+        pk=review_id,
+    )
+    if not can_access_document(request.user, review.document):
+        return render(request, "dashboard/403.html", status=403)
+
+    form = InvoicePostingForm(
+        request.POST,
+        supplier=review.supplier,
+        suggested_purchase_order=review.suggested_purchase_order,
+    )
+    if not form.is_valid():
+        messages.error(request, form.errors.as_text())
+        return redirect(
+            "company_documents:invoice_review_detail",
+            review_id=review.pk,
+        )
+    try:
+        expense, created = post_verified_invoice_review(
+            review_id=review.pk,
+            actor=request.user,
+            expense_category=form.cleaned_data["category"],
+            purchase_order_id=(
+                form.cleaned_data["purchase_order"].pk
+                if form.cleaned_data["purchase_order"]
+                else None
+            ),
+        )
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    except IntegrityError:
+        messages.error(
+            request,
+            "An expense record already exists for this invoice.",
+        )
+    else:
+        messages.success(
+            request,
+            (
+                f"Expense #{expense.pk} was posted from the verified invoice."
+                if created
+                else f"Expense #{expense.pk} already exists; no duplicate was created."
+            ),
+        )
+    return redirect(
+        "company_documents:invoice_review_detail",
+        review_id=review.pk,
     )

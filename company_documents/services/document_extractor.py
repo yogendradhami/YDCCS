@@ -1,4 +1,9 @@
+import io
+import shutil
+import subprocess
 from pathlib import Path
+
+from django.conf import settings
 
 
 SUPPORTED_EXTENSIONS = {
@@ -9,6 +14,10 @@ SUPPORTED_EXTENSIONS = {
     ".xls",
     ".csv",
     ".txt",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
 }
 
 
@@ -48,6 +57,9 @@ def extract_text(uploaded_file):
 
         if extension == ".pdf":
             return _extract_pdf(uploaded_file)
+
+        if extension in {".jpg", ".jpeg", ".png", ".webp"}:
+            return _extract_image_ocr(uploaded_file)
 
         if extension in {".xlsx", ".xls"}:
             return _extract_excel(uploaded_file)
@@ -121,20 +133,90 @@ def _extract_pdf(uploaded_file):
     )
 
     parts = []
+    ocr_page_count = 0
+    max_ocr_pages = getattr(settings, "COMPANY_DOCUMENT_OCR_MAX_PAGES", 20)
+    limit_reached = False
 
-    for page in pdf:
-        text = page.get_text("text")
-
-        if text:
-            parts.append(text.strip())
-
-    pdf.close()
-
+    try:
+        for page in pdf:
+            text = page.get_text("text").strip()
+            if text:
+                parts.append(text)
+                continue
+            if ocr_page_count >= max_ocr_pages:
+                limit_reached = True
+                continue
+            image_bytes = page.get_pixmap(
+                matrix=fitz.Matrix(2, 2),
+                alpha=False,
+            ).tobytes("png")
+            parts.append(_run_tesseract(image_bytes))
+            ocr_page_count += 1
+    finally:
+        pdf.close()
+    used_ocr = ocr_page_count > 0
     return {
-        "text": "\n".join(parts),
-        "method": "pdf",
+        "text": "\n".join(part for part in parts if part),
+        "method": "pdf_ocr" if used_ocr else "pdf",
+        "error": (
+            f"OCR was limited to {max_ocr_pages} scanned pages; remaining scanned "
+            "pages were not processed."
+            if limit_reached
+            else ""
+        ),
+    }
+
+
+def _extract_image_ocr(uploaded_file):
+    from PIL import Image, UnidentifiedImageError
+
+    uploaded_file.seek(0)
+    try:
+        with Image.open(uploaded_file) as image:
+            if image.width * image.height > 50_000_000:
+                raise ValueError("Image dimensions exceed the OCR processing limit.")
+            image.load()
+            normalized = image.convert("RGB")
+    except (UnidentifiedImageError, OSError) as exc:
+        raise ValueError("The uploaded image could not be decoded.") from exc
+
+    buffer = io.BytesIO()
+    normalized.save(buffer, format="PNG")
+    return {
+        "text": _run_tesseract(buffer.getvalue()),
+        "method": "image_ocr",
         "error": "",
     }
+
+
+def _run_tesseract(image_bytes):
+    executable = getattr(settings, "COMPANY_DOCUMENT_TESSERACT_CMD", "tesseract")
+    resolved_executable = shutil.which(executable)
+    if not resolved_executable:
+        raise RuntimeError(
+            "Local OCR is unavailable. Install Tesseract or configure "
+            "COMPANY_DOCUMENT_TESSERACT_CMD."
+        )
+
+    result = subprocess.run(
+        [
+            resolved_executable,
+            "stdin",
+            "stdout",
+            "-l",
+            getattr(settings, "COMPANY_DOCUMENT_OCR_LANGUAGE", "eng"),
+        ],
+        input=image_bytes,
+        capture_output=True,
+        timeout=20,
+        check=False,
+    )
+    if result.returncode:
+        message = result.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(
+            f"Tesseract OCR failed: {message[:500] or 'unknown OCR error'}"
+        )
+    return result.stdout.decode("utf-8", errors="replace").strip()
 
 
 def _extract_excel(uploaded_file):

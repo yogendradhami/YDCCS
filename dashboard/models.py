@@ -5,6 +5,8 @@
 # - Activity log for tracking important CRM actions
 # ==========================================================
 
+import uuid
+
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db import models
@@ -141,6 +143,40 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class OperationsAutomationEvent(models.Model):
+    module = models.CharField(max_length=60, db_index=True)
+    event = models.CharField(max_length=160)
+    trigger = models.CharField(max_length=200)
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="operations_automation_events",
+    )
+    action_taken = models.TextField()
+    result = models.TextField(blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    idempotency_key = models.CharField(max_length=255, unique=True)
+    occurred_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-occurred_at", "-pk"]
+
+    def save(self, *args, **kwargs):
+        if self.pk and type(self).objects.filter(pk=self.pk).exists():
+            raise ValueError("Operations automation events are immutable.")
+        if not self.idempotency_key:
+            self.idempotency_key = uuid.uuid4().hex
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError("Operations automation events cannot be deleted.")
+
+    def __str__(self):
+        return self.event
 
 # Email Log
 # Tracks emails sent from the CRM Email Center.
@@ -416,19 +452,253 @@ class PurchaseOrder(models.Model):
 
     quantity = models.PositiveIntegerField()
 
+    quantity_received = models.PositiveIntegerField(default=0)
+
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
 
     order_date = models.DateField(auto_now_add=True)
+    expected_delivery_date = models.DateField(null=True, blank=True)
 
     notes = models.TextField(blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantity_received__lte=models.F("quantity")),
+                name="purchase_order_received_lte_ordered",
+            ),
+        ]
 
     def total_cost(self):
         return self.quantity * self.unit_cost
 
+    @property
+    def quantity_remaining(self):
+        return max(0, self.quantity - self.quantity_received)
+
     def __str__(self):
         return f"PO #{self.id}"
+
+
+class GoodsReceipt(models.Model):
+    purchase_order = models.ForeignKey(
+        PurchaseOrder,
+        on_delete=models.PROTECT,
+        related_name="goods_receipts",
+    )
+    received_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="goods_receipts",
+    )
+    idempotency_key = models.UUIDField(unique=True)
+    notes = models.TextField(blank=True)
+    received_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-received_at", "-pk"]
+
+    def __str__(self):
+        return f"Goods receipt #{self.pk} for PO #{self.purchase_order_id}"
+
+
+class GoodsReceiptItem(models.Model):
+    receipt = models.ForeignKey(
+        GoodsReceipt,
+        on_delete=models.PROTECT,
+        related_name="items",
+    )
+    purchase_order = models.ForeignKey(
+        PurchaseOrder,
+        on_delete=models.PROTECT,
+        related_name="receipt_items",
+    )
+    quantity = models.PositiveIntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["receipt", "purchase_order"],
+                name="unique_purchase_order_per_goods_receipt",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(quantity__gt=0),
+                name="goods_receipt_positive_quantity",
+            ),
+        ]
+
+
+class EquipmentAllocation(models.Model):
+    equipment = models.ForeignKey(
+        "dashboard.Equipment",
+        on_delete=models.PROTECT,
+        related_name="allocations",
+    )
+    employee = models.ForeignKey(
+        "employees.Employee",
+        on_delete=models.PROTECT,
+        related_name="equipment_allocations",
+    )
+    request_item = models.OneToOneField(
+        "employees.SupplyRequestItem",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="equipment_allocation",
+    )
+    issued_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="equipment_allocations_issued",
+    )
+    received_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="equipment_allocations_received",
+    )
+    issued_at = models.DateTimeField(auto_now_add=True)
+    returned_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="equipment_allocations_returned",
+    )
+    returned_at = models.DateTimeField(null=True, blank=True)
+    return_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-issued_at", "-pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["equipment"],
+                condition=models.Q(returned_at__isnull=True),
+                name="one_active_equipment_allocation",
+            ),
+        ]
+
+    @property
+    def is_active(self):
+        return self.returned_at is None
+
+    def __str__(self):
+        return f"{self.equipment.name} allocated to {self.employee.full_name}"
+
+
+class InventoryMovement(models.Model):
+    class MovementType(models.TextChoices):
+        OPENING = "opening", "Opening balance"
+        RECEIPT = "receipt", "Goods received"
+        ISSUE = "issue", "Issued"
+        RETURN = "return", "Returned"
+        ADJUSTMENT = "adjustment", "Adjustment"
+        REVERSAL = "reversal", "Reversal"
+
+    supply = models.ForeignKey(
+        CleaningSupply,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="movements",
+    )
+    equipment = models.ForeignKey(
+        Equipment,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="movements",
+    )
+    movement_type = models.CharField(max_length=16, choices=MovementType.choices)
+    quantity_delta = models.IntegerField()
+    balance_before = models.PositiveIntegerField(null=True, blank=True)
+    balance_after = models.PositiveIntegerField(null=True, blank=True)
+    request_item = models.ForeignKey(
+        "employees.SupplyRequestItem",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="inventory_movements",
+    )
+    goods_receipt = models.ForeignKey(
+        GoodsReceipt,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="inventory_movements",
+    )
+    equipment_allocation = models.ForeignKey(
+        EquipmentAllocation,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="inventory_movements",
+    )
+    reversed_movement = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="reversal_movements",
+    )
+    idempotency_key = models.UUIDField(unique=True)
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="inventory_movements",
+    )
+    employee = models.ForeignKey(
+        "employees.Employee",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="inventory_movements",
+    )
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(supply__isnull=False, equipment__isnull=True)
+                    | models.Q(supply__isnull=True, equipment__isnull=False)
+                ),
+                name="inventory_movement_one_asset",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(quantity_delta=0),
+                name="inventory_movement_nonzero_delta",
+            ),
+            models.UniqueConstraint(
+                fields=["reversed_movement"],
+                condition=models.Q(
+                    movement_type="reversal",
+                    reversed_movement__isnull=False,
+                ),
+                name="inventory_movement_single_reversal",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.pk and type(self).objects.filter(pk=self.pk).exists():
+            raise ValueError("Inventory movement records are immutable.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError("Inventory movement records cannot be deleted.")
+
+    def __str__(self):
+        asset = self.supply or self.equipment
+        return f"{self.get_movement_type_display()}: {asset} ({self.quantity_delta:+})"
 
 
 class Supplier(models.Model):
