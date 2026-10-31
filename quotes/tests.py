@@ -741,6 +741,7 @@ class QuickQuoteFlowTests(TestCase):
                 body = response.content.decode("utf-8")
                 self.assertIn('class="yd-quick-quote__form"', body)
                 self.assertIn('name="csrfmiddlewaretoken"', body)
+                self.assertIn('name="message"', body)
                 self.assertIn('id="id_quick_quote_', body)
                 self.assertNotIn("{% include", body)
                 self.assertNotIn("{% csrf_token %}", body)
@@ -784,6 +785,23 @@ class QuickQuoteFlowTests(TestCase):
             admin_email.call_args.kwargs["source_page"],
             "http://localhost/services/oven-cleaning/",
         )
+
+    @patch("core.views.send_customer_quote_email", return_value=True)
+    @patch("core.views.send_admin_quote_email", return_value=True)
+    def test_quick_quote_saves_customer_message_with_requested_service(
+        self, _admin_email, _customer_email
+    ):
+        response = self.post_verified(
+            "/contact/",
+            self.valid_data(message="Please call after 3 pm."),
+            HTTP_HOST="localhost",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertTrue(response.json()["success"])
+        quote = QuoteRequest.objects.get()
+        self.assertIn("Requested service: house-cleaning", quote.message)
+        self.assertIn("Customer message:\nPlease call after 3 pm.", quote.message)
 
     def test_invalid_fields_render_field_errors_without_redirect(self):
         response = self.client.post(

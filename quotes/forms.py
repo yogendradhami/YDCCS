@@ -261,6 +261,16 @@ class QuickQuoteForm(forms.ModelForm):
     """Short lead-capture form for high-conversion website placements."""
 
     workflow_key = forms.CharField(required=False, widget=forms.HiddenInput())
+    message = forms.CharField(
+        required=False,
+        max_length=2000,
+        widget=forms.Textarea(attrs={
+            "class": "form-control",
+            "placeholder": "Share any details or special requests...",
+            "rows": 3,
+            "maxlength": 2000,
+        }),
+    )
 
     service = forms.ChoiceField(
         required=True,
@@ -298,6 +308,7 @@ class QuickQuoteForm(forms.ModelForm):
             "phone",
             "property_type",
             "suburb_postcode",
+            "message",
         ]
         widgets = {
             "name": forms.TextInput(attrs={
@@ -418,6 +429,9 @@ class QuickQuoteForm(forms.ModelForm):
             f"Quick quote enquiry. Requested service: "
             f"{self.cleaned_data.get('service', 'Other Cleaning Service')}"
         )
+        customer_message = self.cleaned_data.get("message", "").strip()
+        if customer_message:
+            quote.message += f"\n\nCustomer message:\n{customer_message}"
         quote.bedrooms = 1
         quote.bathrooms = 1
         quote.estimated_price = 0

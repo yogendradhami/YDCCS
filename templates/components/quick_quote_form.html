@@ -63,6 +63,12 @@
                 </label>
             </div>
 
+            <label for="{{ quick_quote_form.message.id_for_label }}">
+                <span>Note or message (optional)</span>
+                {{ quick_quote_form.message }}
+                <span class="yd-quick-quote__field-error" data-error-for="message">{{ quick_quote_form.message.errors }}</span>
+            </label>
+
             <div class="yd-quick-quote__bottom">
                 <div>
                     <strong>Free, no-obligation quote</strong>
