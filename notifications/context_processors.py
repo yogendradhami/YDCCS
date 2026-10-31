@@ -1,16 +1,20 @@
 from datetime import timedelta
 
 from django.core.cache import cache
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
 
-from dashboard.reminders import count_unseen_reminders, get_reminder_center_items
+from dashboard.reminders import (
+    count_unseen_reminder_keys,
+    get_reminder_center_items,
+    get_reminder_keys,
+)
 from employees.models import Employee
 from leave_management.models import LeaveRequest
 from quotes.models import QuoteRequest
 from support.models import LiveChatConversation, SupportTicket
 from corporate.models import CorporateLead
-from .utils import NOTIFICATION_AREAS, notifications_for_area
+from .utils import NOTIFICATION_AREAS
 
 
 def notification_context(request):
@@ -52,10 +56,12 @@ def notification_context(request):
         .annotate(total=Count("id"))
     }
 
-    reminder_count = count_unseen_reminders(
-        request.user,
-        get_reminder_center_items(today),
+    reminder_keys = cache.get_or_set(
+        f"dashboard-reminder-keys:{today.isoformat()}",
+        lambda: get_reminder_keys(get_reminder_center_items(today)),
+        30,
     )
+    reminder_count = count_unseen_reminder_keys(request.user, reminder_keys)
 
     notification_counts = {
         "reminders": reminder_count,
@@ -82,11 +88,22 @@ def notification_context(request):
         ),
     }
 
+    area_count_filters = {}
+    area_count_aliases = {}
+    for index, (area, path) in enumerate(NOTIFICATION_AREAS.items()):
+        condition = Q(is_read=False, link__startswith=path)
+        if area == "operations_automation":
+            condition &= ~Q(
+                link__startswith=NOTIFICATION_AREAS["automation_history"]
+            )
+        alias = f"area_{index}"
+        area_count_aliases[area] = alias
+        area_count_filters[alias] = Count("pk", filter=condition)
+
+    area_count_values = request.user.notifications.aggregate(**area_count_filters)
     area_counts = {
-        area: notifications_for_area(request.user, area)
-        .filter(is_read=False)
-        .count()
-        for area in NOTIFICATION_AREAS
+        area: area_count_values[alias] or 0
+        for area, alias in area_count_aliases.items()
     }
     notification_counts.update(area_counts)
     notification_counts["equipment"] = area_counts["equipment"]

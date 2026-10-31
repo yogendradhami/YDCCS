@@ -62,7 +62,11 @@ def get_reminder_keys(items):
 
 
 def count_unseen_reminders(user, items):
-    current_keys = set(get_reminder_keys(items))
+    return count_unseen_reminder_keys(user, get_reminder_keys(items))
+
+
+def count_unseen_reminder_keys(user, reminder_keys):
+    current_keys = set(reminder_keys)
     if not current_keys:
         return 0
 

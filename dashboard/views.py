@@ -989,21 +989,114 @@ def delete_customer(request, customer_id):
 
 @login_required
 def booking_list(request):
-    from rosters.models import Roster
-
     bookings = (
         Booking.objects
         .select_related("customer", "assigned_employee")
-        .prefetch_related("rosters", "work_orders")
-        .all()
-        .order_by("-booking_date", "-booking_time")
+        .prefetch_related("work_orders")
     )
+
+    booking_metrics = bookings.aggregate(
+        total=Count("pk"),
+        pending=Count("pk", filter=Q(status="pending")),
+        confirmed=Count("pk", filter=Q(status="confirmed")),
+        completed=Count("pk", filter=Q(status="completed")),
+        unassigned=Count(
+            "pk",
+            filter=Q(assigned_employee__isnull=True) & ~Q(status="cancelled"),
+        ),
+    )
+
+    status = request.GET.get("status", "").strip()
+    valid_statuses = dict(Booking.STATUS_CHOICES)
+    if status not in valid_statuses:
+        status = ""
+    if status:
+        bookings = bookings.filter(status=status)
+
+    service = request.GET.get("service", "").strip()
+    valid_services = {value for value, _ in Booking.SERVICE_CHOICES}
+    if service not in valid_services:
+        service = ""
+    if service:
+        bookings = bookings.filter(service_type=service)
+
+    employee = request.GET.get("employee", "").strip()
+    if not employee.isdecimal():
+        employee = ""
+    if employee:
+        bookings = bookings.filter(assigned_employee_id=employee)
+
+    assignment = request.GET.get("assignment", "").strip()
+    if assignment not in {"assigned", "unassigned"}:
+        assignment = ""
+    if assignment == "assigned":
+        bookings = bookings.filter(assigned_employee__isnull=False)
+    elif assignment == "unassigned":
+        bookings = bookings.filter(assigned_employee__isnull=True)
+
+    search = request.GET.get("search", "").strip()[:100]
+    if search:
+        search_filter = (
+            Q(customer__full_name__icontains=search)
+            | Q(service_type__icontains=search)
+            | Q(suburb_postcode__icontains=search)
+            | Q(address__icontains=search)
+        )
+        if search.isdecimal():
+            search_filter |= Q(pk=int(search))
+        bookings = bookings.filter(search_filter)
+
+    date_from_raw = request.GET.get("date_from", "").strip()
+    date_to_raw = request.GET.get("date_to", "").strip()
+    date_from = parse_date(date_from_raw) if date_from_raw else None
+    date_to = parse_date(date_to_raw) if date_to_raw else None
+    if date_from:
+        bookings = bookings.filter(booking_date__gte=date_from)
+    if date_to:
+        bookings = bookings.filter(booking_date__lte=date_to)
+
+    sort = request.GET.get("sort", "-booking_date").strip()
+    ordering = {
+        "-booking_date": ("-booking_date", "-booking_time", "-pk"),
+        "booking_date": ("booking_date", "booking_time", "pk"),
+        "customer": ("customer__full_name", "-booking_date", "-booking_time", "-pk"),
+        "status": ("status", "-booking_date", "-booking_time", "-pk"),
+    }
+    if sort not in ordering:
+        sort = "-booking_date"
+
+    per_page = request.GET.get("per_page", "25").strip()
+    if per_page not in {"10", "25", "50", "100"}:
+        per_page = "25"
+
+    bookings = bookings.order_by(*ordering[sort])
+    page_obj = Paginator(bookings, int(per_page)).get_page(request.GET.get("page"))
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
 
     return render(
         request,
         "bookings/booking_list.html",
         {
-            "bookings": bookings,
+            "bookings": page_obj.object_list,
+            "page_obj": page_obj,
+            "pagination_query": urlencode(query_params, doseq=True),
+            "search": search,
+            "selected_status": status,
+            "selected_service": service,
+            "selected_employee": employee,
+            "selected_assignment": assignment,
+            "date_from": date_from.isoformat() if date_from else "",
+            "date_to": date_to.isoformat() if date_to else "",
+            "selected_sort": sort,
+            "selected_per_page": per_page,
+            "services": [value for value, _ in Booking.SERVICE_CHOICES],
+            "employees": Employee.objects.order_by("full_name"),
+            "total_bookings": booking_metrics["total"],
+            "pending_bookings": booking_metrics["pending"],
+            "confirmed_bookings": booking_metrics["confirmed"],
+            "completed_bookings": booking_metrics["completed"],
+            "unassigned_bookings": booking_metrics["unassigned"],
         },
     )
 

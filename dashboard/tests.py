@@ -34,6 +34,107 @@ class DashboardLoginLayoutTests(TestCase):
         self.assertNotContains(response, 'id="yd-faq-section"')
 
 
+class DashboardBookingListTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.admin = user_model.objects.create_superuser(
+            "booking-list-admin",
+            "booking-list-admin@example.com",
+            "test-password",
+        )
+        self.client.force_login(self.admin)
+        Booking.objects.bulk_create(
+            [
+                Booking(
+                    service_type="Office Cleaning",
+                    booking_date=timezone.localdate(),
+                    booking_time=time(8, 0),
+                    address=f"{number} King Street",
+                    suburb_postcode="Adelaide 5000",
+                    status="pending" if number % 2 else "confirmed",
+                )
+                for number in range(1, 31)
+            ]
+        )
+
+    def test_booking_list_paginates_and_filters_without_loading_all_rows(self):
+        response = self.client.get(reverse("booking_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["page_obj"].paginator.count, 30)
+        self.assertEqual(len(response.context["page_obj"].object_list), 25)
+        self.assertEqual(response.context["total_bookings"], 30)
+        self.assertEqual(response.context["pending_bookings"], 15)
+        self.assertEqual(response.context["confirmed_bookings"], 15)
+
+        response = self.client.get(
+            reverse("booking_list"),
+            {"status": "confirmed", "per_page": "10"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["page_obj"].paginator.count, 15)
+        self.assertEqual(len(response.context["page_obj"].object_list), 10)
+        self.assertEqual(response.context["selected_status"], "confirmed")
+        self.assertEqual(response.context["selected_per_page"], "10")
+
+
+    def test_summary_fields_show_counts_for_the_bookings_in_the_database(self):
+        Booking.objects.all().delete()
+        employee = Employee.objects.create(
+            full_name="Assigned Cleaner",
+            phone="0400000000",
+        )
+        for number, status in enumerate(
+            ["pending", "completed", "completed", "completed", "completed"],
+            start=1,
+        ):
+            Booking.objects.create(
+                service_type="Office Cleaning",
+                booking_date=timezone.localdate(),
+                booking_time=time(8, 0),
+                address=f"{number} King Street",
+                suburb_postcode="Adelaide 5000",
+                assigned_employee=None if number == 5 else employee,
+                status=status,
+            )
+
+        response = self.client.get(reverse("booking_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["total_bookings"], 5)
+        self.assertEqual(response.context["pending_bookings"], 1)
+        self.assertEqual(response.context["confirmed_bookings"], 0)
+        self.assertEqual(response.context["completed_bookings"], 4)
+        self.assertEqual(response.context["unassigned_bookings"], 1)
+
+        rendered = response.content.decode()
+        self.assertRegex(
+            rendered,
+            r'class="hero-panel-number">\s*5\s*</div>',
+        )
+        self.assertRegex(
+            rendered,
+            r"<span>\s*Total Bookings\s*</span>\s*<strong>\s*5\s*</strong>",
+        )
+        self.assertRegex(
+            rendered,
+            r"<span>\s*Pending\s*</span>\s*<strong>\s*1\s*</strong>",
+        )
+        self.assertRegex(
+            rendered,
+            r"<span>\s*Confirmed\s*</span>\s*<strong>\s*0\s*</strong>",
+        )
+        self.assertRegex(
+            rendered,
+            r"<span>\s*Unassigned\s*</span>\s*<strong>\s*1\s*</strong>",
+        )
+        self.assertRegex(
+            rendered,
+            r"<strong>\s*4\s*</strong>\s*<span>\s*Completed\s*</span>",
+        )
+
+
 @override_settings(
 	EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
 	ADMIN_EMAIL="admin@example.com",

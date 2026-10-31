@@ -67,7 +67,7 @@
             </span>
 
             <div class="hero-panel-number">
-                {{ total_bookings|default:bookings|length }}
+                {{ total_bookings }}
             </div>
 
             <div class="hero-panel-text">
@@ -111,7 +111,7 @@
 
             <div>
                 <span>Total Bookings</span>
-                <strong>{{ total_bookings|default:bookings|length }}</strong>
+                <strong>{{ total_bookings }}</strong>
                 <small>All booking records</small>
             </div>
 
