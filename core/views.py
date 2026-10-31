@@ -2969,7 +2969,7 @@ YD Commercial Cleaning Services
     company_message = f"""A new newsletter subscriber has joined through the YD Commercial Cleaning website.
 
 Email: {email}
-Source: Homepage CLEAN20 Newsletter
+Source: Homepage CLEAN10 Newsletter
 Status: Active
 """
 

@@ -317,7 +317,12 @@ def _build_gallery_groups(gallery_items):
 
 def gallery_page(request):
     """Display unified gallery with filtering options"""
-    gallery_items = GalleryItem.objects.filter(featured=True).order_by("-created_at")
+    gallery_items = (
+        GalleryItem.objects.filter(featured=True)
+        .select_related("job_photo__booking__customer")
+        .prefetch_related("additional_images")
+        .order_by("-created_at")
+    )
 
     # Get service type filter from query params
     service_filter = request.GET.get('service', '')

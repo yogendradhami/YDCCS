@@ -1,3 +1,4 @@
+from datetime import date, time
 from io import BytesIO
 import json
 from unittest.mock import patch
@@ -6,11 +7,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.db.models import Q
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils.datastructures import MultiValueDict
 from PIL import Image
 
+from bookings.models import Booking, JobPhoto
+from customers.models import Customer
 from gallery.forms import GalleryItemForm
 from gallery.models import GalleryImage, GalleryItem
 from gallery.upload_services import (
@@ -22,10 +25,43 @@ from gallery.upload_services import (
     save_verified_gallery_uploads,
     verify_gallery_upload_receipts,
 )
-from gallery.views import _build_gallery_groups
+from gallery.views import _build_gallery_groups, gallery_page
 
 
 class GalleryItemMediaTest(TestCase):
+    def test_gallery_groups_prefetch_related_data_in_constant_queries(self):
+        customer = Customer.objects.create(
+            full_name="Gallery Customer",
+            phone="0400000000",
+        )
+        booking = Booking.objects.create(
+            customer=customer,
+            service_type="House Cleaning",
+            booking_date=date.today(),
+            booking_time=time(9),
+            address="1 Example Street",
+            suburb_postcode="Adelaide SA 5000",
+        )
+        job_photo = JobPhoto.objects.create(
+            booking=booking,
+            photo_type="before",
+            image="job_photos/gallery-test.jpg",
+        )
+        GalleryItem.objects.create(
+            title="After",
+            service_type="House Cleaning",
+            source="job_photo",
+            job_photo=job_photo,
+        )
+
+        with patch("gallery.views.render") as render_page:
+            with self.assertNumQueries(2):
+                gallery_page(RequestFactory().get("/gallery/"))
+
+        context = render_page.call_args.args[2]
+        self.assertEqual(len(context["gallery_groups"]), 1)
+        self.assertEqual(len(context["gallery_groups"][0]["items"]), 2)
+
     def test_gallery_images_collects_each_attached_file_in_one_item(self):
         item = GalleryItem.objects.create(
             title="House Cleaning Gallery",
