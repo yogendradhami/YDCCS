@@ -1,87 +1,67 @@
 {% extends "dashboard_base.html" %}
 
 {% block title %}
-Activity Log
+Activity Ledger | YD Dashboard
 {% endblock %}
 
 {% block page_title %}
-Activity Log
+Activity Ledger
 {% endblock %}
 
 {% block page_subtitle %}
-Track important actions across the CRM.
+Trace recorded CRM actions by actor, category, and time.
 {% endblock %}
 
 {% block content %}
+<div class="workspace-page activity-ledger">
+    <section class="workspace-toolbar">
+        <div><span class="activity-kicker">OPERATIONAL AUDIT TRAIL</span><h2>Recorded activity</h2><p>Review who performed an action, when it occurred, and the recorded context.</p></div>
+    </section>
 
-<section class="crm-panel">
+    <section class="workspace-stats" aria-label="Activity summary">
+        <div class="workspace-stat"><span>Total records</span><strong>{{ total_count }}</strong></div>
+        <div class="workspace-stat"><span>Matching records</span><strong>{{ filtered_count }}</strong></div>
+        <div class="workspace-stat"><span>Actors recorded</span><strong>{{ actor_count }}</strong></div>
+        <div class="workspace-stat"><span>On this page</span><strong>{{ activities|length }}</strong></div>
+    </section>
 
-    <div class="crm-panel-header">
-        <h2>Recent Activity</h2>
-    </div>
+    <section class="workspace-panel activity-ledger-panel">
+        <form method="get" class="activity-filters" role="search" aria-label="Filter activity records">
+            <label class="activity-search"><span>Search event details</span><input type="search" name="q" value="{{ filters.q }}" placeholder="Title, description, username, or name"></label>
+            <label><span>Action category</span><select name="action"><option value="">All categories</option>{% for value,label in action_choices %}<option value="{{ value }}" {% if filters.action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+            <label><span>From date</span><input type="date" name="date_from" value="{{ filters.date_from }}"></label>
+            <label><span>To date</span><input type="date" name="date_to" value="{{ filters.date_to }}"></label>
+            <label><span>Order</span><select name="sort"><option value="newest" {% if filters.sort == "newest" %}selected{% endif %}>Newest first</option><option value="oldest" {% if filters.sort == "oldest" %}selected{% endif %}>Oldest first</option></select></label>
+            <label><span>Rows</span><select name="page_size"><option value="10" {% if filters.page_size == "10" %}selected{% endif %}>10</option><option value="25" {% if filters.page_size == "25" %}selected{% endif %}>25</option><option value="50" {% if filters.page_size == "50" %}selected{% endif %}>50</option></select></label>
+            <div class="activity-filter-actions"><button class="workspace-button" type="submit">Apply filters</button><a class="workspace-button secondary" href="{% url 'activity_log_list' %}">Reset</a></div>
+        </form>
 
-    <div class="table-wrapper">
+        <header class="activity-table-heading">
+            <div><h2>Event records</h2><p>{{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ filtered_count }} matching · {{ total_count }} total</p></div>
+            <span class="workspace-badge neutral">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        </header>
 
-        <table class="dashboard-table advanced-table">
-
-            <thead>
+        <div class="workspace-table-wrap"><table class="workspace-table activity-table">
+            <thead><tr><th>Reference</th><th>Timestamp</th><th>Actor</th><th>Category</th><th>Event</th><th>Recorded context</th></tr></thead>
+            <tbody>{% for activity in activities %}
                 <tr>
-                    <th>Date</th>
-                    <th>User</th>
-                    <th>Type</th>
-                    <th>Title</th>
-                    <th>Description</th>
+                    <td><span class="activity-reference">ACT-{{ activity.pk|stringformat:"06d" }}</span></td>
+                    <td><strong>{{ activity.created_at|date:"d M Y" }}</strong><small>{{ activity.created_at|date:"H:i:s" }}</small></td>
+                    <td>{% if activity.user %}<strong>{{ activity.user.get_full_name|default:activity.user.username }}</strong><small>@{{ activity.user.username }}</small>{% else %}<span class="activity-system-actor">System</span>{% endif %}</td>
+                    <td><span class="workspace-badge neutral">{{ activity.get_action_type_display }}</span></td>
+                    <td><strong>{{ activity.title }}</strong></td>
+                    <td class="activity-description">{{ activity.description|default:"No additional context recorded." }}</td>
                 </tr>
-            </thead>
+            {% empty %}<tr><td class="workspace-empty" colspan="6">{% if filters.q or filters.action or filters.date_from or filters.date_to %}No activity matches these filters. Adjust the search or reset the filters.{% else %}No activity records have been recorded yet.{% endif %}</td></tr>{% endfor %}</tbody>
+        </table></div>
 
-            <tbody>
-
-                {% for activity in activities %}
-
-                    <tr>
-
-                        <td>
-                            {{ activity.created_at|date:"d M Y H:i" }}
-                        </td>
-
-                        <td>
-                            {% if activity.user %}
-                                {{ activity.user.username }}
-                            {% else %}
-                                System
-                            {% endif %}
-                        </td>
-
-                        <td>
-                            {{ activity.get_action_type_display }}
-                        </td>
-
-                        <td>
-                            {{ activity.title }}
-                        </td>
-
-                        <td>
-                            {{ activity.description }}
-                        </td>
-
-                    </tr>
-
-                {% empty %}
-
-                    <tr>
-                        <td colspan="5">
-                            No activity records found.
-                        </td>
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
+        {% if page_obj.has_other_pages %}
+        <nav class="activity-pagination" aria-label="Activity record pages">
+            {% if page_obj.has_previous %}<a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">← Previous</a>{% else %}<span class="is-disabled">← Previous</span>{% endif %}
+            <span>Page <strong>{{ page_obj.number }}</strong> of {{ paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">Next →</a>{% else %}<span class="is-disabled">Next →</span>{% endif %}
+        </nav>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

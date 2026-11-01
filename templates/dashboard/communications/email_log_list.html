@@ -9,56 +9,52 @@ Track all emails sent from the CRM Email Center.
 {% endblock %}
 
 {% block content %}
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-        <h2>Email History</h2>
-        <a href="/dashboard/email-center/" class="small-link-btn">
-            Email Center
-        </a>
+<div class="workspace-page">
+    <div class="workspace-toolbar">
+        <div><h2>Sent message history</h2><p>Search, filter, and review email activity recorded by the CRM.</p></div>
+        <div class="workspace-actions"><a class="workspace-button" href="/dashboard/email-center/">Open email center</a></div>
     </div>
 
-    <div class="table-wrapper">
-        <table class="dashboard-table advanced-table">
-            <thead>
+    <section class="workspace-stats" aria-label="Email log summary">
+        <div class="workspace-stat"><span>All email records</span><strong>{{ total_count }}</strong></div>
+        <div class="workspace-stat"><span>Matching filters</span><strong>{{ filtered_count }}</strong></div>
+        <div class="workspace-stat"><span>Rows on this page</span><strong>{{ email_logs|length }}</strong></div>
+    </section>
+
+    <section class="workspace-panel">
+        <form method="get" class="email-log-filters" role="search" aria-label="Filter email logs">
+            <label class="email-log-search"><span>Search records</span><input type="search" name="q" value="{{ filters.q }}" placeholder="Recipient, email, subject, related record, sender"></label>
+            <label><span>Type</span><select name="type"><option value="">All types</option>{% for value,label in email_type_choices %}<option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+            <label><span>Sent from</span><input type="date" name="date_from" value="{{ filters.date_from }}"></label>
+            <label><span>Sent to</span><input type="date" name="date_to" value="{{ filters.date_to }}"></label>
+            <label><span>Order</span><select name="sort"><option value="newest" {% if filters.sort == "newest" %}selected{% endif %}>Newest first</option><option value="oldest" {% if filters.sort == "oldest" %}selected{% endif %}>Oldest first</option></select></label>
+            <label><span>Rows</span><select name="page_size"><option value="10" {% if filters.page_size == "10" %}selected{% endif %}>10</option><option value="25" {% if filters.page_size == "25" %}selected{% endif %}>25</option><option value="50" {% if filters.page_size == "50" %}selected{% endif %}>50</option></select></label>
+            <div class="email-log-filter-actions"><button class="workspace-button" type="submit">Apply filters</button><a class="workspace-button secondary" href="{% url 'email_log_list' %}">Reset</a></div>
+        </form>
+
+        <div class="email-log-table-heading"><div><h2>Email records</h2><p>{{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ filtered_count }} matching records · {{ total_count }} total</p></div><span class="workspace-badge neutral">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span></div>
+
+        <div class="workspace-table-wrap"><table class="workspace-table email-log-table">
+            <thead><tr><th>Sent</th><th>Type</th><th>Recipient</th><th>Subject</th><th>Related record</th><th>Sent by</th></tr></thead>
+            <tbody>{% for log in email_logs %}
                 <tr>
-                    <th>Sent At</th>
-                    <th>Type</th>
-                    <th>Recipient</th>
-                    <th>Email</th>
-                    <th>Subject</th>
-                    <th>Related</th>
-                    <th>Sent By</th>
+                    <td><strong>{{ log.sent_at|date:"d M Y" }}</strong><small>{{ log.sent_at|date:"H:i" }}</small></td>
+                    <td><span class="workspace-badge neutral">{{ log.get_email_type_display }}</span></td>
+                    <td><strong>{{ log.recipient_name|default:"Recipient" }}</strong><small><a href="mailto:{{ log.recipient_email }}">{{ log.recipient_email }}</a></small></td>
+                    <td>{{ log.subject }}</td>
+                    <td>{{ log.related_object|default:"—" }}</td>
+                    <td>{% if log.sent_by %}{{ log.sent_by.get_full_name|default:log.sent_by.username }}{% else %}System{% endif %}</td>
                 </tr>
-            </thead>
+            {% empty %}<tr><td class="workspace-empty" colspan="6">{% if filters.q or filters.type or filters.date_from or filters.date_to %}No email records match these filters. Adjust the search or reset the filters.{% else %}No email activity has been recorded yet.{% endif %}</td></tr>{% endfor %}</tbody>
+        </table></div>
 
-            <tbody>
-                {% for log in email_logs %}
-                    <tr>
-                        <td>{{ log.sent_at|date:"d M Y H:i" }}</td>
-                        <td>{{ log.get_email_type_display }}</td>
-                        <td>{{ log.recipient_name }}</td>
-                        <td>{{ log.recipient_email }}</td>
-                        <td>{{ log.subject }}</td>
-                        <td>{{ log.related_object }}</td>
-                        <td>
-                            {% if log.sent_by %}
-                                {{ log.sent_by.username }}
-                            {% else %}
-                                System
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7">No email logs found.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-</section>
-
+        {% if page_obj.has_other_pages %}
+        <nav class="email-log-pagination" aria-label="Email log pages">
+            {% if page_obj.has_previous %}<a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">← Previous</a>{% else %}<span class="is-disabled">← Previous</span>{% endif %}
+            <span>Page <strong>{{ page_obj.number }}</strong> of {{ paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">Next →</a>{% else %}<span class="is-disabled">Next →</span>{% endif %}
+        </nav>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

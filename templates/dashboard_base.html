@@ -9,6 +9,7 @@
 
     <!-- Dashboard styles -->
     <link rel="stylesheet" href="{% static 'css/dashboard/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard/workspace.css' %}">
     {% block extra_css %}{% endblock %}
 
     <!-- Dashboard scripts -->
@@ -548,39 +549,39 @@
 
                 <div class="sidebar-submenu">
                     {% if request.user.is_superuser or perms.security.manage_users %}
-                        <a href="{% url 'security_user_list' %}">
+                        <a href="{% url 'security_user_list' %}" {% if request.resolver_match.url_name == "security_user_list" or request.resolver_match.url_name == "security_user_create" or request.resolver_match.url_name == "security_user_edit" or request.resolver_match.url_name == "security_position_list" or request.resolver_match.url_name == "security_position_create" or request.resolver_match.url_name == "security_position_edit" %}aria-current="page"{% endif %}>
                             <span>Users &amp; Positions</span>
                         </a>
                     {% endif %}
 
                     {% if request.user.is_superuser or perms.security.view_security_center %}
-                        <a href="{% url 'security_center' %}">
+                        <a href="{% url 'security_center' %}" {% if request.resolver_match.url_name == "security_center" %}aria-current="page"{% endif %}>
                             <span>Security Audit</span>
                         </a>
                     {% endif %}
 
-                    <a href="/dashboard/reminders/">
+                    <a href="/dashboard/reminders/" {% if request.resolver_match.url_name == "reminder_centre" %}aria-current="page"{% endif %}>
                         <span>Reminder Center</span>
                         {% if notification_counts.reminders %}
                             <span class="side-badge" data-reminder-count>{{ notification_counts.reminders }}</span>
                         {% endif %}
                     </a>
 
-                    <a href="/dashboard/email-center/">
+                    <a href="/dashboard/email-center/" {% if request.resolver_match.url_name == "email_center" or request.resolver_match.url_name == "send_invoice_reminder" or request.resolver_match.url_name == "send_booking_reminder" or request.resolver_match.url_name == "send_quote_followup" %}aria-current="page"{% endif %}>
                         <span>Email Center</span>
                         {% if notification_counts.email %}
                             <span class="side-badge">{{ notification_counts.email }}</span>
                         {% endif %}
                     </a>
 
-                    <a href="/dashboard/email-logs/">
+                    <a href="/dashboard/email-logs/" {% if request.resolver_match.url_name == "email_log_list" %}aria-current="page"{% endif %}>
                         <span>Email Logs</span>
                         {% if notification_counts.email_logs %}
                             <span class="side-badge">{{ notification_counts.email_logs }}</span>
                         {% endif %}
                     </a>
 
-                    <a href="/dashboard/support/">
+                    <a href="/dashboard/support/" {% if request.resolver_match.url_name == "support_dashboard" or request.resolver_match.url_name == "ticket_detail" %}aria-current="page"{% endif %}>
                         <span>Support Centre</span>
 
                         {% if notification_counts.support %}
@@ -598,11 +599,11 @@
                     </a>
 
 
-                    <a href="/dashboard/activity/">
+                    <a href="/dashboard/activity/" {% if request.resolver_match.url_name == "activity_log_list" %}aria-current="page"{% endif %}>
                         <span>Activity Log</span>
                     </a>
 
-                    <a href="/dashboard/settings/">
+                    <a href="/dashboard/settings/" {% if request.resolver_match.url_name == "company_settings" %}aria-current="page"{% endif %}>
                         <span>Settings</span>
                     </a>
 

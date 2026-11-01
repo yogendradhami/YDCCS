@@ -1,169 +1,135 @@
 {% extends 'dashboard_base.html' %}
 {% load static %}
 
+{% block title %}{{ application.full_name }} · Career application{% endblock %}
+{% block page_title %}Applicant review{% endblock %}
+{% block page_subtitle %}Review the submitted profile, supporting details, and recruitment status.{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/career_detail.css' %}">
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-    const form = document.querySelector('.admin-form');
-    if(form){
-        form.addEventListener('submit', function(e){
-            const confirmMsg = 'This will save the status and notify the applicant by email. Continue?';
-            if(!confirm(confirmMsg)){
-                e.preventDefault();
-            }
-        });
-    }
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('.career-status-form');
+    if (!form) return;
+    form.addEventListener('submit', function (event) {
+        if (!window.confirm('Save the status and notify the applicant by email?')) {
+            event.preventDefault();
+        }
+    });
 });
 </script>
 {% endblock %}
 
 {% block content %}
+<main class="career-review-page">
+    <div class="career-review-topline">
+        <a href="{% url 'careers_list' %}" class="career-back-link"><span aria-hidden="true">←</span> Careers pipeline</a>
+        <span class="career-reference">CAND-{{ application.pk|stringformat:"05d" }}</span>
+    </div>
 
-<div class="career-detail-grid">
-    <aside class="card panel-left">
-        <div class="profile">
-            <div class="avatar-large">{{ application.full_name|default:"-"|first }}</div>
-            <h2 class="name">{{ application.full_name }}</h2>
-            <div class="muted">Applied for: <strong>{{ application.get_position_display }}</strong></div>
-            <div class="muted small">Submitted: {{ application.created_at|date:"d M Y H:i" }}</div>
-        </div>
-
-        <section class="contact">
-            <h4>Contact</h4>
-            <p><a href="mailto:{{ application.email }}">{{ application.email }}</a></p>
-            <p>{{ application.phone }}</p>
-            {% if application.suburb %}<p class="muted">{{ application.suburb }}</p>{% endif %}
-        </section>
-
-        <section class="documents">
-            <h4>Documents</h4>
-            {% if application.resume %}
-                <a class="doc-link" href="{% url 'career_resume_download' application.id %}" target="_blank">Download Resume</a>
-                &nbsp;•&nbsp;
-                <a class="doc-link" href="{% url 'career_resume_preview' application.id %}" target="_blank">Preview Resume</a>
-            {% else %}
-                <div class="muted">No resume uploaded</div>
-            {% endif %}
-            <div style="margin-top:8px;">
-                <a href="{% url 'career_detail' application.id %}#cover" class="doc-link">View Cover Letter</a>
-            </div>
-        </section>
-
-        <section class="references">
-            <h4>References</h4>
-            <p>{{ application.reference_name }}{% if application.reference_phone %} — {{ application.reference_phone }}{% endif %}</p>
-            <p class="muted">{{ application.reference_relationship }}</p>
-        </section>
-
-    </aside>
-
-    <main class="card panel-right">
-        <div class="top-row">
+    <header class="career-candidate-header">
+        <div class="career-candidate-identity">
+            <span class="career-avatar-large" aria-hidden="true">{{ application.full_name|default:"A"|first|upper }}</span>
             <div>
-                <h3 class="section-title">Application Overview</h3>
-                <p class="muted">An at-a-glance summary of the applicant and application details.</p>
-            </div>
-            <div class="status-block">
-                <span class="status-badge status-{{ application.status }}">{{ application.get_status_display }}</span>
+                <span class="careers-eyebrow">{{ application.get_position_display }}</span>
+                <h2>{{ application.full_name|default:"Applicant" }}</h2>
+                <p>Submitted {{ application.created_at|date:"d M Y · H:i" }}{% if application.suburb %} · {{ application.suburb }}{% endif %}</p>
             </div>
         </div>
+        <span class="workspace-badge career-status status-{{ application.status }}">{{ application.get_status_display }}</span>
+    </header>
 
-        <section class="overview card">
-            <dl class="overview-list">
-                <div class="kv-row">
-                    <dt>Employment type</dt>
-                    <dd>{{ application.employment_type|default:'—'|capfirst }}</dd>
+    <div class="career-review-layout">
+        <aside class="career-dossier">
+            <section class="career-dossier-section">
+                <span class="career-section-kicker">CONTACT</span>
+                <h3>Candidate details</h3>
+                <dl class="career-contact-list">
+                    <div><dt>Email</dt><dd><a href="mailto:{{ application.email }}">{{ application.email }}</a></dd></div>
+                    <div><dt>Phone</dt><dd>{% if application.phone %}<a href="tel:{{ application.phone }}">{{ application.phone }}</a>{% else %}Not provided{% endif %}</dd></div>
+                    <div><dt>Date of birth</dt><dd>{{ application.date_of_birth|date:"j M Y"|default:"Not provided" }}</dd></div>
+                    <div><dt>Suburb</dt><dd>{{ application.suburb|default:"Not provided" }}</dd></div>
+                    <div><dt>Address</dt><dd>{{ application.address|default:"Not provided"|linebreaksbr }}</dd></div>
+                </dl>
+            </section>
+
+            <section class="career-dossier-section">
+                <span class="career-section-kicker">DOCUMENTS</span>
+                <h3>Application files</h3>
+                {% if application.resume %}
+                <div class="career-document-actions">
+                    <a class="workspace-button" href="{% url 'career_resume_preview' application.id %}" target="_blank" rel="noopener">Preview resume</a>
+                    <a class="workspace-button secondary" href="{% url 'career_resume_download' application.id %}">Download resume</a>
                 </div>
-                <div class="kv-row">
-                    <dt>Years experience</dt>
-                    <dd>{{ application.years_cleaning_experience|default:'0' }}</dd>
-                </div>
-                <div class="kv-row">
-                    <dt>Availability</dt>
-                    <dd>{{ application.availability_days|default:'—' }}{% if application.availability_hours %}, {{ application.availability_hours }}{% endif %}</dd>
-                </div>
-                <div class="kv-row">
-                    <dt>Work rights</dt>
-                    <dd>{{ application.get_work_rights_display }}</dd>
-                </div>
-                <div class="kv-row">
-                    <dt>Drivers licence</dt>
-                    <dd>{% if application.has_drivers_license %}Yes{% else %}No{% endif %}</dd>
-                </div>
-                <div class="kv-row">
-                    <dt>Vehicle</dt>
-                    <dd>{% if application.has_vehicle %}Yes{% else %}No{% endif %}</dd>
-                </div>
-            </dl>
-        </section>
+                {% else %}<p class="career-muted">No resume was uploaded.</p>{% endif %}
+                <a class="career-inline-link" href="#cover-letter">Jump to cover letter <span aria-hidden="true">↓</span></a>
+            </section>
 
-        <section id="cover">
-            <h4 class="section-title">Cover Letter</h4>
-            <div class="card content-block">{{ application.cover_letter|default:'No cover letter provided'|linebreaksbr }}</div>
-        </section>
+            <section class="career-dossier-section">
+                <span class="career-section-kicker">REFERENCE</span>
+                <h3>Referee details</h3>
+                <dl class="career-contact-list">
+                    <div><dt>Name</dt><dd>{{ application.reference_name|default:"Not provided" }}</dd></div>
+                    <div><dt>Phone</dt><dd>{% if application.reference_phone %}<a href="tel:{{ application.reference_phone }}">{{ application.reference_phone }}</a>{% else %}Not provided{% endif %}</dd></div>
+                    <div><dt>Relationship</dt><dd>{{ application.reference_relationship|default:"Not provided" }}</dd></div>
+                </dl>
+            </section>
+        </aside>
 
-        <section>
-            <h4 class="section-title">Experience & Skills</h4>
-            <div class="card">
-                <div class="grid-2">
-                    <div>
-                        <p class="kv-label">Years Experience</p>
-                        <p class="kv-value">{{ application.years_cleaning_experience|default:'0' }}</p>
-                    </div>
-                    <div>
-                        <p class="kv-label">Availability</p>
-                        <p class="kv-value">{{ application.availability_days|default:'—' }}{% if application.availability_hours %}, {{ application.availability_hours }}{% endif %}</p>
-                    </div>
-                </div>
-                {% if application.previous_cleaning_experience %}
-                    <div class="content-block muted" style="margin-top:12px;">{{ application.previous_cleaning_experience|linebreaksbr }}</div>
-                {% endif %}
-            </div>
-        </section>
+        <div class="career-review-main">
+            <section class="career-review-section">
+                <div class="career-section-heading"><div><span class="career-section-kicker">APPLICATION</span><h3>Role and availability</h3></div></div>
+                <dl class="career-fact-grid">
+                    <div><dt>Position</dt><dd>{{ application.get_position_display }}</dd></div>
+                    <div><dt>Employment type</dt><dd>{{ application.get_employment_type_display|default:"Not specified" }}</dd></div>
+                    <div><dt>Preferred start date</dt><dd>{{ application.preferred_start_date|date:"j M Y"|default:"Not specified" }}</dd></div>
+                    <div><dt>Availability days</dt><dd>{{ application.availability_days|default:"Not provided" }}</dd></div>
+                    <div><dt>Availability hours</dt><dd>{{ application.availability_hours|default:"Not provided" }}</dd></div>
+                </dl>
+            </section>
 
-        <section class="admin-panel">
-            <h4>Internal Management</h4>
-            <div class="card">
-                <p><strong>Work Rights:</strong> {{ application.get_work_rights_display }}</p>
-                <p><strong>Drivers License:</strong> {% if application.has_drivers_license %}Yes{% else %}No{% endif %}</p>
-                <p><strong>Vehicle:</strong> {% if application.has_vehicle %}Yes{% else %}No{% endif %}</p>
-            </div>
+            <section class="career-review-section">
+                <div class="career-section-heading"><div><span class="career-section-kicker">ELIGIBILITY</span><h3>Work rights and transport</h3></div></div>
+                <dl class="career-fact-grid">
+                    <div><dt>Work rights</dt><dd>{{ application.get_work_rights_display|default:"Not provided" }}</dd></div>
+                    <div><dt>Work-rights details</dt><dd>{{ application.work_rights_details|default:"Not provided" }}</dd></div>
+                    <div><dt>Driver's licence</dt><dd>{% if application.has_drivers_license %}Yes{% else %}No{% endif %}</dd></div>
+                    <div><dt>Own vehicle</dt><dd>{% if application.has_vehicle %}Yes{% else %}No{% endif %}</dd></div>
+                </dl>
+            </section>
 
-            {% if user.is_staff %}
-            <form method="post" class="admin-form">
-                {% csrf_token %}
-                <label for="status"><strong>Update Status</strong></label>
-                <select name="status" id="status">
-                    <option value="new" {% if application.status == 'new' %}selected{% endif %}>New</option>
-                    <option value="reviewing" {% if application.status == 'reviewing' %}selected{% endif %}>Reviewing</option>
-                    <option value="shortlisted" {% if application.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
-                    <option value="interview" {% if application.status == 'interview' %}selected{% endif %}>Interview</option>
-                    <option value="hired" {% if application.status == 'hired' %}selected{% endif %}>Hired</option>
-                    <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
-                </select>
+            <section class="career-review-section">
+                <div class="career-section-heading"><div><span class="career-section-kicker">EXPERIENCE</span><h3>Skills and work history</h3></div></div>
+                <dl class="career-fact-grid career-fact-grid-compact">
+                    <div><dt>Cleaning experience</dt><dd>{% if application.years_cleaning_experience != None %}{{ application.years_cleaning_experience }} year{{ application.years_cleaning_experience|pluralize }}{% else %}Not provided{% endif %}</dd></div>
+                </dl>
+                <div class="career-long-field"><strong>Previous cleaning experience</strong><p>{{ application.previous_cleaning_experience|default:"No previous experience details provided."|linebreaksbr }}</p></div>
+                <div class="career-long-field"><strong>Skills</strong><p>{{ application.skills|default:"No skills listed."|linebreaksbr }}</p></div>
+            </section>
 
-                <label for="admin_notes"><strong>Admin Notes</strong></label>
-                <textarea name="admin_notes" id="admin_notes" rows="6">{{ application.admin_notes }}</textarea>
+            <section class="career-review-section" id="cover-letter">
+                <div class="career-section-heading"><div><span class="career-section-kicker">CANDIDATE STATEMENT</span><h3>Cover letter</h3></div></div>
+                <div class="career-long-field"><p>{{ application.cover_letter|default:"No cover letter was provided."|linebreaksbr }}</p></div>
+            </section>
 
-                <div class="form-actions">
-                    <button class="btn btn-primary" type="submit" id="save-notify">Save & Notify Applicant</button>
-                    <a class="btn btn-outline" href="{% url 'careers_list' %}" id="back-to-list">Back to list</a>
-                </div>
-            </form>
-            {% else %}
-            <div class="card muted">
-                Internal notes and status management available to staff only.
-            </div>
-            {% endif %}
-        </section>
-
-        <div class="meta small muted">Last updated: {{ application.updated_at }}</div>
-    </main>
-
-</div>
-
+            <section class="career-review-section career-management-section">
+                <div class="career-section-heading"><div><span class="career-section-kicker">STAFF ONLY</span><h3>Recruitment decision</h3><p>Saving notifies the applicant by email.</p></div></div>
+                {% if user.is_staff %}
+                <form method="post" class="career-status-form">
+                    {% csrf_token %}
+                    <label for="status">Application status</label>
+                    <select name="status" id="status">{% for value,label in application.STATUS_CHOICES %}<option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+                    <label for="admin_notes">Internal notes</label>
+                    <textarea name="admin_notes" id="admin_notes" rows="5" placeholder="Add an internal review note">{{ application.admin_notes }}</textarea>
+                    <div class="career-management-actions"><button class="workspace-button" type="submit">Save and notify applicant</button><a class="workspace-button secondary" href="{% url 'careers_list' %}">Back to pipeline</a></div>
+                </form>
+                {% else %}<p class="career-muted">Internal notes and status management are available to staff only.</p>{% endif %}
+            </section>
+            <p class="career-last-updated">Last updated {{ application.updated_at|date:"d M Y · H:i" }}</p>
+        </div>
+    </div>
+</main>
 {% endblock %}

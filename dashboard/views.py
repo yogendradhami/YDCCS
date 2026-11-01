@@ -424,27 +424,59 @@ def dashboard_home(request):
 @admin_required
 def careers_list(request):
     """Dashboard view listing career applications."""
-    applications = CareerApplication.objects.all().order_by("-created_at")
+    all_applications = CareerApplication.objects.all()
+    status = request.GET.get("status", "").strip()
+    position = request.GET.get("position", "").strip()
+    search = request.GET.get("q", "").strip()[:100]
+    sort = request.GET.get("sort", "newest").strip()
+    page_size = request.GET.get("page_size", "25").strip()
 
-    # Filtering
-    status = request.GET.get("status")
-    position = request.GET.get("position")
-    q = request.GET.get("q")
+    filters = {
+        "status": status if status in dict(CareerApplication.STATUS_CHOICES) else "",
+        "position": position if position in dict(CareerApplication.POSITION_CHOICES) else "",
+        "q": search,
+        "sort": sort if sort in {"newest", "oldest"} else "newest",
+        "page_size": page_size if page_size in {"10", "25", "50"} else "25",
+    }
 
-    if status:
-        applications = applications.filter(status=status)
-    if position:
-        applications = applications.filter(position=position)
-
-    if q:
+    applications = all_applications
+    if filters["status"]:
+        applications = applications.filter(status=filters["status"])
+    if filters["position"]:
+        applications = applications.filter(position=filters["position"])
+    if search:
         applications = applications.filter(
-            Q(full_name__icontains=q)
-            | Q(email__icontains=q)
-            | Q(phone__icontains=q)
-            | Q(suburb__icontains=q)
+            Q(full_name__icontains=search)
+            | Q(email__icontains=search)
+            | Q(phone__icontains=search)
+            | Q(suburb__icontains=search)
         )
 
-    context = {"applications": applications, "filter_status": status, "filter_position": position, "q": q}
+    ordering = ("-created_at", "-pk") if filters["sort"] == "newest" else ("created_at", "pk")
+    paginator = Paginator(applications.order_by(*ordering), int(filters["page_size"]))
+    page_obj = paginator.get_page(request.GET.get("page"))
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    status_counts = {
+        row["status"]: row["total"]
+        for row in all_applications.values("status").annotate(total=Count("pk"))
+    }
+
+    context = {
+        "applications": page_obj.object_list,
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "filters": filters,
+        "filter_status": filters["status"],
+        "filter_position": filters["position"],
+        "q": filters["q"],
+        "status_choices": CareerApplication.STATUS_CHOICES,
+        "position_choices": CareerApplication.POSITION_CHOICES,
+        "status_counts": status_counts,
+        "total_count": all_applications.count(),
+        "filtered_count": paginator.count,
+        "pagination_query": urlencode(query_params, doseq=True),
+    }
     return render(request, "dashboard/careers_list.html", context)
 
 @admin_required
@@ -3357,10 +3389,66 @@ def employee_performance(request):
 
 @login_required
 def activity_log_list(request):
+    action_type = request.GET.get("action", "").strip()
+    search = request.GET.get("q", "").strip()[:100]
+    date_from_raw = request.GET.get("date_from", "").strip()
+    date_to_raw = request.GET.get("date_to", "").strip()
+    date_from = parse_date(date_from_raw) if date_from_raw else None
+    date_to = parse_date(date_to_raw) if date_to_raw else None
+    sort = request.GET.get("sort", "newest").strip()
+    page_size = request.GET.get("page_size", "25").strip()
 
-    activities = ActivityLog.objects.select_related("user").all()[:200]
+    filters = {
+        "action": action_type if action_type in dict(ActivityLog.ACTION_TYPES) else "",
+        "q": search,
+        "date_from": date_from.isoformat() if date_from else "",
+        "date_to": date_to.isoformat() if date_to else "",
+        "sort": sort if sort in {"newest", "oldest"} else "newest",
+        "page_size": page_size if page_size in {"10", "25", "50"} else "25",
+    }
 
-    return render(request, "dashboard/core/activity_log.html", {"activities": activities})
+    activities = ActivityLog.objects.select_related("user")
+    if filters["action"]:
+        activities = activities.filter(action_type=filters["action"])
+    if search:
+        activities = activities.filter(
+            Q(title__icontains=search)
+            | Q(description__icontains=search)
+            | Q(user__username__icontains=search)
+            | Q(user__first_name__icontains=search)
+            | Q(user__last_name__icontains=search)
+        )
+    if date_from:
+        activities = activities.filter(created_at__date__gte=date_from)
+    if date_to:
+        activities = activities.filter(created_at__date__lte=date_to)
+
+    ordering = ("-created_at", "-pk") if filters["sort"] == "newest" else ("created_at", "pk")
+    paginator = Paginator(activities.order_by(*ordering), int(filters["page_size"]))
+    page_obj = paginator.get_page(request.GET.get("page"))
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+
+    return render(
+        request,
+        "dashboard/core/activity_log.html",
+        {
+            "activities": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "filters": filters,
+            "action_choices": ActivityLog.ACTION_TYPES,
+            "pagination_query": urlencode(query_params, doseq=True),
+            "filtered_count": paginator.count,
+            "total_count": ActivityLog.objects.count(),
+            "actor_count": (
+                ActivityLog.objects.exclude(user__isnull=True)
+                .values("user_id")
+                .distinct()
+                .count()
+            ),
+        },
+    )
 
 
 # ==========================================================
@@ -4101,9 +4189,62 @@ def send_quote_followup(request, quote_id):
 
 @login_required
 def email_log_list(request):
-    email_logs = EmailLog.objects.select_related("sent_by").all()[:200]
+    email_type = request.GET.get("type", "").strip()
+    search = request.GET.get("q", "").strip()[:100]
+    date_from_raw = request.GET.get("date_from", "").strip()
+    date_to_raw = request.GET.get("date_to", "").strip()
+    date_from = parse_date(date_from_raw) if date_from_raw else None
+    date_to = parse_date(date_to_raw) if date_to_raw else None
+    sort = request.GET.get("sort", "newest").strip()
+    page_size = request.GET.get("page_size", "25").strip()
 
-    return render(request, "dashboard/communications/email_log_list.html", {"email_logs": email_logs})
+    filters = {
+        "type": email_type if email_type in dict(EmailLog.EMAIL_TYPES) else "",
+        "q": search,
+        "date_from": date_from.isoformat() if date_from else "",
+        "date_to": date_to.isoformat() if date_to else "",
+        "sort": sort if sort in {"newest", "oldest"} else "newest",
+        "page_size": page_size if page_size in {"10", "25", "50"} else "25",
+    }
+
+    email_logs = EmailLog.objects.select_related("sent_by")
+    if filters["type"]:
+        email_logs = email_logs.filter(email_type=filters["type"])
+    if search:
+        email_logs = email_logs.filter(
+            Q(recipient_name__icontains=search)
+            | Q(recipient_email__icontains=search)
+            | Q(subject__icontains=search)
+            | Q(related_object__icontains=search)
+            | Q(sent_by__username__icontains=search)
+            | Q(sent_by__first_name__icontains=search)
+            | Q(sent_by__last_name__icontains=search)
+        )
+    if date_from:
+        email_logs = email_logs.filter(sent_at__date__gte=date_from)
+    if date_to:
+        email_logs = email_logs.filter(sent_at__date__lte=date_to)
+
+    ordering = ("-sent_at", "-pk") if filters["sort"] == "newest" else ("sent_at", "pk")
+    paginator = Paginator(email_logs.order_by(*ordering), int(filters["page_size"]))
+    page_obj = paginator.get_page(request.GET.get("page"))
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+
+    return render(
+        request,
+        "dashboard/communications/email_log_list.html",
+        {
+            "email_logs": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "filters": filters,
+            "email_type_choices": EmailLog.EMAIL_TYPES,
+            "pagination_query": urlencode(query_params, doseq=True),
+            "filtered_count": paginator.count,
+            "total_count": EmailLog.objects.count(),
+        },
+    )
 
 
 @login_required

@@ -1,14 +1,90 @@
 {% extends 'dashboard_base.html' %}
 
-{% block title %}Manage Positions | YD Dashboard{% endblock %}
-{% block page_title %}Positions & Permissions{% endblock %}
-{% block page_subtitle %}Each position is a Django group with assigned model permissions.{% endblock %}
+{% block title %}Access Control | YD Dashboard{% endblock %}
+{% block page_title %}Access Control{% endblock %}
+{% block page_subtitle %}Review role permissions and keep dashboard access aligned with least privilege.{% endblock %}
 
 {% block content %}
-<style>
-.role-page{max-width:1100px;margin:0 auto}.role-card{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:20px;margin-bottom:15px}.role-card h3{margin:0 0 8px}.role-card p{color:#64748b;margin:0 0 14px}.role-button{display:inline-block;padding:9px 13px;border-radius:8px;background:#0f766e;color:#fff;text-decoration:none;font-weight:800}.role-perms{display:flex;gap:7px;flex-wrap:wrap}.role-perms span{padding:4px 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:12px}
-</style>
-<div class="role-page"><p><a class="role-button" href="{% url 'security_position_create' %}">Create Position</a> <a class="role-button" href="{% url 'security_user_list' %}">Back to Users</a></p>
-{% for position in positions %}<section class="role-card"><h3>{{ position.name }}</h3><p>{{ position.user_set.count }} assigned user{{ position.user_set.count|pluralize }}</p><div class="role-perms">{% for permission in position.permissions.all %}<span>{{ permission.content_type.app_label }}.{{ permission.codename }}</span>{% empty %}<span>No permissions assigned</span>{% endfor %}</div><p style="margin-top:14px"><a class="role-button" href="{% url 'security_position_edit' position.id %}">Edit Permissions</a></p></section>{% empty %}<section class="role-card">No positions are configured yet.</section>{% endfor %}
+<div class="workspace-page">
+	<section class="workspace-toolbar">
+		<div><h2>Roles and access boundaries</h2><p>Permissions grant access to specific dashboard data and actions. Give each role only what its work requires.</p></div>
+		<div class="workspace-actions">
+			{% if can_manage_roles %}<a class="workspace-button" href="{% url 'security_position_create' %}">Create role</a>{% endif %}
+			<a class="workspace-button secondary" href="{% url 'security_user_list' %}">Review users</a>
+		</div>
+	</section>
+
+	<aside class="security-access-note" aria-label="Security guidance">
+		<span class="security-access-mark" aria-hidden="true">!</span>
+		<p><strong>Access control</strong><br>Changes to a role apply to every user assigned to it. System administrator roles are protected from editing by non-superusers.</p>
+	</aside>
+
+	<section class="workspace-stats" aria-label="Role access summary">
+		<div class="workspace-stat"><span>Roles configured</span><strong>{{ positions|length }}</strong></div>
+		<div class="workspace-stat"><span>Roles editable by you</span><strong>{{ editable_position_count }}</strong></div>
+		<div class="workspace-stat"><span>Protected roles</span><strong>{{ protected_position_count }}</strong></div>
+	</section>
+
+	<section class="workspace-panel security-role-tools">
+		<label class="security-role-search" for="rolePermissionSearch">Search roles and permissions
+			<input id="rolePermissionSearch" type="search" autocomplete="off" placeholder="Search by role, app, or permission">
+		</label>
+		<span id="roleSearchCount" class="workspace-panel-note" aria-live="polite">{{ positions|length }} roles</span>
+	</section>
+
+	<div class="workspace-role-list" id="securityRoleList">
+		{% for role in positions %}
+		<section class="workspace-panel workspace-role" data-role-row data-search="{{ role.group.name|lower }} {% for permission in role.permissions %}{{ permission.content_type.app_label|lower }} {{ permission.name|lower }} {{ permission.codename|lower }}{% endfor %}">
+			<div class="workspace-role-heading">
+				<div>
+					<div class="security-role-title"><h2>{{ role.group.name }}</h2>{% if role.protected %}<span class="workspace-badge warning">Protected role</span>{% else %}<span class="workspace-badge neutral">Custom role</span>{% endif %}</div>
+					<p class="workspace-panel-note">{{ role.user_count }} assigned user{{ role.user_count|pluralize }} · {{ role.permissions|length }} permission{{ role.permissions|length|pluralize }}</p>
+				</div>
+				{% if can_manage_roles and not role.protected %}
+					<a class="workspace-button secondary" href="{% url 'security_position_edit' role.group.id %}">Edit permissions</a>
+				{% elif role.protected %}
+					<span class="workspace-readonly-label">Read only · elevated access</span>
+				{% else %}
+					<span class="workspace-readonly-label">View only</span>
+				{% endif %}
+			</div>
+
+			{% if role.permissions %}
+				{% regroup role.permissions by content_type.app_label as permission_apps %}
+				<div class="security-permission-groups">
+					{% for app in permission_apps %}
+					<details class="security-permission-group">
+						<summary><span>{{ app.grouper|title }}</span><span>{{ app.list|length }} permission{{ app.list|length|pluralize }}</span></summary>
+						<ul>{% for permission in app.list %}<li><strong>{{ permission.name }}</strong><small class="security-permission-code">{{ permission.content_type.app_label }}.{{ permission.codename }}</small></li>{% endfor %}</ul>
+					</details>
+					{% endfor %}
+				</div>
+			{% else %}
+				<p class="security-no-permissions">No permissions are assigned. Users in this role have no model-level access.</p>
+			{% endif %}
+		</section>
+		{% empty %}<section class="workspace-panel workspace-empty">No roles are configured yet.</section>{% endfor %}
+		<p id="securityRolesEmpty" class="workspace-empty" hidden>No roles match this search.</p>
+	</div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	const search = document.getElementById("rolePermissionSearch");
+	const count = document.getElementById("roleSearchCount");
+	const empty = document.getElementById("securityRolesEmpty");
+	const roles = Array.from(document.querySelectorAll("[data-role-row]"));
+	if (!search || !count || !empty) return;
+	search.addEventListener("input", function () {
+		const query = search.value.trim().toLocaleLowerCase();
+		let visible = 0;
+		roles.forEach(function (role) {
+			const matches = role.dataset.search.includes(query);
+			role.hidden = !matches;
+			if (matches) visible += 1;
+		});
+		count.textContent = visible + (visible === 1 ? " role" : " roles");
+		empty.hidden = visible !== 0;
+	});
+});
+</script>
 {% endblock %}

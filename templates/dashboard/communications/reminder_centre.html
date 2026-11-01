@@ -1,71 +1,89 @@
 {% extends "dashboard_base.html" %}
 
+{% block title %}Reminder Centre | YD Dashboard{% endblock %}
+{% block page_title %}Reminder Centre{% endblock %}
+{% block page_subtitle %}Operational items that need attention across equipment, stock, vehicles and contracts.{% endblock %}
+
+{% block extra_css %}
+<style>
+.reminder-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.reminder-stat{padding:16px 18px;border:1px solid #dce5e4;border-top:3px solid #16766e;border-radius:8px;background:#fff}
+.reminder-stat span{display:block;color:#53656a;font-size:12px;font-weight:700}
+.reminder-stat strong{display:block;margin-top:8px;color:#18323a;font-size:26px;line-height:1}
+.reminder-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,390px),1fr));gap:14px}
+.reminder-section{min-width:0;padding:18px;border:1px solid #dce5e4;border-radius:8px;background:#fff}
+.reminder-section header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:13px;border-bottom:1px solid #e8eeee}
+.reminder-section h2{margin:0;color:#18323a;font-size:16px}
+.reminder-count{flex:0 0 auto;padding:3px 8px;border-radius:999px;background:#edf5f3;color:#176b63;font-size:12px;font-weight:800}
+.reminder-items{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.reminder-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #edf1f0}
+.reminder-row:last-child{border-bottom:0}
+.reminder-row strong{display:block;color:#22383d;font-size:13px}
+.reminder-row small{display:block;margin-top:4px;color:#69797d;font-size:12px}
+.reminder-row a,.reminder-section header a{flex:0 0 auto;color:#126d66;font-size:12px;font-weight:800;text-decoration:none}
+.reminder-row a:hover,.reminder-section header a:hover{text-decoration:underline}
+.reminder-empty{margin:0;padding:17px 0 2px;color:#69797d;font-size:13px}
+@media(max-width:540px){.reminder-section{padding:15px}.reminder-row{align-items:flex-start}.reminder-row a{white-space:nowrap}}
+</style>
+{% endblock %}
+
 {% block content %}
+<section class="reminder-overview" aria-label="Reminder totals">
+    <div class="reminder-stat"><span>Equipment service</span><strong>{{ overdue_equipment|length }}</strong></div>
+    <div class="reminder-stat"><span>Low stock</span><strong>{{ low_stock_supplies|length }}</strong></div>
+    <div class="reminder-stat"><span>Draft orders</span><strong>{{ draft_purchase_orders|length }}</strong></div>
+    <div class="reminder-stat"><span>Vehicle service</span><strong>{{ vehicle_alerts|length }}</strong></div>
+    <div class="reminder-stat"><span>Maintenance due</span><strong>{{ maintenance_due|length }}</strong></div>
+    <div class="reminder-stat"><span>Contracts expiring</span><strong>{{ contracts_expiring|length }}</strong></div>
+</section>
 
-<div class="dashboard-card">
+<div class="reminder-list">
+    <section class="reminder-section">
+        <header><h2>Equipment service overdue</h2><span class="reminder-count">{{ overdue_equipment|length }}</span></header>
+        <ul class="reminder-items">
+            {% for item in overdue_equipment %}<li class="reminder-row"><div><strong>{{ item.name }}</strong><small>Service due {{ item.next_service_date|date:"d M Y" }}</small></div><a href="{% url 'equipment_list' %}">View equipment</a></li>
+            {% empty %}<li class="reminder-empty">No equipment service is overdue.</li>{% endfor %}
+        </ul>
+    </section>
 
-    <h1>Reminder Centre</h1>
+    <section class="reminder-section">
+        <header><h2>Low stock supplies</h2><span class="reminder-count">{{ low_stock_supplies|length }}</span></header>
+        <ul class="reminder-items">
+            {% for item in low_stock_supplies %}<li class="reminder-row"><div><strong>{{ item.name }}</strong><small>{{ item.current_stock }} {{ item.get_unit_display }} remaining · minimum {{ item.minimum_stock }}</small></div><a href="{% url 'supplies_list' %}">View supplies</a></li>
+            {% empty %}<li class="reminder-empty">All supplies are above their minimum stock levels.</li>{% endfor %}
+        </ul>
+    </section>
 
+    <section class="reminder-section">
+        <header><h2>Draft purchase orders</h2><span class="reminder-count">{{ draft_purchase_orders|length }}</span></header>
+        <ul class="reminder-items">
+            {% for item in draft_purchase_orders %}<li class="reminder-row"><div><strong>PO #{{ item.id }} · {{ item.supply.name }}</strong><small>{{ item.supplier_name }} · {{ item.quantity }} {{ item.supply.get_unit_display }}</small></div><a href="{% url 'purchase_orders' %}">View orders</a></li>
+            {% empty %}<li class="reminder-empty">There are no draft purchase orders.</li>{% endfor %}
+        </ul>
+    </section>
+
+    <section class="reminder-section">
+        <header><h2>Vehicle service due</h2><span class="reminder-count">{{ vehicle_alerts|length }}</span></header>
+        <ul class="reminder-items">
+            {% for item in vehicle_alerts %}<li class="reminder-row"><div><strong>{{ item.vehicle_name }} · {{ item.registration_number }}</strong><small>Service due {{ item.service_due_date|date:"d M Y" }}</small></div><a href="{% url 'vehicle_list' %}">View vehicles</a></li>
+            {% empty %}<li class="reminder-empty">No vehicle services are overdue.</li>{% endfor %}
+        </ul>
+    </section>
+
+    <section class="reminder-section">
+        <header><h2>Maintenance follow-up</h2><span class="reminder-count">{{ maintenance_due|length }}</span></header>
+        <ul class="reminder-items">
+            {% for item in maintenance_due %}<li class="reminder-row"><div><strong>{{ item.asset_name }}</strong><small>{{ item.get_asset_type_display }} · next service {{ item.next_service_date|date:"d M Y" }}</small></div><a href="{% url 'maintenance_list' %}">View maintenance</a></li>
+            {% empty %}<li class="reminder-empty">No maintenance follow-ups are due.</li>{% endfor %}
+        </ul>
+    </section>
+
+    <section class="reminder-section">
+        <header><h2>Contracts expiring soon</h2><span class="reminder-count">{{ contracts_expiring|length }}</span></header>
+        <ul class="reminder-items">
+            {% for item in contracts_expiring %}<li class="reminder-row"><div><strong>{{ item.customer.full_name }} · {{ item.service_type }}</strong><small>Ends {{ item.end_date|date:"d M Y" }} · {{ item.get_frequency_display }}</small></div><a href="{% url 'contract_list' %}">View contracts</a></li>
+            {% empty %}<li class="reminder-empty">No contracts are expiring in the next 30 days.</li>{% endfor %}
+        </ul>
+    </section>
 </div>
-
-<div class="dashboard-card">
-
-    <h3>Overdue Equipment</h3>
-
-    {% for item in overdue_equipment %}
-        <p>{{ item.name }}</p>
-    {% empty %}
-        <p>No overdue equipment.</p>
-    {% endfor %}
-
-</div>
-
-<div class="dashboard-card">
-
-    <h3>Low Stock Supplies</h3>
-
-    {% for item in low_stock_supplies %}
-        <p>{{ item.name }}</p>
-    {% empty %}
-        <p>No low stock supplies.</p>
-    {% endfor %}
-
-</div>
-
-<div class="dashboard-card">
-
-    <h3>Draft Purchase Orders</h3>
-
-    {% for item in draft_purchase_orders %}
-        <p>PO #{{ item.id }}</p>
-    {% empty %}
-        <p>No draft purchase orders.</p>
-    {% endfor %}
-
-</div>
-
-<div class="dashboard-card">
-
-    <h3>Vehicle Alerts</h3>
-
-    {% for item in vehicle_alerts %}
-        <p>{{ item.vehicle_name }}</p>
-    {% empty %}
-        <p>No vehicle alerts.</p>
-    {% endfor %}
-
-</div>
-
-<div class="dashboard-card">
-
-    <h3>Maintenance Due</h3>
-
-    {% for item in maintenance_due %}
-        <p>{{ item.asset_name }}</p>
-    {% empty %}
-        <p>No maintenance due.</p>
-    {% endfor %}
-
-</div>
-
 {% endblock %}

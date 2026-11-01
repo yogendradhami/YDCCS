@@ -10,43 +10,19 @@ Manage customer support tickets, complaints, service requests and live website c
 
 
 {% block content %}
+<div class="workspace-page support-workspace">
 
 <!-- =====================================================
      SUPPORT SUMMARY
 ===================================================== -->
 
-<section class="crm-summary-grid">
-
-    <div class="crm-card">
-        <span>Total Tickets</span>
-        <h2>{{ tickets.count }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Open</span>
-        <h2>{{ open_tickets }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>In Progress</span>
-        <h2>{{ in_progress_tickets }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Urgent</span>
-        <h2>{{ urgent_tickets }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Resolved</span>
-        <h2>{{ resolved_tickets }}</h2>
-    </div>
-
-    <div class="crm-card">
-        <span>Closed</span>
-        <h2>{{ closed_tickets }}</h2>
-    </div>
-
+<section class="support-ticket-metrics" aria-label="Support ticket summary">
+    <article class="support-ticket-metric"><span>All tickets</span><strong>{{ tickets.count }}</strong><small>Across every status</small></article>
+    <article class="support-ticket-metric"><span>Open</span><strong>{{ open_tickets }}</strong><small>Awaiting action</small></article>
+    <article class="support-ticket-metric"><span>In progress</span><strong>{{ in_progress_tickets }}</strong><small>Being handled</small></article>
+    <article class="support-ticket-metric is-urgent"><span>Urgent</span><strong>{{ urgent_tickets }}</strong><small>Priority response</small></article>
+    <article class="support-ticket-metric"><span>Resolved</span><strong>{{ resolved_tickets }}</strong><small>Marked complete</small></article>
+    <article class="support-ticket-metric"><span>Closed</span><strong>{{ closed_tickets }}</strong><small>Archived requests</small></article>
 </section>
 
 
@@ -54,76 +30,11 @@ Manage customer support tickets, complaints, service requests and live website c
      LIVE CHAT SUMMARY
 ===================================================== -->
 
-<section class="live-chat-summary-grid">
-
-    <div class="live-chat-stat waiting">
-
-        <div class="live-chat-stat-icon">
-            💬
-        </div>
-
-        <div class="chat-list-status">
-            <span>Waiting Chats</span>
-
-            <strong id="waiting-chat-count">
-                {{ waiting_chats }}
-            </strong>
-        </div>
-
-    </div>
-
-
-    <div class="live-chat-stat active">
-
-        <div class="live-chat-stat-icon">
-            🟢
-        </div>
-
-        <div>
-            <span>Active Chats</span>
-
-            <strong id="active-chat-count">
-                {{ active_chats }}
-            </strong>
-        </div>
-
-    </div>
-
-
-    <div class="live-chat-stat closed">
-
-        <div class="live-chat-stat-icon">
-            🔴
-        </div>
-
-        <div>
-            <span>Closed Chats</span>
-
-            <strong id="closed-chat-count">
-                {{ closed_chats }}
-            </strong>
-        </div>
-
-    </div>
-
-
-    <div class="live-chat-stat total">
-
-        <div class="live-chat-stat-icon">
-            💬
-        </div>
-
-        <div>
-            <span>Total Live Chats</span>
-
-            <strong id="total-live-chat-count">
-                {{ total_live_chats }}
-            </strong>
-        </div>
-
-    </div>
-
-
+<section class="live-chat-summary-grid" aria-label="Live chat summary">
+    <div class="live-chat-stat waiting"><span class="live-chat-stat-icon" aria-hidden="true"></span><div><span>Waiting</span><strong id="waiting-chat-count">{{ waiting_chats }}</strong></div></div>
+    <div class="live-chat-stat active"><span class="live-chat-stat-icon" aria-hidden="true"></span><div><span>Active</span><strong id="active-chat-count">{{ active_chats }}</strong></div></div>
+    <div class="live-chat-stat closed"><span class="live-chat-stat-icon" aria-hidden="true"></span><div><span>Closed</span><strong id="closed-chat-count">{{ closed_chats }}</strong></div></div>
+    <div class="live-chat-stat total"><span class="live-chat-stat-icon" aria-hidden="true"></span><div><span>Total conversations</span><strong id="total-live-chat-count">{{ total_live_chats }}</strong></div></div>
 </section>
 
 
@@ -135,14 +46,8 @@ Manage customer support tickets, complaints, service requests and live website c
 
 <section class="support-alert-panel">
 
-    <h3>
-        Urgent Support Attention Needed
-    </h3>
-
-    <p>
-        You currently have {{ urgent_tickets }} urgent ticket(s).
-        Please review them as soon as possible.
-    </p>
+    <div><h3>Urgent tickets need attention</h3><p>{{ urgent_tickets }} urgent request{{ urgent_tickets|pluralize }} require a response.</p></div>
+    <a href="#recent-support-tickets">Review urgent tickets <span aria-hidden="true">→</span></a>
 
 </section>
 
@@ -164,13 +69,9 @@ Manage customer support tickets, complaints, service requests and live website c
 
         <div>
 
-            <h2>
-                💬 Website Live Chat
-            </h2>
-
-            <p>
-                Monitor visitors and respond to customers in real time.
-            </p>
+            <span class="support-section-kicker">REAL-TIME INBOX</span>
+            <h2>Website live chat</h2>
+            <p>Monitor visitor conversations, route them to an agent, and reply in real time.</p>
 
         </div>
 
@@ -237,9 +138,7 @@ Manage customer support tickets, complaints, service requests and live website c
                     data-chat-id="{{ chat.id }}"
                 >
 
-                    <div class="chat-avatar">
-                        👤
-                    </div>
+                    <div class="chat-avatar" aria-hidden="true">{{ chat.name|default:"Visitor"|slice:":1"|upper }}</div>
 
 
                     <div class="chat-list-content">
@@ -483,19 +382,15 @@ Manage customer support tickets, complaints, service requests and live website c
      RECENT SUPPORT TICKETS
 ===================================================== -->
 
-<section class="crm-panel">
+<section class="crm-panel support-ticket-panel" id="recent-support-tickets">
 
     <div class="crm-panel-header">
 
         <div>
 
-            <h2>
-                Recent Support Tickets
-            </h2>
-
-            <p>
-                Latest customer support requests submitted through the customer portal.
-            </p>
+            <span class="support-section-kicker">TICKET QUEUE</span>
+            <h2>Recent support tickets</h2>
+            <p>Latest customer requests · {{ recent_tickets|length }} shown</p>
 
         </div>
 
@@ -504,9 +399,9 @@ Manage customer support tickets, complaints, service requests and live website c
 
     {% if recent_tickets %}
 
-    <div class="table-wrapper">
+    <div class="workspace-table-wrap">
 
-        <table class="dashboard-table advanced-table">
+        <table class="workspace-table support-ticket-table">
 
             <thead>
 
@@ -529,9 +424,7 @@ Manage customer support tickets, complaints, service requests and live website c
 
                 <tr>
 
-                    <td>
-                        {{ ticket.customer.full_name }}
-                    </td>
+                    <td><strong>{{ ticket.customer.full_name }}</strong></td>
 
 
                     <td>
@@ -542,9 +435,7 @@ Manage customer support tickets, complaints, service requests and live website c
 
                         <br>
 
-                        <small>
-                            {{ ticket.message|truncatechars:80 }}
-                        </small>
+                        <small>{{ ticket.message|truncatechars:90 }}</small>
 
                     </td>
 
@@ -553,25 +444,25 @@ Manage customer support tickets, complaints, service requests and live website c
 
                         {% if ticket.priority == "urgent" %}
 
-                            <span class="badge-danger">
+                            <span class="workspace-badge danger">
                                 Urgent
                             </span>
 
                         {% elif ticket.priority == "high" %}
 
-                            <span class="badge-warning">
+                            <span class="workspace-badge warning">
                                 High
                             </span>
 
                         {% elif ticket.priority == "medium" %}
 
-                            <span class="badge-primary">
+                            <span class="workspace-badge neutral">
                                 Medium
                             </span>
 
                         {% else %}
 
-                            <span class="badge-success">
+                            <span class="workspace-badge">
                                 Low
                             </span>
 
@@ -584,25 +475,25 @@ Manage customer support tickets, complaints, service requests and live website c
 
                         {% if ticket.status == "resolved" %}
 
-                            <span class="badge-success">
+                            <span class="workspace-badge">
                                 Resolved
                             </span>
 
                         {% elif ticket.status == "in_progress" %}
 
-                            <span class="badge-warning">
+                            <span class="workspace-badge warning">
                                 In Progress
                             </span>
 
                         {% elif ticket.status == "closed" %}
 
-                            <span class="badge-danger">
+                            <span class="workspace-badge danger">
                                 Closed
                             </span>
 
                         {% else %}
 
-                            <span class="badge-primary">
+                            <span class="workspace-badge neutral">
                                 Open
                             </span>
 
@@ -620,9 +511,7 @@ Manage customer support tickets, complaints, service requests and live website c
                         {{ ticket.updated_at|date:"d M Y" }}
                     </td>
 
-                    <td>
-                        <a href="{% url 'ticket_detail' ticket.id %}" class="primary-btn">Manage</a>
-                    </td>
+                    <td><a href="{% url 'ticket_detail' ticket.id %}" class="workspace-button secondary">Open ticket</a></td>
 
                 </tr>
 
@@ -636,62 +525,22 @@ Manage customer support tickets, complaints, service requests and live website c
 
     {% else %}
 
-    <div class="empty-box">
-
-        <h3>
-            No Support Tickets Yet
-        </h3>
-
-        <p>
-            Customer support requests will appear here.
-        </p>
-
-    </div>
+    <div class="support-ticket-empty"><strong>No support tickets yet</strong><p>Customer portal requests will appear here.</p></div>
 
     {% endif %}
 
 </section>
 
-
-<!-- =====================================================
-     PRIORITY OVERVIEW
-===================================================== -->
-
-<section class="crm-panel">
-
-    <div class="crm-panel-header">
-
-        <h2>
-            Support Priority Overview
-        </h2>
-
+<section class="crm-panel support-priority-panel" aria-labelledby="supportPriorityHeading">
+    <header class="crm-panel-header">
+        <div><span class="support-section-kicker">WORKLOAD</span><h2 id="supportPriorityHeading">Support priority overview</h2><p>Ticket counts by urgency and workflow state.</p></div>
+    </header>
+    <div class="support-priority-grid">
+        <div class="support-priority-item is-urgent"><span>Urgent tickets</span><strong>{{ urgent_tickets }}</strong></div>
+        <div class="support-priority-item is-high"><span>High priority</span><strong>{{ high_tickets }}</strong></div>
+        <div class="support-priority-item is-open"><span>Open tickets</span><strong>{{ open_tickets }}</strong></div>
+        <div class="support-priority-item is-resolved"><span>Resolved</span><strong>{{ resolved_tickets }}</strong></div>
     </div>
-
-
-    <div class="support-grid">
-
-        <div class="support-mini-card urgent">
-            <span>Urgent Tickets</span>
-            <strong>{{ urgent_tickets }}</strong>
-        </div>
-
-        <div class="support-mini-card high">
-            <span>High Priority</span>
-            <strong>{{ high_tickets }}</strong>
-        </div>
-
-        <div class="support-mini-card open">
-            <span>Open Tickets</span>
-            <strong>{{ open_tickets }}</strong>
-        </div>
-
-        <div class="support-mini-card resolved">
-            <span>Resolved</span>
-            <strong>{{ resolved_tickets }}</strong>
-        </div>
-
-    </div>
-
 </section>
 
 
@@ -2476,7 +2325,7 @@ Manage customer support tickets, complaints, service requests and live website c
 
             const avatar = document.createElement("span");
             avatar.className = "chat-avatar";
-            avatar.textContent = "👤";
+            avatar.textContent = (chat.name || "V").trim().charAt(0).toUpperCase();
             const content = document.createElement("span");
             content.className = "chat-list-content";
             const name = document.createElement("strong");
@@ -2845,4 +2694,5 @@ Manage customer support tickets, complaints, service requests and live website c
 
 </script>
 
+</div>
 {% endblock %}

@@ -497,10 +497,46 @@ def user_access_action(request, user_id, action):
 def position_list(request):
     if not _can_manage_users(request.user):
         return _forbidden(request)
+    can_manage_roles = _can_manage_roles(request.user)
+    positions = []
+    for group in Group.objects.prefetch_related("permissions__content_type").order_by("name"):
+        permissions = sorted(
+            group.permissions.all(),
+            key=lambda permission: (
+                permission.content_type.app_label,
+                permission.name.casefold(),
+            ),
+        )
+        protected = not request.user.is_superuser and (
+            group.name == "Administrator"
+            or any(
+                permission.content_type.app_label == "security"
+                and permission.codename == "manage_security_roles"
+                for permission in permissions
+            )
+        )
+        positions.append(
+            {
+                "group": group,
+                "permissions": permissions,
+                "user_count": group.user_set.count(),
+                "protected": protected,
+            }
+        )
     return render(
         request,
         "security/position_list.html",
-        {"positions": Group.objects.prefetch_related("permissions").order_by("name")},
+        {
+            "positions": positions,
+            "can_manage_roles": can_manage_roles,
+            "editable_position_count": sum(
+                can_manage_roles and not position["protected"]
+                for position in positions
+            ),
+            "protected_position_count": sum(
+                position["protected"] for position in positions
+            ),
+        },
     )
 
 
@@ -530,10 +566,30 @@ def position_edit(request, position_id=None):
             return redirect("security_position_list")
     else:
         form = PositionForm(instance=position, user=request.user)
+
+    grouped_permissions = {}
+    for permission in form.fields["permissions"].queryset.select_related("content_type"):
+        app_label = permission.content_type.app_label
+        if app_label not in grouped_permissions:
+            grouped_permissions[app_label] = {
+                "label": app_label.replace("_", " ").title(),
+                "permissions": [],
+            }
+        grouped_permissions[app_label]["permissions"].append(permission)
+
+    selected_values = form["permissions"].value() or []
+    selected_permission_ids = {
+        str(getattr(value, "pk", value)) for value in selected_values
+    }
     return render(
         request,
         "security/position_form.html",
-        {"form": form, "position": position},
+        {
+            "form": form,
+            "position": position,
+            "permission_groups": grouped_permissions.values(),
+            "selected_permission_ids": selected_permission_ids,
+        },
     )
 
 

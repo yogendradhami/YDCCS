@@ -3,194 +3,56 @@
 {% block title %}
 Company Settings
 {% endblock %}
+{% block page_title %}Company Settings{% endblock %}
+{% block page_subtitle %}Manage business information, brand assets, social channels and invoice defaults.{% endblock %}
 
 {% block content %}
-
-<!-- ===================================================== -->
-<!-- Company Settings Page -->
-<!-- ===================================================== -->
-
-<div class="dashboard-card">
-
-    <div style="margin-bottom:30px;">
-        <h1>Company Settings</h1>
-        <p>
-            Manage business information, branding,
-            social media and invoice settings.
-        </p>
-    </div>
-
-    <!-- Success Messages -->
-
-    <form method="POST" enctype="multipart/form-data">
-
-        {% csrf_token %}
-
-        <!-- ================================================= -->
-        <!-- Business Information -->
-        <!-- ================================================= -->
-
-        <div class="dashboard-card" style="margin-bottom:25px;">
-
-            <h2>Business Information</h2>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>Business Name</label>
-                    {{ form.business_name }}
+<div class="workspace-page">
+    <section class="workspace-panel">
+        <form method="post" enctype="multipart/form-data" class="workspace-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <section class="workspace-form-section">
+                <h2>Business information</h2>
+                <div class="workspace-form-grid">
+                    <div class="workspace-form-field"><label for="{{ form.business_name.id_for_label }}">Business name</label>{{ form.business_name }}{{ form.business_name.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.abn.id_for_label }}">ABN</label>{{ form.abn }}{{ form.abn.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.phone.id_for_label }}">Phone</label>{{ form.phone }}{{ form.phone.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.email.id_for_label }}">Email</label>{{ form.email }}{{ form.email.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.website.id_for_label }}">Website</label>{{ form.website }}{{ form.website.errors }}</div>
+                    <div class="workspace-form-field wide"><label for="{{ form.address.id_for_label }}">Business address</label>{{ form.address }}{{ form.address.errors }}</div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    <label>ABN</label>
-                    {{ form.abn }}
+            <section class="workspace-form-section">
+                <h2>Brand assets</h2>
+                <div class="workspace-form-grid">
+                    <div class="workspace-form-field"><label for="{{ form.logo.id_for_label }}">Company logo</label>{% if settings.logo %}<img class="workspace-brand-preview" src="{{ settings.logo.url }}" alt="Current company logo">{% endif %}{{ form.logo }}{{ form.logo.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.favicon.id_for_label }}">Favicon</label>{% if settings.favicon %}<img class="workspace-brand-preview favicon" src="{{ settings.favicon.url }}" alt="Current favicon">{% endif %}{{ form.favicon }}{{ form.favicon.errors }}</div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    <label>Phone</label>
-                    {{ form.phone }}
+            <section class="workspace-form-section">
+                <h2>Social channels</h2>
+                <div class="workspace-form-grid">
+                    <div class="workspace-form-field"><label for="{{ form.facebook_url.id_for_label }}">Facebook URL</label>{{ form.facebook_url }}{{ form.facebook_url.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.instagram_url.id_for_label }}">Instagram URL</label>{{ form.instagram_url }}{{ form.instagram_url.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.linkedin_url.id_for_label }}">LinkedIn URL</label>{{ form.linkedin_url }}{{ form.linkedin_url.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.tiktok_url.id_for_label }}">TikTok URL</label>{{ form.tiktok_url }}{{ form.tiktok_url.errors }}</div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    <label>Email</label>
-                    {{ form.email }}
+            <section class="workspace-form-section">
+                <h2>Invoice defaults</h2>
+                <div class="workspace-form-grid">
+                    <div class="workspace-form-field"><label for="{{ form.invoice_prefix.id_for_label }}">Invoice prefix</label>{{ form.invoice_prefix }}{{ form.invoice_prefix.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.gst_percentage.id_for_label }}">GST percentage</label>{{ form.gst_percentage }}{{ form.gst_percentage.errors }}</div>
+                    <div class="workspace-form-field"><label for="{{ form.payment_terms_days.id_for_label }}">Payment terms (days)</label>{{ form.payment_terms_days }}{{ form.payment_terms_days.errors }}</div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    <label>Website</label>
-                    {{ form.website }}
-                </div>
-
-            </div>
-
-            <div class="form-group">
-                <label>Business Address</label>
-                {{ form.address }}
-            </div>
-
-        </div>
-
-        <!-- ================================================= -->
-        <!-- Branding -->
-        <!-- ================================================= -->
-
-        <div class="dashboard-card" style="margin-bottom:25px;">
-
-            <h2>Branding</h2>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>Company Logo</label>
-
-                    {% if settings.logo %}
-                        <div style="margin-bottom:10px;">
-                            <img
-                                src="{{ settings.logo.url }}"
-                                alt="Logo"
-                                style="max-height:80px;"
-                            >
-                        </div>
-                    {% endif %}
-
-                    {{ form.logo }}
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>Favicon</label>
-
-                    {% if settings.favicon %}
-                        <div style="margin-bottom:10px;">
-                            <img
-                                src="{{ settings.favicon.url }}"
-                                alt="Favicon"
-                                style="max-height:50px;"
-                            >
-                        </div>
-                    {% endif %}
-
-                    {{ form.favicon }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- ================================================= -->
-        <!-- Social Media -->
-        <!-- ================================================= -->
-
-        <div class="dashboard-card" style="margin-bottom:25px;">
-
-            <h2>Social Media</h2>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>Facebook URL</label>
-                    {{ form.facebook_url }}
-                </div>
-
-                <div class="form-group">
-                    <label>Instagram URL</label>
-                    {{ form.instagram_url }}
-                </div>
-
-                <div class="form-group">
-                    <label>LinkedIn URL</label>
-                    {{ form.linkedin_url }}
-                </div>
-
-                <div class="form-group">
-                    <label>TikTok URL</label>
-                    {{ form.tiktok_url }}
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- ================================================= -->
-        <!-- Invoice Settings -->
-        <!-- ================================================= -->
-
-        <div class="dashboard-card" style="margin-bottom:25px;">
-
-            <h2>Invoice Settings</h2>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>Invoice Prefix</label>
-                    {{ form.invoice_prefix }}
-                </div>
-
-                <div class="form-group">
-                    <label>GST Percentage</label>
-                    {{ form.gst_percentage }}
-                </div>
-
-                <div class="form-group">
-                    <label>Payment Terms (Days)</label>
-                    {{ form.payment_terms_days }}
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Save Button -->
-
-        <button type="submit" class="btn-fill">
-            Save Company Settings
-        </button>
-
-    </form>
-
+            <div class="workspace-form-footer"><button type="submit" class="workspace-button">Save settings</button></div>
+        </form>
+    </section>
 </div>
-
 {% endblock %}

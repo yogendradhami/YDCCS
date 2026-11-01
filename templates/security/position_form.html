@@ -1,12 +1,195 @@
 {% extends 'dashboard_base.html' %}
 
-{% block title %}Position Permissions | YD Dashboard{% endblock %}
-{% block page_title %}{% if position %}Edit Position{% else %}Create Position{% endif %}{% endblock %}
-{% block page_subtitle %}Choose exactly which application permissions this position receives.{% endblock %}
+{% block title %}{% if position %}Edit Access Role{% else %}Create Access Role{% endif %} | YD Dashboard{% endblock %}
+{% block page_title %}{% if position %}Edit access role{% else %}Create access role{% endif %}{% endblock %}
+{% block page_subtitle %}Configure role access using the principle of least privilege.{% endblock %}
 
 {% block content %}
-<style>
-.position-form{max-width:1100px;margin:0 auto;background:#fff;padding:24px;border:1px solid #e2e8f0;border-radius:15px}.position-form input[type=text]{padding:10px;border:1px solid #cbd5e1;border-radius:8px;width:min(100%,500px)}.permission-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin-top:18px}.permission-grid label{padding:10px;border:1px solid #e2e8f0;border-radius:8px}.position-form button,.position-form a{display:inline-block;margin-top:18px;padding:10px 14px;border:0;border-radius:8px;background:#0f766e;color:#fff;text-decoration:none;font-weight:800}.position-form a{background:#e2e8f0;color:#0f172a}
-</style>
-<div class="position-form"><form method="post">{% csrf_token %}<p><label for="{{ form.name.id_for_label }}">Position name</label><br>{{ form.name }}{{ form.name.errors }}</p><h3>Permissions</h3>{{ form.permissions.errors }}<div class="permission-grid">{% for checkbox in form.permissions %}<label>{{ checkbox.tag }} {{ checkbox.choice_label }}</label>{% endfor %}</div><button type="submit">Save Position</button> <a href="{% url 'security_position_list' %}">Cancel</a></form></div>
+<div class="security-role-builder">
+	<div class="security-builder-topline">
+		<a href="{% url 'security_position_list' %}" class="security-builder-back"><span aria-hidden="true">←</span> All roles</a>
+		<span class="security-builder-state"><span></span>{% if position %}Editing role{% else %}New role{% endif %}</span>
+	</div>
+
+	<aside class="security-builder-warning" aria-label="Security guidance">
+		<span class="security-builder-warning-mark" aria-hidden="true">!</span>
+		<div><strong>Grant the minimum access required</strong><p>Permissions apply to every user assigned to this role. Read access exposes records; create, edit, and delete permissions change business data.</p></div>
+	</aside>
+
+	<form method="post" id="accessRoleForm" class="security-builder-form" data-permission-total="{{ form.fields.permissions.queryset.count }}">
+		{% csrf_token %}
+		{{ form.non_field_errors }}
+
+		<section class="security-role-identity" aria-labelledby="roleIdentityHeading">
+			<div class="security-section-index">01</div>
+			<div class="security-role-identity-content">
+				<div><span class="security-builder-kicker">ROLE IDENTITY</span><h2 id="roleIdentityHeading">Name this access profile</h2><p>Choose a clear, job-based name so access is easy to review later.</p></div>
+				<div class="security-role-name-field">
+					<label for="{{ form.name.id_for_label }}">Role name</label>
+					{{ form.name }}
+					{{ form.name.errors }}
+				</div>
+			</div>
+		</section>
+
+		<div class="security-builder-layout">
+			<section class="security-permission-workbench" aria-labelledby="permissionSectionTitle">
+				<header class="security-workbench-heading">
+					<div class="security-section-index">02</div>
+					<div><span class="security-builder-kicker">ACCESS SCOPE</span><h2 id="permissionSectionTitle">Choose permissions</h2><p>Review access by application. Expand a section to see its available capabilities.</p></div>
+				</header>
+
+				{{ form.permissions.errors }}
+
+				<div class="security-permission-toolbar">
+					<label class="security-permission-search" for="rolePermissionSearch">
+						<span>Find a permission</span>
+						<input id="rolePermissionSearch" type="search" autocomplete="off" placeholder="Search apps or permissions">
+					</label>
+					<div class="security-permission-tools">
+						<div class="security-filter-switch" role="group" aria-label="Permission filter">
+							<button type="button" class="is-active" data-permission-filter="all" aria-pressed="true">All</button>
+							<button type="button" data-permission-filter="selected" aria-pressed="false">Selected</button>
+						</div>
+						<button class="security-clear-selection" type="button" id="clearRolePermissions">Clear selected</button>
+					</div>
+				</div>
+				<p class="security-permission-results" id="permissionSearchResults" aria-live="polite">{{ form.fields.permissions.queryset.count }} permissions available</p>
+
+				<div class="security-permission-apps" id="permissionAppGroups">
+					{% for app in permission_groups %}
+					<details class="security-permission-app" data-permission-app {% if forloop.first %}open{% endif %}>
+						<summary>
+							<span class="security-app-chevron" aria-hidden="true"></span>
+							<span class="security-app-name">{{ app.label }}</span>
+							<span class="security-app-count"><span data-app-selected>0</span> / {{ app.permissions|length }} selected</span>
+						</summary>
+						<div class="security-permission-options">
+							{% for permission in app.permissions %}
+							<label class="security-permission-option" data-permission-option data-search="{{ app.label|lower }} {{ permission.name|lower }} {{ permission.codename|lower }}">
+								<input type="checkbox" name="{{ form.permissions.html_name }}" value="{{ permission.pk }}" id="id_permissions_{{ permission.pk }}" {% if permission.pk|stringformat:"s" in selected_permission_ids %}checked{% endif %}>
+								<span>{{ permission.name }}</span>
+							</label>
+							{% endfor %}
+						</div>
+					</details>
+					{% empty %}<p class="security-builder-empty">No assignable permissions are available for this account.</p>{% endfor %}
+				</div>
+				<p class="security-permission-empty" id="noPermissionResults" hidden>No permissions match this filter.</p>
+			</section>
+
+			<aside class="security-builder-summary" aria-label="Role access summary">
+				<span class="security-builder-kicker">LIVE SUMMARY</span>
+				<h2>Role scope</h2>
+				<p class="security-summary-intro">A quick view of the access you are assigning.</p>
+
+				<div class="security-summary-count">
+					<strong id="selectedPermissionCount">{{ selected_permission_ids|length }}</strong>
+					<span>permissions selected</span>
+				</div>
+				<div class="security-summary-meter" role="progressbar" aria-label="Selected permissions" aria-valuemin="0" aria-valuemax="{{ form.fields.permissions.queryset.count }}" aria-valuenow="{{ selected_permission_ids|length }}">
+					<span id="permissionProgress" style="width: 0%"></span>
+				</div>
+
+				<dl class="security-summary-details">
+					<div><dt>Application areas</dt><dd>{{ permission_groups|length }}</dd></div>
+					<div><dt>Available permissions</dt><dd>{{ form.fields.permissions.queryset.count }}</dd></div>
+				</dl>
+
+				{% if not request.user.is_superuser %}
+				<p class="security-summary-lock"><strong>Elevated security access is restricted.</strong> Security role-management permission is not available in this editor.</p>
+				{% endif %}
+
+				<div class="security-summary-legend">
+					<span><i class="security-legend-dot read"></i>View records</span>
+					<span><i class="security-legend-dot write"></i>Create or change data</span>
+					<span><i class="security-legend-dot delete"></i>Delete data</span>
+				</div>
+			</aside>
+		</div>
+
+		<footer class="security-builder-footer">
+			<div><strong>{% if position %}Changes apply to this role{% else %}Ready to create this role?{% endif %}</strong><span>Review the selected access before saving.</span></div>
+			<div class="security-builder-actions">
+				<a href="{% url 'security_position_list' %}" class="security-builder-cancel">Cancel</a>
+				<button type="submit" class="security-builder-save">{% if position %}Save role changes{% else %}Create role{% endif %}<span aria-hidden="true">→</span></button>
+			</div>
+		</footer>
+	</form>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	const form = document.getElementById("accessRoleForm");
+	const search = document.getElementById("rolePermissionSearch");
+	const selectedCount = document.getElementById("selectedPermissionCount");
+	const resultCount = document.getElementById("permissionSearchResults");
+	const noResults = document.getElementById("noPermissionResults");
+	const progress = document.getElementById("permissionProgress");
+	const meter = document.querySelector(".security-summary-meter");
+	const groups = Array.from(document.querySelectorAll("[data-permission-app]"));
+	const filterButtons = Array.from(document.querySelectorAll("[data-permission-filter]"));
+	const clearButton = document.getElementById("clearRolePermissions");
+	if (!form || !selectedCount || !resultCount) return;
+
+	let selectedOnly = false;
+
+	function updateSummary() {
+		const selected = form.querySelectorAll('input[type="checkbox"]:checked').length;
+		const total = Number(form.dataset.permissionTotal || 0);
+		selectedCount.textContent = selected;
+		if (progress) progress.style.width = (total ? (selected / total) * 100 : 0) + "%";
+		if (meter) meter.setAttribute("aria-valuenow", selected);
+		groups.forEach(function (group) {
+			const appSelected = group.querySelectorAll('input[type="checkbox"]:checked').length;
+			const appCount = group.querySelector("[data-app-selected]");
+			if (appCount) appCount.textContent = appSelected;
+		});
+	}
+
+	function updateVisiblePermissions() {
+		const query = search ? search.value.trim().toLocaleLowerCase() : "";
+		let visible = 0;
+		groups.forEach(function (group) {
+			let groupVisible = 0;
+			group.querySelectorAll("[data-permission-option]").forEach(function (option) {
+				const checkbox = option.querySelector("input[type=checkbox]");
+				const matches = option.dataset.search.includes(query) && (!selectedOnly || checkbox.checked);
+				option.hidden = !matches;
+				if (matches) groupVisible += 1;
+			});
+			group.hidden = groupVisible === 0;
+			if ((query || selectedOnly) && groupVisible) group.open = true;
+			visible += groupVisible;
+		});
+		resultCount.textContent = visible + (visible === 1 ? " permission shown" : " permissions shown");
+		if (noResults) noResults.hidden = visible !== 0;
+		if (!query && !selectedOnly) groups.forEach(function (group, index) { group.open = index === 0; });
+	}
+
+	form.addEventListener("change", function () {
+		updateSummary();
+		updateVisiblePermissions();
+	});
+	if (search) search.addEventListener("input", updateVisiblePermissions);
+	filterButtons.forEach(function (button) {
+		button.addEventListener("click", function () {
+			selectedOnly = button.dataset.permissionFilter === "selected";
+			filterButtons.forEach(function (item) {
+				const active = item === button;
+				item.classList.toggle("is-active", active);
+				item.setAttribute("aria-pressed", String(active));
+			});
+			updateVisiblePermissions();
+		});
+	});
+	if (clearButton) clearButton.addEventListener("click", function () {
+		form.querySelectorAll('input[type="checkbox"]:checked').forEach(function (checkbox) { checkbox.checked = false; });
+		updateSummary();
+		updateVisiblePermissions();
+	});
+
+	updateSummary();
+	updateVisiblePermissions();
+});
+</script>
 {% endblock %}

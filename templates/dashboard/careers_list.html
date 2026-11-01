@@ -1,93 +1,75 @@
 {% extends 'dashboard_base.html' %}
 {% load static %}
 
+{% block title %}Careers Pipeline | YD Dashboard{% endblock %}
+{% block page_title %}Careers pipeline{% endblock %}
+{% block page_subtitle %}Review applicants, evaluate role fit, and manage each recruitment stage.{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/careers.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="dash-page-header">
-    <div>
-        <h1>Career Applications</h1>
-        <p class="muted">Manage and review candidate applications. Total: <strong>{{ applications.count }}</strong></p>
-    </div>
-    <div class="header-actions">
-        <a href="/dashboard/careers/" class="btn btn-outline">Refresh</a>
-    </div>
+<div class="workspace-page careers-ops">
+    <section class="careers-toolbar">
+        <div>
+            <span class="careers-eyebrow">PEOPLE · RECRUITMENT</span>
+            <h2>Candidate pipeline</h2>
+            <p>Applications are ordered by submission date. Open a candidate to review their complete application and manage the next step.</p>
+        </div>
+        <div class="careers-toolbar-actions">
+            <a class="workspace-button secondary" href="{% url 'careers_list' %}">Reset view</a>
+        </div>
+    </section>
+
+    <section class="careers-stage-grid" aria-label="Application counts by stage">
+        <div class="careers-stage total"><span>All applicants</span><strong>{{ total_count }}</strong></div>
+        <div class="careers-stage new"><span>New</span><strong>{{ status_counts.new|default:0 }}</strong></div>
+        <div class="careers-stage reviewing"><span>Reviewing</span><strong>{{ status_counts.reviewing|default:0 }}</strong></div>
+        <div class="careers-stage shortlisted"><span>Shortlisted</span><strong>{{ status_counts.shortlisted|default:0 }}</strong></div>
+        <div class="careers-stage interview"><span>Interview</span><strong>{{ status_counts.interview|default:0 }}</strong></div>
+        <div class="careers-stage hired"><span>Hired</span><strong>{{ status_counts.hired|default:0 }}</strong></div>
+        <div class="careers-stage rejected"><span>Rejected</span><strong>{{ status_counts.rejected|default:0 }}</strong></div>
+    </section>
+
+    <section class="workspace-panel careers-register">
+        <header class="careers-register-heading">
+            <div><span class="careers-eyebrow">APPLICATION REGISTER</span><h2>Applicants</h2><p>{{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ filtered_count }} matching · {{ total_count }} total</p></div>
+            <span class="workspace-badge neutral">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        </header>
+
+        <form method="get" class="careers-filters" role="search" aria-label="Filter career applications">
+            <label class="careers-search"><span>Search candidates</span><input type="search" name="q" value="{{ filters.q }}" placeholder="Name, email, phone, or suburb"></label>
+            <label><span>Application status</span><select name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+            <label><span>Position</span><select name="position"><option value="">All positions</option>{% for value,label in position_choices %}<option value="{{ value }}" {% if filters.position == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+            <label><span>Sort</span><select name="sort"><option value="newest" {% if filters.sort == "newest" %}selected{% endif %}>Newest first</option><option value="oldest" {% if filters.sort == "oldest" %}selected{% endif %}>Oldest first</option></select></label>
+            <label><span>Rows</span><select name="page_size"><option value="10" {% if filters.page_size == "10" %}selected{% endif %}>10</option><option value="25" {% if filters.page_size == "25" %}selected{% endif %}>25</option><option value="50" {% if filters.page_size == "50" %}selected{% endif %}>50</option></select></label>
+            <div class="careers-filter-actions"><button class="workspace-button" type="submit">Apply filters</button><a class="workspace-button secondary" href="{% url 'careers_list' %}">Clear</a></div>
+        </form>
+
+        <div class="workspace-table-wrap">
+            <table class="workspace-table careers-table">
+                <thead><tr><th>Applicant</th><th>Role &amp; employment</th><th>Contact</th><th>Stage</th><th>Submitted</th><th>Documents / action</th></tr></thead>
+                <tbody>{% for app in applications %}
+                    <tr>
+                        <td><div class="career-applicant"><span class="career-avatar" aria-hidden="true">{{ app.full_name|default:"A"|first|upper }}</span><div><a class="career-applicant-name" href="{% url 'career_detail' app.id %}">{{ app.full_name|default:"Applicant" }}</a><small>CAND-{{ app.pk|stringformat:"05d" }} · {{ app.suburb|default:"Location not provided" }}</small></div></div></td>
+                        <td><strong>{{ app.get_position_display }}</strong><small>{{ app.get_employment_type_display|default:"Employment type not specified" }}</small></td>
+                        <td><a href="mailto:{{ app.email }}">{{ app.email }}</a>{% if app.phone %}<small><a href="tel:{{ app.phone }}">{{ app.phone }}</a></small>{% endif %}</td>
+                        <td><span class="workspace-badge career-status status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+                        <td><strong>{{ app.created_at|date:"d M Y" }}</strong><small>{{ app.created_at|date:"H:i" }}</small></td>
+                        <td><div class="career-row-actions"><a class="workspace-button secondary" href="{% url 'career_detail' app.id %}">Review</a>{% if app.resume %}<a class="career-document-link" href="{% url 'career_resume_preview' app.id %}" target="_blank" rel="noopener">Resume</a>{% else %}<span class="career-no-document">No resume</span>{% endif %}</div></td>
+                    </tr>
+                {% empty %}<tr><td class="workspace-empty" colspan="6">{% if filters.q or filters.status or filters.position %}No applicants match these filters. Adjust the search or clear the filters.{% else %}No career applications have been received yet.{% endif %}</td></tr>{% endfor %}</tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="careers-pagination" aria-label="Applicant pages">
+            {% if page_obj.has_previous %}<a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">← Previous</a>{% else %}<span class="is-disabled">← Previous</span>{% endif %}
+            <span>Page <strong>{{ page_obj.number }}</strong> of {{ paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">Next →</a>{% else %}<span class="is-disabled">Next →</span>{% endif %}
+        </nav>
+        {% endif %}
+    </section>
 </div>
-
-<section class="filter-bar">
-    <form method="get" class="filter-form">
-        <div class="field">
-            <input type="search" name="q" placeholder="Search name, email, phone or suburb" value="{{ q }}" />
-        </div>
-
-        <div class="field">
-            <select name="status">
-                <option value="">All statuses</option>
-                <option value="new" {% if filter_status == 'new' %}selected{% endif %}>New</option>
-                <option value="reviewing" {% if filter_status == 'reviewing' %}selected{% endif %}>Reviewing</option>
-                <option value="shortlisted" {% if filter_status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
-                <option value="interview" {% if filter_status == 'interview' %}selected{% endif %}>Interview</option>
-                <option value="hired" {% if filter_status == 'hired' %}selected{% endif %}>Hired</option>
-                <option value="rejected" {% if filter_status == 'rejected' %}selected{% endif %}>Rejected</option>
-            </select>
-        </div>
-
-        <div class="field">
-            <input type="text" name="position" placeholder="Position" value="{{ filter_position }}" />
-        </div>
-
-        <div class="field actions">
-            <button class="btn btn-primary" type="submit">Apply</button>
-            <a class="btn btn-ghost" href="/dashboard/careers/">Clear</a>
-        </div>
-    </form>
-</section>
-
-<div class="table-wrap">
-    <table class="app-table">
-        <thead>
-            <tr>
-                <th>Applicant</th>
-                <th>Position</th>
-                <th>Contact</th>
-                <th>Status</th>
-                <th>Submitted</th>
-                <th class="col-actions">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for app in applications %}
-            <tr>
-                <td class="applicant">
-                    <div class="avatar">{{ app.full_name|default:"-"|first }}</div>
-                    <div class="meta">
-                        <a class="name" href="{% url 'career_detail' app.id %}">{{ app.full_name|default:"—" }}</a>
-                        <div class="sub muted">{{ app.suburb }}</div>
-                    </div>
-                </td>
-                <td>{{ app.get_position_display }}</td>
-                <td>
-                    <div>{{ app.email }}</div>
-                    <div class="muted">{{ app.phone }}</div>
-                </td>
-                <td>
-                    <span class="status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
-                </td>
-                <td class="muted">{{ app.created_at|date:"d M Y H:i" }}</td>
-                <td class="col-actions">
-                    <a href="{% url 'career_detail' app.id %}" class="btn btn-sm">View</a>
-                    {% if app.resume %}
-                        <a href="{{ app.resume.url }}" class="btn btn-sm btn-outline" target="_blank">Resume</a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6" class="muted">No applications found.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
 {% endblock %}
