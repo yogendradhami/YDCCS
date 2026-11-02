@@ -1135,6 +1135,20 @@ def booking_list(request):
 @admin_required
 def add_booking(request):
     work_order_prefix = "work_orders"
+    preferences_submitted = (
+        request.method == "POST"
+        and request.POST.get("booking_email_preferences") == "1"
+    )
+    send_customer_confirmation = (
+        request.POST.get("send_customer_confirmation") == "on"
+        if preferences_submitted
+        else True
+    )
+    send_company_notification = (
+        request.POST.get("send_company_notification") == "on"
+        if preferences_submitted
+        else True
+    )
     if request.method == "POST":
         form = BookingForm(request.POST)
         if f"{work_order_prefix}-TOTAL_FORMS" in request.POST:
@@ -1190,7 +1204,12 @@ def add_booking(request):
                 booking = None
 
             if booking:
-                return _finish_new_booking(request, booking)
+                return _finish_new_booking(
+                    request,
+                    booking,
+                    send_customer_email=send_customer_confirmation,
+                    send_company_email=send_company_notification,
+                )
 
     else:
         form = BookingForm()
@@ -1204,11 +1223,20 @@ def add_booking(request):
             "work_order_formset": work_order_formset,
             "page_title": "Add New Booking",
             "button_text": "Save Booking",
+            "is_edit": False,
+            "notify_customer_confirmation": send_customer_confirmation,
+            "notify_company_notification": send_company_notification,
         },
     )
 
 
-def _finish_new_booking(request, booking):
+def _finish_new_booking(
+    request,
+    booking,
+    *,
+    send_customer_email=True,
+    send_company_email=True,
+):
     roster_sync_succeeded = True
     try:
         from rosters.services import (
@@ -1245,25 +1273,37 @@ def _finish_new_booking(request, booking):
             "Booking saved, but Google Calendar could not be synced automatically.",
         )
 
-    if send_booking_confirmation_email(request, booking):
-        messages.success(
-            request,
-            f"Booking confirmation emailed to {booking.customer.email}.",
-        )
+    if send_customer_email:
+        if send_booking_confirmation_email(request, booking):
+            messages.success(
+                request,
+                f"Booking confirmation emailed to {booking.customer.email}.",
+            )
+        else:
+            messages.warning(
+                request,
+                "Booking was created, but the customer confirmation email could not "
+                "be sent. Check the customer email address and email provider logs.",
+            )
     else:
-        messages.warning(
+        messages.info(
             request,
-            "Booking was created, but the customer confirmation email could not "
-            "be sent. Check the customer email address and email provider logs.",
+            "Customer confirmation email skipped by choice.",
         )
 
-    if send_company_booking_created_email(request, booking):
-        messages.success(request, "Booking details emailed to the company.")
+    if send_company_email:
+        if send_company_booking_created_email(request, booking):
+            messages.success(request, "Booking details emailed to the company.")
+        else:
+            messages.warning(
+                request,
+                "Booking was created, but the company notification email could not "
+                "be sent. Check ADMIN_EMAIL and the email provider logs.",
+            )
     else:
-        messages.warning(
+        messages.info(
             request,
-            "Booking was created, but the company notification email could not "
-            "be sent. Check ADMIN_EMAIL and the email provider logs.",
+            "Company booking notification email skipped by choice.",
         )
 
     if (
@@ -1977,6 +2017,15 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     work_order_initial = _booking_work_order_initial(booking)
+    preferences_submitted = (
+        request.method == "POST"
+        and request.POST.get("booking_email_preferences") == "1"
+    )
+    notify_customer_status_email = (
+        request.POST.get("send_booking_status_email") == "on"
+        if preferences_submitted
+        else True
+    )
 
     if request.method == "POST":
         form = BookingForm(request.POST, instance=booking)
@@ -2008,6 +2057,8 @@ def edit_booking(request, booking_id):
                             "work_order_formset": work_order_formset,
                             "page_title": "Edit Booking",
                             "button_text": "Update Booking",
+                            "is_edit": True,
+                            "notify_customer_status_email": notify_customer_status_email,
                         },
                     )
             else:
@@ -2046,7 +2097,6 @@ def edit_booking(request, booking_id):
                 if (
                     not reassignment_failed
                     and old_status != new_status
-                    and new_status != "completed"
                 ):
                     logger.info(
                         "Booking status transition detected: booking=%s old=%s new=%s",
@@ -2054,19 +2104,27 @@ def edit_booking(request, booking_id):
                         old_status,
                         new_status,
                     )
-                    if send_booking_confirmation_email(
-                        request,
-                        updated_booking,
-                        old_status,
+                    should_send_status_email = (
+                        notify_customer_status_email
+                        if preferences_submitted
+                        else new_status != "completed"
+                    )
+                    if should_send_status_email and send_booking_confirmation_email(
+                        request, updated_booking, old_status
                     ):
                         messages.success(
                             request,
                             f"✅ Customer notified by email: booking status is now {updated_booking.get_status_display()}.",
                         )
-                    else:
+                    elif should_send_status_email:
                         messages.warning(
                             request,
                             "⚠️ Booking updated, but the customer status email could not be sent.",
+                        )
+                    elif preferences_submitted:
+                        messages.info(
+                            request,
+                            "Customer status email skipped by choice.",
                         )
 
                 if not reassignment_failed and updated_booking.status == "completed":
@@ -2082,7 +2140,7 @@ def edit_booking(request, booking_id):
                         messages.success(
                             request,
                             f"Invoice automatically created: {invoice.invoice_number}. "
-                            "No email was sent.",
+                            "The invoice itself was not emailed.",
                         )
 
                 if not reassignment_failed:
@@ -2143,6 +2201,8 @@ def edit_booking(request, booking_id):
             "work_order_formset": work_order_formset,
             "page_title": "Edit Booking",
             "button_text": "Update Booking",
+            "is_edit": True,
+            "notify_customer_status_email": notify_customer_status_email,
         },
     )
 
@@ -6435,6 +6495,13 @@ def update_booking_quick_status(request, booking_id, new_status):
         messages.error(request, "❌ Invalid booking status.")
         return redirect("booking_calendar")
 
+    preferences_submitted = request.POST.get("booking_email_preferences") == "1"
+    notify_customer_status_email = (
+        request.POST.get("send_booking_status_email") == "on"
+        if preferences_submitted
+        else new_status != "completed"
+    )
+
     from rosters.services import RosterSyncLockError
 
     try:
@@ -6455,7 +6522,6 @@ def update_booking_quick_status(request, booking_id, new_status):
     if (
         roster_sync_succeeded
         and old_status != new_status
-        and new_status != "completed"
     ):
         logger.info(
             "Booking status transition detected: booking=%s old=%s new=%s",
@@ -6464,16 +6530,20 @@ def update_booking_quick_status(request, booking_id, new_status):
             new_status,
         )
 
-        if send_booking_confirmation_email(request, booking, old_status):
+        if notify_customer_status_email and send_booking_confirmation_email(
+            request, booking, old_status
+        ):
             messages.success(
                 request,
                 f"✅ Customer notified by email: booking status is now {booking.get_status_display()}.",
             )
-        else:
+        elif notify_customer_status_email:
             messages.warning(
                 request,
                 "⚠️ Booking updated, but the customer status email could not be sent.",
             )
+        elif preferences_submitted:
+            messages.info(request, "Customer status email skipped by choice.")
 
     if roster_sync_succeeded and new_status == "completed":
         invoice, invoice_created = get_or_create_invoice_for_booking(booking)
@@ -6485,7 +6555,7 @@ def update_booking_quick_status(request, booking_id, new_status):
         else:
             messages.success(
                 request,
-                f"Invoice {invoice.invoice_number} was created. No email was sent.",
+                f"Invoice {invoice.invoice_number} was created. The invoice itself was not emailed.",
             )
 
     create_activity_log(

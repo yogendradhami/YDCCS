@@ -299,6 +299,40 @@
     margin: 20px clamp(18px, 4vw, 44px) 0;
 }
 
+.booking-email-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 9px;
+}
+
+.booking-email-option {
+    display: flex !important;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 !important;
+    padding: 12px;
+    border: 1px solid #dce7e7;
+    border-radius: 9px;
+    background: #f8fbfb;
+    cursor: pointer;
+}
+
+.booking-email-option input[type="checkbox"] {
+    width: 17px !important;
+    min-width: 17px;
+    min-height: 17px !important;
+    flex: 0 0 17px;
+    margin: 2px 0 0;
+    padding: 0;
+    accent-color: #087f82;
+}
+
+.booking-email-option span { display: grid; gap: 3px; }
+.booking-email-option strong { color: #304a53; font-size: .79rem; }
+.booking-email-option small { color: #71838b; font-size: .72rem; line-height: 1.45; }
+.booking-email-option:has(input:checked) { border-color: #a8cfca; background: #f0f8f6; }
+
 @media (max-width: 850px) {
     .booking-editor-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));

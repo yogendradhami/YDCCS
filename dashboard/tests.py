@@ -397,6 +397,41 @@ class DashboardBookingEmailTests(TestCase):
 		self.assertIn("New booking created", company_email.subject)
 		self.assertIn("Office Cleaning", company_email.body)
 
+	@patch("dashboard.views.create_or_update_booking_event")
+	@patch("rosters.services.sync_booking_roster", return_value=None)
+	def test_new_booking_can_skip_customer_and_company_emails(
+		self,
+		_sync_roster,
+		_sync_company_calendar,
+	):
+		response = self.client.post(
+			reverse("add_booking"),
+			{
+				"customer": self.customer.pk,
+				"service_type": "Office Cleaning",
+				"quoted_price": "125.00",
+				"booking_date": (date.today() + timedelta(days=3)).isoformat(),
+				"booking_time": "10:00",
+				"address": "1 King Street",
+				"suburb_postcode": "Adelaide 5000",
+				"assigned_employee": "",
+				"status": "pending",
+				"notes": "",
+				"booking_email_preferences": "1",
+				"work_orders-TOTAL_FORMS": "1",
+				"work_orders-INITIAL_FORMS": "0",
+				"work_orders-MIN_NUM_FORMS": "1",
+				"work_orders-MAX_NUM_FORMS": "1000",
+				"work_orders-0-service_type": "Office Cleaning",
+				"work_orders-0-price": "125.00",
+			},
+		)
+
+		self.assertEqual(response.status_code, 302)
+		self.assertEqual(mail.outbox, [])
+		messages = list(response.wsgi_request._messages)
+		self.assertTrue(any("skipped by choice" in str(message) for message in messages))
+
 class QuoteLeadManagementTests(TestCase):
     def setUp(self):
         self.admin = get_user_model().objects.create_user(
@@ -1155,6 +1190,42 @@ class BookingReassignmentFailureTests(TestCase):
         )
 
     @patch("dashboard.views.create_or_update_booking_event")
+    @patch("google_reviews.calendar_utils.create_or_update_roster_event")
+    @patch("dashboard.views.send_booking_confirmation_email")
+    def test_booking_edit_can_skip_status_email(
+        self, send_status_email, update_roster_event, update_booking_event
+    ):
+        response = self._post_booking(
+            status="confirmed",
+            booking_email_preferences="1",
+        )
+
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, "confirmed")
+        send_status_email.assert_not_called()
+        self.assertEqual(response.status_code, 302)
+        messages = list(response.wsgi_request._messages)
+        self.assertTrue(any("skipped by choice" in str(message) for message in messages))
+
+    @patch("dashboard.views.create_or_update_booking_event")
+    @patch("rosters.services.sync_booking_roster", return_value=None)
+    @patch("dashboard.views.send_booking_confirmation_email")
+    def test_quick_status_can_skip_status_email(
+        self, send_status_email, _sync_roster, _sync_booking_event
+    ):
+        response = self.client.post(
+            reverse("update_booking_quick_status", args=[self.booking.pk, "confirmed"]),
+            {"booking_email_preferences": "1"},
+        )
+
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, "confirmed")
+        send_status_email.assert_not_called()
+        self.assertEqual(response.status_code, 302)
+        messages = list(response.wsgi_request._messages)
+        self.assertTrue(any("skipped by choice" in str(message) for message in messages))
+
+    @patch("dashboard.views.create_or_update_booking_event")
     @patch("rosters.services.sync_booking_roster", return_value=None)
     @patch("dashboard.views.send_invoice_email")
     @patch("dashboard.views.send_booking_confirmation_email")
@@ -1187,7 +1258,7 @@ class BookingReassignmentFailureTests(TestCase):
         send_invoice.assert_not_called()
         messages = list(response.wsgi_request._messages)
         self.assertTrue(
-            any("No email was sent" in str(message) for message in messages)
+            any("invoice itself was not emailed" in str(message) for message in messages)
         )
 
     @patch("dashboard.views.create_or_update_booking_event")

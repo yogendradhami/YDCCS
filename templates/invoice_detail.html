@@ -251,10 +251,103 @@ body {
     }
 }
 </style>
+<style>
+:root {
+    --invoice-ink: #1d3438;
+    --invoice-muted: #6b7d80;
+    --invoice-line: #dde7e5;
+    --invoice-accent: #14796e;
+    --invoice-accent-soft: #edf6f3;
+}
+body { background: #edf2f2; color: var(--invoice-ink); font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif; }
+.invoice-page { min-height: 100vh; padding: 28px 18px 56px; background: radial-gradient(ellipse at 50% 0, #f8fbfa 0, #edf2f2 68%); }
+.invoice-detail-shell { max-width: 1000px; margin: 0 auto 12px; }
+.invoice-detail-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 2px; }
+.invoice-back-link { display: inline-flex; align-items: center; gap: 8px; color: #355a5a; font-size: 12px; font-weight: 800; text-decoration: none; }
+.invoice-back-link:hover { color: var(--invoice-accent); text-decoration: underline; }
+.invoice-toolbar-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.invoice-toolbar-btn { min-height: 36px; padding: 0 12px; border: 1px solid #d5e0de; border-radius: 5px; background: #fff; color: #385456; font: inherit; font-size: 10px; font-weight: 900; cursor: pointer; }
+.invoice-toolbar-btn:hover { border-color: #9dbbb5; background: #f5faf8; }
+.invoice-toolbar-btn.green { border-color: var(--invoice-accent); background: var(--invoice-accent); color: #fff; }
+.invoice-toolbar-btn.green:hover { border-color: #0e6259; background: #0e6259; }
+.invoice-card { position: relative; max-width: 1000px; overflow: hidden; border: 1px solid #dbe5e3; border-top: 4px solid var(--invoice-accent); border-radius: 10px; padding: 34px 40px; box-shadow: 0 12px 38px rgba(35, 62, 62, .08); }
+.invoice-top { align-items: flex-start; margin-bottom: 27px; padding-bottom: 25px; border-bottom: 1px solid var(--invoice-line); }
+.invoice-brand { align-items: center; gap: 17px; }
+.invoice-logo { width: 82px; height: 82px; object-fit: contain; }
+.invoice-brand h1 { margin: 0 0 9px; color: #1b3236; font-size: 26px; font-weight: 850; line-height: 1.12; }
+.invoice-brand p { margin: 4px 0; color: var(--invoice-muted); font-size: 10px; line-height: 1.4; }
+.invoice-meta { min-width: 210px; }
+.invoice-type-label { margin-bottom: 5px; color: #6b8080; font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.invoice-number { margin-bottom: 10px; color: #1b3236; font-size: 30px; font-weight: 900; letter-spacing: .01em; }
+.invoice-meta p { margin: 4px 0; color: #65777a; font-size: 10px; }
+.status-pill { margin-top: 10px; padding: 5px 9px; border: 1px solid #ead3ac; border-radius: 4px; background: #fff6e8; color: #8d5c1e; font-size: 9px; letter-spacing: .05em; }
+.status-pill.status-paid { border-color: #b6d9cd; background: #eaf5f0; color: #286d59; }
+.status-pill.status-unpaid { border-color: #d3e2e8; background: #eef5f7; color: #426d79; }
+.status-pill.status-overdue { border-color: #eccbc6; background: #fbefed; color: #a0443a; }
+.status-pill.status-cancelled { border-color: #dce3e2; background: #f2f5f4; color: #6a7b7d; }
+.invoice-info-grid { gap: 12px; margin: 0 0 25px; }
+.invoice-box { min-width: 0; padding: 16px 17px; border-color: var(--invoice-line); border-radius: 6px; background: #f8fbfa; }
+.invoice-box h3 { margin-bottom: 11px; color: #2f6963; font-size: 11px; font-weight: 900; }
+.invoice-box p { margin: 5px 0; color: #4e6265; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.invoice-box .invoice-contact-line { margin: 7px 0; font-size: 10px; }
+.invoice-box .invoice-contact-icon { color: var(--invoice-accent); }
+.invoice-table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.invoice-table { margin-top: 0; border-color: var(--invoice-line); border-radius: 5px; }
+.invoice-table th { padding: 11px 12px; background: #edf3f2; color: #53686a; font-size: 9px; letter-spacing: .07em; }
+.invoice-table td { padding: 13px 12px; border-color: #e9efee; color: #344a4d; font-size: 10px; }
+.invoice-bottom { grid-template-columns: minmax(0, 1fr) minmax(250px, 310px); gap: 26px; margin-top: 24px; }
+.invoice-bottom h3 { margin: 0 0 7px; color: #5a7072; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
+.invoice-note-box { margin-bottom: 14px; padding: 11px 12px; border-color: var(--invoice-line); border-radius: 5px; color: #43595c; font-size: 10px; line-height: 1.55; overflow-wrap: anywhere; }
+.invoice-total-box { align-self: start; padding: 15px; border: 1px solid #dce8e4; border-radius: 6px; background: #f3f8f6; font-size: 11px; }
+.invoice-total-row { margin-bottom: 10px; color: #5c7072; }
+.invoice-total-row strong { color: #2b4245; }
+.invoice-grand-total { margin: 13px 0 0; padding-top: 13px; border-color: #cdded9; color: #176b63; font-size: 18px; }
+.invoice-grand-total strong { color: #176b63; }
+.thank-you { margin-top: 23px; padding-top: 15px; border-top: 1px solid #edf1f0; color: #7a8a8b; font-size: 9px; }
+.thank-you p { margin: 4px 0; }
+@media print {
+    body, .invoice-page { background: #fff; }
+    .invoice-page { padding: 0; }
+    .invoice-detail-shell { display: none; }
+    .invoice-card { border: 0; border-top: 3px solid var(--invoice-accent); border-radius: 0; padding: 18px 20px; box-shadow: none; }
+}
+@media (max-width: 800px) {
+    .invoice-page { padding: 15px 10px 28px; }
+    .invoice-card { padding: 22px 18px; }
+    .invoice-top { display: flex; flex-direction: column; gap: 16px; }
+    .invoice-brand { display: flex; }
+    .invoice-meta { min-width: 0; text-align: left; }
+    .invoice-info-grid { display: grid; grid-template-columns: 1fr; }
+    .invoice-bottom { display: grid; grid-template-columns: 1fr; gap: 8px; }
+}
+@media (max-width: 520px) {
+    .invoice-detail-toolbar { align-items: flex-start; flex-direction: column; }
+    .invoice-toolbar-actions { width: 100%; }
+    .invoice-toolbar-btn { flex: 1; }
+    .invoice-brand { align-items: flex-start; gap: 11px; }
+    .invoice-logo { width: 58px; height: 58px; }
+    .invoice-brand h1 { font-size: 19px; }
+    .invoice-table { min-width: 530px; }
+    .invoice-card { padding: 18px 13px; }
+}
+</style>
 </head>
 <body>
 
 <section class="invoice-page">
+    <div class="invoice-detail-shell">
+        <nav class="invoice-detail-toolbar" aria-label="Invoice actions">
+            {% if user.is_staff or user.is_superuser %}
+                <a class="invoice-back-link" href="{% url 'invoice_list' %}"><span aria-hidden="true">←</span> Back to invoices</a>
+            {% else %}
+                <a class="invoice-back-link" href="{% url 'portal_invoices' %}"><span aria-hidden="true">←</span> Back to my invoices</a>
+            {% endif %}
+            <div class="invoice-toolbar-actions">
+                <button class="invoice-toolbar-btn" type="button" onclick="window.print()">Print</button>
+                <a class="invoice-toolbar-btn green" href="{% url 'download_invoice_pdf' invoice.id %}">Download PDF</a>
+            </div>
+        </nav>
+    </div>
     <div class="invoice-card">
 
 
@@ -272,6 +365,7 @@ body {
             </div>
 
             <div class="invoice-meta">
+                <div class="invoice-type-label">Tax invoice</div>
                 <div class="invoice-number">{{ invoice.invoice_number }}</div>
                 <p><strong>Issued Date:</strong> {{ invoice.issue_date }}</p>
 
@@ -281,7 +375,7 @@ body {
                     <p><strong>Due Date:</strong> Not set</p>
                 {% endif %}
 
-                <span class="status-pill {% if invoice.status == 'paid' %}status-paid{% endif %}">
+                <span class="status-pill status-{{ invoice.status }}">
                     {{ invoice.get_status_display }}
                 </span>
             </div>
@@ -289,7 +383,7 @@ body {
 
         <div class="invoice-info-grid">
             <div class="invoice-box">
-                <h3>👤 Bill To</h3>
+                <h3>Bill to</h3>
                 <p class="invoice-contact-line">
                     <span class="invoice-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5Z"/></svg></span>
                     <strong>{{ invoice.booking.customer.full_name }}</strong>
@@ -309,7 +403,7 @@ body {
             </div>
 
             <div class="invoice-box">
-                <h3>📅 Job Details</h3>
+                <h3>Job details</h3>
                 <p><strong>Service:</strong> {{ invoice.booking.service_type }}</p>
                 <p><strong>Date:</strong> {{ invoice.booking.booking_date }}</p>
                 <p><strong>Time:</strong> {{ invoice.booking.booking_time }}</p>
@@ -318,6 +412,7 @@ body {
             </div>
         </div>
 
+        <div class="invoice-table-scroll">
         <table class="invoice-table">
             <thead>
                 <tr>
@@ -346,6 +441,7 @@ body {
                 {% endfor %}
             </tbody>
         </table>
+        </div>
 
         <div class="invoice-bottom">
             <div>

@@ -164,6 +164,34 @@ Create or update cleaning job bookings for YD Commercial Cleaning Services.
             </div>
         </section>
 
+        <section class="booking-editor-section booking-notification-section">
+            <div class="booking-section-heading">
+                <span>04</span>
+                <div>
+                    <h2>Email notifications</h2>
+                    <p>Choose which email notifications to send when you save this booking.</p>
+                </div>
+            </div>
+            <input type="hidden" name="booking_email_preferences" value="1">
+            <div class="booking-email-options">
+                {% if is_edit %}
+                <label class="booking-email-option">
+                    <input type="checkbox" name="send_booking_status_email" {% if notify_customer_status_email %}checked{% endif %}>
+                    <span><strong>Send customer status email</strong><small>Send an update if the booking status changes.</small></span>
+                </label>
+                {% else %}
+                <label class="booking-email-option">
+                    <input type="checkbox" name="send_customer_confirmation" {% if notify_customer_confirmation %}checked{% endif %}>
+                    <span><strong>Send customer confirmation</strong><small>Email the customer with their booking details and current status.</small></span>
+                </label>
+                <label class="booking-email-option">
+                    <input type="checkbox" name="send_company_notification" {% if notify_company_notification %}checked{% endif %}>
+                    <span><strong>Send company notification</strong><small>Email the configured company inbox with the new booking details.</small></span>
+                </label>
+                {% endif %}
+            </div>
+        </section>
+
         <footer class="booking-editor-actions">
             <a href="{% url 'booking_list' %}" class="booking-cancel-btn">Back to bookings</a>
             <button type="submit" class="booking-save-btn">
