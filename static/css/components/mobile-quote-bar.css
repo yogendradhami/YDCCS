@@ -1,0 +1,97 @@
+.mobile-quote-bar {
+    display: none;
+}
+
+@media (max-width: 760px) {
+    body:has(.mobile-quote-bar) {
+        padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .mobile-quote-bar {
+        position: fixed;
+        z-index: 99990;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        gap: 8px;
+        padding: 9px 12px calc(9px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid #dce5e4;
+        background: rgba(255, 255, 255, .97);
+        box-shadow: 0 -7px 22px rgba(27, 55, 60, .12);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+    }
+
+    .mobile-quote-action {
+        display: flex;
+        min-width: 0;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 7px 9px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 850;
+        line-height: 1.15;
+        text-align: center;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-quote-primary {
+        background: #087f82;
+        color: #fff;
+    }
+
+    .mobile-quote-primary:hover,
+    .mobile-quote-primary:focus-visible {
+        background: #06696c;
+        color: #fff;
+    }
+
+    .mobile-quote-call {
+        border-color: #cddbd9;
+        background: #fff;
+        color: #22504f;
+    }
+
+    .mobile-quote-call:hover,
+    .mobile-quote-call:focus-visible {
+        border-color: #8eb6b0;
+        background: #f3f8f6;
+        color: #174542;
+    }
+
+    .mobile-quote-action:focus-visible {
+        outline: 3px solid #e8ad61;
+        outline-offset: 2px;
+    }
+
+    .mobile-quote-action small {
+        display: block;
+        margin-top: 2px;
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+    .mobile-quote-icon,
+    .mobile-call-icon {
+        flex: 0 0 auto;
+        font-size: 17px;
+        line-height: 1;
+    }
+
+    .yd-chat-widget {
+        bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (max-width: 360px) {
+    .mobile-quote-bar { gap: 6px; padding-right: 8px; padding-left: 8px; }
+    .mobile-quote-action { gap: 5px; padding-right: 6px; padding-left: 6px; font-size: 10px; }
+}

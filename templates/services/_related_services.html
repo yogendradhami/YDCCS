@@ -1,0 +1,24 @@
+{% if related_services %}
+<section class="section related-services-section" aria-labelledby="related-services-title">
+    <div class="container">
+        <div class="section-title">
+            <span class="service-section-eyebrow">EXPLORE MORE</span>
+            <h2 id="related-services-title">Related Cleaning Services</h2>
+            <p>Explore other professional cleaning solutions from our Adelaide team.</p>
+        </div>
+        <nav class="related-services-grid" aria-label="Related cleaning services">
+            {% for related in related_services|slice:":6" %}
+            <a href="{% url 'service_page' related.slug %}" class="related-service-card">
+                <span class="related-service-name">
+                    {{ related.label|cut:" Adelaide" }} in {{ location|default:"Adelaide" }}
+                </span>
+                <span class="related-service-location">
+                    View service
+                    <span aria-hidden="true">→</span>
+                </span>
+            </a>
+            {% endfor %}
+        </nav>
+    </div>
+</section>
+{% endif %}

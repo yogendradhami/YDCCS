@@ -1,5 +1,7 @@
 from datetime import timedelta
+from html.parser import HTMLParser
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.test import TestCase, override_settings
@@ -12,6 +14,41 @@ from google_reviews.models import GoogleReview
 from services.models import Service
 from customers.models import Customer
 from core.test_utils import mark_public_email_verified
+
+
+class AnchorCollector(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.anchors = []
+        self.breadcrumb_depth = 0
+        self.current_anchor = None
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        if tag == "nav" and attributes.get("aria-label") == "Breadcrumb":
+            self.breadcrumb_depth += 1
+        elif tag == "a":
+            self.current_anchor = {
+                "href": attributes.get("href", ""),
+                "class": attributes.get("class", ""),
+                "aria_current": attributes.get("aria-current", ""),
+                "breadcrumb": self.breadcrumb_depth > 0,
+                "text": [],
+            }
+
+    def handle_data(self, data):
+        if self.current_anchor is not None:
+            self.current_anchor["text"].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "a" and self.current_anchor is not None:
+            self.current_anchor["text"] = "".join(
+                self.current_anchor["text"]
+            ).strip()
+            self.anchors.append(self.current_anchor)
+            self.current_anchor = None
+        elif tag == "nav" and self.breadcrumb_depth:
+            self.breadcrumb_depth -= 1
 
 
 class SmokeTest(TestCase):
@@ -33,6 +70,28 @@ class SmokeTest(TestCase):
             packages=[{"name": "Standard", "price": "$120"}],
             is_active=True,
         )
+
+    def assert_internal_links_resolve(
+        self,
+        response,
+        *,
+        class_names=(),
+        include_breadcrumbs=False,
+    ):
+        anchors = AnchorCollector()
+        anchors.feed(response.content.decode("utf-8"))
+        for anchor in anchors.anchors:
+            anchor_classes = set(anchor["class"].split())
+            if not (
+                anchor_classes.intersection(class_names)
+                or include_breadcrumbs and anchor["breadcrumb"]
+            ):
+                continue
+
+            path = urlsplit(anchor["href"]).path
+            if path.startswith("/"):
+                with self.subTest(internal_link=path):
+                    self.assertEqual(self.client.get(path).status_code, 200)
 
     def test_root_url_resolves(self):
         response = self.client.get("/")
@@ -176,6 +235,159 @@ class SmokeTest(TestCase):
         self.assertIn("Aberfoyle Park Cleaning Services | YD Commercial Cleaning", body)
         self.assertIn("Professional cleaning services in Aberfoyle Park, Adelaide", body)
         self.assertIn("Aberfoyle Park", body)
+
+    def test_adelaide_directory_and_all_letter_pages_link_to_controlled_suburbs(self):
+        from core.views import _get_controlled_adelaide_areas
+
+        areas = _get_controlled_adelaide_areas()
+        controlled_slugs = {area["slug"] for area in areas}
+        hub = self.client.get(reverse("local_area_index_default"))
+
+        self.assertEqual(hub.status_code, 200)
+        self.assertContains(hub, "Professional Cleaning Services in Adelaide")
+        self.assertEqual(
+            {area["slug"] for area in hub.context["related_areas"]},
+            controlled_slugs,
+        )
+        self.assert_internal_links_resolve(
+            hub,
+            class_names=("adelaide-card-link", "adelaide-suburb-card"),
+            include_breadcrumbs=True,
+        )
+        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+            url_name = (
+                "local_area_index_default"
+                if letter == "A"
+                else "local_area_index"
+            )
+            kwargs = {} if letter == "A" else {"letter": letter.lower()}
+            self.assertContains(
+                hub,
+                f'href="{reverse(url_name, kwargs=kwargs)}"',
+            )
+
+        for area in hub.context["related_areas"]:
+            with self.subTest(suburb=area["slug"]):
+                suburb_response = self.client.get(
+                    reverse("local_suburb_detail", args=[area["slug"]])
+                )
+                self.assertEqual(suburb_response.status_code, 200)
+
+        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+            with self.subTest(letter=letter):
+                url_name = (
+                    "local_area_index_default"
+                    if letter == "A"
+                    else "local_area_index"
+                )
+                kwargs = {} if letter == "A" else {"letter": letter.lower()}
+                letter_url = reverse(url_name, kwargs=kwargs)
+                response = self.client.get(letter_url)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.context["current_letter"], letter)
+                self.assertContains(response, f'href="{letter_url}"')
+
+                anchors = AnchorCollector()
+                anchors.feed(response.content.decode("utf-8"))
+                active_letters = [
+                    anchor
+                    for anchor in anchors.anchors
+                    if "active" in anchor["class"].split()
+                    and anchor["aria_current"] == "page"
+                ]
+                self.assertEqual(len(active_letters), 1)
+                self.assertEqual(active_letters[0]["text"], letter)
+
+                expected_suburbs = {
+                    area["slug"]
+                    for area in areas
+                    if letter == "A" or area["letter"] == letter
+                }
+                self.assertEqual(
+                    {
+                        urlsplit(anchor["href"]).path.rsplit("/", 2)[-2]
+                        for anchor in anchors.anchors
+                        if "adelaide-suburb-card" in anchor["class"].split()
+                    },
+                    expected_suburbs,
+                )
+
+    def test_suburb_pages_have_working_breadcrumbs_and_valid_nearby_links(self):
+        from core.views import _get_controlled_adelaide_areas
+
+        controlled_slugs = {
+            area["slug"] for area in _get_controlled_adelaide_areas()
+        }
+        for area_slug in controlled_slugs:
+            with self.subTest(suburb=area_slug):
+                response = self.client.get(
+                    reverse("local_suburb_detail", args=[area_slug])
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(
+                    response,
+                    f"Cleaning Services Available in "
+                    f"{response.context['suburb_name']}",
+                )
+
+                anchors = AnchorCollector()
+                anchors.feed(response.content.decode("utf-8"))
+                breadcrumb_paths = {
+                    urlsplit(anchor["href"]).path
+                    for anchor in anchors.anchors
+                    if anchor["breadcrumb"]
+                }
+                self.assertIn(reverse("local_area_index_default"), breadcrumb_paths)
+                letter = response.context["suburb"]["letter"]
+                letter_url = (
+                    reverse("local_area_index_default")
+                    if letter == "A"
+                    else reverse("local_area_index", args=[letter.lower()])
+                )
+                self.assertIn(letter_url, breadcrumb_paths)
+                self.assert_internal_links_resolve(
+                    response,
+                    class_names=(
+                        "adelaide-card-link",
+                        "adelaide-suburb-card",
+                    ),
+                    include_breadcrumbs=True,
+                )
+
+                for nearby_area in response.context["nearby_area_links"]:
+                    self.assertIn(nearby_area["slug"], controlled_slugs)
+                    nearby_response = self.client.get(
+                        reverse(
+                            "local_suburb_detail",
+                            args=[nearby_area["slug"]],
+                        )
+                    )
+                    self.assertEqual(nearby_response.status_code, 200)
+
+    def test_related_service_links_are_canonical_and_resolve(self):
+        response = self.client.get(
+            reverse("service_page", args=["commercial-cleaning-adelaide"])
+        )
+        self.assertEqual(response.status_code, 200)
+
+        anchors = AnchorCollector()
+        anchors.feed(response.content.decode("utf-8"))
+        related_links = [
+            anchor
+            for anchor in anchors.anchors
+            if "related-service-card" in anchor["class"].split()
+        ]
+        self.assertGreaterEqual(len(related_links), 3)
+        self.assertLessEqual(len(related_links), 6)
+        self.assertEqual(
+            len({anchor["href"] for anchor in related_links}),
+            len(related_links),
+        )
+
+        for anchor in related_links:
+            with self.subTest(href=anchor["href"]):
+                linked_page = self.client.get(anchor["href"])
+                self.assertEqual(linked_page.status_code, 200)
 
     def test_adelaide_local_area_sitemap_contains_controlled_pages(self):
         sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")

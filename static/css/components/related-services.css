@@ -1,0 +1,95 @@
+.related-services-section {
+    padding: 64px 0;
+    background: #f4f7f5;
+}
+
+.related-services-section .section-title {
+    max-width: 720px;
+    margin: 0 auto 28px;
+    text-align: center;
+}
+
+.related-services-section .section-title h2 {
+    margin: 0 0 8px;
+    color: #233a3d;
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+.related-services-section .section-title p {
+    margin: 0;
+    color: #65777a;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.related-services-section .service-section-eyebrow {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #9a6b35;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .1em;
+}
+
+.related-services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.related-service-card {
+    display: flex;
+    min-height: 82px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 15px 16px;
+    border: 1px solid #dce5e2;
+    border-radius: 6px;
+    background: #fff;
+    color: #263d40;
+    text-decoration: none;
+    transition: border-color .16s ease, transform .16s ease, background .16s ease;
+}
+
+.related-service-card:hover {
+    transform: translateY(-2px);
+    border-color: #9ebdb5;
+    background: #fbfdfc;
+}
+
+.related-service-card:focus-visible {
+    outline: 3px solid #d6a461;
+    outline-offset: 3px;
+}
+
+.related-service-name {
+    color: #2b4245;
+    font-size: 12px;
+    font-weight: 850;
+    line-height: 1.4;
+}
+
+.related-service-location {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 7px;
+    color: #176b63;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.related-service-location span { font-size: 14px; }
+
+@media (max-width: 760px) {
+    .related-services-section { padding: 48px 0; }
+    .related-services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+    .related-services-section .section-title { margin-bottom: 20px; text-align: left; }
+    .related-services-section .section-title h2 { font-size: 23px; }
+    .related-services-grid { grid-template-columns: minmax(0, 1fr); }
+}

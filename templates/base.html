@@ -120,6 +120,8 @@
         href="{% static 'css/components/chat-widget.css' %}"
     >
 
+    <link rel="stylesheet" href="{% static 'css/components/mobile-quote-bar.css' %}">
+
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
@@ -2584,6 +2586,19 @@
     <script defer src="{% static 'js/security/public-email-verification.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
+
+    {% if request.path|slice:":11" != "/dashboard/" and request.path|slice:":8" != "/portal/" and request.path|slice:":10" != "/employee/" %}
+    <nav class="mobile-quote-bar" aria-label="Contact YD Commercial Cleaning">
+        <a class="mobile-quote-action mobile-quote-primary" href="{% url 'contact' %}#quote-form">
+            <span class="mobile-quote-icon" aria-hidden="true">&#9998;</span>
+            <span>Get a Free Quote</span>
+        </a>
+        <a class="mobile-quote-action mobile-quote-call" href="tel:+61430049865">
+            <span class="mobile-call-icon" aria-hidden="true">&#9742;</span>
+            <span>Call <small>0430 049 865</small></span>
+        </a>
+    </nav>
+    {% endif %}
 
 </body>
 </html>

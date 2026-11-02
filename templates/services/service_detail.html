@@ -11,6 +11,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/service-detail.css' %}">
 <link rel="stylesheet" href="{% static 'css/components/quick-quote.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/related-services.css' %}">
 {% endblock %}
 
 
@@ -1363,72 +1364,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
 
 
-<!-- ===================================================
-     RELATED SERVICES
-=================================================== -->
-
-{% if service.related_services %}
-
-<section class="section related-services-section">
-
-    <div class="container">
-
-        <div class="section-title">
-
-            <span class="service-section-eyebrow">
-                Explore More
-            </span>
-
-            <h2>
-                Related Cleaning Services
-            </h2>
-
-            <p>
-                Explore other professional cleaning solutions from our Adelaide team.
-            </p>
-
-        </div>
-
-
-        <div class="related-services-grid">
-
-            {% for related in service.related_services %}
-
-            <a
-                href="{% url 'service_page' related.slug %}"
-                class="related-service-card"
-            >
-
-                <span class="related-service-name">
-                    {{ related.label }}
-                </span>
-
-
-                <span class="related-service-location">
-
-                    {% if location %}
-                    {{ location }}
-                    {% else %}
-                    Adelaide
-                    {% endif %}
-
-                    <span aria-hidden="true">
-                        →
-                    </span>
-
-                </span>
-
-            </a>
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-
-</section>
-
-{% endif %}
+{% include "services/_related_services.html" with related_services=service.related_services location=location %}
 
 
 

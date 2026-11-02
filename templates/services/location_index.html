@@ -25,6 +25,24 @@
 
 <div class="adelaide-location-index">
 
+    <div class="adelaide-breadcrumb-band">
+        <div class="container">
+            <nav aria-label="Breadcrumb">
+                <ol class="adelaide-breadcrumbs">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li aria-hidden="true">/</li>
+                    {% if is_adelaide_hub %}
+                        <li aria-current="page">Adelaide cleaning directory</li>
+                    {% else %}
+                        <li><a href="{% url 'local_area_index_default' %}">Adelaide cleaning directory</a></li>
+                        <li aria-hidden="true">/</li>
+                        <li aria-current="page">Areas starting with {{ current_letter }}</li>
+                    {% endif %}
+                </ol>
+            </nav>
+        </div>
+    </div>
+
     <!-- =========================================================
          HERO
     ========================================================== -->
@@ -188,7 +206,7 @@
 
             <div class="adelaide-services-grid">
 
-                {% for service in services|slice:":6" %}
+                {% for service in related_services %}
 
                     <article class="adelaide-service-card">
 
@@ -206,8 +224,8 @@
                             {{ service.description }}
                         </p>
 
-                        <a href="{{ service.url }}" class="adelaide-card-link">
-                            Learn More
+                        <a href="{% url 'service_page' service.slug %}" class="adelaide-card-link">
+                            Explore {{ service.name }}
                             <span aria-hidden="true">→</span>
                         </a>
 
@@ -238,26 +256,19 @@
 
                 <div>
                     <span class="adelaide-section-kicker">
-                        ADELAIDE SERVICE AREAS
+                        {% if is_adelaide_hub %}RELATED SUBURB PAGES{% else %}RELATED ADELAIDE SUBURBS{% endif %}
                     </span>
 
                     {% if is_adelaide_hub %}
-                        <h2>Find Cleaning Services in Your Adelaide Suburb</h2>
+                        <h2>Explore Adelaide Suburb Pages</h2>
 
                         <p>
-                            Browse our Adelaide service areas alphabetically
-                            and select your suburb to explore local cleaning
-                            services.
+                            Browse suburb-specific cleaning information alphabetically. Choose a suburb to view its local service options, nearby areas and FAQs.
                         </p>
                     {% else %}
-                        <h2>
-                            Adelaide Areas Starting With {{ current_letter }}
-                        </h2>
+                        <h2>Related Suburbs Starting With {{ current_letter }}</h2>
 
-                        <p>
-                            Explore the Adelaide suburbs currently listed under
-                            the letter {{ current_letter }}.
-                        </p>
+                        <p>These suburb pages are listed under {{ current_letter }} in the Adelaide directory.</p>
                     {% endif %}
                 </div>
 
@@ -299,11 +310,11 @@
 
 
             <!-- Suburbs -->
-            {% if matching_areas %}
+            {% if related_areas %}
 
                 <div class="adelaide-suburbs-grid">
 
-                    {% for area in matching_areas %}
+                    {% for area in related_areas %}
 
                         <a
                             href="{% url 'local_suburb_detail' area_slug=area.slug %}"

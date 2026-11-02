@@ -33,6 +33,17 @@ class DashboardLoginLayoutTests(TestCase):
         self.assertNotContains(response, 'class="yd-why-choose-section"')
         self.assertNotContains(response, 'id="yd-faq-section"')
 
+    def test_mobile_quote_and_call_bar_is_public_only(self):
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="mobile-quote-bar"')
+        self.assertContains(response, 'href="/contact/#quote-form"')
+        self.assertContains(response, 'href="tel:+61430049865"')
+
+        login_response = self.client.get(reverse("dashboard_login"))
+        self.assertNotContains(login_response, 'class="mobile-quote-bar"')
+
 
 class DashboardBookingListTests(TestCase):
     def setUp(self):

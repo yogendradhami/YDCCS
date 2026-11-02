@@ -123,67 +123,31 @@
     <!-- =========================================================
          BREADCRUMB
     ========================================================== -->
-    <section
-        class="adelaide-local-content"
-        style="padding: 24px 0 0;"
-    >
+    <section class="adelaide-breadcrumb-band">
         <div class="container">
-
             <nav aria-label="Breadcrumb">
-
-                <ol
-                    style="
-                        display:flex;
-                        flex-wrap:wrap;
-                        gap:8px;
-                        margin:0;
-                        padding:0;
-                        list-style:none;
-                        color:var(--adelaide-muted);
-                        font-size:0.85rem;
-                    "
-                >
-
+                <ol class="adelaide-breadcrumbs">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li aria-hidden="true">/</li>
                     <li>
-                        <a
-                            href="{% url 'home' %}"
-                            style="
-                                color:var(--adelaide-blue);
-                                text-decoration:none;
-                            "
-                        >
-                            Home
+                        <a href="{% url 'local_area_index_default' %}">
+                            Adelaide cleaning directory
                         </a>
                     </li>
-
-                    <li aria-hidden="true">
-                        /
-                    </li>
-
+                    <li aria-hidden="true">/</li>
                     <li>
-                        <a
-                            href="{% url 'local_area_index_default' %}"
-                            style="
-                                color:var(--adelaide-blue);
-                                text-decoration:none;
-                            "
-                        >
-                            Adelaide Cleaning Services
+                        {% if suburb.letter|upper == "A" %}
+                            <a href="{% url 'local_area_index_default' %}">
+                        {% else %}
+                            <a href="{% url 'local_area_index' letter=suburb.letter|lower %}">
+                        {% endif %}
+                            Areas starting with {{ suburb.letter|upper }}
                         </a>
                     </li>
-
-                    <li aria-hidden="true">
-                        /
-                    </li>
-
-                    <li aria-current="page">
-                        {{ suburb_name }}
-                    </li>
-
+                    <li aria-hidden="true">/</li>
+                    <li aria-current="page">{{ suburb_name }}</li>
                 </ol>
-
             </nav>
-
         </div>
     </section>
 
@@ -294,9 +258,7 @@
                     OUR CLEANING SERVICES
                 </span>
 
-                <h2>
-                    Complete Cleaning Services in {{ suburb_name }}
-                </h2>
+                <h2>Cleaning Services Available in {{ suburb_name }}</h2>
 
                 <p>
                     Choose from our available residential, commercial and
@@ -306,8 +268,8 @@
 
                 {% if services %}
                     <p>
-                        <strong>{{ services|length }}</strong>
-                        cleaning services available.
+                        <strong>{{ related_services|length }}</strong>
+                        relevant cleaning services to explore.
                     </p>
                 {% endif %}
 
@@ -318,7 +280,7 @@
 
                 <div class="adelaide-services-grid">
 
-                    {% for service in services %}
+                    {% for service in related_services %}
 
                         <article class="adelaide-service-card">
 
@@ -357,7 +319,7 @@
                             {% endif %}
 
                             <a
-                                href="{{ service.url }}"
+                                href="{% url 'service_page' service.slug %}"
                                 class="adelaide-card-link"
                                 aria-label="Learn more about {{ service.name }}"
                             >

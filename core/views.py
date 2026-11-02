@@ -316,10 +316,230 @@ def _get_adelaide_services():
 
     return services
 
+
+def _service_base_slug(service_slug):
+    slug = str(service_slug or "").strip().strip("/").lower()
+    if slug in SERVICE_DEFINITIONS:
+        return slug
+    if slug.endswith("-adelaide"):
+        return slug[:-len("-adelaide")]
+    return _normalize_service_slug(slug)
+
+
+def _related_service_values(items):
+    values = []
+    for item in items or []:
+        if isinstance(item, dict):
+            value = item.get("slug") or item.get("service_slug") or item.get("name")
+        else:
+            value = item
+        if value:
+            values.append(str(value).strip())
+    return values
+
+
+def _service_search_terms(*values):
+    ignored = {
+        "adelaide", "and", "cleaner", "cleaners", "cleaning", "for",
+        "professional", "service", "services", "the", "with",
+    }
+    terms = set()
+    for value in values:
+        if isinstance(value, (list, tuple, set)):
+            terms.update(_service_search_terms(*value))
+        elif value:
+            terms.update(
+                token
+                for token in slugify(str(value)).split("-")
+                if token and token not in ignored
+            )
+    return terms
+
+
+def _normalize_related_services(
+    related_services,
+    location_name="Adelaide",
+    *,
+    active_service_slugs=None,
+    active_service_names=None,
+):
+    if active_service_slugs is None:
+        active_service_slugs = set(
+            Service.objects.filter(is_active=True).values_list("slug", flat=True)
+        )
+    if active_service_names is None:
+        active_service_names = {}
+
+    location_slug = slugify(location_name) if location_name else ""
+    normalized = []
+    seen = set()
+
+    for item in related_services or []:
+        if isinstance(item, dict):
+            raw_slug = item.get("slug") or item.get("service_slug") or item.get("name") or ""
+            explicit_label = item.get("label") or item.get("title") or item.get("name")
+        else:
+            raw_slug = str(item).strip()
+            explicit_label = ""
+
+        if not raw_slug:
+            continue
+
+        base_slug = _service_base_slug(raw_slug)
+        if not base_slug:
+            continue
+
+        candidates = []
+        if location_slug and location_slug != "adelaide":
+            candidates.append(f"{base_slug}-adelaide-{location_slug}")
+        candidates.extend((f"{base_slug}-adelaide", base_slug, raw_slug))
+
+        target_slug = next(
+            (
+                candidate
+                for candidate in candidates
+                if candidate in active_service_slugs
+                or _service_base_slug(candidate) in SERVICE_DEFINITIONS
+            ),
+            None,
+        )
+        if not target_slug or target_slug in seen:
+            continue
+
+        seen.add(target_slug)
+        definition = SERVICE_DEFINITIONS.get(base_slug, {})
+        label = (
+            explicit_label
+            or active_service_names.get(target_slug)
+            or definition.get("title")
+            or definition.get("service_name")
+            or base_slug.replace("-", " ").title()
+        )
+        normalized.append({"slug": target_slug, "label": label})
+
+    return normalized
+
+
+def _build_related_service_links(service_slug, service_obj=None, location_name="Adelaide"):
+    base_slug = _service_base_slug(service_slug)
+    definition = SERVICE_DEFINITIONS.get(base_slug, {})
+    direct = (
+        getattr(service_obj, "related_services", None)
+        or definition.get("related_services", [])
+    )
+    candidates = []
+    seen_bases = {base_slug}
+
+    def add_candidate(value):
+        related_base = _service_base_slug(value)
+        if related_base and related_base not in seen_bases:
+            seen_bases.add(related_base)
+            candidates.append(value)
+
+    for value in _related_service_values(direct):
+        add_candidate(value)
+
+    # Curated reverse links and one-hop related links keep sparse definitions useful.
+    for other_slug, other_definition in SERVICE_DEFINITIONS.items():
+        other_related = _related_service_values(other_definition.get("related_services", []))
+        if any(_service_base_slug(value) == base_slug for value in other_related):
+            add_candidate(other_slug)
+
+    for value in list(candidates):
+        neighbor_definition = SERVICE_DEFINITIONS.get(_service_base_slug(value), {})
+        for nested in _related_service_values(neighbor_definition.get("related_services", [])):
+            add_candidate(nested)
+
+    active_records = list(
+        Service.objects.filter(is_active=True)
+        .only("slug", "name", "description", "ideal_for", "industries")
+        .order_by("name", "slug")
+    )
+    active_service_slugs = {record.slug for record in active_records}
+    active_service_names = {record.slug: record.name for record in active_records}
+    current_name = (
+        getattr(service_obj, "name", "")
+        or definition.get("title")
+        or definition.get("service_name", "")
+        or base_slug
+    )
+    current_terms = _service_search_terms(
+        base_slug,
+        current_name,
+        definition.get("ideal_for", []),
+        definition.get("industries", []),
+        getattr(service_obj, "ideal_for", []),
+        getattr(service_obj, "industries", []),
+    )
+
+    if len(candidates) < 3 and current_terms:
+        similar = []
+        for other_slug, other_definition in SERVICE_DEFINITIONS.items():
+            other_base = _service_base_slug(other_slug)
+            if other_base == base_slug:
+                continue
+            other_terms = _service_search_terms(
+                other_base,
+                other_definition.get("title"),
+                other_definition.get("service_name"),
+                other_definition.get("ideal_for", []),
+                other_definition.get("industries", []),
+            )
+            overlap = len(current_terms & other_terms)
+            if overlap and other_base not in seen_bases:
+                similar.append((overlap, other_slug))
+        for _, other_slug in sorted(similar, key=lambda row: (-row[0], row[1])):
+            add_candidate(other_slug)
+
+    normalized = _normalize_related_services(
+        candidates,
+        location_name,
+        active_service_slugs=active_service_slugs,
+        active_service_names=active_service_names,
+    )
+    return normalized[:6]
+
+
+def _select_adelaide_service_links(services, limit=6):
+    preferred_order = (
+        "house-cleaning",
+        "commercial-cleaning",
+        "office-cleaning",
+        "end-of-lease-cleaning",
+        "carpet-cleaning",
+        "window-cleaning",
+        "deep-cleaning",
+        "bond-cleaning",
+    )
+    by_base_slug = {}
+    for service in services:
+        by_base_slug.setdefault(_service_base_slug(service.get("slug")), service)
+
+    selected = []
+    seen = set()
+    for service_slug in preferred_order:
+        service = by_base_slug.get(service_slug)
+        if service and service_slug not in seen:
+            selected.append(service)
+            seen.add(service_slug)
+        if len(selected) >= limit:
+            return selected
+
+    for service in services:
+        base_slug = _service_base_slug(service.get("slug"))
+        if base_slug and base_slug not in seen:
+            selected.append(service)
+            seen.add(base_slug)
+        if len(selected) >= limit:
+            break
+    return selected
+
 def _get_letter_areas(letter):
+    current_letter = str(letter or "").upper()
     return [
-        {"name": area["name"], "postcode": area["postcode"], "slug": _slugify_area(area)}
-        for area in ADELAIDE_SUBURBS.get(letter.lower(), [])
+        area
+        for area in _get_controlled_adelaide_areas()
+        if area["letter"] == current_letter
     ]
 
 
@@ -329,6 +549,31 @@ def _get_suburb_by_slug(area_slug):
             if _slugify_area(area) == area_slug:
                 return area
     return None
+
+
+def _get_controlled_adelaide_areas():
+    controlled_areas = {}
+    for registry in (ADELAIDE_LOCAL_AREAS, ADELAIDE_LOCAL_CONTENT):
+        for area_slug, content in registry.items():
+            dataset_area = _get_suburb_by_slug(area_slug)
+            name = content.get("name") or (
+                dataset_area.get("name") if dataset_area else ""
+            )
+            if not name:
+                continue
+
+            controlled_areas[area_slug] = {
+                "name": name,
+                "postcode": content.get("postcode")
+                or (dataset_area.get("postcode", "") if dataset_area else ""),
+                "slug": area_slug,
+                "letter": content.get("letter") or name[0].upper(),
+            }
+
+    return sorted(
+        controlled_areas.values(),
+        key=lambda area: (area["name"].casefold(), area["postcode"]),
+    )
 
 
 def _quick_quote_context(request, *, allow_unmarked_post=False):
@@ -1184,21 +1429,24 @@ def local_services(request):
 
 def local_area_index(request, letter="a"):
     location_name = "Adelaide"
-    current_letter = letter.upper()
     letters = [chr(code) for code in range(ord("A"), ord("Z") + 1)]
-    matching_areas = _get_letter_areas(letter)
+    current_letter = letter.upper()
+    matching_areas = _get_letter_areas(current_letter)
 
     services = _get_adelaide_services()
 
     matching_areas_by_letter = {
-        letter: _get_letter_areas(letter)
-        for letter in "abcdefghijklmnopqrstuvwxyz"
+        area_letter: _get_letter_areas(area_letter)
+        for area_letter in letters
     }
 
     # The no-letter URL is the main Adelaide local SEO hub.
     is_adelaide_hub = (
         getattr(request.resolver_match, "url_name", None)
         == "local_area_index_default"
+    )
+    related_areas = (
+        _get_controlled_adelaide_areas() if is_adelaide_hub else matching_areas
     )
 
     if is_adelaide_hub:
@@ -1226,7 +1474,9 @@ def local_area_index(request, letter="a"):
         "letters": letters,
         "current_letter": current_letter,
         "matching_areas": matching_areas,
+        "related_areas": related_areas,
         "services": services,
+        "related_services": _select_adelaide_service_links(services),
         "matching_areas_by_letter": matching_areas_by_letter,
         "is_adelaide_hub": is_adelaide_hub,
     }
@@ -1272,6 +1522,10 @@ def local_suburb_detail(request, area_slug):
         return redirect("local_services")
 
     suburb_name = suburb_data["name"]
+    suburb_data = {
+        **suburb_data,
+        "letter": suburb_data.get("letter") or suburb_name[0].upper(),
+    }
     postcode = suburb_data.get("postcode", "")
 
     # Apply unique content when a suburb has a dedicated content record.
@@ -1338,19 +1592,22 @@ def local_suburb_detail(request, area_slug):
     #    Only controlled nearby pages become clickable.
     #    This preserves the safe behaviour already implemented.
     # ---------------------------------------------------------
+    controlled_areas_by_name = {
+        area["name"].casefold(): area
+        for area in _get_controlled_adelaide_areas()
+    }
     nearby_area_links = []
+    seen_nearby_slugs = set()
 
     for nearby_name in suburb_data.get("nearby_areas", []):
-        for nearby_slug, nearby_data in ADELAIDE_LOCAL_AREAS.items():
-            if nearby_data.get("name") == nearby_name:
-                nearby_area_links.append(
-                    {
-                        "name": nearby_data["name"],
-                        "postcode": nearby_data.get("postcode", ""),
-                        "slug": nearby_slug,
-                    }
-                )
-                break
+        nearby_area = controlled_areas_by_name.get(nearby_name.casefold())
+        if (
+            nearby_area
+            and nearby_area["slug"] != area_slug
+            and nearby_area["slug"] not in seen_nearby_slugs
+        ):
+            nearby_area_links.append(nearby_area)
+            seen_nearby_slugs.add(nearby_area["slug"])
 
     # ---------------------------------------------------------
     # 9. Fallback content for suburbs that don't yet have a
@@ -1495,6 +1752,7 @@ def local_suburb_detail(request, area_slug):
         "page_description": page_description,
 
         "services": services,
+        "related_services": _select_adelaide_service_links(services),
         "google_reviews": google_reviews,
 
         # ONE canonical FAQ section
@@ -1704,32 +1962,246 @@ def _get_location_from_slug(slug):
     return "Adelaide"
 
 
-def _normalize_related_services(related_services, location_name="Adelaide"):
-    normalized = []
+def _service_base_slug(service_slug):
+    slug = str(service_slug or "").strip().strip("/").lower()
+    if slug in SERVICE_DEFINITIONS:
+        return slug
+    return _normalize_service_slug(slug)
+
+
+def _normalize_related_services(
+    related_services,
+    location_name="Adelaide",
+    *,
+    active_service_slugs=None,
+    active_service_names=None,
+):
+    if active_service_slugs is None:
+        active_service_rows = Service.objects.filter(is_active=True).values_list(
+            "slug", "name"
+        )
+        active_service_names = dict(active_service_rows)
+        active_service_slugs = set(active_service_names)
+    else:
+        active_service_names = active_service_names or {}
+
     location_slug = slugify(location_name) if location_name else ""
+    normalized = []
+    seen = set()
 
     for item in related_services or []:
         if isinstance(item, dict):
-            slug = item.get("slug") or item.get("service_slug") or item.get("name") or ""
-            label = item.get("label") or item.get("title") or item.get("name") or slug.replace("-", " ").title()
+            raw_slug = item.get("slug") or item.get("service_slug") or item.get("name") or ""
+            explicit_label = item.get("label") or item.get("title") or item.get("name")
         else:
-            slug = str(item).strip()
-            label = slug.replace("-", " ").title()
+            raw_slug = str(item).strip()
+            explicit_label = ""
 
-        if not slug:
+        if not raw_slug:
             continue
 
-        # Prefer the existing Adelaide/location-specific service URL when one exists.
-        candidate = f"{slug}-adelaide-{location_slug}" if location_slug and location_slug != "adelaide" else f"{slug}-adelaide"
-        if Service.objects.filter(slug=candidate, is_active=True).exists():
-            slug = candidate
-        elif not Service.objects.filter(slug=slug, is_active=True).exists():
-            # Keep the relationship only if a known service URL exists.
+        base_slug = _service_base_slug(raw_slug)
+        if not base_slug:
             continue
 
-        normalized.append({"slug": slug, "label": label})
+        candidates = []
+        if location_slug and location_slug != "adelaide":
+            candidates.append(f"{base_slug}-adelaide-{location_slug}")
+        candidates.extend((f"{base_slug}-adelaide", base_slug, raw_slug))
+        target_slug = next(
+            (
+                candidate
+                for candidate in candidates
+                if candidate in active_service_slugs
+                or _service_base_slug(candidate) in SERVICE_DEFINITIONS
+            ),
+            None,
+        )
+        if not target_slug or target_slug in seen:
+            continue
+
+        seen.add(target_slug)
+        target_base = _service_base_slug(target_slug)
+        definition = SERVICE_DEFINITIONS.get(target_base, {})
+        label = (
+            explicit_label
+            or active_service_names.get(target_slug)
+            or definition.get("title")
+            or definition.get("service_name")
+            or target_base.replace("-", " ").title()
+        )
+        normalized.append({"slug": target_slug, "label": label})
 
     return normalized
+
+
+def _service_search_terms(*values):
+    ignored = {
+        "adelaide", "and", "cleaner", "cleaners", "cleaning", "for",
+        "professional", "service", "services", "the", "with",
+    }
+    terms = set()
+    for value in values:
+        if isinstance(value, (list, tuple, set)):
+            terms.update(_service_search_terms(*value))
+        elif value:
+            terms.update(
+                token
+                for token in slugify(str(value)).split("-")
+                if token and token not in ignored
+            )
+    return terms
+
+
+def _build_related_service_links(service_slug, service_obj=None, location_name="Adelaide"):
+    base_slug = _service_base_slug(service_slug)
+    definition = SERVICE_DEFINITIONS.get(base_slug, {})
+    direct = (
+        getattr(service_obj, "related_services", None)
+        or definition.get("related_services", [])
+    )
+    candidates = []
+    seen_bases = {base_slug}
+
+    def add_candidate(value):
+        if isinstance(value, dict):
+            value = value.get("slug") or value.get("service_slug") or value.get("name")
+        related_base = _service_base_slug(value)
+        if related_base and related_base not in seen_bases:
+            seen_bases.add(related_base)
+            candidates.append(value)
+
+    direct_values = []
+    for value in direct or []:
+        add_candidate(value)
+        direct_values.append(value)
+
+    for other_slug, other_definition in SERVICE_DEFINITIONS.items():
+        other_related = other_definition.get("related_services", [])
+        if any(_service_base_slug(value) == base_slug for value in other_related):
+            add_candidate(other_slug)
+
+    for value in direct_values:
+        neighbor_definition = SERVICE_DEFINITIONS.get(_service_base_slug(value), {})
+        for nested in neighbor_definition.get("related_services", []):
+            add_candidate(nested)
+
+    active_records = list(
+        Service.objects.filter(is_active=True)
+        .only("slug", "name", "description", "ideal_for", "industries")
+        .order_by("name", "slug")
+    )
+    active_service_slugs = {record.slug for record in active_records}
+    active_service_names = {record.slug: record.name for record in active_records}
+    current_name = (
+        getattr(service_obj, "name", "")
+        or definition.get("title")
+        or definition.get("service_name", "")
+        or base_slug
+    )
+    current_terms = _service_search_terms(
+        base_slug,
+        current_name,
+        definition.get("description", ""),
+        definition.get("ideal_for", []),
+        definition.get("industries", []),
+        getattr(service_obj, "ideal_for", []),
+        getattr(service_obj, "industries", []),
+    )
+
+    if len(candidates) < 3 and current_terms:
+        similar = []
+        for other_slug, other_definition in SERVICE_DEFINITIONS.items():
+            other_base = _service_base_slug(other_slug)
+            if other_base == base_slug:
+                continue
+            other_terms = _service_search_terms(
+                other_base,
+                other_definition.get("title", ""),
+                other_definition.get("service_name", ""),
+                other_definition.get("description", ""),
+                other_definition.get("ideal_for", []),
+                other_definition.get("industries", []),
+            )
+            overlap = len(current_terms & other_terms)
+            if overlap and other_base not in seen_bases:
+                similar.append((overlap, other_slug))
+        for _, other_slug in sorted(similar, key=lambda row: (-row[0], row[1])):
+            add_candidate(other_slug)
+
+    normalized = _normalize_related_services(
+        candidates,
+        location_name,
+        active_service_slugs=active_service_slugs,
+        active_service_names=active_service_names,
+    )
+
+    if len(normalized) < 3 and current_terms:
+        active_similar = []
+        for record in active_records:
+            record_base = _service_base_slug(record.slug)
+            if record_base == base_slug or record_base in seen_bases:
+                continue
+            overlap = len(
+                current_terms
+                & _service_search_terms(
+                    record_base,
+                    record.name,
+                    record.description,
+                    record.ideal_for,
+                    record.industries,
+                )
+            )
+            if overlap:
+                active_similar.append((overlap, record_base))
+        more = _normalize_related_services(
+            [slug for _, slug in sorted(active_similar, key=lambda row: (-row[0], row[1]))],
+            location_name,
+            active_service_slugs=active_service_slugs,
+            active_service_names=active_service_names,
+        )
+        for link in more:
+            if link["slug"] not in {item["slug"] for item in normalized}:
+                normalized.append(link)
+            if len(normalized) >= 3:
+                break
+
+    return normalized[:6]
+
+
+def _select_adelaide_service_links(services, limit=6):
+    preferred_order = (
+        "house-cleaning",
+        "commercial-cleaning",
+        "office-cleaning",
+        "end-of-lease-cleaning",
+        "carpet-cleaning",
+        "window-cleaning",
+        "deep-cleaning",
+        "bond-cleaning",
+    )
+    by_base_slug = {}
+    for service in services:
+        by_base_slug.setdefault(_service_base_slug(service.get("slug")), service)
+
+    selected = []
+    seen = set()
+    for service_slug in preferred_order:
+        service = by_base_slug.get(service_slug)
+        if service and service_slug not in seen:
+            selected.append(service)
+            seen.add(service_slug)
+        if len(selected) >= limit:
+            return selected
+
+    for service in services:
+        base_slug = _service_base_slug(service.get("slug"))
+        if base_slug and base_slug not in seen:
+            selected.append(service)
+            seen.add(base_slug)
+        if len(selected) >= limit:
+            break
+    return selected
 
 
 def _get_service_hero_image_path(service_slug):
@@ -1784,7 +2256,7 @@ def _service_context_from_model(service_obj):
             or get_service_faqs(service_obj.slug)
             or []
         ),
-        "related_services": _normalize_related_services(getattr(service_obj, "related_services", []) or []),
+        "related_services": getattr(service_obj, "related_services", []) or [],
         "locations": getattr(service_obj, "locations", []) or [],
     }
 
@@ -1824,7 +2296,7 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
             or get_service_faqs(service_slug)
             or []
         ),
-        "related_services": _normalize_related_services(definition.get("related_services", []), location_name),
+        "related_services": definition.get("related_services", []),
         "locations": definition.get("locations", [location_name]),
     }
 
@@ -2388,6 +2860,12 @@ def service_page(request, service_slug):
 
     if not service:
         raise Http404("Service not found")
+
+    service["related_services"] = _build_related_service_links(
+        normalized_slug,
+        service_obj=service_obj,
+        location_name=location or "Adelaide",
+    )
 
     service_url = f"{settings.SITE_URL}{request.path}"
     google_reviews = _get_service_google_reviews(limit=6)
