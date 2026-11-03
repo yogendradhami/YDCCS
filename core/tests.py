@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from bookings.models import Booking
+from core.seo_data import SERVICE_DEFINITIONS
 from dashboard.models import CompanySettings
 from google_reviews.models import GoogleReview
 from services.models import Service
@@ -66,8 +67,26 @@ class SmokeTest(TestCase):
             overview="Deep-clean carpet steam cleaning for homes and businesses.",
             introduction="Carpet steam cleaning for Adelaide homes and offices.",
             hero_image="services/carpet-steam-cleaning-adelaide.jpg",
+            process=["Inspect the carpet and confirm the requested scope."],
+            faqs=[{
+                "question": "Can I request carpet steam cleaning?",
+                "answer": "Yes. Contact us to discuss your property and requirements.",
+            }],
             included=["Deep carpet extraction", "Stain treatment"],
             packages=[{"name": "Standard", "price": "$120"}],
+            is_active=True,
+        )
+        Service.objects.create(
+            slug="standard-bathroom-cleaning-adelaide",
+            name="Standard Bathroom Cleaning Adelaide",
+            description="Bathroom cleaning for Adelaide homes.",
+            overview="Cleaning for bathrooms based on the requested scope.",
+            introduction="Arrange bathroom cleaning for your property.",
+            hero_image="services/standard-bathroom-cleaning-adelaide.jpg",
+            process=["Discuss the bathroom cleaning requirements."],
+            included=["Bathroom surfaces"],
+            packages=[],
+            faqs=[],
             is_active=True,
         )
 
@@ -227,6 +246,106 @@ class SmokeTest(TestCase):
                 body = resp.content.decode("utf-8")
                 self.assertIn(expected_title, body)
                 self.assertNotIn("Adelaide Adelaide", body)
+
+    @patch("core.views._get_service_google_reviews", return_value=[])
+    def test_service_directory_and_definition_pages_are_reachable(self, _reviews):
+        directory = self.client.get(reverse("services_home"))
+        self.assertEqual(directory.status_code, 200)
+
+        anchors = AnchorCollector()
+        anchors.feed(directory.content.decode("utf-8"))
+        directory_service_urls = {
+            anchor["href"]
+            for anchor in anchors.anchors
+            if "btn" in anchor["class"].split()
+        }
+
+        expected_slugs = {
+            *(f"{slug}-adelaide" for slug in SERVICE_DEFINITIONS),
+            "standard-bathroom-cleaning-adelaide",
+        }
+        for service_slug in expected_slugs:
+            service_url = reverse("service_page", args=[service_slug])
+            with self.subTest(service_slug=service_slug):
+                self.assertIn(service_url, directory_service_urls)
+                response = self.client.get(service_url, follow=True)
+                self.assertEqual(response.status_code, 200)
+
+                related_anchors = AnchorCollector()
+                related_anchors.feed(response.content.decode("utf-8"))
+                related_links = [
+                    anchor for anchor in related_anchors.anchors
+                    if "related-service-card" in anchor["class"].split()
+                ]
+                self.assertGreaterEqual(len(related_links), 3)
+                self.assertLessEqual(len(related_links), 6)
+
+    @patch("core.views._get_service_google_reviews", return_value=[])
+    def test_service_page_renders_related_faqs_process_breadcrumbs_and_resources(
+        self, _reviews
+    ):
+        response = self.client.get(
+            reverse("service_page", args=["carpet-steam-cleaning-adelaide"])
+        )
+        self.assertEqual(response.status_code, 200)
+        service = response.context["service"]
+        self.assertEqual(
+            service["process"],
+            ["Inspect the carpet and confirm the requested scope."],
+        )
+        self.assertGreaterEqual(len(response.context["faq_section"]["entries"]), 5)
+        self.assertTrue(all(
+            package.get("name") and package.get("description")
+            for package in service["packages"]
+        ))
+
+        body = response.content.decode("utf-8")
+        self.assertIn('aria-label="Breadcrumb"', body)
+        self.assertIn('"@id": "https://ydcleaning.com.au/#localbusiness"', body)
+        self.assertNotIn("Satisfaction Guaranteed", body)
+        self.assertNotIn("Happy Adelaide Customers", body)
+        self.assertIn("fetchpriority=\"high\"", body)
+
+        anchors = AnchorCollector()
+        anchors.feed(body)
+        breadcrumb_urls = {
+            urlsplit(anchor["href"]).path
+            for anchor in anchors.anchors
+            if anchor["breadcrumb"]
+        }
+        self.assertIn(reverse("home"), breadcrumb_urls)
+        self.assertIn(reverse("services_home"), breadcrumb_urls)
+        self.assert_internal_links_resolve(
+            response,
+            class_names=("related-service-card", "service-resource-link"),
+            include_breadcrumbs=True,
+        )
+
+    @patch("core.views._get_service_google_reviews", return_value=[])
+    def test_quick_quote_offers_every_defined_service(self, _reviews):
+        from quotes.forms import QuickQuoteForm
+
+        service_choices = set(dict(
+            QuickQuoteForm.base_fields["service"].choices
+        ))
+        missing_choices = set(SERVICE_DEFINITIONS) - service_choices
+        missing_choices.discard("bathroom-cleaning")
+        self.assertFalse(missing_choices)
+        self.assertIn("standard-bathroom-cleaning", service_choices)
+
+        response = self.client.get(
+            reverse("service_page", args=["bathroom-cleaning-adelaide"])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["quick_quote_preset_service"],
+            "standard-bathroom-cleaning",
+        )
+
+    def test_definition_only_services_are_in_the_sitemap(self):
+        sitemap = self.client.get(reverse("sitemap_xml")).content.decode("utf-8")
+        self.assertIn("/services/kitchen-deep-cleaning-adelaide/", sitemap)
+        self.assertIn("/services/standard-bathroom-cleaning-adelaide/", sitemap)
 
     def test_controlled_adelaide_local_page_has_unique_seo_metadata(self):
         resp = self.client.get("/local/adelaide/aberfoyle-park-5159/")

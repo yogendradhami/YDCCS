@@ -23,6 +23,7 @@ from django.http import Http404, HttpResponse
 from django.http import JsonResponse
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.conf import settings
 from django.template import TemplateDoesNotExist
@@ -94,6 +95,75 @@ from customers.models import MarketingSubscriber
 
 logger = logging.getLogger(__name__)
 QUOTE_IMAGE_MAX_PENDING_BATCHES = 4
+SERVICE_PROFILE_ALIASES = {
+    "standard-bathroom-cleaning": "bathroom-cleaning",
+}
+
+SERVICE_GUIDE_LINKS = {
+    "house-cleaning": ("residential-checklist",),
+    "regular-house-cleaning": ("residential-checklist", "maintenance-schedule"),
+    "deep-cleaning": ("residential-checklist",),
+    "spring-cleaning": ("residential-checklist",),
+    "move-in-cleaning": ("residential-checklist",),
+    "move-out-cleaning": ("end-of-lease-checklist",),
+    "end-of-lease-cleaning": ("end-of-lease-checklist",),
+    "bond-cleaning": ("end-of-lease-checklist",),
+    "exit-cleaning": ("end-of-lease-checklist",),
+    "inspection-cleaning": ("end-of-lease-checklist",),
+    "commercial-cleaning": ("office-checklist", "maintenance-schedule"),
+    "office-cleaning": ("office-checklist", "maintenance-schedule"),
+    "medical-cleaning": ("office-checklist",),
+    "builders-cleaning": ("post-construction-checklist",),
+    "post-construction-cleaning": ("post-construction-checklist",),
+    "window-cleaning": ("window-glass-guide",),
+}
+
+SERVICE_BLOG_LINKS = {
+    "oven-cleaning": ("oven-cleaning-adelaide-why-professional-oven-cleaning-is-worth-it",),
+    "house-cleaning": (
+        "how-often-should-you-have-your-house-professionally-cleaned-in-adelaide",
+        "prepare-home-before-professional-cleaner-adelaide",
+    ),
+    "regular-house-cleaning": (
+        "how-often-should-you-have-your-house-professionally-cleaned-in-adelaide",
+        "prepare-home-before-professional-cleaner-adelaide",
+    ),
+    "spring-cleaning": ("spring-cleaning-checklist-adelaide",),
+    "commercial-cleaning": ("commercial-cleaning-adelaide-benefits-professional-cleaners",),
+    "office-cleaning": ("commercial-cleaning-adelaide-benefits-professional-cleaners",),
+    "medical-cleaning": ("commercial-cleaning-adelaide-benefits-professional-cleaners",),
+}
+
+SERVICE_RELATED_FALLBACKS = {
+    "regular-house-cleaning": ("deep-cleaning", "spring-cleaning"),
+    "window-cleaning": ("commercial-cleaning", "house-cleaning"),
+    "carpet-steam-cleaning": ("end-of-lease-cleaning", "house-cleaning"),
+    "builders-cleaning": ("move-in-cleaning", "deep-cleaning"),
+    "post-construction-cleaning": ("move-in-cleaning", "commercial-cleaning"),
+    "pressure-washing": ("commercial-cleaning", "post-construction-cleaning"),
+    "bathroom-cleaning": ("end-of-lease-cleaning", "house-cleaning"),
+    "kitchen-cleaning": ("end-of-lease-cleaning",),
+    "move-in-cleaning": ("house-cleaning",),
+    "move-out-cleaning": ("carpet-cleaning",),
+    "spring-cleaning": ("house-cleaning",),
+    "oven-cleaning": ("kitchen-cleaning", "kitchen-deep-cleaning", "end-of-lease-cleaning"),
+    "exit-cleaning": ("move-out-cleaning",),
+    "carpet-cleaning": ("end-of-lease-cleaning", "house-cleaning"),
+    "kitchen-deep-cleaning": ("kitchen-cleaning", "oven-cleaning", "end-of-lease-cleaning"),
+    "standard-bathroom-cleaning": (
+        "deep-cleaning",
+        "end-of-lease-cleaning",
+        "house-cleaning",
+    ),
+}
+SERVICE_GUIDE_TITLES = {
+    "end-of-lease-checklist": "End-of-lease cleaning checklist",
+    "office-checklist": "Office cleaning checklist",
+    "maintenance-schedule": "Cleaning maintenance schedule",
+    "post-construction-checklist": "Post-construction cleaning checklist",
+    "residential-checklist": "Residential cleaning checklist",
+    "window-glass-guide": "Window and glass cleaning guide",
+}
 
 
 def _cleanup_unclaimed_quote_images(public_ids):
@@ -273,266 +343,46 @@ def _slugify_area(area):
 
 
 def _get_adelaide_services():
-    """
-    Return all active services for Adelaide local pages.
-
-    Uses the existing Service model so newly added active services
-    automatically appear on Adelaide suburb pages without requiring
-    another manual update here.
-    """
-    services = []
-
-    active_services = Service.objects.filter(
-        is_active=True
-    ).order_by("name", "slug")
-
-    for service in active_services:
-        service_name = getattr(service, "name", None)
-
-        if not service_name:
-            service_name = getattr(service, "service_name", None)
-
-        if not service_name:
-            service_name = service.slug.replace("-", " ").title()
-
-        description = getattr(service, "description", None)
-
-        if not description:
-            description = (
-                f"Professional {service_name.lower()} services "
-                f"available across Adelaide."
-            )
-
-        services.append(
-            {
-                "slug": service.slug,
-                "name": service_name,
-                "service_name": service_name,
-                "description": description,
-                "url": f"/services/{service.slug}/",
-                "included": [],
-            }
-        )
-
-    return services
-
-
-def _service_base_slug(service_slug):
-    slug = str(service_slug or "").strip().strip("/").lower()
-    if slug in SERVICE_DEFINITIONS:
-        return slug
-    if slug.endswith("-adelaide"):
-        return slug[:-len("-adelaide")]
-    return _normalize_service_slug(slug)
-
-
-def _related_service_values(items):
-    values = []
-    for item in items or []:
-        if isinstance(item, dict):
-            value = item.get("slug") or item.get("service_slug") or item.get("name")
-        else:
-            value = item
-        if value:
-            values.append(str(value).strip())
-    return values
-
-
-def _service_search_terms(*values):
-    ignored = {
-        "adelaide", "and", "cleaner", "cleaners", "cleaning", "for",
-        "professional", "service", "services", "the", "with",
+    active_services = list(Service.objects.filter(is_active=True).order_by("name", "slug"))
+    active_base_slugs = {
+        service.slug.removesuffix("-adelaide")
+        for service in active_services
     }
-    terms = set()
-    for value in values:
-        if isinstance(value, (list, tuple, set)):
-            terms.update(_service_search_terms(*value))
-        elif value:
-            terms.update(
-                token
-                for token in slugify(str(value)).split("-")
-                if token and token not in ignored
-            )
-    return terms
 
-
-def _normalize_related_services(
-    related_services,
-    location_name="Adelaide",
-    *,
-    active_service_slugs=None,
-    active_service_names=None,
-):
-    if active_service_slugs is None:
-        active_service_slugs = set(
-            Service.objects.filter(is_active=True).values_list("slug", flat=True)
-        )
-    if active_service_names is None:
-        active_service_names = {}
-
-    location_slug = slugify(location_name) if location_name else ""
-    normalized = []
-    seen = set()
-
-    for item in related_services or []:
-        if isinstance(item, dict):
-            raw_slug = item.get("slug") or item.get("service_slug") or item.get("name") or ""
-            explicit_label = item.get("label") or item.get("title") or item.get("name")
-        else:
-            raw_slug = str(item).strip()
-            explicit_label = ""
-
-        if not raw_slug:
-            continue
-
-        base_slug = _service_base_slug(raw_slug)
-        if not base_slug:
-            continue
-
-        candidates = []
-        if location_slug and location_slug != "adelaide":
-            candidates.append(f"{base_slug}-adelaide-{location_slug}")
-        candidates.extend((f"{base_slug}-adelaide", base_slug, raw_slug))
-
-        target_slug = next(
-            (
-                candidate
-                for candidate in candidates
-                if candidate in active_service_slugs
-                or _service_base_slug(candidate) in SERVICE_DEFINITIONS
+    services = [
+        {
+            "slug": service.slug,
+            "name": service.name,
+            "description": service.description,
+            "hero_image": service.hero_image,
+            "url": reverse(
+                "service_page",
+                kwargs={"service_slug": service.slug},
             ),
-            None,
-        )
-        if not target_slug or target_slug in seen:
+        }
+        for service in active_services
+    ]
+    for service_slug, definition in SERVICE_DEFINITIONS.items():
+        if service_slug in active_base_slugs:
             continue
 
-        seen.add(target_slug)
-        definition = SERVICE_DEFINITIONS.get(base_slug, {})
-        label = (
-            explicit_label
-            or active_service_names.get(target_slug)
-            or definition.get("title")
-            or definition.get("service_name")
-            or base_slug.replace("-", " ").title()
-        )
-        normalized.append({"slug": target_slug, "label": label})
+        canonical_slug = f"{service_slug}-adelaide"
+        services.append({
+            "slug": canonical_slug,
+            "name": definition.get("title") or definition.get("service_name", service_slug),
+            "description": definition.get("description", "").format(
+                location="Adelaide",
+                suburb="Adelaide",
+            ),
+            "hero_image": None,
+            "hero_image_path": definition.get(
+                "hero_image",
+                _get_service_hero_image_path(service_slug),
+            ),
+            "url": reverse("service_page", kwargs={"service_slug": canonical_slug}),
+        })
 
-    return normalized
-
-
-def _build_related_service_links(service_slug, service_obj=None, location_name="Adelaide"):
-    base_slug = _service_base_slug(service_slug)
-    definition = SERVICE_DEFINITIONS.get(base_slug, {})
-    direct = (
-        getattr(service_obj, "related_services", None)
-        or definition.get("related_services", [])
-    )
-    candidates = []
-    seen_bases = {base_slug}
-
-    def add_candidate(value):
-        related_base = _service_base_slug(value)
-        if related_base and related_base not in seen_bases:
-            seen_bases.add(related_base)
-            candidates.append(value)
-
-    for value in _related_service_values(direct):
-        add_candidate(value)
-
-    # Curated reverse links and one-hop related links keep sparse definitions useful.
-    for other_slug, other_definition in SERVICE_DEFINITIONS.items():
-        other_related = _related_service_values(other_definition.get("related_services", []))
-        if any(_service_base_slug(value) == base_slug for value in other_related):
-            add_candidate(other_slug)
-
-    for value in list(candidates):
-        neighbor_definition = SERVICE_DEFINITIONS.get(_service_base_slug(value), {})
-        for nested in _related_service_values(neighbor_definition.get("related_services", [])):
-            add_candidate(nested)
-
-    active_records = list(
-        Service.objects.filter(is_active=True)
-        .only("slug", "name", "description", "ideal_for", "industries")
-        .order_by("name", "slug")
-    )
-    active_service_slugs = {record.slug for record in active_records}
-    active_service_names = {record.slug: record.name for record in active_records}
-    current_name = (
-        getattr(service_obj, "name", "")
-        or definition.get("title")
-        or definition.get("service_name", "")
-        or base_slug
-    )
-    current_terms = _service_search_terms(
-        base_slug,
-        current_name,
-        definition.get("ideal_for", []),
-        definition.get("industries", []),
-        getattr(service_obj, "ideal_for", []),
-        getattr(service_obj, "industries", []),
-    )
-
-    if len(candidates) < 3 and current_terms:
-        similar = []
-        for other_slug, other_definition in SERVICE_DEFINITIONS.items():
-            other_base = _service_base_slug(other_slug)
-            if other_base == base_slug:
-                continue
-            other_terms = _service_search_terms(
-                other_base,
-                other_definition.get("title"),
-                other_definition.get("service_name"),
-                other_definition.get("ideal_for", []),
-                other_definition.get("industries", []),
-            )
-            overlap = len(current_terms & other_terms)
-            if overlap and other_base not in seen_bases:
-                similar.append((overlap, other_slug))
-        for _, other_slug in sorted(similar, key=lambda row: (-row[0], row[1])):
-            add_candidate(other_slug)
-
-    normalized = _normalize_related_services(
-        candidates,
-        location_name,
-        active_service_slugs=active_service_slugs,
-        active_service_names=active_service_names,
-    )
-    return normalized[:6]
-
-
-def _select_adelaide_service_links(services, limit=6):
-    preferred_order = (
-        "house-cleaning",
-        "commercial-cleaning",
-        "office-cleaning",
-        "end-of-lease-cleaning",
-        "carpet-cleaning",
-        "window-cleaning",
-        "deep-cleaning",
-        "bond-cleaning",
-    )
-    by_base_slug = {}
-    for service in services:
-        by_base_slug.setdefault(_service_base_slug(service.get("slug")), service)
-
-    selected = []
-    seen = set()
-    for service_slug in preferred_order:
-        service = by_base_slug.get(service_slug)
-        if service and service_slug not in seen:
-            selected.append(service)
-            seen.add(service_slug)
-        if len(selected) >= limit:
-            return selected
-
-    for service in services:
-        base_slug = _service_base_slug(service.get("slug"))
-        if base_slug and base_slug not in seen:
-            selected.append(service)
-            seen.add(base_slug)
-        if len(selected) >= limit:
-            break
-    return selected
+    return sorted(services, key=lambda service: service["name"].casefold())
 
 def _get_letter_areas(letter):
     current_letter = str(letter or "").upper()
@@ -993,7 +843,7 @@ def contact(request):
 
 
 def services_list(request):
-    services = Service.objects.filter(is_active=True).order_by("name")
+    services = _get_adelaide_services()
 
     db_reviews = Review.objects.filter(featured=True).order_by("-created_at")[:3]
     google_reviews = []
@@ -1964,9 +1814,18 @@ def _get_location_from_slug(slug):
 
 def _service_base_slug(service_slug):
     slug = str(service_slug or "").strip().strip("/").lower()
-    if slug in SERVICE_DEFINITIONS:
-        return slug
-    return _normalize_service_slug(slug)
+    for location_slug in sorted(LOCATION_ALIASES, key=len, reverse=True):
+        suffixes = (f"-adelaide-{location_slug}", f"-{location_slug}")
+        matched_suffix = next((suffix for suffix in suffixes if slug.endswith(suffix)), None)
+        if matched_suffix:
+            slug = slug[: -len(matched_suffix)]
+            break
+    if slug.endswith("-adelaide"):
+        slug = slug.removesuffix("-adelaide")
+    alias_target = SERVICE_SLUG_ALIASES.get(slug)
+    if alias_target:
+        slug = alias_target.removesuffix("-adelaide")
+    return slug
 
 
 def _normalize_related_services(
@@ -1977,14 +1836,20 @@ def _normalize_related_services(
     active_service_names=None,
 ):
     if active_service_slugs is None:
-        active_service_rows = Service.objects.filter(is_active=True).values_list(
-            "slug", "name"
+        active_service_rows = list(
+            Service.objects.filter(is_active=True).values_list("slug", "name")
         )
         active_service_names = dict(active_service_rows)
         active_service_slugs = set(active_service_names)
     else:
         active_service_names = active_service_names or {}
 
+    active_slugs_by_base = {
+        _service_base_slug(slug): slug
+        for slug in active_service_slugs
+    }
+    active_base_slugs = set(active_slugs_by_base)
+    valid_base_slugs = set(SERVICE_DEFINITIONS) | active_base_slugs
     location_slug = slugify(location_name) if location_name else ""
     normalized = []
     seen = set()
@@ -2001,67 +1866,49 @@ def _normalize_related_services(
             continue
 
         base_slug = _service_base_slug(raw_slug)
-        if not base_slug:
+        if base_slug not in valid_base_slugs:
             continue
 
-        candidates = []
-        if location_slug and location_slug != "adelaide":
-            candidates.append(f"{base_slug}-adelaide-{location_slug}")
-        candidates.extend((f"{base_slug}-adelaide", base_slug, raw_slug))
+        candidates = (
+            [f"{base_slug}-adelaide-{location_slug}"]
+            if location_slug and location_slug != "adelaide"
+            else []
+        )
+        candidates.extend((f"{base_slug}-adelaide", base_slug))
         target_slug = next(
-            (
-                candidate
-                for candidate in candidates
-                if candidate in active_service_slugs
-                or _service_base_slug(candidate) in SERVICE_DEFINITIONS
-            ),
+            (candidate for candidate in candidates if candidate in active_service_slugs),
             None,
         )
+        if not target_slug:
+            target_slug = active_slugs_by_base.get(base_slug)
+        if not target_slug and base_slug in SERVICE_DEFINITIONS:
+            target_slug = f"{base_slug}-adelaide"
         if not target_slug or target_slug in seen:
             continue
 
         seen.add(target_slug)
-        target_base = _service_base_slug(target_slug)
-        definition = SERVICE_DEFINITIONS.get(target_base, {})
+        definition = SERVICE_DEFINITIONS.get(base_slug, {})
         label = (
             explicit_label
             or active_service_names.get(target_slug)
             or definition.get("title")
             or definition.get("service_name")
-            or target_base.replace("-", " ").title()
+            or base_slug.replace("-", " ").title()
         )
         normalized.append({"slug": target_slug, "label": label})
 
     return normalized
 
 
-def _service_search_terms(*values):
-    ignored = {
-        "adelaide", "and", "cleaner", "cleaners", "cleaning", "for",
-        "professional", "service", "services", "the", "with",
-    }
-    terms = set()
-    for value in values:
-        if isinstance(value, (list, tuple, set)):
-            terms.update(_service_search_terms(*value))
-        elif value:
-            terms.update(
-                token
-                for token in slugify(str(value)).split("-")
-                if token and token not in ignored
-            )
-    return terms
-
-
 def _build_related_service_links(service_slug, service_obj=None, location_name="Adelaide"):
     base_slug = _service_base_slug(service_slug)
-    definition = SERVICE_DEFINITIONS.get(base_slug, {})
-    direct = (
-        getattr(service_obj, "related_services", None)
-        or definition.get("related_services", [])
+    profile_slug = SERVICE_PROFILE_ALIASES.get(base_slug, base_slug)
+    definition = SERVICE_DEFINITIONS.get(profile_slug, {})
+    direct = getattr(service_obj, "related_services", None) or definition.get(
+        "related_services", []
     )
     candidates = []
-    seen_bases = {base_slug}
+    seen_bases = {base_slug, profile_slug}
 
     def add_candidate(value):
         if isinstance(value, dict):
@@ -2069,65 +1916,26 @@ def _build_related_service_links(service_slug, service_obj=None, location_name="
         related_base = _service_base_slug(value)
         if related_base and related_base not in seen_bases:
             seen_bases.add(related_base)
-            candidates.append(value)
+            candidates.append(related_base)
 
-    direct_values = []
     for value in direct or []:
         add_candidate(value)
-        direct_values.append(value)
 
     for other_slug, other_definition in SERVICE_DEFINITIONS.items():
         other_related = other_definition.get("related_services", [])
-        if any(_service_base_slug(value) == base_slug for value in other_related):
+        if any(_service_base_slug(value) == profile_slug for value in other_related):
             add_candidate(other_slug)
 
-    for value in direct_values:
-        neighbor_definition = SERVICE_DEFINITIONS.get(_service_base_slug(value), {})
-        for nested in neighbor_definition.get("related_services", []):
-            add_candidate(nested)
+    for fallback_slug in SERVICE_RELATED_FALLBACKS.get(base_slug, ()):
+        add_candidate(fallback_slug)
 
     active_records = list(
         Service.objects.filter(is_active=True)
-        .only("slug", "name", "description", "ideal_for", "industries")
+        .only("slug", "name")
         .order_by("name", "slug")
     )
     active_service_slugs = {record.slug for record in active_records}
     active_service_names = {record.slug: record.name for record in active_records}
-    current_name = (
-        getattr(service_obj, "name", "")
-        or definition.get("title")
-        or definition.get("service_name", "")
-        or base_slug
-    )
-    current_terms = _service_search_terms(
-        base_slug,
-        current_name,
-        definition.get("description", ""),
-        definition.get("ideal_for", []),
-        definition.get("industries", []),
-        getattr(service_obj, "ideal_for", []),
-        getattr(service_obj, "industries", []),
-    )
-
-    if len(candidates) < 3 and current_terms:
-        similar = []
-        for other_slug, other_definition in SERVICE_DEFINITIONS.items():
-            other_base = _service_base_slug(other_slug)
-            if other_base == base_slug:
-                continue
-            other_terms = _service_search_terms(
-                other_base,
-                other_definition.get("title", ""),
-                other_definition.get("service_name", ""),
-                other_definition.get("description", ""),
-                other_definition.get("ideal_for", []),
-                other_definition.get("industries", []),
-            )
-            overlap = len(current_terms & other_terms)
-            if overlap and other_base not in seen_bases:
-                similar.append((overlap, other_slug))
-        for _, other_slug in sorted(similar, key=lambda row: (-row[0], row[1])):
-            add_candidate(other_slug)
 
     normalized = _normalize_related_services(
         candidates,
@@ -2135,36 +1943,6 @@ def _build_related_service_links(service_slug, service_obj=None, location_name="
         active_service_slugs=active_service_slugs,
         active_service_names=active_service_names,
     )
-
-    if len(normalized) < 3 and current_terms:
-        active_similar = []
-        for record in active_records:
-            record_base = _service_base_slug(record.slug)
-            if record_base == base_slug or record_base in seen_bases:
-                continue
-            overlap = len(
-                current_terms
-                & _service_search_terms(
-                    record_base,
-                    record.name,
-                    record.description,
-                    record.ideal_for,
-                    record.industries,
-                )
-            )
-            if overlap:
-                active_similar.append((overlap, record_base))
-        more = _normalize_related_services(
-            [slug for _, slug in sorted(active_similar, key=lambda row: (-row[0], row[1]))],
-            location_name,
-            active_service_slugs=active_service_slugs,
-            active_service_names=active_service_names,
-        )
-        for link in more:
-            if link["slug"] not in {item["slug"] for item in normalized}:
-                normalized.append(link)
-            if len(normalized) >= 3:
-                break
 
     return normalized[:6]
 
@@ -2225,39 +2003,92 @@ def _get_service_hero_image_path(service_slug):
     return "/static/images/logo.jpeg"
 
 
+def _usable_service_packages(packages):
+    return [
+        {
+            **package,
+            "name": package["name"].strip(),
+            "description": package["description"].strip(),
+            "price": str(package.get("price") or "").strip(),
+        }
+        for package in packages or []
+        if isinstance(package, dict)
+        and isinstance(package.get("name"), str)
+        and package["name"].strip()
+        and isinstance(package.get("description"), str)
+        and package["description"].strip()
+    ]
+
+
+def _merge_service_faqs(database_faqs, service_slug):
+    profile_slug = SERVICE_PROFILE_ALIASES.get(
+        _service_base_slug(service_slug),
+        _service_base_slug(service_slug),
+    )
+    merged = []
+    seen_questions = set()
+
+    for source in (database_faqs or [], get_service_faqs(profile_slug)):
+        for item in source:
+            if not isinstance(item, dict):
+                continue
+            question = item.get("question") or item.get("q") or item.get("title")
+            answer = item.get("answer") or item.get("a") or item.get("description")
+            if not question or not answer:
+                continue
+
+            normalized_question = " ".join(str(question).casefold().split())
+            if normalized_question in seen_questions:
+                continue
+            seen_questions.add(normalized_question)
+            merged.append({"question": str(question), "answer": str(answer)})
+        if len(merged) >= 5:
+            break
+    return merged
+
+
 def _service_context_from_model(service_obj):
     slug = getattr(service_obj, "slug", "")
+    profile_slug = _normalize_service_slug(slug)
+    profile_slug = SERVICE_PROFILE_ALIASES.get(profile_slug, profile_slug)
+    definition = _service_context_from_definition(profile_slug) or {}
     hero_image = getattr(service_obj, "hero_image", None)
     hero_url = hero_image.url if hero_image else None
     if not hero_url:
-        hero_url = _get_service_hero_image_path(slug)
+        hero_url = definition.get("hero_image") or _get_service_hero_image_path(slug)
+
+    description = service_obj.description or definition.get("description", "")
+    packages = _usable_service_packages(service_obj.packages)
+    if not packages:
+        packages = _usable_service_packages(definition.get("packages"))
 
     return {
         "slug": slug,
-        "title": service_obj.name,
-        "meta_title": getattr(service_obj, "meta_title", "") or "",
-        "meta_description": getattr(service_obj, "meta_description", "") or service_obj.description,
-        "heading": service_obj.name,
-        "description": service_obj.description,
-        "overview": service_obj.overview,
-        "included": service_obj.included or [],
-        "packages": service_obj.packages or [],
-        "hero_image": hero_url,
-        # Rich optional fields — provide safe defaults so templates can render consistently
-        "gallery": getattr(service_obj, "gallery_images", []) or [],
-        "problems": getattr(service_obj, "problems", []) or [],
-        "process": getattr(service_obj, "process_steps", []) or [],
-        "benefits": getattr(service_obj, "benefits", []) or [],
-        "ideal_for": getattr(service_obj, "ideal_for", []) or [],
-        "industries": getattr(service_obj, "industries", []) or [],
-
-        "faqs": (
-            getattr(service_obj, "faqs", [])
-            or get_service_faqs(service_obj.slug)
-            or []
+        "title": service_obj.name or definition.get("title", "Cleaning Service"),
+        "meta_title": getattr(service_obj, "meta_title", "") or definition.get("meta_title", ""),
+        "meta_description": (
+            getattr(service_obj, "meta_description", "")
+            or definition.get("meta_description")
+            or description
         ),
-        "related_services": getattr(service_obj, "related_services", []) or [],
-        "locations": getattr(service_obj, "locations", []) or [],
+        "heading": definition.get("heading") if not service_obj.name else service_obj.name,
+        "description": description,
+        "overview": service_obj.overview or definition.get("overview", ""),
+        "introduction": service_obj.introduction or definition.get("introduction", ""),
+        "included": service_obj.included or definition.get("included", []),
+        "packages": packages,
+        "hero_image": hero_url,
+        "image_alt": definition.get("image_alt", f"{service_obj.name} in Adelaide"),
+        "gallery": definition.get("gallery", []),
+        "problems": service_obj.problems or definition.get("problems", []),
+        "process": service_obj.process or definition.get("process", []),
+        "benefits": definition.get("benefits", []),
+        "ideal_for": service_obj.ideal_for or definition.get("ideal_for", []),
+        "industries": service_obj.industries or definition.get("industries", []),
+        "faqs": _merge_service_faqs(service_obj.faqs, slug),
+        "related_services": definition.get("related_services", []),
+        "locations": definition.get("locations", ["Adelaide"]),
+        "location_content": definition.get("location_content", ""),
     }
 
 
@@ -2282,7 +2113,7 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
         "meta_description": definition.get("meta_description", definition.get("description", "")).format(location=location_name) if definition.get("meta_description") or definition.get("description") else "",
         "introduction": definition.get("introduction", definition.get("overview", "")).format(location=location_name) if definition.get("introduction") or definition.get("overview") else "",
         "included": definition.get("included", []),
-        "packages": definition.get("packages", []),
+        "packages": _usable_service_packages(definition.get("packages")),
         "hero_image": definition.get("hero_image", hero_path),
         "image_alt": definition.get("image_alt", f"{definition.get('title', definition.get('service_name', 'Cleaning Service'))} in {location_name}, Adelaide"),
         "gallery": definition.get("gallery", []),
@@ -2316,6 +2147,60 @@ def _get_service_google_reviews(limit=6):
             for review in recent_reviews
         ]
     return google_reviews
+
+
+def _build_service_resource_links(service_slug, location):
+    profile_slug = _service_base_slug(service_slug)
+    profile_slug = SERVICE_PROFILE_ALIASES.get(profile_slug, profile_slug)
+    guide_links = [
+        {
+            "label": SERVICE_GUIDE_TITLES[guide_slug],
+            "url": reverse("guide_detail", kwargs={"guide_slug": guide_slug}),
+        }
+        for guide_slug in SERVICE_GUIDE_LINKS.get(profile_slug, ())
+        if guide_slug in SERVICE_GUIDE_TITLES
+    ]
+
+    blog_slugs = SERVICE_BLOG_LINKS.get(profile_slug, ())
+    blog_titles = dict(
+        BlogPost.objects.filter(published=True, slug__in=blog_slugs).values_list(
+            "slug", "title"
+        )
+    )
+    blog_links = [
+        {
+            "label": blog_titles[blog_slug],
+            "url": reverse("blog_detail", kwargs={"blog_slug": blog_slug}),
+        }
+        for blog_slug in blog_slugs
+        if blog_slug in blog_titles
+    ]
+
+    local_area_link = None
+    if location:
+        local_area = next(
+            (
+                area
+                for area in _get_controlled_adelaide_areas()
+                if area["name"].casefold() == location.casefold()
+            ),
+            None,
+        )
+        if local_area:
+            local_area_link = {
+                "label": f"Cleaning services in {local_area['name']}",
+                "url": reverse(
+                    "local_suburb_detail",
+                    kwargs={"area_slug": local_area["slug"]},
+                ),
+            }
+
+    return {
+        "guides": guide_links,
+        "articles": blog_links,
+        "local_area": local_area_link,
+        "directory_url": reverse("local_area_index_default"),
+    }
 
 def legacy_service_redirect(request, service_slug):
     canonical_path = _get_canonical_service_redirect_path(service_slug)
@@ -2357,11 +2242,8 @@ def _get_why_choose_context(
             or ""
         )
 
-        service_slug = service_slug.lower().strip("/")
-
-        # Remove common location suffixes where required.
-        if service_slug.endswith("-adelaide"):
-            service_slug = service_slug[:-9]
+        service_slug = _service_base_slug(service_slug)
+        service_slug = SERVICE_PROFILE_ALIASES.get(service_slug, service_slug)
 
         service_key = f"service:{service_slug}"
 
@@ -2867,7 +2749,7 @@ def service_page(request, service_slug):
         location_name=location or "Adelaide",
     )
 
-    service_url = f"{settings.SITE_URL}{request.path}"
+    service_url = f"{settings.SITE_URL.rstrip('/')}{request.path}"
     google_reviews = _get_service_google_reviews(limit=6)
 
     rating_values = []
@@ -2879,9 +2761,16 @@ def service_page(request, service_slug):
             rating_values.append(rating.count("★") or rating.count("⭐"))
 
     service_review_count = len(google_reviews)
-    service_average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
+    service_average_rating = (
+        round(sum(rating_values) / len(rating_values), 1)
+        if rating_values
+        else None
+    )
 
     quick_quote_preset_service = normalized_slug.removesuffix("-adelaide")
+    quick_quote_preset_service = {
+        "bathroom-cleaning": "standard-bathroom-cleaning",
+    }.get(quick_quote_preset_service, quick_quote_preset_service)
     service_choices = dict(QuickQuoteForm.base_fields["service"].choices)
     if quick_quote_preset_service not in service_choices:
         quick_quote_preset_service = "other"
@@ -2905,10 +2794,16 @@ def service_page(request, service_slug):
         "services/service_detail.html",
         {
             "service": service,
+            "service_resource_links": _build_service_resource_links(
+                normalized_slug,
+                location or "Adelaide",
+            ),
             **quote_context,
             "quick_quote_preset_service": quick_quote_preset_service,
             "quick_quote_preset_location": location or "Adelaide",
             "service_url": service_url,
+            "home_url": f"{settings.SITE_URL.rstrip('/')}{reverse('home')}",
+            "services_url": f"{settings.SITE_URL.rstrip('/')}{reverse('services_home')}",
             "location": location,
             "location_definition": location_definition,
             "why_choose_section": _build_why_choose_section(

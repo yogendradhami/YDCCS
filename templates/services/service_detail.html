@@ -236,6 +236,16 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 <!-- QUICK QUOTE -->
 {% include "components/quick_quote_form.html" with quick_quote_form=quick_quote_form preset_service=quick_quote_preset_service preset_location=quick_quote_preset_location form_id="quick-quote-service" variant="service" context_label=service.title heading="Need this service?" description="Tell us the essentials and we'll get back to you with a personalised quote for your property." %}
 
+<nav class="service-breadcrumbs container" aria-label="Breadcrumb">
+    <ol>
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'services_home' %}">Cleaning Services</a></li>
+        <li aria-current="page">
+            {{ clean_title }}{% if location %} in {{ location }}{% else %} in Adelaide{% endif %}
+        </li>
+    </ol>
+</nav>
+
 <!-- ===================================================
      HERO
 =================================================== -->
@@ -252,8 +262,9 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
                 <img
                     src="{{ service.hero_image }}"
-                    alt="Professional {{ service.title|cut:' Adelaide'|lower }} service in {{ location|default:'Adelaide' }}"
-                    loading="lazy"
+                    alt="{{ service.image_alt|default:service.title }}"
+                    loading="eager"
+                    fetchpriority="high"
                     decoding="async"
                     width="1200"
                     height="800"
@@ -263,8 +274,9 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
                 <img
                     src="{% static 'images/services/' %}{{ service.slug }}.svg"
-                    alt="Professional {{ service.title|cut:' Adelaide'|lower }} service in {{ location|default:'Adelaide' }}"
-                    loading="lazy"
+                    alt="{{ service.image_alt|default:service.title }}"
+                    loading="eager"
+                    fetchpriority="high"
                     decoding="async"
                     width="1200"
                     height="800"
@@ -340,30 +352,6 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
                 </div>
 
-
-                <div class="service-hero-stats">
-
-                    <div>
-                        <strong>100%</strong>
-                        <span>Satisfaction Guaranteed</span>
-                    </div>
-
-                    <div>
-                        <strong>100+</strong>
-                        <span>Happy Adelaide Customers</span>
-                    </div>
-
-                    <div>
-                        <strong>Fast</strong>
-                        <span>Response Time</span>
-                    </div>
-
-                    <div>
-                        <strong>Professional</strong>
-                        <span>Cleaning Team</span>
-                    </div>
-
-                </div>
 
             </div>
 
@@ -480,17 +468,9 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
 
                 <p>
-                    Professional cleaning plays an important role in maintaining
-                    a safe, healthy and welcoming environment.
-                    At YD Commercial Cleaning Services, we provide reliable
-                    cleaning solutions for homes and businesses across Adelaide.
-                </p>
-
-
-                <p>
-                    Our experienced cleaning team uses professional equipment,
-                    quality products and proven cleaning methods to deliver
-                    consistent results.
+                    The cleaning scope can be planned around the property's
+                    condition, layout and the areas you would like addressed.
+                    We can discuss the requirements before preparing a quote.
                 </p>
 
             </div>
@@ -621,159 +601,6 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                     </div>
 
                     {% endfor %}
-
-                </div>
-
-            </div>
-
-
-
-            <!-- WHY CHOOSE -->
-
-            <div class="service-section-block service-why-section">
-
-                <span class="service-section-eyebrow">
-                    Our Difference
-                </span>
-
-                <h2>
-                    Why Choose YD Commercial Cleaning Services?
-                </h2>
-
-
-                <div class="service-why-grid">
-
-
-                    <div class="service-why-card">
-
-                        <div class="why-card-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h4>
-                                Experienced Cleaners
-                            </h4>
-
-                            <p>
-                                Trained professionals delivering high quality cleaning results.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="service-why-card">
-
-                        <div class="why-card-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h4>
-                                Reliable Service
-                            </h4>
-
-                            <p>
-                                On-time service with consistent cleaning standards.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="service-why-card">
-
-                        <div class="why-card-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h4>
-                                Fully Insured
-                            </h4>
-
-                            <p>
-                                Safe and reliable cleaning service for homes and businesses.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="service-why-card">
-
-                        <div class="why-card-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h4>
-                                Local Adelaide Team
-                            </h4>
-
-                            <p>
-                                We understand Adelaide homes, offices and local requirements.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="service-why-card">
-
-                        <div class="why-card-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h4>
-                                Professional Equipment
-                            </h4>
-
-                            <p>
-                                Modern equipment and quality cleaning products.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="service-why-card">
-
-                        <div class="why-card-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <h4>
-                                Free Quotes
-                            </h4>
-
-                            <p>
-                                Transparent pricing with no hidden charges.
-                            </p>
-
-                        </div>
-
-                    </div>
-
 
                 </div>
 
@@ -931,7 +758,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
 
                         <div class="package-price">
-                            {{ package.price }}
+                            {% if package.price %}{{ package.price }}{% else %}Contact for Quote{% endif %}
                         </div>
 
 
@@ -1127,7 +954,11 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
                         {% if service.packages %}
 
+                        {% if service.packages.0.price %}
                         {{ service.packages.0.price }}
+                        {% else %}
+                        Contact for Quote
+                        {% endif %}
 
                         {% else %}
 
@@ -1237,31 +1068,6 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                 </div>
 
 
-                <div class="sidebar-trust-list">
-
-                    <div>
-                        <span>✓</span>
-                        Fully insured
-                    </div>
-
-                    <div>
-                        <span>✓</span>
-                        Professional team
-                    </div>
-
-                    <div>
-                        <span>✓</span>
-                        Free quote
-                    </div>
-
-                    <div>
-                        <span>✓</span>
-                        Flexible scheduling
-                    </div>
-
-                </div>
-
-
                 <div class="sidebar-actions">
 
                     <a
@@ -1291,11 +1097,13 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 </section>
 
 
+{% include "shared/partials/why_choose_us.html" with why_choose_section=why_choose_section %}
 
 <!-- ===================================================
      GOOGLE REVIEWS
 =================================================== -->
 
+{% if google_reviews %}
 <section class="section landing-testimonials">
 
     <div class="container">
@@ -1310,9 +1118,7 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
                 Customer Reviews
             </h2>
 
-            <p class="section-subtitle">
-                Real Google reviews from Adelaide customers.
-            </p>
+            <p class="section-subtitle">Feedback from customers.</p>
 
         </div>
 
@@ -1323,37 +1129,20 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
             <div class="landing-testimonial-card">
 
-                <div class="testimonial-rating">
-                    ⭐⭐⭐⭐⭐
-                </div>
-
-
                 <p class="testimonial-text">
                     {{ review.review_text|truncatewords:35 }}
                 </p>
 
+                {% if review.rating %}
+                <p class="testimonial-rating">Rating: {{ review.rating }}</p>
+                {% endif %}
 
                 <strong class="testimonial-author">
                     {{ review.reviewer_name }}
                 </strong>
 
 
-                <p class="testimonial-badge">
-                    Google Review
-                </p>
-
             </div>
-
-            {% empty %}
-
-            <div class="landing-testimonial-card">
-
-                <p>
-                    Our customer reviews will appear here soon.
-                </p>
-
-            </div>
-
             {% endfor %}
 
         </div>
@@ -1361,10 +1150,12 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
     </div>
 
 </section>
+{% endif %}
 
 
 
 {% include "services/_related_services.html" with related_services=service.related_services location=location %}
+{% include "services/_service_resources.html" with resource_links=service_resource_links %}
 
 
 
@@ -1421,10 +1212,6 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
 
 
 
-<!-- ===================================================
-     PREVENT GLOBAL WHY CHOOSE PARTIAL
-=================================================== -->
-
 {% block default_why_choose_section %}
 {% endblock %}
 
@@ -1445,11 +1232,17 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
           "@type": "ListItem",
           "position": 1,
           "name": "Home",
-          "item": "https://ydcleaning.com.au/"
+          "item": "{{ home_url|escapejs }}"
         },
         {
           "@type": "ListItem",
           "position": 2,
+          "name": "Cleaning Services",
+          "item": "{{ services_url|escapejs }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
           "name": "{{ service.title|escapejs }}",
           "item": "{{ service_url|escapejs }}"
         }
@@ -1461,45 +1254,10 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
       "name": "{{ service.heading|default:service.title|escapejs }}",
       "description": "{{ service.description|default:'Professional cleaning services in Adelaide.'|escapejs }}",
       "provider": {
-        "@type": "LocalBusiness",
-        "name": "YD Commercial Cleaning Services",
-        "url": "https://ydcleaning.com.au",
-        "telephone": "+61 430 049 865",
-        "email": "info@ydcleaning.com.au",
-        "image": "{% if service.hero_image %}{{ service.hero_image }}{% else %}https://ydcleaning.com.au/static/images/company/logoo.webp{% endif %}",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Adelaide",
-          "addressRegion": "SA",
-          "postalCode": "5000",
-          "addressCountry": "AU"
-        },
-        "areaServed": [
-          {% if location %}
-          "{{ location }}",
-          {% endif %}
-          "Adelaide",
-          "South Australia"
-        ],
-        "openingHoursSpecification": {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday"
-          ],
-          "opens": "08:00",
-          "closes": "12:00"
-        },
-        "sameAs": [
-          "https://www.facebook.com/ydcommercialcleaning",
-          "https://www.instagram.com/ydcommercialcleaning"
-        ]
-      },
+        "@id": "https://ydcleaning.com.au/#localbusiness"
+      }
+      {% if service.packages %}
+      ,
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": "{{ service.title|escapejs }} Packages",
@@ -1508,12 +1266,12 @@ Professional {{ service.title|cut:" Adelaide" }} services in {{ location }}. Rel
           {
             "@type": "Offer",
             "name": "{{ package.name|escapejs }}",
-            "description": "{{ package.description|escapejs }}",
-            "priceCurrency": "AUD"
+            "description": "{{ package.description|escapejs }}"
           }{% if not forloop.last %},{% endif %}
           {% endfor %}
         ]
       }
+      {% endif %}
     }
   ]
 }

@@ -1,0 +1,21 @@
+<section class="section service-resource-section" aria-labelledby="service-resources-title">
+    <div class="container">
+        <div class="section-title">
+            <span class="service-section-eyebrow">MORE FROM YD CLEANING</span>
+            <h2 id="service-resources-title">Helpful Cleaning Resources</h2>
+        </div>
+
+        <nav class="service-resource-links" aria-label="Related cleaning resources">
+            {% for guide in resource_links.guides %}
+                <a class="service-resource-link" href="{{ guide.url }}">{{ guide.label }}</a>
+            {% endfor %}
+            {% for article in resource_links.articles %}
+                <a class="service-resource-link" href="{{ article.url }}">{{ article.label }}</a>
+            {% endfor %}
+            {% if resource_links.local_area %}
+                <a class="service-resource-link" href="{{ resource_links.local_area.url }}">{{ resource_links.local_area.label }}</a>
+            {% endif %}
+            <a class="service-resource-link" href="{{ resource_links.directory_url }}">Browse Adelaide cleaning areas</a>
+        </nav>
+    </div>
+</section>

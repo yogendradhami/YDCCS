@@ -4,7 +4,9 @@ from django.conf import settings
 from django.urls import reverse
 
 from .seo_data import LOCATION_ALIASES
+from .seo_data import SERVICE_DEFINITIONS
 from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
+from .adelaide_local_content import ADELAIDE_LOCAL_CONTENT
 from services.models import Service
 from django.utils import timezone
 from .models import TestimonialVideo
@@ -19,21 +21,33 @@ class BaseSitemap(Sitemap):
 
 @lru_cache(maxsize=1)
 def service_page_slugs():
-    active_services = Service.objects.filter(is_active=True)
+    active_service_slugs = list(
+        Service.objects.filter(is_active=True).values_list("slug", flat=True)
+    )
+    active_base_slugs = {
+        slug.removesuffix("-adelaide")
+        for slug in active_service_slugs
+    }
+    service_slugs = list(active_service_slugs)
+    service_slugs.extend(
+        f"{slug}-adelaide"
+        for slug in SERVICE_DEFINITIONS
+        if slug not in active_base_slugs
+    )
     slugs = []
 
-    for service in active_services:
+    for service_slug in service_slugs:
         for location_slug in LOCATION_ALIASES:
-            if service.slug.endswith(location_slug):
+            if service_slug.endswith(location_slug):
                 continue
 
             # Adelaide CBD is represented by the existing service slug
             # ending in "-adelaide" plus the CBD suffix. Avoid the old
             # duplicated form "...-adelaide-adelaide-cbd".
-            if location_slug == "adelaide-cbd" and service.slug.endswith("-adelaide"):
-                slugs.append(f"{service.slug}-adelaide-cbd")
+            if location_slug == "adelaide-cbd" and service_slug.endswith("-adelaide"):
+                slugs.append(f"{service_slug}-adelaide-cbd")
             else:
-                slugs.append(f"{service.slug}-{location_slug}")
+                slugs.append(f"{service_slug}-{location_slug}")
 
     return sorted(set(slugs))
 
@@ -113,25 +127,36 @@ class ServicesIndexSitemap(BaseSitemap):
 class ServiceDetailSitemap(BaseSitemap):
 
     def items(self):
-        return Service.objects.filter(is_active=True)
+        active_services = list(Service.objects.filter(is_active=True).order_by("slug"))
+        active_base_slugs = {
+            service.slug.removesuffix("-adelaide")
+            for service in active_services
+        }
+        definition_slugs = [
+            f"{slug}-adelaide"
+            for slug in SERVICE_DEFINITIONS
+            if slug not in active_base_slugs
+        ]
+        return [*active_services, *definition_slugs]
 
     def priority(self, obj):
         return 0.8
 
     def lastmod(self, obj):
-        return obj.updated_at
+        return obj.updated_at if isinstance(obj, Service) else timezone.now()
 
     def location(self, obj):
+        service_slug = obj.slug if isinstance(obj, Service) else obj
         return reverse(
             "service_page",
-            kwargs={"service_slug": obj.slug},
+            kwargs={"service_slug": service_slug},
         )
 
 
 class AdelaideLocalAreaSitemap(BaseSitemap):
 
     def items(self):
-        return sorted(ADELAIDE_LOCAL_AREAS.keys())
+        return sorted(set(ADELAIDE_LOCAL_AREAS) | set(ADELAIDE_LOCAL_CONTENT))
 
     def priority(self, item):
         return 0.75

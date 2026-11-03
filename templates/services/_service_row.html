@@ -5,16 +5,18 @@
     <div class="service-content" id="service-{{ index }}">
         <h3>{{ service.name }}</h3>
         <p>{{ service.description }}</p>
-        <a href="{{ service.get_absolute_url }}" class="btn btn-primary" aria-label="View {{ service.name }} details">View Service</a>
+        <a href="{{ service.url }}" class="btn btn-primary" aria-label="Explore {{ service.name }} in Adelaide">Explore {{ service.name }}</a>
     </div>
 
-    <figure class="service-image" aria-hidden="true">
-        {% if service.hero_image %}
+    <figure class="service-image">
+        {% if service.hero_image.url %}
             {# Display uploaded image from media folder #}
             <picture>
                 <source srcset="{{ service.hero_image.url|cloudinary_optimize:'800' }} 1x, {{ service.hero_image.url|cloudinary_optimize:'1600' }} 2x">
                 <img src="{{ service.hero_image.url|cloudinary_optimize:'800' }}" alt="{{ service.name }} image" loading="lazy" width="800" height="500">
             </picture>
+        {% elif service.hero_image_path %}
+            <img src="{{ service.hero_image_path }}" alt="{{ service.name }} in Adelaide" loading="lazy" width="800" height="500">
         {% else %}
             {# Fallback to static placeholder images #}
             <picture>
