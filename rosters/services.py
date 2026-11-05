@@ -74,7 +74,7 @@ def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
     employee_changed = False
     with transaction.atomic(using=using):
         locked_booking = (
-            Booking.objects.using(using).select_for_update()
+            Booking.objects.using(using).select_for_update(of=("self",))
             .select_related("assigned_employee")
             .get(pk=booking_id)
         )

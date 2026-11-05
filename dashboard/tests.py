@@ -295,6 +295,24 @@ class BookingCalendarDeletionTests(TestCase):
 		self.assertFalse(Booking.objects.filter(pk=self.booking.pk).exists())
 		self.assertFalse(Invoice.objects.filter(pk=invoice.pk).exists())
 
+	def test_unassigned_calendar_booking_links_to_employee_assignment_form(self):
+		grant_dashboard_permissions(self.admin, "bookings.view_booking")
+		unassigned_booking = Booking.objects.create(
+			service_type="Office Cleaning",
+			booking_date=timezone.localdate(),
+			booking_time=timezone.localtime().time().replace(second=0, microsecond=0),
+			address="2 Queen Street",
+			suburb_postcode="Adelaide 5000",
+		)
+
+		response = self.client.get(reverse("booking_calendar"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(
+			response,
+			f'href="{reverse("edit_booking", args=[unassigned_booking.pk])}"',
+		)
+
 
 class QuoteCompletionStateTests(TestCase):
 	def setUp(self):

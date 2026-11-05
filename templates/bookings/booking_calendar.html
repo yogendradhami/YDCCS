@@ -308,7 +308,7 @@ Plan bookings, employee coverage and approved leave across the week.
                             {% if not booking.assigned_employee %}
 
                                 <a
-                                    href="/dashboard/rosters/add/?booking={{ booking.id }}"
+                                    href="{% url 'edit_booking' booking.id %}"
                                     class="small-link-btn calendar-assign-btn"
                                 >
                                     Assign Employee
