@@ -43,7 +43,11 @@ from dashboard.models import ActivityLog
 from bookings.models import Booking
 from customers.models import Customer
 from google_reviews.calendar_utils import delete_booking_event, delete_roster_event
-from .services import get_booking_work_order_initial, replace_invoice_work_orders
+from .services import (
+    create_booking_for_invoice,
+    get_booking_work_order_initial,
+    replace_invoice_work_orders,
+)
 
 
 def get_accessible_invoice(request, invoice_id):
@@ -112,12 +116,13 @@ def invoice_list(request):
         or 0
     )
 
-    overdue_total = (
+    overdue_invoices = (
         base_invoices
-        .filter(due_date__lt=today)
+        .filter(Q(status="overdue") | Q(due_date__lt=today))
         .exclude(status__in=["paid", "cancelled"])
-        .aggregate(total=Sum("total_amount"))["total"]
-        or 0
+    )
+    overdue_total = (
+        overdue_invoices.aggregate(total=Sum("total_amount"))["total"] or 0
     )
 
     # ==========================================================
@@ -210,15 +215,7 @@ def invoice_list(request):
             ),
 
             "overdue_count": (
-                base_invoices
-                .filter(due_date__lt=today)
-                .exclude(
-                    status__in=[
-                        "paid",
-                        "cancelled",
-                    ]
-                )
-                .count()
+                overdue_invoices.count()
             ),
         },
     }
@@ -301,12 +298,22 @@ def create_invoice(request):
 
             if work_orders:
                 with transaction.atomic():
-                    booking = Booking.objects.select_for_update().get(pk=booking.pk)
+                    source_booking = Booking.objects.select_for_update().get(
+                        pk=booking.pk
+                    )
                     invoice = form.save(commit=False)
-                    invoice.booking = booking
                     invoice.amount = sum(
                         (item["price"] for item in work_orders),
                         Decimal("0.00"),
+                    )
+                    quoted_price = max(
+                        invoice.amount - invoice.discount_amount,
+                        Decimal("0.00"),
+                    )
+                    invoice.booking = create_booking_for_invoice(
+                        source_booking,
+                        work_orders,
+                        quoted_price,
                     )
                     invoice.save()
                     replace_invoice_work_orders(invoice, work_orders)
@@ -550,6 +557,7 @@ def edit_invoice(request, invoice_id):
         ),
         id=invoice_id,
     )
+    original_status = invoice.status
 
     # Paid invoices should not be edited.
     if invoice.status == "paid":
@@ -633,10 +641,9 @@ def edit_invoice(request, invoice_id):
                     ),
                 )
 
-                return redirect(
-                    "invoice_detail",
-                    invoice_id=updated_invoice.id,
-                )
+                if updated_invoice.status != original_status:
+                    return redirect("invoice_list")
+                return redirect("invoice_detail", invoice_id=updated_invoice.id)
 
         messages.error(
             request,
@@ -686,11 +693,13 @@ def mark_invoice_paid(request, invoice_id):
 
     # Prevent duplicate payment events/emails.
     if invoice.status == "paid":
+        invoice.save()
         messages.info(
             request,
-            f"Invoice {invoice.invoice_number} is already marked as paid.",
+            f"Invoice {invoice.invoice_number} is already marked as paid. "
+            "Booking completion has been synchronised.",
         )
-        return redirect("invoice_detail", invoice_id=invoice.id)
+        return redirect("invoice_list")
 
     invoice.status = "paid"
     invoice.paid_at = timezone.now()
@@ -701,7 +710,7 @@ def mark_invoice_paid(request, invoice_id):
         f"Invoice {invoice.invoice_number} marked as paid. No email was sent.",
     )
 
-    return redirect("invoice_detail", invoice_id=invoice.id)
+    return redirect("invoice_list")
 
 
 @login_required
@@ -718,7 +727,7 @@ def mark_invoice_unpaid(request, invoice_id):
             request,
             f"Invoice {invoice.invoice_number} is not marked as paid.",
         )
-        return redirect("invoice_detail", invoice_id=invoice.id)
+        return redirect("invoice_list")
 
     invoice.status = (
         "overdue"
@@ -749,7 +758,7 @@ def mark_invoice_unpaid(request, invoice_id):
         f"Invoice {invoice.invoice_number} marked as {invoice.get_status_display()}. "
         "This does not refund or reverse a Stripe payment.",
     )
-    return redirect("invoice_detail", invoice_id=invoice.id)
+    return redirect("invoice_list")
 
 
 # ==========================================================
@@ -773,10 +782,7 @@ def cancel_invoice(request, invoice_id):
             "Paid invoices cannot be cancelled.",
         )
 
-        return redirect(
-            "invoice_detail",
-            invoice_id=invoice.id,
-        )
+        return redirect("invoice_list")
 
     if invoice.status == "cancelled":
 
@@ -785,10 +791,7 @@ def cancel_invoice(request, invoice_id):
             "This invoice is already cancelled.",
         )
 
-        return redirect(
-            "invoice_detail",
-            invoice_id=invoice.id,
-        )
+        return redirect("invoice_list")
 
     invoice.status = "cancelled"
 

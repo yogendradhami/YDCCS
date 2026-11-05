@@ -1,7 +1,7 @@
 from django.db import transaction
 from decimal import Decimal
 
-from bookings.models import Booking
+from bookings.models import Booking, BookingWorkOrder
 
 from .models import Invoice, InvoiceWorkOrder
 
@@ -19,6 +19,34 @@ def get_booking_work_order_initial(booking):
             "price": booking.quoted_price,
         }
     ]
+
+
+def create_booking_for_invoice(source_booking, work_orders, quoted_price):
+    """Create a distinct job using the selected booking's scheduling details."""
+    booking = Booking.objects.create(
+        customer=source_booking.customer,
+        service_type=source_booking.service_type,
+        booking_date=source_booking.booking_date,
+        booking_time=source_booking.booking_time,
+        address=source_booking.address,
+        suburb_postcode=source_booking.suburb_postcode,
+        quoted_price=quoted_price,
+        assigned_employee=source_booking.assigned_employee,
+        status="pending",
+        notes=source_booking.notes,
+    )
+    BookingWorkOrder.objects.bulk_create(
+        [
+            BookingWorkOrder(
+                booking=booking,
+                service_type=item["description"],
+                price=Decimal(str(item["price"])),
+                position=position,
+            )
+            for position, item in enumerate(work_orders)
+        ]
+    )
+    return booking
 
 
 def replace_invoice_work_orders(invoice, work_orders):

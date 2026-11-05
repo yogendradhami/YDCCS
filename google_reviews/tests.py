@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 from django.utils import timezone
+from google.auth.exceptions import RefreshError
 
 from bookings.models import Booking
 from employees.models import Employee, EmployeeGoogleAccount
@@ -71,6 +72,70 @@ class GoogleReviewsUtilsTests(TestCase):
         self.assertEqual(account.access_token, "new-access-token")
         self.assertEqual(account.refresh_token, "existing-refresh-token")
         self.assertEqual(account.email, "company@example.com")
+
+
+class GoogleReviewSyncTests(TestCase):
+    def setUp(self):
+        self.account = GoogleAccount.objects.create(
+            access_token="old-access-token",
+            refresh_token="existing-refresh-token",
+        )
+
+    @patch("google_reviews.views.GoogleAuthRequest")
+    @patch("google_reviews.views.Credentials")
+    def test_sync_asks_to_reconnect_when_refresh_token_is_revoked(
+        self,
+        credentials_factory,
+        google_request,
+    ):
+        credentials = credentials_factory.return_value
+        credentials.refresh.side_effect = RefreshError(
+            "invalid_grant: Token has been expired or revoked."
+        )
+
+        with patch("google_reviews.views.requests.get") as google_api_request:
+            response = self.client.get("/google/sync-reviews/")
+
+        self.assertEqual(response.status_code, 401)
+        self.assertContains(response, "Reconnect Google", status_code=401)
+        credentials.refresh.assert_called_once_with(google_request.return_value)
+        google_api_request.assert_not_called()
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.access_token, "old-access-token")
+
+    @patch("google_reviews.views.GoogleAuthRequest")
+    @patch("google_reviews.views.Credentials")
+    def test_sync_uses_refreshed_token_for_google_reviews_request(
+        self,
+        credentials_factory,
+        google_request,
+    ):
+        credentials = credentials_factory.return_value
+        credentials.token = "new-access-token"
+        credentials.refresh_token = "existing-refresh-token"
+        google_api_response = MagicMock(
+            status_code=200,
+            text="",
+        )
+        google_api_response.json.return_value = {
+            "reviews": [],
+            "totalReviewCount": 0,
+        }
+
+        with patch(
+            "google_reviews.views.requests.get",
+            return_value=google_api_response,
+        ) as google_api_request:
+            response = self.client.get("/google/sync-reviews/")
+
+        self.assertEqual(response.status_code, 200)
+        credentials.refresh.assert_called_once_with(google_request.return_value)
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.access_token, "new-access-token")
+        self.assertEqual(
+            google_api_request.call_args.kwargs["headers"]["Authorization"],
+            "Bearer new-access-token",
+        )
 
 
 class CalendarDeleteRetryTests(TestCase):

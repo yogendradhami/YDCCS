@@ -40,6 +40,11 @@ class ManualInvoiceEmailTests(TestCase):
             "invoices.add_invoice",
             "invoices.change_invoice",
             "invoices.view_invoice",
+            "customers.view_customer",
+            "bookings.view_booking",
+            "reviews.view_review",
+            "dashboard.view_emaillog",
+            "quotes.view_quoterequest",
         )
         self.client.force_login(self.user)
         self.form_data = {
@@ -64,7 +69,17 @@ class ManualInvoiceEmailTests(TestCase):
             fetch_redirect_response=False,
         )
         send_invoice_email.assert_not_called()
-        self.assertEqual(invoice.booking_id, self.booking.pk)
+        self.assertNotEqual(invoice.booking_id, self.booking.pk)
+        self.assertEqual(invoice.booking.customer_id, self.customer.pk)
+        self.assertEqual(invoice.booking.service_type, self.booking.service_type)
+        self.assertEqual(invoice.booking.booking_date, self.booking.booking_date)
+        self.assertEqual(invoice.booking.booking_time, self.booking.booking_time)
+        self.assertEqual(invoice.booking.address, self.booking.address)
+        self.assertEqual(
+            invoice.booking.assigned_employee_id,
+            self.booking.assigned_employee_id,
+        )
+        self.assertEqual(invoice.booking.status, "pending")
         messages = list(response.wsgi_request._messages)
         self.assertTrue(
             any(
@@ -86,13 +101,16 @@ class ManualInvoiceEmailTests(TestCase):
 
         self.assertEqual(response.status_code, 302, response.content[:500])
         invoice = Invoice.objects.get()
+        created_booking = invoice.booking
         self.booking.refresh_from_db()
         self.customer.refresh_from_db()
 
         self.assertEqual(invoice.status, "paid")
         self.assertIsNotNone(invoice.paid_at)
-        self.assertEqual(self.booking.status, "completed")
-        self.assertEqual(self.booking.quoted_price, Decimal("250.00"))
+        self.assertNotEqual(created_booking.pk, self.booking.pk)
+        self.assertEqual(created_booking.status, "completed")
+        self.assertEqual(created_booking.quoted_price, Decimal("250.00"))
+        self.assertEqual(self.booking.status, "pending")
         self.assertEqual(self.customer.jobs_completed, 1)
         self.assertEqual(self.customer.total_revenue, Decimal("275.000"))
         self.assertEqual(mail.outbox, [])
@@ -110,7 +128,11 @@ class ManualInvoiceEmailTests(TestCase):
             reverse("mark_invoice_paid", args=[invoice.pk]),
         )
 
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse("invoice_list"),
+            fetch_redirect_response=False,
+        )
         invoice.refresh_from_db()
         self.booking.refresh_from_db()
         self.customer.refresh_from_db()
@@ -128,6 +150,89 @@ class ManualInvoiceEmailTests(TestCase):
                 for message in response.wsgi_request._messages
             )
         )
+
+    def test_marking_already_paid_invoice_repairs_booking_completion(self):
+        invoice = Invoice.objects.create(
+            booking=self.booking,
+            amount=Decimal("250.00"),
+        )
+        Invoice.objects.filter(pk=invoice.pk).update(status="paid")
+
+        response = self.client.post(
+            reverse("mark_invoice_paid", args=[invoice.pk]),
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("invoice_list"),
+            fetch_redirect_response=False,
+        )
+        self.booking.refresh_from_db()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.booking.status, "completed")
+        self.assertEqual(self.booking.quoted_price, Decimal("250.00"))
+        self.assertEqual(self.customer.jobs_completed, 1)
+        self.assertEqual(self.customer.total_revenue, Decimal("275.000"))
+
+    def test_editing_invoice_status_returns_to_invoice_list(self):
+        invoice = Invoice.objects.create(
+            booking=self.booking,
+            amount=Decimal("250.00"),
+        )
+
+        response = self.client.post(
+            reverse("edit_invoice", args=[invoice.pk]),
+            {**self.form_data, "status": "sent"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("invoice_list"),
+            fetch_redirect_response=False,
+        )
+        invoice.refresh_from_db()
+        self.assertEqual(invoice.status, "sent")
+
+    def test_paid_invoices_sync_all_customer_bookings_and_profile_totals(self):
+        second_booking = Booking.objects.create(
+            customer=self.customer,
+            service_type="Window Cleaning",
+            booking_date=date.today() + timedelta(days=2),
+            booking_time=time(11, 0),
+            address="2 King Street",
+            suburb_postcode="Adelaide 5000",
+            quoted_price="300.00",
+        )
+        invoices = [
+            Invoice.objects.create(booking=booking, amount=amount)
+            for booking, amount in (
+                (self.booking, Decimal("250.00")),
+                (second_booking, Decimal("300.00")),
+            )
+        ]
+        Invoice.objects.filter(pk__in=[invoice.pk for invoice in invoices]).update(
+            status="paid"
+        )
+
+        response = self.client.post(
+            reverse("mark_invoice_paid", args=[invoices[0].pk]),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.booking.refresh_from_db()
+        second_booking.refresh_from_db()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.booking.status, "completed")
+        self.assertEqual(second_booking.status, "completed")
+        self.assertEqual(self.customer.jobs_completed, 2)
+        self.assertEqual(self.customer.total_revenue, Decimal("605.000"))
+
+        profile_response = self.client.get(
+            reverse("customer_profile_360", args=[self.customer.pk]),
+        )
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertEqual(profile_response.context["total_bookings"], 2)
+        self.assertEqual(profile_response.context["completed_bookings"], 2)
 
     def test_create_invoice_page_renders_work_order_formset(self):
         response = self.client.get(reverse("create_invoice"))
@@ -239,7 +344,7 @@ class ManualInvoiceEmailTests(TestCase):
         self.assertEqual(invoice.status, "sent")
 
     @patch("dashboard.views.send_invoice_email", return_value=True)
-    def test_manual_invoice_creation_allows_multiple_invoices_for_one_booking(
+    def test_manual_invoice_creation_creates_a_separate_booking_for_each_invoice(
         self, send_invoice_email
     ):
         first_response = self.client.post(reverse("create_invoice"), self.form_data)
@@ -260,9 +365,12 @@ class ManualInvoiceEmailTests(TestCase):
             fetch_redirect_response=False,
         )
         self.assertEqual(len(invoices), 2)
-        self.assertEqual(
-            {invoice.booking_id for invoice in invoices},
-            {self.booking.pk},
+        booking_ids = {invoice.booking_id for invoice in invoices}
+        self.assertEqual(len(booking_ids), 2)
+        self.assertNotIn(self.booking.pk, booking_ids)
+        self.assertEqual(Booking.objects.count(), 3)
+        self.assertTrue(
+            all(invoice.booking.customer_id == self.customer.pk for invoice in invoices)
         )
         self.assertNotEqual(
             first_invoice.invoice_number,
@@ -301,6 +409,18 @@ class ManualInvoiceEmailTests(TestCase):
                 ("Carpet Cleaning", Decimal("75.00"), 1),
             ],
         )
+        self.assertEqual(
+            list(
+                invoice.booking.work_orders.values_list(
+                    "service_type", "price", "position"
+                )
+            ),
+            [
+                ("Office Cleaning", Decimal("100.00"), 0),
+                ("Carpet Cleaning", Decimal("75.00"), 1),
+            ],
+        )
+        self.assertEqual(invoice.booking.quoted_price, Decimal("175.00"))
         detail_response = self.client.get(
             reverse("invoice_detail", args=[invoice.pk])
         )
@@ -480,6 +600,37 @@ class InvoiceBookingServiceTests(TestCase):
         self.assertEqual(response.context["stats"]["paid_count"], 1)
         self.assertContains(response, "$220.00")
         self.assertContains(response, "$110.00")
+
+    def test_invoice_kpis_include_overdue_status_even_when_due_date_is_future(self):
+        booking = Booking.objects.create(
+            service_type="Office Cleaning",
+            booking_date=date.today() + timedelta(days=1),
+            booking_time=time(10, 0),
+            address="1 King Street",
+            suburb_postcode="Adelaide 5000",
+            quoted_price="100.00",
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("100.00"),
+            due_date=date.today() + timedelta(days=14),
+            status="overdue",
+        )
+        admin = get_user_model().objects.create_user(
+            username="overdue-invoice-list-admin",
+            is_staff=True,
+        )
+        grant_dashboard_permissions(admin, "invoices.view_invoice")
+        self.client.force_login(admin)
+
+        response = self.client.get(reverse("invoice_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["stats"]["outstanding_total"], Decimal("110.000"))
+        self.assertEqual(response.context["stats"]["outstanding_count"], 1)
+        self.assertEqual(response.context["stats"]["overdue_total"], Decimal("110.000"))
+        self.assertEqual(response.context["stats"]["overdue_count"], 1)
+        self.assertContains(response, "1 unpaid invoices")
 
     def test_invoice_list_groups_separate_booking_invoices_by_customer(self):
         customer = Customer.objects.create(

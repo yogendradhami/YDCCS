@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from django.http import HttpResponse, response
 from django.shortcuts import redirect, render
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from google_auth_oauthlib.flow import Flow
@@ -216,6 +217,13 @@ def sync_google_reviews(request):
             status=400
         )
 
+    if not google_account.refresh_token:
+        return HttpResponse(
+            "Google authorization needs to be reconnected. Click "
+            "'Reconnect Google' above, then retry syncing.",
+            status=401,
+        )
+
     # ---------------------------------------------------------
     # Refresh Google access token
     # ---------------------------------------------------------
@@ -236,6 +244,17 @@ def sync_google_reviews(request):
         google_account.access_token = credentials.token
         google_account.save(update_fields=["access_token", "updated_at"])
 
+    except RefreshError as e:
+        if "invalid_grant" in str(e):
+            return HttpResponse(
+                "Google authorization has expired or been revoked. Click "
+                "'Reconnect Google' above, then retry syncing.",
+                status=401,
+            )
+        return HttpResponse(
+            f"❌ Google authentication refresh failed: {e}",
+            status=401
+        )
     except Exception as e:
         return HttpResponse(
             f"❌ Google authentication refresh failed: {e}",

@@ -25,7 +25,7 @@
     {% if is_edit %}
         Update this invoice while preserving its financial record.
     {% else %}
-        Create a professional invoice from an existing booking.
+        Create a separate job and invoice using an existing booking's details.
     {% endif %}
 
 {% endblock %}
@@ -320,7 +320,8 @@
                 {% if is_edit %}
                     Update the billing record below.
                 {% else %}
-                    Enter the billing information for this customer.
+                    Select a booking to copy its schedule and customer details. A new
+                    booking will be created for this invoice.
                 {% endif %}
 
             </p>
@@ -366,6 +367,13 @@
                         </label>
 
                         {{ form.booking }}
+
+                        {% if not is_edit %}
+                            <p class="invoice-help">
+                                This booking is used as a template. Saving creates a
+                                separate booking for this invoice.
+                            </p>
+                        {% endif %}
 
                         {% if form.booking.errors %}
                             <div class="invoice-errors">

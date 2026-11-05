@@ -583,6 +583,7 @@ class QuoteLeadManagementTests(TestCase):
             "Grout cleaning",
             "Upholstery cleaning",
             "Laundry service",
+            "Close full submission",
         ):
             with self.subTest(expected=expected):
                 self.assertContains(response, expected)

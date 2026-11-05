@@ -1,4 +1,5 @@
-from datetime import timedelta
+import json
+from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from unittest.mock import patch
 from urllib.parse import urlsplit
@@ -198,6 +199,22 @@ class SmokeTest(TestCase):
         body = resp.content.decode("utf-8")
         self.assertIn("Recent Google Reviews", body)
         self.assertIn("Excellent cleaning service.", body)
+
+    def test_customer_testimonial_video_schema_has_timezone_aware_upload_date(self):
+        response = self.client.get(reverse("customer_testimonial_video"))
+
+        self.assertEqual(response.status_code, 200)
+        video_schema = json.loads(response.context["video_schema"])
+        upload_date = datetime.fromisoformat(video_schema["uploadDate"])
+
+        self.assertIsNotNone(upload_date.tzinfo)
+        self.assertIsNotNone(upload_date.utcoffset())
+
+    def test_cleaning_services_video_schema_upload_date_includes_timezone(self):
+        response = self.client.get(reverse("cleaning_services_video"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '"uploadDate": "2026-08-17T00:00:00+09:30"')
 
     def test_footer_special_services_section_uses_simple_links(self):
         resp = self.client.get("/")

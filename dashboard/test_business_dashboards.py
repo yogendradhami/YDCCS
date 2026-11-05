@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from analytics.models import ActivityEvent, Visitor, VisitorSession
 from bookings.models import Booking
+from customers.models import Customer
 from expenses.models import Expense
 from invoices.models import Invoice
 from payroll.models import PayrollRecord
@@ -65,6 +66,132 @@ class BusinessDashboardTests(TestCase):
             with self.subTest(canvas_id=canvas_id):
                 self.assertContains(response, f'id="{canvas_id}"', count=1)
         self.assertEqual(response.context["contract_revenue_values"], [])
+
+    def test_business_intelligence_reports_all_unpaid_and_overdue_invoice_balances(self):
+        booking = Booking.objects.create(
+            service_type="Office Cleaning",
+            booking_date=date.today() + timedelta(days=1),
+            booking_time=time(10, 0),
+            address="1 Example Street",
+            suburb_postcode="Adelaide 5000",
+            quoted_price=Decimal("100.00"),
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("100.00"),
+            status="draft",
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("200.00"),
+            status="sent",
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("300.00"),
+            status="overdue",
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("400.00"),
+            status="paid",
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("500.00"),
+            status="cancelled",
+        )
+
+        response = self.client.get(reverse("business_intelligence"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["monthly_growth"], 0)
+        self.assertEqual(
+            response.context["outstanding_invoice_balance"],
+            Decimal("660.00"),
+        )
+        self.assertEqual(response.context["outstanding_invoice_count"], 3)
+        self.assertEqual(
+            response.context["overdue_invoice_balance"],
+            Decimal("330.00"),
+        )
+        self.assertEqual(response.context["overdue_invoice_count"], 1)
+        self.assertContains(response, "$660.00")
+        self.assertContains(response, "$330.00")
+        self.assertContains(response, "3 unpaid invoices")
+        self.assertContains(response, "0.0%")
+
+    def test_business_intelligence_customer_table_includes_booking_count(self):
+        customer = Customer.objects.create(
+            full_name="BI Customer",
+            email="bi-customer@example.com",
+            phone="0400000000",
+        )
+        Booking.objects.create(
+            customer=customer,
+            service_type="Office Cleaning",
+            booking_date=timezone.localdate(),
+            booking_time=time(10, 0),
+            address="1 Example Street",
+            suburb_postcode="Adelaide 5000",
+            quoted_price=Decimal("100.00"),
+            status="completed",
+        )
+        Booking.objects.create(
+            customer=customer,
+            service_type="Office Cleaning",
+            booking_date=timezone.localdate() + timedelta(days=1),
+            booking_time=time(10, 0),
+            address="1 Example Street",
+            suburb_postcode="Adelaide 5000",
+            quoted_price=Decimal("100.00"),
+        )
+        customer.total_revenue = Decimal("200.00")
+        customer.save(update_fields=["total_revenue"])
+
+        response = self.client.get(reverse("business_intelligence"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["top_revenue_customers"][0].booking_count,
+            2,
+        )
+        self.assertEqual(response.context["average_job_value"], Decimal("100.00"))
+        self.assertContains(response, "2</td>")
+
+    def test_business_intelligence_compares_adjacent_calendar_months(self):
+        booking = Booking.objects.create(
+            service_type="Office Cleaning",
+            booking_date=date.today() + timedelta(days=1),
+            booking_time=time(10, 0),
+            address="1 Example Street",
+            suburb_postcode="Adelaide 5000",
+            quoted_price=Decimal("100.00"),
+        )
+        current_paid_at = timezone.now()
+        previous_paid_at = (
+            timezone.localtime(current_paid_at)
+            .replace(day=1, hour=12, minute=0, second=0, microsecond=0)
+            - timedelta(days=1)
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("200.00"),
+            status="paid",
+            paid_at=previous_paid_at,
+        )
+        Invoice.objects.create(
+            booking=booking,
+            amount=Decimal("100.00"),
+            status="paid",
+            paid_at=current_paid_at,
+        )
+
+        response = self.client.get(reverse("business_intelligence"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["monthly_revenue"], Decimal("110.000"))
+        self.assertEqual(response.context["monthly_growth"], Decimal("-50.00"))
 
     def test_quote_estimator_validates_input_and_displays_history_basis(self):
         invalid_response = self.client.post(

@@ -3260,7 +3260,7 @@ def customer_testimonial_video(request):
         description=description,
         video_url=video_url,
         thumbnail_url=_video_thumbnail_url(video_url),
-        upload_date="2026-08-17",
+        upload_date="2026-08-17T00:00:00+09:30",
     )
     return render(request, "videos/watch_page.html", context)
 
@@ -3282,7 +3282,7 @@ def testimonial_video_watch_page(request, video_id):
         description=description,
         video_url=video_url,
         thumbnail_url=thumbnail_url,
-        upload_date=video.created_at.date().isoformat(),
+        upload_date=video.created_at.isoformat(),
     )
     return render(request, "videos/watch_page.html", context)
 

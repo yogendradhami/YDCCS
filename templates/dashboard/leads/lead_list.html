@@ -146,6 +146,7 @@
                                 <details class="lead-details-disclosure">
                                     <summary>Full submission <span aria-hidden="true">⌄</span></summary>
                                     <div class="lead-submission-details">
+                                        <button type="button" class="lead-submission-close" data-close-lead-details aria-label="Close full submission">&times;</button>
                                         <dl>
                                             <div><dt>Customer</dt><dd>{{ quote.name }}</dd></div>
                                             <div><dt>Email</dt><dd><a href="mailto:{{ quote.email }}">{{ quote.email }}</a></dd></div>
@@ -243,4 +244,15 @@
         <span>YD Commercial Cleaning · Lead Management</span>
     </footer>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("click", (event) => {
+        const closeButton = event.target.closest("[data-close-lead-details]");
+        if (closeButton) {
+            closeButton.closest("details").open = false;
+        }
+    });
+</script>
 {% endblock %}

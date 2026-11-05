@@ -143,21 +143,37 @@ class Invoice(models.Model):
 
             customer_ids_to_sync = set()
             if self.status == "paid":
-                booking = Booking.objects.select_for_update().get(pk=self.booking_id)
-                paid_amounts = Invoice.objects.filter(
-                    booking_id=self.booking_id,
-                    status="paid",
-                ).aggregate(
+                booking = Booking.objects.select_for_update().get(
+                    pk=self.booking_id
+                )
+                paid_invoices = Invoice.objects.filter(status="paid")
+                if booking.customer_id:
+                    paid_invoices = paid_invoices.filter(
+                        booking__customer_id=booking.customer_id
+                    )
+                else:
+                    paid_invoices = paid_invoices.filter(
+                        booking_id=self.booking_id
+                    )
+
+                paid_booking_totals = paid_invoices.values(
+                    "booking_id"
+                ).annotate(
                     amount=Sum("amount"),
                     discounts=Sum("discount_amount"),
                 )
-                booking.status = "completed"
-                booking.quoted_price = max(
-                    (paid_amounts["amount"] or Decimal("0.00"))
-                    - (paid_amounts["discounts"] or Decimal("0.00")),
-                    Decimal("0.00"),
-                )
-                booking.save(update_fields=["status", "quoted_price"])
+                for paid_booking_total in paid_booking_totals:
+                    paid_booking = Booking.objects.select_for_update().get(
+                        pk=paid_booking_total["booking_id"]
+                    )
+                    paid_booking.status = "completed"
+                    paid_booking.quoted_price = max(
+                        (paid_booking_total["amount"] or Decimal("0.00"))
+                        - (paid_booking_total["discounts"] or Decimal("0.00")),
+                        Decimal("0.00"),
+                    )
+                    paid_booking.save(update_fields=["status", "quoted_price"])
+
                 if booking.customer_id:
                     customer_ids_to_sync.add(booking.customer_id)
 

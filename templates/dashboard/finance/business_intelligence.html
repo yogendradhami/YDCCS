@@ -20,11 +20,69 @@
         <article class="finance-metric"><span class="finance-metric-label">Completed jobs this month</span><strong class="finance-metric-value">{{ completed_jobs_count }}</strong></article>
         <article class="finance-metric"><span class="finance-metric-label">Average completed-job value</span><strong class="finance-metric-value">${{ average_job_value|floatformat:2 }}</strong></article>
     </div>
+    <div class="finance-metric-grid finance-invoice-metric-grid" aria-label="Invoice balances">
+        <article class="finance-metric">
+            <span class="finance-metric-label">Outstanding invoices</span>
+            <strong class="finance-metric-value">${{ outstanding_invoice_balance|floatformat:2 }}</strong>
+            <small class="finance-metric-foot">{{ outstanding_invoice_count }} unpaid invoice{{ outstanding_invoice_count|pluralize }} · <a href="{% url 'invoice_list' %}">Review invoices</a></small>
+        </article>
+        <article class="finance-metric">
+            <span class="finance-metric-label">Overdue invoices</span>
+            <strong class="finance-metric-value">${{ overdue_invoice_balance|floatformat:2 }}</strong>
+            <small class="finance-metric-foot">{{ overdue_invoice_count }} overdue invoice{{ overdue_invoice_count|pluralize }}</small>
+        </article>
+    </div>
     <div class="finance-grid">
-        <section class="finance-panel" style="grid-column:span 8"><header class="finance-panel-heading"><div><span class="finance-overline">Cash collection</span><h3>Paid invoice revenue trend</h3></div></header><div style="height:300px"><canvas id="revenueTrendChart" aria-label="Monthly paid invoice revenue trend"></canvas></div></section>
-        <section class="finance-panel" style="grid-column:span 4"><header class="finance-panel-heading"><div><span class="finance-overline">Spending</span><h3>Expense categories</h3></div></header><div style="height:300px"><canvas id="expenseCategoryChart" aria-label="Expense categories"></canvas></div></section>
-        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Service mix</span><h3>Completed-job value by service</h3></div></header><div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Service</th><th class="numeric">Jobs</th><th class="numeric">Quoted value</th></tr></thead><tbody>{% for service in revenue_by_service %}<tr><td>{{ service.service_type }}</td><td class="numeric">{{ service.total_jobs }}</td><td class="numeric">${{ service.total_revenue|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="3"><div class="finance-empty-state"><strong>No completed jobs</strong>Service breakdown will appear when jobs are completed.</div></td></tr>{% endfor %}</tbody></table></div></section>
-        <section class="finance-panel" style="grid-column:span 6"><header class="finance-panel-heading"><div><span class="finance-overline">Customer value</span><h3>Top customers by recorded revenue</h3></div></header><div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Customer</th><th class="numeric">Bookings</th><th class="numeric">Revenue</th></tr></thead><tbody>{% for customer in top_revenue_customers %}<tr><td>{{ customer.full_name }}</td><td class="numeric">{{ customer.booking_count|default:customer.bookings.count }}</td><td class="numeric">${{ customer.total_revenue|floatformat:2 }}</td></tr>{% empty %}<tr><td colspan="3"><div class="finance-empty-state"><strong>No customer revenue data</strong>Customer totals will appear here.</div></td></tr>{% endfor %}</tbody></table></div></section>
+        <section class="finance-panel span-8">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Cash collection</span><h3>Paid invoice revenue trend</h3></div></header>
+            <div class="finance-chart-wrap">
+                {% if revenue_labels %}
+                    <canvas id="revenueTrendChart" aria-label="Monthly paid invoice revenue trend"></canvas>
+                {% else %}
+                    <div class="finance-empty-state"><strong>No paid invoice revenue yet</strong>The revenue trend will appear when an invoice is marked paid.</div>
+                {% endif %}
+            </div>
+        </section>
+        <section class="finance-panel span-4">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Spending</span><h3>All-time expense categories</h3></div></header>
+            <div class="finance-chart-wrap">
+                {% if category_labels %}
+                    <canvas id="expenseCategoryChart" aria-label="All-time expense categories"></canvas>
+                {% else %}
+                    <div class="finance-empty-state"><strong>No expenses recorded</strong>Expense categories will appear here as expenses are added.</div>
+                {% endif %}
+            </div>
+        </section>
+        <section class="finance-panel span-6">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Service mix</span><h3>Completed-job value by service</h3></div></header>
+            <div class="finance-table-wrap">
+                <table class="finance-table">
+                    <thead><tr><th>Service</th><th class="numeric">Jobs</th><th class="numeric">Quoted value</th></tr></thead>
+                    <tbody>
+                        {% for service in revenue_by_service %}
+                            <tr><td>{{ service.service_type }}</td><td class="numeric">{{ service.total_jobs }}</td><td class="numeric">${{ service.total_revenue|floatformat:2 }}</td></tr>
+                        {% empty %}
+                            <tr><td colspan="3"><div class="finance-empty-state"><strong>No completed jobs</strong>Service breakdown will appear when jobs are completed.</div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="finance-panel span-6">
+            <header class="finance-panel-heading"><div><span class="finance-overline">Customer value</span><h3>Top customers by recorded revenue</h3></div></header>
+            <div class="finance-table-wrap">
+                <table class="finance-table">
+                    <thead><tr><th>Customer</th><th class="numeric">Bookings</th><th class="numeric">Revenue</th></tr></thead>
+                    <tbody>
+                        {% for customer in top_revenue_customers %}
+                            <tr><td>{{ customer.full_name }}</td><td class="numeric">{{ customer.booking_count }}</td><td class="numeric">${{ customer.total_revenue|floatformat:2 }}</td></tr>
+                        {% empty %}
+                            <tr><td colspan="3"><div class="finance-empty-state"><strong>No customer revenue data</strong>Customer totals will appear here.</div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 </div>
 {{ revenue_labels|json_script:"bi-revenue-labels" }}

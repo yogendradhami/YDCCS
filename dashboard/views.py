@@ -7750,19 +7750,8 @@ def reminder_centre(request):
 def business_intelligence(request):
 
     today = timezone.localdate()
-    current_month = today.month
-    current_year = today.year
-
-    if current_month == 1:
-
-        previous_month = 12
-        previous_year = current_year - 1
-
-    else:
-
-        previous_month = current_month - 1
-        previous_year = current_year
     month_start = today.replace(day=1)
+    previous_month_start = (month_start - timedelta(days=1)).replace(day=1)
     next_month_start = (
         month_start.replace(year=month_start.year + 1, month=1)
         if month_start.month == 12
@@ -7786,16 +7775,11 @@ def business_intelligence(request):
         or 0
     )
 
-    this_month_revenue = (
-        Invoice.objects.filter(
-            status="paid", paid_at__month=current_month, paid_at__year=current_year
-        ).aggregate(total=Sum("total_amount"))["total"]
-        or 0
-    )
-
     last_month_revenue = (
         Invoice.objects.filter(
-            status="paid", paid_at__month=previous_month, paid_at__year=previous_year
+            status="paid",
+            paid_at__date__gte=previous_month_start,
+            paid_at__date__lt=month_start,
         ).aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
@@ -7805,10 +7789,10 @@ def business_intelligence(request):
     if last_month_revenue > 0:
 
         monthly_growth = round(
-            ((this_month_revenue - last_month_revenue) / last_month_revenue) * 100, 2
+            ((monthly_revenue - last_month_revenue) / last_month_revenue) * 100, 2
         )
 
-    estimated_profit = float(monthly_revenue) - float(monthly_expenses)
+    estimated_profit = monthly_revenue - monthly_expenses
 
     expense_categories = (
         Expense.objects.values("category")
@@ -7824,68 +7808,15 @@ def business_intelligence(request):
         .order_by("month")
     )
 
-    expense_trend = (
-        Expense.objects.annotate(month=TruncMonth("date"))
-        .values("month")
-        .annotate(total=Sum("amount"))
-        .order_by("month")
-    )
-
     revenue_labels = [
         item["month"].strftime("%b %Y") for item in revenue_trend if item["month"]
     ]
 
     revenue_values = [float(item["total"] or 0) for item in revenue_trend]
 
-    expense_map = {}
-
-    for item in expense_trend:
-
-        if item["month"]:
-
-            expense_map[item["month"].strftime("%b %Y")] = float(item["total"] or 0)
-
-    profit_values = []
-
-    for i, month in enumerate(revenue_labels):
-
-        revenue = revenue_values[i]
-
-        expenses = expense_map.get(month, 0)
-
-        profit_values.append(round(revenue - expenses, 2))
-
     category_labels = [item["category"] for item in expense_categories]
 
     category_values = [float(item["total"] or 0) for item in expense_categories]
-
-    top_customers = Customer.objects.annotate(
-        total_bookings=Count("bookings")
-    ).order_by("-total_bookings")[:5]
-
-    top_employees = (
-        Employee.objects.filter(active=True)
-        .annotate(
-            completed_jobs=Count(
-                "assigned_bookings", filter=Q(assigned_bookings__status="completed")
-            )
-        )
-        .order_by("-completed_jobs")[:5]
-    )
-
-    employee_revenue = (
-        Employee.objects.filter(active=True)
-        .annotate(
-            completed_jobs=Count(
-                "assigned_bookings", filter=Q(assigned_bookings__status="completed")
-            ),
-            revenue_generated=Sum(
-                "assigned_bookings__quoted_price",
-                filter=Q(assigned_bookings__status="completed"),
-            ),
-        )
-        .order_by("-revenue_generated")[:10]
-    )
 
     total_quotes = QuoteRequest.objects.count()
 
@@ -7898,10 +7829,6 @@ def business_intelligence(request):
     if total_quotes > 0:
 
         quote_conversion_rate = round((accepted_quotes / total_quotes) * 100, 2)
-
-    new_customers_this_month = Customer.objects.filter(
-        created_at__month=current_month, created_at__year=current_year
-    ).count()
 
     completed_jobs = Booking.objects.filter(
         status="completed",
@@ -7917,7 +7844,7 @@ def business_intelligence(request):
 
     if completed_jobs_count > 0:
         average_job_value = round(
-            float(completed_job_value) / completed_jobs_count,
+            completed_job_value / completed_jobs_count,
             2,
         )
 
@@ -7928,33 +7855,9 @@ def business_intelligence(request):
         .order_by("-total_revenue")[:10]
     )
 
-    revenue_by_suburb = (
-        Booking.objects.filter(status="completed")
-        .values("suburb_postcode")
-        .annotate(total_revenue=Sum("quoted_price"), total_jobs=Count("id"))
-        .order_by("-total_revenue")[:10]
-    )
-
-    top_10_customers = Customer.objects.annotate(total_jobs=Count("bookings")).order_by(
-        "-total_revenue"
-    )[:10]
-
-    top_services = (
-        Booking.objects.values("service_type")
-        .annotate(total_jobs=Count("id"))
-        .order_by("-total_jobs")[:5]
-    )
-
-    top_revenue_customers = Customer.objects.order_by("-total_revenue")[:5]
-
-    customer_lifetime_value = Customer.objects.annotate(
-        booking_count=Count("bookings")
-    ).order_by("-total_revenue")[:10]
-
-    top_suburbs = (
-        Booking.objects.values("suburb_postcode")
-        .annotate(total_jobs=Count("id"))
-        .order_by("-total_jobs")[:10]
+    top_revenue_customers = (
+        Customer.objects.annotate(booking_count=Count("bookings"))
+        .order_by("-total_revenue", "full_name")[:5]
     )
 
     repeat_customers = Customer.objects.annotate(
@@ -8026,64 +7929,45 @@ def business_intelligence(request):
 
         health_status = "Needs Attention"
 
-    today_jobs = Booking.objects.filter(booking_date=today).count()
-
-    outstanding_invoices = Invoice.objects.exclude(
+    outstanding_invoice_records = Invoice.objects.exclude(
         status__in=["paid", "cancelled"]
-    ).count()
-
-    low_stock_items = CleaningSupply.objects.filter(
-        current_stock__lte=F("minimum_stock")
-    ).count()
-
-    overdue_equipment = Equipment.objects.filter(next_service_date__lt=today).count()
-
-    vehicles_due_service = Vehicle.objects.filter(service_due_date__lt=today).count()
-
-    executive_alerts = (
-        outstanding_invoices
-        + low_stock_items
-        + overdue_equipment
-        + vehicles_due_service
+    )
+    outstanding_invoice_count = outstanding_invoice_records.count()
+    outstanding_invoice_balance = (
+        outstanding_invoice_records.aggregate(total=Sum("total_amount"))["total"]
+        or 0
+    )
+    overdue_invoice_records = outstanding_invoice_records.filter(
+        Q(status="overdue") | Q(due_date__lt=today)
+    )
+    overdue_invoice_count = overdue_invoice_records.count()
+    overdue_invoice_balance = (
+        overdue_invoice_records.aggregate(total=Sum("total_amount"))["total"]
+        or 0
     )
 
     context = {
         "monthly_revenue": monthly_revenue,
         "monthly_expenses": monthly_expenses,
+        "monthly_growth": monthly_growth,
         "estimated_profit": round(estimated_profit, 2),
         "category_labels": category_labels,
         "category_values": category_values,
         "revenue_labels": revenue_labels,
         "revenue_values": revenue_values,
-        "profit_values": profit_values,
-        "top_customers": top_customers,
-        "top_employees": top_employees,
-        "top_services": top_services,
         "top_revenue_customers": top_revenue_customers,
-        "customer_lifetime_value": customer_lifetime_value,
-        "top_suburbs": top_suburbs,
-        "repeat_customer_count": repeat_customer_count,
-        "total_customer_count": total_customer_count,
         "repeat_customer_rate": repeat_customer_rate,
-        "top_employees": top_employees,
-        "employee_revenue": employee_revenue,
-        "total_quotes": total_quotes,
-        "accepted_quotes": accepted_quotes,
         "quote_conversion_rate": quote_conversion_rate,
-        "new_customers_this_month": new_customers_this_month,
         "completed_jobs_count": completed_jobs_count,
         "average_job_value": average_job_value,
         "revenue_by_service": revenue_by_service,
-        "revenue_by_suburb": revenue_by_suburb,
-        "top_10_customers": top_10_customers,
         "health_score": health_score,
         "health_status": health_status,
-        "today_jobs": today_jobs,
-        "outstanding_invoices": outstanding_invoices,
-        "low_stock_items": low_stock_items,
-        "overdue_equipment": overdue_equipment,
-        "vehicles_due_service": vehicles_due_service,
-        "executive_alerts": executive_alerts,
+        "outstanding_invoice_count": outstanding_invoice_count,
+        "outstanding_invoice_balance": outstanding_invoice_balance,
+        "overdue_invoice_count": overdue_invoice_count,
+        "overdue_invoice_balance": overdue_invoice_balance,
+        "today": today,
     }
 
     return render(request, "dashboard/finance/business_intelligence.html", context)

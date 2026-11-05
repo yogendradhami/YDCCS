@@ -194,6 +194,21 @@
     font-size: .7rem;
 }
 
+.finance-invoice-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 760px;
+}
+
+.finance-metric-foot a {
+    color: var(--finance-blue);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.finance-metric-foot a:hover {
+    text-decoration: underline;
+}
+
 .finance-metric.is-positive .finance-metric-value {
     color: #087e78;
 }
@@ -603,6 +618,7 @@
 
 @media (max-width: 420px) {
     .finance-metric-grid { grid-template-columns: 1fr 1fr; }
+    .finance-invoice-metric-grid { grid-template-columns: 1fr; }
     .finance-metric-value { font-size: 1.15rem; }
     .finance-button,
     .finance-button-secondary { min-height: 40px; }
