@@ -356,3 +356,30 @@
         transition-duration: .01ms !important;
     }
 }
+
+@media (max-width: 700px) {
+    .crm-main .crm-notification-box .notification-dropdown {
+        position: fixed;
+        top: calc(env(safe-area-inset-top, 0px) + 72px);
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-height: calc(100vh - 96px);
+        max-height: min(70dvh, 480px);
+        box-sizing: border-box;
+        overflow-x: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+    }
+
+    .crm-main .notification-items > a {
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 700px) and (hover: none) {
+    .crm-notification-box:hover:not(.active) .notification-dropdown,
+    .crm-notification-box:focus-within:not(.active) .notification-dropdown {
+        display: none;
+    }
+}
