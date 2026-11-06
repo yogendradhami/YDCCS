@@ -1,0 +1,117 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Practical Verification | YD Dashboard{% endblock %}
+{% block page_title %}Practical competency{% endblock %}
+{% block page_subtitle %}Record an observed on-site task separately from the online assessment.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/induction-setup.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="induction-setup-page">
+    <nav class="induction-setup-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'induction_dashboard' %}">Employee inductions</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'induction_detail' induction.id %}">{{ induction.employee.full_name }}</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Practical verification</span>
+    </nav>
+
+    <header class="induction-setup-hero">
+        <div class="induction-setup-hero-copy">
+            <span class="induction-setup-eyebrow"><span></span> SUPERVISOR OBSERVATION</span>
+            <h2>Verify the work, not just the quiz.</h2>
+            <p>Observe the employee performing an approved practical task. Record what you saw and whether further training is needed.</p>
+        </div>
+        <div class="induction-setup-hero-art" aria-hidden="true">
+            <span class="induction-setup-art-orbit"></span>
+            <span class="induction-setup-art-check">✓</span>
+            <span class="induction-setup-art-spark">✦</span>
+        </div>
+    </header>
+
+    <section class="induction-setup-person" aria-label="Training details">
+        <div class="induction-setup-avatar">{{ induction.employee.full_name|slice:":1"|upper }}</div>
+        <div class="induction-setup-person-copy">
+            <span>EMPLOYEE · TRAINING VERSION {{ module.version }}</span>
+            <h3>{{ induction.employee.full_name }}</h3>
+            <p>{{ module.title }}</p>
+        </div>
+        <a class="induction-setup-back" href="{% url 'induction_detail' induction.id %}">← Back to induction</a>
+    </section>
+
+    <div class="induction-setup-layout">
+        <form method="post" class="induction-setup-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="induction-setup-error-summary" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+            <section class="induction-setup-card">
+                <div class="induction-setup-section-heading">
+                    <span class="induction-setup-section-icon induction-setup-section-icon-teal" aria-hidden="true">01</span>
+                    <div><h3>Observed practical task</h3><p>Select the current-version activity you personally observed.</p></div>
+                </div>
+                <div class="induction-setup-field">
+                    <label for="{{ form.practical_task.id_for_label }}">{{ form.practical_task.label }}</label>
+                    {{ form.practical_task }}
+                    {% if form.practical_task.errors %}<div class="induction-setup-field-error" role="alert">{{ form.practical_task.errors }}</div>{% endif %}
+                </div>
+            </section>
+            <section class="induction-setup-card">
+                <div class="induction-setup-section-heading">
+                    <span class="induction-setup-section-icon induction-setup-section-icon-amber" aria-hidden="true">02</span>
+                    <div><h3>Observation outcome</h3><p>Competency is based on the practical demonstration, not the online quiz score.</p></div>
+                </div>
+                <div class="induction-verification-options">
+                    {% for choice in form.result %}
+                        <label class="induction-verification-option">{{ choice.tag }}<span><strong>{{ choice.choice_label }}</strong>{% if choice.data.value == "competent" %}<small>The employee demonstrated the task to the current approved method.</small>{% else %}<small>Do not assign this task independently until further instruction and reassessment.</small>{% endif %}</span></label>
+                    {% endfor %}
+                </div>
+                {% if form.result.errors %}<div class="induction-setup-field-error" role="alert">{{ form.result.errors }}</div>{% endif %}
+            </section>
+            <section class="induction-setup-card">
+                <div class="induction-setup-section-heading">
+                    <span class="induction-setup-section-icon" aria-hidden="true">03</span>
+                    <div><h3>Supervisor notes</h3><p>Record the task conditions, what was observed and any follow-up required.</p></div>
+                </div>
+                <div class="induction-setup-field">
+                    <label for="{{ form.comments.id_for_label }}">{{ form.comments.label }}</label>
+                    {{ form.comments }}
+                    {% if form.comments.errors %}<div class="induction-setup-field-error" role="alert">{{ form.comments.errors }}</div>{% endif %}
+                </div>
+            </section>
+            <div class="induction-setup-actions">
+                <a class="induction-setup-button induction-setup-button-secondary" href="{% url 'induction_detail' induction.id %}">Cancel</a>
+                <button class="induction-setup-button induction-setup-button-primary" type="submit">Save observation <span aria-hidden="true">→</span></button>
+            </div>
+        </form>
+
+        <aside class="induction-setup-aside">
+            <section class="induction-setup-aside-card induction-setup-aside-highlight">
+                <span class="induction-setup-aside-icon" aria-hidden="true">✓</span>
+                <h3>Observe before rating.</h3>
+                <p>Record only tasks you directly observed using the current site procedure and equipment.</p>
+            </section>
+            <section class="induction-setup-aside-card">
+                <span class="induction-setup-aside-label">CURRENT VERSION TASKS</span>
+                <ul class="induction-setup-checklist">
+                    {% for task in training_version.content.verification_tasks %}
+                        <li><span>{{ forloop.counter }}</span><div><strong>{{ task }}</strong></div></li>
+                    {% endfor %}
+                </ul>
+            </section>
+            <section class="induction-setup-aside-card">
+                <span class="induction-setup-aside-label">RECENT OBSERVATIONS</span>
+                {% for verification in verification_history %}
+                    <p class="induction-verification-history-item">
+                        <strong>{{ verification.get_result_display }}</strong>
+                        <span>{{ verification.practical_task }}</span>
+                        <small>{{ verification.supervisor.get_full_name|default:verification.supervisor.username }} · {{ verification.verified_at|date:"j M Y" }}</small>
+                    </p>
+                {% empty %}
+                    <p class="induction-setup-aside-footnote">No practical observations recorded for this training version.</p>
+                {% endfor %}
+            </section>
+        </aside>
+    </div>
+</div>
+{% endblock %}

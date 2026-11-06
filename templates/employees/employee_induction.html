@@ -199,17 +199,23 @@
                 </div>
 
 
-                {% if progress == 100 %}
+                {% if progress == 100 and induction.status == "completed" %}
 
                     <div class="progress-success">
                         <i class="fa-solid fa-circle-check"></i>
                         All required modules completed
                     </div>
 
+                {% elif progress == 100 %}
+
+                    <div class="progress-helper">
+                        All required modules are approved. Complete the final declaration to finish.
+                    </div>
+
                 {% else %}
 
                     <div class="progress-helper">
-                        Continue through each required module.
+                        {{ outstanding }} modules outstanding; assessment attempts {{ assessment_attempts }}.
                     </div>
 
                 {% endif %}
@@ -219,6 +225,24 @@
         </div>
 
     </section>
+
+    {% if is_renewal %}
+        <section class="ind-renewal-alert is-due" role="status">
+            <span class="ind-renewal-alert-icon">!</span>
+            <div>
+                <strong>Your induction renewal is due</strong>
+                <p>Your previous induction expired on {{ expires_on|date:"j F Y" }}. Please complete each required module again to keep your training current.</p>
+            </div>
+        </section>
+    {% elif expires_on and days_until_expiry <= 30 %}
+        <section class="ind-renewal-alert" role="status">
+            <span class="ind-renewal-alert-icon">↻</span>
+            <div>
+                <strong>Induction renewal due {{ expires_on|date:"j F Y" }}</strong>
+                <p>Renewal reminders are also sent to your employee portal and email. Speak with your supervisor if you need help planning your renewal.</p>
+            </div>
+        </section>
+    {% endif %}
 
 
     <!-- STATUS -->
@@ -350,6 +374,10 @@
                         class="induction-module-card
                         {% if module.id in completed_ids %}
                             completed
+                        {% elif module.id in retraining_ids %}
+                            pending
+                        {% elif module.current_completion and module.current_completion.review_status == "pending" %}
+                            pending review
                         {% else %}
                             pending
                         {% endif %}"
@@ -360,6 +388,20 @@
                             {% if module.id in completed_ids %}
 
                                 <i class="fa-solid fa-check"></i>
+
+                            {% elif module.id in retraining_ids %}
+
+                                <span class="module-status">
+                                    <i class="fa-solid fa-rotate"></i>
+                                    Retraining required
+                                </span>
+
+                            {% elif module.current_completion and module.current_completion.review_status == "pending" %}
+
+                                <span class="module-status">
+                                    <i class="fa-regular fa-clock"></i>
+                                    Awaiting review
+                                </span>
 
                             {% else %}
 
@@ -420,6 +462,13 @@
                                         Completed
                                     </span>
 
+                                {% elif module.current_completion and module.current_completion.review_status == "pending" %}
+
+                                    <span class="module-status">
+                                        <i class="fa-regular fa-clock"></i>
+                                        Awaiting manager review
+                                    </span>
+
                                 {% else %}
 
                                     <span class="module-status">
@@ -472,6 +521,10 @@
                                     <span>
                                         {% if module.id in completed_ids %}
                                             Review module
+                                        {% elif module.id in retraining_ids %}
+                                            Start retraining
+                                        {% elif module.current_completion and module.current_completion.review_status == "pending" %}
+                                            View submission
                                         {% else %}
                                             Open module
                                         {% endif %}
@@ -481,6 +534,8 @@
                                         class="fa-solid
                                         {% if module.id in completed_ids %}
                                             fa-arrow-up-right-from-square
+                                        {% elif module.current_completion and module.current_completion.review_status == "pending" %}
+                                            fa-clock
                                         {% else %}
                                             fa-arrow-right
                                         {% endif %}"
@@ -613,7 +668,7 @@
                     <div class="completion-content">
 
                         <span class="completion-kicker">
-                            TRAINING COMPLETE
+                            {% if induction.status == "completed" %}TRAINING COMPLETE{% else %}READY FOR DECLARATION{% endif %}
                         </span>
 
                         <h2>
@@ -621,18 +676,23 @@
                         </h2>
 
                         <p>
-                            You have completed all required training modules.
-                            Please complete the final declaration below to
-                            formally confirm your induction.
+                            All required modules have been approved.
+                            {% if induction.status == "completed" %}
+                                Your induction is current until {{ induction.expires_on|date:"j F Y" }}.
+                            {% else %}
+                                Please complete the final declaration below to formally confirm your induction.
+                            {% endif %}
                         </p>
 
-                        <a
-                            href="{% url 'employee_induction_completion_pdf' %}"
-                            class="completion-download"
-                        >
-                            <i class="fa-solid fa-file-pdf"></i>
-                            Download completion record
-                        </a>
+                        {% if induction.status == "completed" %}
+                            <a
+                                href="{% url 'employee_induction_completion_pdf' %}"
+                                class="completion-download"
+                            >
+                                <i class="fa-solid fa-file-pdf"></i>
+                                Download completion record
+                            </a>
+                        {% endif %}
 
                     </div>
 

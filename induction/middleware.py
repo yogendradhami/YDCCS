@@ -67,6 +67,8 @@ class EmployeeInductionMiddleware:
             # Employee has no induction record.
             return redirect("employee_induction")
 
+        induction.begin_renewal_if_expired()
+
         # If induction is incomplete, redirect to induction.
         if induction.status != "completed":
             return redirect("employee_induction")

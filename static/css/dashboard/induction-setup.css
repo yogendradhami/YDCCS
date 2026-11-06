@@ -1,0 +1,858 @@
+.induction-setup-page {
+    --is-ink: #17283e;
+    --is-muted: #718198;
+    --is-line: #e6edf3;
+    --is-blue: #1769e0;
+    --is-teal: #148d87;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 10px 0 42px;
+    color: var(--is-ink);
+}
+
+.induction-setup-page *,
+.induction-setup-page *::before,
+.induction-setup-page *::after {
+    box-sizing: border-box;
+}
+
+.induction-setup-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 20px;
+    color: #9aa8b8;
+    font-size: 12px;
+}
+
+.induction-setup-breadcrumb a {
+    color: #56708e;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.induction-setup-breadcrumb a:hover {
+    color: var(--is-blue);
+}
+
+.induction-setup-breadcrumb [aria-current="page"] {
+    color: var(--is-ink);
+    font-weight: 700;
+}
+
+.induction-setup-hero {
+    position: relative;
+    display: flex;
+    min-height: 214px;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: 34px 42px;
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 82% 15%, rgba(80, 188, 192, .26), transparent 25%),
+        linear-gradient(115deg, #10243b 0%, #153b58 58%, #176775 100%);
+    color: #fff;
+    box-shadow: 0 18px 38px rgba(20, 52, 77, .14);
+}
+
+.induction-setup-hero-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 670px;
+}
+
+.induction-setup-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 15px;
+    color: #b6dce7;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .16em;
+}
+
+.induction-setup-eyebrow span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #64d2bd;
+    box-shadow: 0 0 0 5px rgba(100, 210, 189, .12);
+}
+
+.induction-setup-hero h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(26px, 3vw, 36px);
+    font-weight: 750;
+    letter-spacing: -.045em;
+    line-height: 1.14;
+}
+
+.induction-setup-hero p {
+    max-width: 590px;
+    margin: 12px 0 0;
+    color: #d3e2ec;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.induction-setup-hero-art {
+    position: relative;
+    width: 188px;
+    height: 145px;
+    flex: 0 0 188px;
+    margin: 0 20px 0 24px;
+}
+
+.induction-setup-art-orbit {
+    position: absolute;
+    top: 5px;
+    left: 18px;
+    width: 135px;
+    height: 135px;
+    border: 1px solid rgba(198, 237, 241, .35);
+    border-radius: 44% 56% 61% 39% / 43% 38% 62% 57%;
+    background: rgba(215, 247, 242, .08);
+    box-shadow: 0 0 0 17px rgba(205, 244, 241, .035), inset 0 0 35px rgba(255, 255, 255, .09);
+    transform: rotate(-24deg);
+}
+
+.induction-setup-art-check {
+    position: absolute;
+    top: 37px;
+    left: 55px;
+    display: grid;
+    width: 64px;
+    height: 64px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .4);
+    border-radius: 20px;
+    background: linear-gradient(145deg, #88e0c3, #27a99e);
+    color: #123b4b;
+    font-size: 30px;
+    font-weight: 800;
+    box-shadow: 0 13px 28px rgba(3, 23, 38, .2);
+    transform: rotate(7deg);
+}
+
+.induction-setup-art-spark {
+    position: absolute;
+    top: 19px;
+    right: 12px;
+    color: #c5f3d9;
+    font-size: 25px;
+}
+
+.induction-setup-person {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    min-height: 98px;
+    align-items: center;
+    gap: 15px;
+    margin: -20px 22px 26px;
+    padding: 16px 21px;
+    border: 1px solid rgba(224, 232, 240, .9);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(26, 47, 69, .08);
+}
+
+.induction-setup-avatar {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 54px;
+    place-items: center;
+    border: 1px solid #d8e8f7;
+    border-radius: 17px;
+    background: linear-gradient(145deg, #eaf4ff, #dceeff);
+    color: #1769c9;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.induction-setup-person-copy {
+    min-width: 0;
+}
+
+.induction-setup-person-copy > span,
+.induction-setup-aside-label {
+    color: #8999aa;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .13em;
+}
+
+.induction-setup-person-copy h3 {
+    overflow: hidden;
+    margin: 4px 0;
+    color: var(--is-ink);
+    font-size: 17px;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.induction-setup-person-copy p {
+    overflow: hidden;
+    margin: 0;
+    color: var(--is-muted);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.induction-setup-person-copy p span {
+    margin: 0 5px;
+    color: #bdc7d1;
+}
+
+.induction-setup-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding: 8px 11px;
+    border: 1px solid #d9eee6;
+    border-radius: 30px;
+    background: #f0faf5;
+    color: #317b5f;
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.induction-setup-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #36ae7b;
+    box-shadow: 0 0 0 3px rgba(54, 174, 123, .12);
+}
+
+.induction-setup-status.is-in-progress {
+    border-color: #d7e5f7;
+    background: #f0f6ff;
+    color: #376da7;
+}
+
+.induction-setup-status.is-in-progress .induction-setup-status-dot {
+    background: #4b8fd1;
+    box-shadow: 0 0 0 3px rgba(75, 143, 209, .12);
+}
+
+.induction-setup-status.is-expired {
+    border-color: #f2d8d8;
+    background: #fff3f2;
+    color: #a53d3d;
+}
+
+.induction-setup-status.is-expired .induction-setup-status-dot {
+    background: #d75c5c;
+    box-shadow: 0 0 0 3px rgba(215, 92, 92, .12);
+}
+
+.induction-setup-back {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 7px;
+    margin-left: 5px;
+    padding: 0 12px;
+    border: 1px solid var(--is-line);
+    border-radius: 10px;
+    color: #526880;
+    font-size: 11px;
+    font-weight: 750;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: .18s ease;
+}
+
+.induction-setup-back:hover {
+    border-color: #b9d4ef;
+    background: #f6faff;
+    color: var(--is-blue);
+}
+
+.induction-setup-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 292px;
+    align-items: start;
+    gap: 22px;
+}
+
+.induction-setup-form {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+}
+
+.induction-setup-card,
+.induction-setup-aside-card {
+    border: 1px solid var(--is-line);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 7px 22px rgba(31, 55, 77, .035);
+}
+
+.induction-setup-card {
+    padding: 23px 25px 25px;
+}
+
+.induction-setup-section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    margin-bottom: 22px;
+}
+
+.induction-setup-section-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    place-items: center;
+    border: 1px solid #d9e8fb;
+    border-radius: 11px;
+    background: #eff6ff;
+    color: #286fc5;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.induction-setup-section-icon-teal {
+    border-color: #d6efeb;
+    background: #eefaf7;
+    color: #21867d;
+}
+
+.induction-setup-section-icon-amber {
+    border-color: #f4e8d0;
+    background: #fff8eb;
+    color: #a8741d;
+}
+
+.induction-setup-section-heading h3 {
+    margin: 1px 0 5px;
+    color: var(--is-ink);
+    font-size: 15px;
+    font-weight: 760;
+    letter-spacing: -.015em;
+}
+
+.induction-setup-section-heading p {
+    margin: 0;
+    color: var(--is-muted);
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.induction-setup-fields {
+    display: grid;
+    gap: 17px;
+}
+
+.induction-setup-fields-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.induction-setup-field {
+    min-width: 0;
+}
+
+.induction-setup-field-wide {
+    grid-column: 1 / -1;
+}
+
+.induction-setup-field > label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 7px;
+    color: #354a61;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.induction-setup-required {
+    color: #9aa8b6;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.induction-setup-page .form-control {
+    display: block;
+    width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #dce5ed;
+    border-radius: 9px;
+    outline: none;
+    background-color: #fff;
+    color: #263b51;
+    font: inherit;
+    font-size: 12px;
+    transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.induction-setup-page .form-control:hover {
+    border-color: #b9c9d8;
+}
+
+.induction-setup-page .form-control:focus {
+    border-color: #5b9be8;
+    background: #fcfdff;
+    box-shadow: 0 0 0 3px rgba(50, 124, 219, .12);
+}
+
+.induction-setup-page textarea.form-control {
+    min-height: 112px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.induction-setup-help {
+    display: block;
+    margin-top: 6px;
+    color: #8190a1;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.induction-setup-field-error,
+.induction-setup-error-summary {
+    color: #b33a46;
+    font-size: 11px;
+}
+
+.induction-setup-field-error {
+    margin-top: 6px;
+}
+
+.induction-setup-field-error ul,
+.induction-setup-error-summary ul {
+    margin: 4px 0 0;
+    padding-left: 17px;
+}
+
+.induction-setup-error-summary {
+    padding: 14px 16px;
+    border: 1px solid #f1cdd1;
+    border-radius: 11px;
+    background: #fff5f5;
+}
+
+.induction-setup-error-summary strong {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.induction-setup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 4px 0 8px;
+}
+
+.induction-setup-button {
+    display: inline-flex;
+    min-height: 43px;
+    align-items: center;
+    justify-content: center;
+    gap: 13px;
+    padding: 0 18px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 780;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.induction-setup-button:hover {
+    transform: translateY(-1px);
+}
+
+.induction-setup-button-secondary {
+    border-color: #dfe7ef;
+    background: #fff;
+    color: #586d83;
+}
+
+.induction-setup-button-secondary:hover {
+    background: #f7f9fb;
+}
+
+.induction-setup-button-primary {
+    background: linear-gradient(135deg, #287fe4, #1760c7);
+    color: #fff;
+    box-shadow: 0 7px 16px rgba(29, 103, 205, .2);
+}
+
+.induction-setup-button-primary:hover {
+    box-shadow: 0 10px 20px rgba(29, 103, 205, .28);
+}
+
+.induction-setup-aside {
+    display: grid;
+    gap: 14px;
+}
+
+.induction-setup-aside-card {
+    padding: 20px;
+}
+
+.induction-setup-aside-highlight {
+    border-color: #d9e9ee;
+    background:
+        radial-gradient(circle at 100% 0, rgba(89, 190, 179, .15), transparent 45%),
+        linear-gradient(145deg, #f7fcfc, #f1f8fb);
+}
+
+.induction-setup-aside-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    margin-bottom: 15px;
+    border: 1px solid #d4ebe6;
+    border-radius: 11px;
+    background: #fff;
+    color: #318d80;
+    font-size: 16px;
+}
+
+.induction-setup-aside-highlight h3 {
+    max-width: 210px;
+    margin: 0;
+    color: #1d4152;
+    font-size: 17px;
+    font-weight: 760;
+    letter-spacing: -.03em;
+    line-height: 1.32;
+}
+
+.induction-setup-aside-highlight p {
+    margin: 9px 0 0;
+    color: #647d8c;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+.induction-setup-checklist {
+    display: grid;
+    gap: 17px;
+    margin: 17px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.induction-setup-checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.induction-setup-checklist li > span {
+    display: grid;
+    width: 19px;
+    height: 19px;
+    flex: 0 0 19px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e8f7ef;
+    color: #32835f;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.induction-setup-checklist strong,
+.induction-setup-checklist small {
+    display: block;
+}
+
+.induction-setup-checklist strong {
+    color: #344a60;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.45;
+}
+
+.induction-setup-checklist small {
+    margin-top: 3px;
+    color: #8190a1;
+    font-size: 9px;
+    line-height: 1.55;
+}
+
+.induction-setup-aside-footnote {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    padding: 2px 3px;
+    color: #8795a4;
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+.induction-setup-aside-footnote span {
+    display: grid;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    place-items: center;
+    border: 1px solid #d9e2e9;
+    border-radius: 50%;
+    color: #6f879b;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+@media (max-width: 1050px) {
+    .induction-setup-layout {
+        grid-template-columns: minmax(0, 1fr) 250px;
+        gap: 15px;
+    }
+
+    .induction-setup-card {
+        padding: 21px;
+    }
+
+    .induction-setup-aside-card {
+        padding: 17px;
+    }
+}
+
+@media (max-width: 800px) {
+    .induction-setup-page {
+        padding-top: 4px;
+    }
+
+    .induction-setup-hero {
+        min-height: 190px;
+        padding: 28px;
+    }
+
+    .induction-setup-hero-art {
+        margin-right: -15px;
+        transform: scale(.82);
+        transform-origin: center right;
+    }
+
+    .induction-setup-person {
+        margin-right: 12px;
+        margin-left: 12px;
+    }
+
+    .induction-setup-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .induction-setup-aside {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    .induction-setup-aside-footnote {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 560px) {
+    .induction-setup-breadcrumb {
+        gap: 7px;
+        margin-bottom: 14px;
+        font-size: 10px;
+    }
+
+    .induction-setup-hero {
+        min-height: 0;
+        padding: 26px 21px;
+        border-radius: 17px;
+    }
+
+    .induction-setup-hero-copy {
+        max-width: 100%;
+    }
+
+    .induction-setup-hero h2 {
+        max-width: 280px;
+        font-size: 27px;
+    }
+
+    .induction-setup-hero p {
+        max-width: 360px;
+        padding-right: 4px;
+        font-size: 12px;
+    }
+
+    .induction-setup-hero-art {
+        position: absolute;
+        right: -78px;
+        bottom: -34px;
+        opacity: .48;
+        transform: scale(.72);
+    }
+
+    .induction-setup-person {
+        flex-wrap: wrap;
+        gap: 11px;
+        margin: -13px 8px 18px;
+        padding: 13px;
+    }
+
+    .induction-setup-avatar {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+        border-radius: 14px;
+    }
+
+    .induction-setup-person-copy {
+        max-width: calc(100% - 60px);
+    }
+
+    .induction-setup-person-copy h3 {
+        font-size: 15px;
+    }
+
+    .induction-setup-person-copy p {
+        max-width: 220px;
+        font-size: 10px;
+    }
+
+    .induction-setup-status {
+        margin-left: 0;
+        padding: 7px 9px;
+    }
+
+    .induction-setup-back {
+        min-height: 33px;
+        margin-left: auto;
+        padding: 0 9px;
+        font-size: 10px;
+    }
+
+    .induction-setup-card {
+        padding: 18px 16px;
+        border-radius: 13px;
+    }
+
+    .induction-setup-section-heading {
+        gap: 10px;
+        margin-bottom: 17px;
+    }
+
+    .induction-setup-section-heading h3 {
+        font-size: 14px;
+    }
+
+    .induction-setup-section-heading p {
+        font-size: 10px;
+    }
+
+    .induction-setup-fields-two,
+    .induction-setup-aside {
+        grid-template-columns: 1fr;
+    }
+
+    .induction-setup-field-wide {
+        grid-column: auto;
+    }
+
+    .induction-setup-aside-footnote {
+        grid-column: auto;
+    }
+
+    .induction-setup-actions {
+        gap: 8px;
+    }
+
+    .induction-setup-button {
+        min-height: 42px;
+        flex: 1;
+        padding: 0 12px;
+        font-size: 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .induction-setup-page *,
+    .induction-setup-page *::before,
+    .induction-setup-page *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+.induction-verification-options {
+    display: grid;
+    gap: 10px;
+}
+
+.induction-verification-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 14px;
+    border: 1px solid #e3eaf0;
+    border-radius: 11px;
+    background: #fcfdfe;
+    cursor: pointer;
+}
+
+.induction-verification-option:has(input:checked) {
+    border-color: #9dcdb8;
+    background: #f3faf6;
+}
+
+.induction-verification-option input {
+    margin: 3px 0 0;
+    accent-color: #21876f;
+}
+
+.induction-verification-option > span {
+    display: grid;
+    gap: 4px;
+}
+
+.induction-verification-option strong {
+    color: #355069;
+    font-size: 11px;
+}
+
+.induction-verification-option small {
+    color: #76899b;
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+.induction-verification-history-item {
+    display: grid;
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px solid #edf1f4;
+    color: #536b80;
+    font-size: 10px;
+}
+
+.induction-verification-history-item:last-child {
+    border-bottom: 0;
+}
+
+.induction-verification-history-item strong {
+    color: #28775f;
+}
+
+.induction-verification-history-item small {
+    color: #8a9aaa;
+}

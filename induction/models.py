@@ -1,8 +1,22 @@
+import calendar
+import uuid
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
 from employees.models import Employee
 from .storage import EmployeeOnboardingDocumentStorage
+
+
+def add_calendar_months(value, months):
+    month_index = value.month - 1 + months
+    year = value.year + month_index // 12
+    month = month_index % 12 + 1
+    day = min(value.day, calendar.monthrange(year, month)[1])
+    return value.replace(year=year, month=month, day=day)
+
 
 class InductionProgramme(models.Model):
     name = models.CharField(
@@ -108,6 +122,67 @@ class InductionModule(models.Model):
         return self.title
 
 
+class InductionModuleVersion(models.Model):
+    module = models.ForeignKey(
+        InductionModule,
+        on_delete=models.PROTECT,
+        related_name="training_versions",
+    )
+    version = models.PositiveIntegerField()
+    content = models.JSONField(default=dict)
+    acknowledgement_text = models.CharField(max_length=300)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["module_id", "version"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["module", "version"],
+                name="unique_induction_module_version",
+            )
+        ]
+
+    def clean(self):
+        super().clean()
+        if not isinstance(self.content, dict):
+            raise ValidationError({"content": "Training content must be an object."})
+        if self.content.get("legacy_snapshot"):
+            return
+
+        questions = self.content.get("assessment", [])
+        if not isinstance(questions, list) or not 5 <= len(questions) <= 8:
+            raise ValidationError(
+                {"content": "A published training version needs 5–8 questions."}
+            )
+        for index, question in enumerate(questions, start=1):
+            if not isinstance(question, dict):
+                raise ValidationError(
+                    {"content": f"Assessment question {index} must be an object."}
+                )
+            choices = question.get("choices", [])
+            correct = question.get("correct")
+            if (
+                not question.get("question")
+                or not question.get("explanation")
+                or not isinstance(choices, list)
+                or len(choices) < 2
+                or not isinstance(correct, int)
+                or not 0 <= correct < len(choices)
+            ):
+                raise ValidationError(
+                    {
+                        "content": (
+                            f"Assessment question {index} needs a prompt, "
+                            "at least two choices, a valid correct answer and "
+                            "an explanation."
+                        )
+                    }
+                )
+
+    def __str__(self):
+        return f"{self.module.title} v{self.version}"
+
+
 class EmployeeInduction(models.Model):
 
     STATUS_CHOICES = [
@@ -122,6 +197,11 @@ class EmployeeInduction(models.Model):
         ("part_time", "Part-time"),
         ("full_time", "Full-time"),
         ("contractor", "Contractor"),
+    ]
+
+    EXPIRY_CHOICES = [
+        (6, "6 months"),
+        (12, "12 months"),
     ]
 
     employee = models.OneToOneField(
@@ -177,6 +257,21 @@ class EmployeeInduction(models.Model):
         blank=True,
     )
 
+    expiry_months = models.PositiveSmallIntegerField(
+        choices=EXPIRY_CHOICES,
+        default=12,
+    )
+
+    expires_on = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    renewal_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
     induction_duration_minutes = models.PositiveIntegerField(
         default=60,
     )
@@ -204,6 +299,36 @@ class EmployeeInduction(models.Model):
         blank=True,
     )
 
+    @property
+    def is_expired(self):
+        return bool(
+            self.status == "completed"
+            and self.expires_on
+            and self.expires_on <= timezone.localdate()
+        )
+
+    def begin_renewal_if_expired(self):
+        if not self.is_expired:
+            return False
+        self.status = "in_progress"
+        self.renewal_started_at = timezone.now()
+        self.save(update_fields=["status", "renewal_started_at"])
+        return True
+
+    def latest_module_completion(self, module, module_version=None):
+        completions = self.completions.filter(module=module)
+        if module_version is not None:
+            completions = completions.filter(module_version=module_version)
+        if self.renewal_started_at:
+            completions = completions.filter(
+                completed_at__gte=self.renewal_started_at,
+            )
+        return completions.order_by(
+            "-module_version",
+            "-attempt_number",
+            "-completed_at",
+        ).first()
+
     def required_modules(self):
         queryset = InductionModule.objects.filter(
             active=True,
@@ -221,26 +346,40 @@ class EmployeeInduction(models.Model):
         )
 
     def completion_count(self):
-        return self.completions.count()
+        return len(self.completed_module_ids())
 
     def required_count(self):
         return self.required_modules().count()
 
-    def is_complete(self):
-
-        required_count = self.required_count()
-
-        completed_count = (
-            self.completions
-            .filter(
-                module__mandatory=True,
+    def completed_module_ids(self):
+        completed_ids = set()
+        for module in self.required_modules():
+            completion = self.latest_module_completion(
+                module,
+                module_version=module.version,
             )
-            .count()
-        )
+            if completion and completion.review_status == "approved":
+                completed_ids.add(module.pk)
+        return completed_ids
 
+    def retraining_module_ids(self):
+        retraining_ids = set()
+        for module in self.required_modules():
+            latest = self.latest_module_completion(
+                module,
+                module_version=module.version,
+            )
+            if latest and latest.review_status == "redo_required":
+                retraining_ids.add(module.pk)
+            elif not latest and self.completions.filter(module=module).exists():
+                retraining_ids.add(module.pk)
+        return retraining_ids
+
+    def is_complete(self):
+        required_count = self.required_count()
         return (
             required_count > 0
-            and completed_count >= required_count
+            and self.completion_count() >= required_count
             and bool(
                 self.declaration_name
                 and self.declaration_at
@@ -266,16 +405,18 @@ class EmployeeInduction(models.Model):
             )
 
     def mark_completed(self, request=None):
-
         if not self.is_complete():
             return False
 
+        was_completed = self.status == "completed"
         self.status = "completed"
-
-        self.completed_at = (
-            self.completed_at
-            or timezone.now()
-        )
+        if not was_completed or not self.completed_at:
+            self.completed_at = timezone.now()
+            self.expires_on = add_calendar_months(
+                timezone.localdate(self.completed_at),
+                self.expiry_months,
+            )
+        self.renewal_started_at = None
 
         if not self.declaration_at:
             self.declaration_at = timezone.now()
@@ -307,6 +448,12 @@ class EmployeeInduction(models.Model):
 
 class InductionModuleCompletion(models.Model):
 
+    REVIEW_STATUS_CHOICES = [
+        ("pending", "Awaiting manager review"),
+        ("approved", "Approved"),
+        ("redo_required", "Redo required"),
+    ]
+
     induction = models.ForeignKey(
         EmployeeInduction,
         on_delete=models.CASCADE,
@@ -327,6 +474,8 @@ class InductionModuleCompletion(models.Model):
         default=1,
     )
 
+    attempt_number = models.PositiveSmallIntegerField(default=1)
+
     completed_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -343,6 +492,24 @@ class InductionModuleCompletion(models.Model):
         blank=True,
     )
 
+    review_status = models.CharField(
+        max_length=20,
+        choices=REVIEW_STATUS_CHOICES,
+        default="pending",
+    )
+
+    review_note = models.TextField(blank=True)
+
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_induction_completions",
+    )
+
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
 
         constraints = [
@@ -350,6 +517,8 @@ class InductionModuleCompletion(models.Model):
                 fields=[
                     "induction",
                     "module",
+                    "module_version",
+                    "attempt_number",
                 ],
                 name=(
                     "unique_induction_module_completion"
@@ -369,12 +538,148 @@ class InductionModuleCompletion(models.Model):
         )
 
 
+class InductionModuleReview(models.Model):
+    completion = models.ForeignKey(
+        InductionModuleCompletion,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    decision = models.CharField(
+        max_length=20,
+        choices=InductionModuleCompletion.REVIEW_STATUS_CHOICES,
+    )
+    review_note = models.TextField(blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="induction_module_reviews",
+    )
+    reviewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-reviewed_at", "-pk"]
+
+
+class InductionAssessmentAttempt(models.Model):
+    induction = models.ForeignKey(
+        EmployeeInduction,
+        on_delete=models.CASCADE,
+        related_name="assessment_attempts",
+    )
+    module = models.ForeignKey(
+        InductionModule,
+        on_delete=models.PROTECT,
+        related_name="assessment_attempts",
+    )
+    module_version = models.PositiveIntegerField()
+    submission_key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    answers = models.JSONField(default=dict)
+    score = models.PositiveSmallIntegerField()
+    passed = models.BooleanField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-submitted_at", "-pk"]
+        indexes = [
+            models.Index(
+                fields=["induction", "module", "module_version", "-submitted_at"],
+                name="ind_assessment_lookup_idx",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.induction.employee.full_name} — "
+            f"{self.module.title} v{self.module_version}: {self.score}%"
+        )
+
+
+class InductionSupervisorVerification(models.Model):
+    RESULT_CHOICES = [
+        ("competent", "Competent"),
+        ("further_training", "Further training required"),
+    ]
+
+    induction = models.ForeignKey(
+        EmployeeInduction,
+        on_delete=models.CASCADE,
+        related_name="supervisor_verifications",
+    )
+    module = models.ForeignKey(
+        InductionModule,
+        on_delete=models.PROTECT,
+        related_name="supervisor_verifications",
+    )
+    module_version = models.PositiveIntegerField()
+    practical_task = models.CharField(max_length=300)
+    result = models.CharField(max_length=24, choices=RESULT_CHOICES)
+    comments = models.TextField(blank=True)
+    verified_at = models.DateTimeField(default=timezone.now)
+    supervisor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="induction_verifications",
+    )
+
+    class Meta:
+        ordering = ["-verified_at", "-pk"]
+
+    def __str__(self):
+        return (
+            f"{self.induction.employee.full_name} — "
+            f"{self.module.title}: {self.get_result_display()}"
+        )
+
+
+class InductionExpiryReminder(models.Model):
+    PORTAL_STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("sent", "Sent"),
+        ("skipped", "Skipped"),
+    ]
+    EMAIL_STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("sent", "Sent"),
+        ("skipped", "Skipped"),
+    ]
+
+    induction = models.ForeignKey(
+        EmployeeInduction,
+        on_delete=models.CASCADE,
+        related_name="expiry_reminders",
+    )
+    expiry_date = models.DateField()
+    days_before_expiry = models.PositiveSmallIntegerField()
+    portal_status = models.CharField(
+        max_length=12,
+        choices=PORTAL_STATUS_CHOICES,
+        default="pending",
+    )
+    email_status = models.CharField(
+        max_length=12,
+        choices=EMAIL_STATUS_CHOICES,
+        default="pending",
+    )
+    portal_sent_at = models.DateTimeField(null=True, blank=True)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["induction", "expiry_date", "days_before_expiry"],
+                name="unique_induction_expiry_reminder",
+            )
+        ]
+
 
 # ==========================================================
 # EMPLOYEE ONBOARDING & COMPLIANCE
 # ==========================================================
 
-import uuid
 from pathlib import Path
 from datetime import timedelta
 

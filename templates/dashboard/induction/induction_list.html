@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/employee-induction.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/induction-management.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -35,6 +36,13 @@
 
         <div class="ind-actions">
 
+            <form method="post" action="{% url 'induction_publish' %}">
+                {% csrf_token %}
+                <button class="induction-publish-action" type="submit">
+                    Publish approved induction
+                </button>
+            </form>
+
             <span class="ind-pill ind-pill-blue">
                 HR Compliance
             </span>
@@ -42,6 +50,24 @@
         </div>
 
     </div>
+
+    <section class="im-board-kpis" aria-label="Renewal and review summary">
+        <article class="im-board-kpi is-danger">
+            <span>RENEWAL OVERDUE</span>
+            <strong>{{ renewals_due }}</strong>
+            <small>Employees who need to renew</small>
+        </article>
+        <article class="im-board-kpi is-warning">
+            <span>EXPIRING IN 30 DAYS</span>
+            <strong>{{ renewals_soon }}</strong>
+            <small>Reminder notices are scheduled</small>
+        </article>
+        <article class="im-board-kpi">
+            <span>MODULES TO REVIEW</span>
+            <strong>{{ pending_reviews }}</strong>
+            <small>Approve or request a redo</small>
+        </article>
+    </section>
 
 
     <!-- =====================================================

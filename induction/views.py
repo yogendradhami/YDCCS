@@ -1,41 +1,46 @@
-from io import BytesIO
+import csv
+import uuid
+from datetime import timedelta
+from io import BytesIO, StringIO
 from pathlib import Path
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.db import models, transaction
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
-from django.views.decorators.http import require_POST
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, FileResponse
 from django.shortcuts import (
     get_object_or_404,
     redirect,
     render,
 )
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import (
-    SimpleDocTemplate,
     Paragraph,
+    SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
 )
-from reportlab.lib import colors
 
 from dashboard.decorators import admin_required
 from employees.models import Employee
+from notifications.utils import notify_user
 
 from .forms import (
     InductionDeclarationForm,
+    InductionModuleReviewForm,
+    InductionSupervisorVerificationForm,
     InductionSetupForm,
+    ModuleAssessmentForm,
     ModuleCompletionForm,
     OnboardingDocumentUploadForm,
     OnboardingReviewForm,
@@ -43,12 +48,89 @@ from .forms import (
 
 from .models import (
     EmployeeInduction,
+    InductionAssessmentAttempt,
     InductionModule,
+    InductionModuleCompletion,
+    InductionModuleReview,
     InductionProgramme,
+    InductionSupervisorVerification,
     OnboardingRequirement,
     EmployeeOnboardingProfile,
     EmployeeOnboardingDocument,
+    add_calendar_months,
 )
+
+
+def _prepare_module_progress(induction, modules):
+    for module in modules:
+        training_version = module.training_versions.filter(
+            version=module.version,
+        ).first()
+        module.training_version_record = training_version
+        module.training_content = (
+            training_version.content
+            if training_version
+            else {
+                "introduction": module.content,
+                "objectives": [],
+                "sections": [],
+                "assessment": [],
+                "verification_tasks": [],
+            }
+        )
+        module.current_completion = induction.latest_module_completion(
+            module=module,
+            module_version=module.version,
+        )
+        current_attempts = induction.assessment_attempts.filter(
+            module=module,
+            module_version=module.version,
+        )
+        if induction.renewal_started_at:
+            current_attempts = current_attempts.filter(
+                submitted_at__gte=induction.renewal_started_at,
+            )
+        module.current_attempt = current_attempts.first()
+        module.best_attempt = (
+            current_attempts.filter(
+                passed=True,
+            )
+            .order_by("-score", "-submitted_at")
+            .first()
+        )
+        module.assessment_passed = current_attempts.filter(passed=True).exists()
+        module.practical_tasks = module.training_content.get(
+            "verification_tasks",
+            [],
+        )
+        verifications = induction.supervisor_verifications.filter(
+            module=module,
+            module_version=module.version,
+        )
+        if induction.renewal_started_at:
+            verifications = verifications.filter(
+                verified_at__gte=induction.renewal_started_at,
+            )
+        module.current_verification = verifications.first()
+        module.retraining_required = bool(
+            module.current_completion
+            and module.current_completion.review_status == "redo_required"
+        ) or (
+            not module.current_completion
+            and induction.completions.filter(module=module).exists()
+        )
+    return modules
+
+
+def _write_training_csv_row(writer, values):
+    protected_values = []
+    for value in values:
+        if isinstance(value, str) and value.lstrip(" \t\r\n").startswith(
+            ("=", "+", "-", "@")
+        ):
+            value = f"'{value}"
+        protected_values.append(value)
+    writer.writerow(protected_values)
 
 
 # ==========================================================
@@ -68,6 +150,7 @@ def dashboard_induction_list(request):
             "-assigned_at",
         )
     )
+    today = timezone.localdate()
 
     context = {
         "inductions": inductions,
@@ -84,6 +167,18 @@ def dashboard_induction_list(request):
 
         "completed": inductions.filter(
             status="completed"
+        ).count(),
+        "renewals_due": inductions.filter(
+            expires_on__lt=today,
+        ).exclude(status="cancelled").count(),
+        "renewals_soon": inductions.filter(
+            expires_on__gte=today,
+            expires_on__lte=today + timedelta(days=30),
+        ).exclude(status="cancelled").count(),
+        "pending_reviews": InductionModuleCompletion.objects.filter(
+            induction__in=inductions,
+            review_status="pending",
+            module_version=models.F("module__version"),
         ).count(),
     }
 
@@ -117,8 +212,13 @@ def dashboard_induction_setup(
         )
 
         if form.is_valid():
-
-            form.save()
+            induction = form.save()
+            if induction.completed_at:
+                induction.expires_on = add_calendar_months(
+                    timezone.localtime(induction.completed_at).date(),
+                    induction.expiry_months,
+                )
+                induction.save(update_fields=["expires_on"])
 
             messages.success(
                 request,
@@ -146,6 +246,25 @@ def dashboard_induction_setup(
     )
 
 
+@admin_required
+@require_POST
+def dashboard_induction_publish(request, induction_id=None):
+    output = StringIO()
+    try:
+        call_command("seed_induction", stdout=output)
+    except CommandError as error:
+        messages.error(request, f"Induction curriculum was not published: {error}")
+    else:
+        messages.success(
+            request,
+            "Approved induction curriculum published. "
+            + " ".join(output.getvalue().split()),
+        )
+    if induction_id:
+        return redirect("induction_detail", induction_id=induction_id)
+    return redirect("induction_dashboard")
+
+
 # ==========================================================
 # DASHBOARD — DETAIL
 # ==========================================================
@@ -165,14 +284,19 @@ def dashboard_induction_detail(
         id=induction_id,
     )
 
-    modules = induction.required_modules()
-
-    completed_ids = set(
-        induction.completions.values_list(
-            "module_id",
-            flat=True,
-        )
+    modules = _prepare_module_progress(
+        induction,
+        list(induction.required_modules()),
     )
+
+    completed_ids = induction.completed_module_ids()
+    now = timezone.localtime()
+    pending_reviews = induction.completions.filter(
+        review_status="pending",
+        module_version=models.F("module__version"),
+    ).count()
+    required_count = induction.required_count()
+    completion_count = len(completed_ids)
 
     return render(
         request,
@@ -181,8 +305,121 @@ def dashboard_induction_detail(
             "induction": induction,
             "modules": modules,
             "completed_ids": completed_ids,
+            "progress": (
+                round(completion_count * 100 / required_count)
+                if required_count
+                else 0
+            ),
+            "review_form": InductionModuleReviewForm(),
+            "attempts": induction.assessment_attempts.select_related(
+                "module",
+            )[:50],
+            "verifications": induction.supervisor_verifications.select_related(
+                "module",
+                "supervisor",
+            )[:50],
+            "retraining_ids": induction.retraining_module_ids(),
+            "pending_reviews": pending_reviews,
+            "expiry_elapsed": bool(
+                induction.expires_on
+                and induction.expires_on <= timezone.localdate()
+            ),
+            "days_until_expiry": (
+                (induction.expires_on - now.date()).days
+                if induction.expires_on
+                else None
+            ),
         },
     )
+
+
+@admin_required
+@require_POST
+def induction_module_review(request, induction_id, module_id, completion_id):
+    induction = get_object_or_404(
+        EmployeeInduction.objects.select_related("employee"),
+        pk=induction_id,
+    )
+    module = get_object_or_404(
+        induction.required_modules(),
+        pk=module_id,
+    )
+    completion = get_object_or_404(
+        InductionModuleCompletion,
+        pk=completion_id,
+        induction=induction,
+        module=module,
+        module_version=module.version,
+    )
+    latest_completion = induction.latest_module_completion(
+        module,
+        module_version=module.version,
+    )
+    if latest_completion != completion:
+        messages.error(
+            request,
+            "This submission has been superseded. Review the latest module submission.",
+        )
+        return redirect("induction_detail", induction_id=induction.pk)
+
+    form = InductionModuleReviewForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Choose a review decision and add any required note.")
+        return redirect("induction_detail", induction_id=induction.pk)
+
+    with transaction.atomic():
+        completion.review_status = form.cleaned_data["decision"]
+        completion.review_note = form.cleaned_data["review_note"].strip()
+        completion.reviewed_by = request.user
+        completion.reviewed_at = timezone.now()
+        InductionModuleReview.objects.create(
+            completion=completion,
+            decision=completion.review_status,
+            review_note=completion.review_note,
+            reviewed_by=request.user,
+        )
+        completion.save(
+            update_fields=[
+                "review_status",
+                "review_note",
+                "reviewed_by",
+                "reviewed_at",
+            ]
+        )
+    if completion.review_status == "redo_required":
+        induction.status = "in_progress"
+        induction.save(update_fields=["status"])
+        message = (
+            f"Redo requested for “{module.title}”. "
+            "The employee has been notified in their portal."
+        )
+    else:
+        induction.mark_completed()
+        message = (
+            f"“{module.title}” was approved. "
+            "The employee has been notified in their portal."
+        )
+
+    if induction.employee.user_id:
+        if completion.review_status == "redo_required":
+            notification_message = (
+                f"Your manager asked you to redo “{module.title}”. "
+                f"{completion.review_note} Open the module and review the "
+                "material before submitting it again."
+            )
+        else:
+            notification_message = (
+                f"Your completion of “{module.title}” has been approved."
+            )
+        notify_user(
+            induction.employee.user,
+            "Induction module review",
+            notification_message,
+            "employee",
+            reverse("employee_induction_module", args=[module.pk]),
+        )
+    messages.success(request, message)
+    return redirect("induction_detail", induction_id=induction.pk)
 
 
 # ==========================================================
@@ -242,18 +479,17 @@ def employee_induction(request):
         employee=employee,
     )
 
+    induction.begin_renewal_if_expired()
     induction.mark_started()
 
-    modules = induction.required_modules()
-
-    completed_ids = set(
-        induction.completions.values_list(
-            "module_id",
-            flat=True,
-        )
+    modules = _prepare_module_progress(
+        induction,
+        list(induction.required_modules()),
     )
 
-    total = modules.count()
+    completed_ids = induction.completed_module_ids()
+
+    total = len(modules)
 
     completed = len(completed_ids)
 
@@ -280,10 +516,34 @@ def employee_induction(request):
             "induction": induction,
             "modules": modules,
             "completed_ids": completed_ids,
+            "retraining_ids": induction.retraining_module_ids(),
+            "assessment_attempts": sum(
+                induction.assessment_attempts.filter(
+                    module=module,
+                    module_version=module.version,
+                ).count()
+                for module in modules
+            ),
+            "verification_pending": sum(
+                bool(module.practical_tasks)
+                and (
+                    not module.current_verification
+                    or module.current_verification.result != "competent"
+                )
+                for module in modules
+            ),
             "completed": completed,
             "total": total,
+            "outstanding": total - completed,
             "progress": progress,
             "declaration_form": declaration_form,
+            "is_renewal": bool(induction.renewal_started_at),
+            "expires_on": induction.expires_on,
+            "days_until_expiry": (
+                (induction.expires_on - timezone.localdate()).days
+                if induction.expires_on
+                else None
+            ),
         },
     )
 
@@ -315,6 +575,7 @@ def employee_induction_module(
         ),
         employee=employee,
     )
+    induction.begin_renewal_if_expired()
 
     # Only allow the employee to access modules
     # that are actually assigned to their induction.
@@ -323,66 +584,224 @@ def employee_induction_module(
         id=module_id,
     )
 
-    completion = (
-        induction.completions
-        .filter(module=module)
-        .first()
+    training_version = module.training_versions.filter(
+        version=module.version,
+    ).first()
+    training = (
+        training_version.content
+        if training_version
+        else {
+            "introduction": module.content,
+            "objectives": [],
+            "sections": [],
+            "assessment": [],
+            "verification_tasks": [],
+            "legacy_snapshot": True,
+        }
     )
-
-    if completion:
-        completion_form = ModuleCompletionForm(
-            instance=completion,
+    questions = training.get("assessment", [])
+    latest_completion = induction.latest_module_completion(
+        module=module,
+        module_version=module.version,
+    )
+    completion = (
+        latest_completion
+        if latest_completion and latest_completion.review_status != "redo_required"
+        else None
+    )
+    attempts = induction.assessment_attempts.filter(
+        module=module,
+        module_version=module.version,
+    )
+    assessment_attempts = attempts
+    if induction.renewal_started_at:
+        assessment_attempts = assessment_attempts.filter(
+            submitted_at__gte=induction.renewal_started_at,
         )
-    else:
-        completion_form = ModuleCompletionForm()
+    if latest_completion and latest_completion.review_status == "redo_required":
+        assessment_attempts = assessment_attempts.filter(
+            submitted_at__gt=latest_completion.completed_at,
+        )
+    latest_attempt = attempts.first()
+    assessment_passed = assessment_attempts.filter(passed=True).exists()
+    assessment_form = ModuleAssessmentForm(
+        questions,
+        initial={"submission_key": uuid.uuid4()},
+    )
+    completion_form = ModuleCompletionForm()
+    attempt_feedback = []
+    assessment_score = None
 
     if request.method == "POST":
+        action = request.POST.get("action")
 
-        # Do not allow completing the same module twice.
         if completion:
             messages.info(
                 request,
-                "This module has already been completed.",
+                "This training version has already been acknowledged. Its record is retained.",
             )
+        elif action == "submit_assessment":
+            if not training_version or not questions:
+                messages.error(
+                    request,
+                    "This module's assessment is not configured yet. Contact your manager.",
+                )
+            else:
+                assessment_form = ModuleAssessmentForm(
+                    questions,
+                    request.POST,
+                )
+                if assessment_form.is_valid():
+                    submission_key = assessment_form.cleaned_data[
+                        "submission_key"
+                    ]
+                    answers = {
+                        f"question_{index}": int(
+                            assessment_form.cleaned_data[f"question_{index}"]
+                        )
+                        for index in range(len(questions))
+                    }
+                    correct_count = sum(
+                        answers[f"question_{index}"] == question["correct"]
+                        for index, question in enumerate(questions)
+                    )
+                    score = round(correct_count * 100 / len(questions))
+                    latest_attempt, _ = (
+                        InductionAssessmentAttempt.objects.get_or_create(
+                            submission_key=submission_key,
+                            defaults={
+                                "induction": induction,
+                                "module": module,
+                                "module_version": module.version,
+                                "answers": answers,
+                                "score": score,
+                                "passed": score >= 80,
+                            },
+                        )
+                    )
+                    if (
+                        latest_attempt.induction_id != induction.pk
+                        or latest_attempt.module_id != module.pk
+                        or latest_attempt.module_version != module.version
+                    ):
+                        assessment_form.add_error(
+                            None,
+                            "This assessment submission has already been used.",
+                        )
+                        latest_attempt = None
+                    if latest_attempt:
+                        assessment_score = latest_attempt.score
+                        assessment_passed = assessment_attempts.filter(
+                            passed=True,
+                        ).exists()
+                        attempt_feedback = _build_assessment_feedback(
+                            questions,
+                            latest_attempt.answers,
+                        )
+                        if latest_attempt.passed:
+                            messages.success(
+                                request,
+                                "Assessment passed. You can now acknowledge this training version.",
+                            )
+                        else:
+                            messages.warning(
+                                request,
+                                "Assessment not passed yet. Review the explanations and retake it.",
+                            )
+                        assessment_form = ModuleAssessmentForm(
+                            questions,
+                            initial={"submission_key": uuid.uuid4()},
+                        )
+                else:
+                    messages.error(
+                        request,
+                        "Answer every assessment question before submitting.",
+                    )
+        elif action == "complete_module":
+            completion_form = ModuleCompletionForm(request.POST)
+            passed_assessment = assessment_attempts.filter(passed=True).exists()
+            if latest_completion and latest_completion.review_status == "redo_required":
+                passed_assessment = assessment_attempts.filter(
+                    passed=True,
+                    submitted_at__gt=latest_completion.completed_at,
+                ).exists()
+            if not passed_assessment:
+                completion_form.add_error(
+                    None,
+                    "Pass this module's assessment before acknowledging it.",
+                )
+            elif not completion_form.is_valid():
+                messages.error(
+                    request,
+                    "Confirm the acknowledgement before completing the module.",
+                )
+            else:
+                previous_attempt = (
+                    induction.completions.filter(
+                        module=module,
+                        module_version=module.version,
+                    )
+                    .order_by("-attempt_number", "-completed_at")
+                    .first()
+                )
+                defaults = {
+                    "module_title_snapshot": module.title,
+                    "module_version": module.version,
+                    "attempt_number": (
+                        previous_attempt.attempt_number + 1
+                        if previous_attempt
+                        else 1
+                    ),
+                    "acknowledgement": True,
+                    "review_status": "pending",
+                    "review_note": "",
+                    "reviewed_by": None,
+                    "reviewed_at": None,
+                    "acknowledgement_text": (
+                        training_version.acknowledgement_text
+                        if training_version
+                        else module.acknowledgement_text
+                    ),
+                    "notes": completion_form.cleaned_data["notes"],
+                }
+                with transaction.atomic():
+                    latest_completion, created = (
+                        InductionModuleCompletion.objects.get_or_create(
+                            induction=induction,
+                            module=module,
+                            module_version=module.version,
+                            attempt_number=defaults["attempt_number"],
+                            defaults=defaults,
+                        )
+                    )
+                    induction.status = "in_progress"
+                    induction.save(update_fields=["status"])
+                if created:
+                    messages.success(
+                        request,
+                        f'"{module.title}" v{module.version} was submitted for manager review.',
+                    )
+                else:
+                    messages.info(
+                        request,
+                        "This training version was already acknowledged.",
+                    )
+        else:
+            messages.error(request, "Choose an assessment or acknowledgement action.")
 
-            return redirect(
-                "employee_induction_module",
-                module_id=module.id,
-            )
-
-        completion_form = ModuleCompletionForm(
-            request.POST,
+    if latest_attempt and not attempt_feedback and latest_attempt.answers:
+        attempt_feedback = _build_assessment_feedback(
+            questions,
+            latest_attempt.answers,
         )
+        assessment_score = latest_attempt.score
 
-        if completion_form.is_valid():
-
-            completion = completion_form.save(
-                commit=False
-            )
-
-            completion.induction = induction
-            completion.module = module
-
-            completion.save()
-
-            messages.success(
-                request,
-                f'"{module.title}" has been completed successfully.',
-            )
-
-            return redirect(
-                "employee_induction_module",
-                module_id=module.id,
-            )
-
-    completed_ids = set(
-        induction.completions.values_list(
-            "module_id",
-            flat=True,
-        )
+    modules = _prepare_module_progress(
+        induction,
+        list(induction.required_modules()),
     )
-
-    modules = induction.required_modules()
+    completed_ids = induction.completed_module_ids()
+    current_module = next(item for item in modules if item.pk == module.pk)
 
     return render(
         request,
@@ -390,13 +809,196 @@ def employee_induction_module(
         {
             "employee": employee,
             "induction": induction,
-            "module": module,
+            "module": current_module,
+            "training": training,
+            "training_version": training_version,
             "completion": completion,
+            "latest_completion": latest_completion,
             "completion_form": completion_form,
+            "assessment_form": assessment_form,
+            "attempts": attempts,
+            "latest_attempt": latest_attempt,
+            "assessment_score": assessment_score,
+            "assessment_passed": assessment_passed,
+            "attempt_feedback": attempt_feedback,
+            "passing_score": 80,
+            "verification_url": (
+                reverse(
+                    "induction_supervisor_verification",
+                    args=[induction.pk, module.pk],
+                )
+                if training.get("verification_tasks")
+                else None
+            ),
             "completed_ids": completed_ids,
+            "retraining_ids": induction.retraining_module_ids(),
             "modules": modules,
         },
     )
+
+
+def _build_assessment_feedback(questions, answers):
+    feedback = []
+    for index, question in enumerate(questions):
+        selected = answers.get(f"question_{index}")
+        correct = question["correct"]
+        feedback.append(
+            {
+                "question": question["question"],
+                "selected": selected,
+                "selected_text": (
+                    question["choices"][selected]
+                    if isinstance(selected, int)
+                    and 0 <= selected < len(question["choices"])
+                    else "Not answered"
+                ),
+                "correct_text": question["choices"][correct],
+                "is_correct": selected == correct,
+                "explanation": question["explanation"],
+            }
+        )
+    return feedback
+
+
+@admin_required
+def induction_supervisor_verification(request, induction_id, module_id):
+    induction = get_object_or_404(
+        EmployeeInduction.objects.select_related("employee"),
+        pk=induction_id,
+    )
+    module = get_object_or_404(
+        induction.required_modules(),
+        pk=module_id,
+    )
+    training_version = module.training_versions.filter(
+        version=module.version,
+    ).first()
+    tasks = (
+        training_version.content.get("verification_tasks", [])
+        if training_version
+        else []
+    )
+    if not tasks:
+        raise Http404("This module has no practical verification tasks.")
+
+    form = InductionSupervisorVerificationForm(tasks)
+    if request.method == "POST":
+        form = InductionSupervisorVerificationForm(tasks, request.POST)
+        if form.is_valid():
+            InductionSupervisorVerification.objects.create(
+                induction=induction,
+                module=module,
+                module_version=module.version,
+                practical_task=form.cleaned_data["practical_task"],
+                result=form.cleaned_data["result"],
+                comments=form.cleaned_data["comments"],
+                supervisor=request.user,
+            )
+            messages.success(
+                request,
+                f"Practical verification recorded for {module.title}.",
+            )
+            return redirect(
+                "induction_detail",
+                induction_id=induction.pk,
+            )
+
+    verification_history = induction.supervisor_verifications.filter(
+        module=module,
+        module_version=module.version,
+    ).select_related("supervisor")
+    return render(
+        request,
+        "dashboard/induction/induction_verification.html",
+        {
+            "induction": induction,
+            "module": module,
+            "training_version": training_version,
+            "form": form,
+            "verification_history": verification_history,
+        },
+    )
+
+
+@admin_required
+def induction_training_export(request, induction_id):
+    induction = get_object_or_404(
+        EmployeeInduction.objects.select_related("employee", "programme"),
+        pk=induction_id,
+    )
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        f'attachment; filename="induction-{induction.pk}-training-records.csv"'
+    )
+    writer = csv.writer(response)
+    _write_training_csv_row(
+        writer,
+        [
+            "Employee",
+            "Training type",
+            "Module",
+            "Version",
+            "Result",
+            "Score",
+            "Recorded at",
+            "Recorded by",
+            "Notes",
+        ]
+    )
+    for completion in induction.completions.select_related("module").order_by(
+        "completed_at",
+    ):
+        _write_training_csv_row(
+            writer,
+            [
+                induction.employee.full_name,
+                "Acknowledgement",
+                completion.module_title_snapshot,
+                completion.module_version,
+                "Completed",
+                "",
+                completion.completed_at.isoformat(),
+                induction.declaration_name or "",
+                completion.notes,
+            ]
+        )
+    for attempt in induction.assessment_attempts.select_related("module").order_by(
+        "submitted_at",
+    ):
+        _write_training_csv_row(
+            writer,
+            [
+                induction.employee.full_name,
+                "Assessment",
+                attempt.module.title,
+                attempt.module_version,
+                "Pass" if attempt.passed else "Fail",
+                attempt.score,
+                attempt.submitted_at.isoformat(),
+                "",
+                "",
+            ]
+        )
+    for verification in induction.supervisor_verifications.select_related(
+        "module",
+        "supervisor",
+    ).order_by("verified_at"):
+        _write_training_csv_row(
+            writer,
+            [
+                induction.employee.full_name,
+                "Practical verification",
+                verification.module.title,
+                verification.module_version,
+                verification.get_result_display(),
+                "",
+                verification.verified_at.isoformat(),
+                verification.supervisor.get_full_name()
+                or verification.supervisor.get_username(),
+                f"{verification.practical_task}: {verification.comments}",
+            ]
+        )
+    return response
 
 
 # ==========================================================
@@ -416,6 +1018,7 @@ def employee_induction_complete(request):
         EmployeeInduction,
         employee=employee,
     )
+    induction.begin_renewal_if_expired()
 
     if request.method != "POST":
 

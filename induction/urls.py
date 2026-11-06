@@ -5,6 +5,10 @@ from .views import (
     dashboard_induction_setup,
     dashboard_induction_detail,
     dashboard_induction_cancel,
+    dashboard_induction_publish,
+    induction_module_review,
+    induction_supervisor_verification,
+    induction_training_export,
 
     employee_induction,
     employee_induction_module,
@@ -25,6 +29,16 @@ urlpatterns = [
         "dashboard/induction/",
         dashboard_induction_list,
         name="induction_dashboard",
+    ),
+    path(
+        "dashboard/induction/publish/",
+        dashboard_induction_publish,
+        name="induction_publish",
+    ),
+    path(
+        "dashboard/induction/<int:induction_id>/publish/",
+        dashboard_induction_publish,
+        name="induction_publish_for_employee",
     ),
 
     path(
@@ -49,6 +63,21 @@ urlpatterns = [
         "dashboard/induction/<int:induction_id>/cancel/",
         dashboard_induction_cancel,
         name="induction_cancel",
+    ),
+    path(
+        "dashboard/induction/<int:induction_id>/module/<int:module_id>/completion/<int:completion_id>/review/",
+        induction_module_review,
+        name="induction_module_review",
+    ),
+    path(
+        "dashboard/induction/<int:induction_id>/module/<int:module_id>/verification/",
+        induction_supervisor_verification,
+        name="induction_supervisor_verification",
+    ),
+    path(
+        "dashboard/induction/<int:induction_id>/training-records.csv",
+        induction_training_export,
+        name="induction_training_export",
     ),
 
     # =====================================================

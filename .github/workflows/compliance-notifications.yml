@@ -80,3 +80,7 @@ jobs:
       - name: Create compliance notifications
         if: (github.event_name == 'schedule' && steps.clock.outputs.run == 'true') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
         run: python manage.py send_compliance_notifications
+
+      - name: Send induction expiry reminders
+        if: (github.event_name == 'schedule' && steps.clock.outputs.run == 'true') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        run: python manage.py send_induction_expiry_reminders

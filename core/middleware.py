@@ -151,7 +151,9 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     executive_dashboard expense_list export_business_report export_employee_performance_pdf export_quotes_csv faq_question_list
     faq_question_reply finance_trends financial_dashboard gallery_list gallery_upload_batch generate_contract_bookings generate_payroll
     gst_report induction_cancel induction_completion_pdf induction_dashboard induction_detail induction_setup
-    induction_start_record_pdf invoice_detail invoice_list job_profitability_dashboard lead_list leave_list
+    induction_module_review induction_publish induction_publish_for_employee induction_start_record_pdf
+    induction_supervisor_verification induction_training_export invoice_detail invoice_list
+    job_profitability_dashboard lead_list leave_list
     list live_chat_assign live_chat_close live_chat_counts live_chat_detail live_chat_list live_chat_takeover maintenance_list
     mark_invoice_paid mark_invoice_unpaid mark_payroll_paid newsletter_subscriber_detail onboarding_dashboard onboarding_detail
     onboarding_document_review onboarding_set_status operations_command_centre owner_alert_centre owner_command_centre payroll_list
@@ -402,7 +404,9 @@ DASHBOARD_POST_ROUTE_NAMES = frozenset(
         "edit_campaign_history", "delete_campaign_history", "generate_payroll",
         "approve_payroll", "mark_payroll_paid", "create_invoice", "edit_invoice",
         "mark_invoice_paid", "mark_invoice_unpaid", "cancel_invoice", "delete_invoice",
-        "induction_setup", "induction_cancel", "onboarding_document_review",
+        "induction_setup", "induction_cancel", "induction_publish",
+        "induction_publish_for_employee", "induction_module_review",
+        "induction_supervisor_verification", "onboarding_document_review",
         "onboarding_set_status", "add_contract", "edit_contract", "delete_contract",
         "generate_contract_bookings", "send_contract_renewal_email", "add_leave_request",
         "approve_leave_request", "reject_leave_request", "add_roster", "edit_roster",

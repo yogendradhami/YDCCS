@@ -3,6 +3,7 @@ from django import forms
 from .models import (
     EmployeeInduction,
     InductionModuleCompletion,
+    InductionSupervisorVerification,
 )
 
 
@@ -16,11 +17,23 @@ class InductionSetupForm(forms.ModelForm):
             "programme",
             "employment_type",
             "start_date",
+            "expiry_months",
             "supervisor_name",
             "primary_work_location",
             "induction_duration_minutes",
             "notes",
         ]
+
+        labels = {
+            "expiry_months": "Induction validity",
+        }
+
+        help_texts = {
+            "expiry_months": (
+                "The employee will need to renew this induction at the end "
+                "of the selected period."
+            ),
+        }
 
         widgets = {
 
@@ -40,6 +53,12 @@ class InductionSetupForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "type": "date",
+                }
+            ),
+
+            "expiry_months": forms.Select(
+                attrs={
+                    "class": "form-control",
                 }
             ),
 
@@ -104,6 +123,86 @@ class ModuleCompletionForm(forms.ModelForm):
                 }
             ),
         }
+
+
+class ModuleAssessmentForm(forms.Form):
+    def __init__(self, questions, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for index, question in enumerate(questions):
+            self.fields[f"question_{index}"] = forms.ChoiceField(
+                label=question["question"],
+                choices=[
+                    (str(choice_index), choice)
+                    for choice_index, choice in enumerate(question["choices"])
+                ],
+                widget=forms.RadioSelect,
+            )
+        self.fields["submission_key"] = forms.UUIDField(
+            widget=forms.HiddenInput,
+        )
+
+
+class InductionSupervisorVerificationForm(forms.Form):
+    result = forms.ChoiceField(
+        choices=InductionSupervisorVerification.RESULT_CHOICES,
+        widget=forms.RadioSelect,
+    )
+    comments = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "maxlength": 3000,
+                "placeholder": (
+                    "Record what was observed, any safe adjustments, "
+                    "and the next action if further training is needed."
+                ),
+            }
+        ),
+    )
+
+    def __init__(self, verification_tasks, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["practical_task"] = forms.ChoiceField(
+            label="Practical task observed",
+            choices=[(task, task) for task in verification_tasks],
+        )
+
+
+class InductionModuleReviewForm(forms.Form):
+    decision = forms.ChoiceField(
+        choices=[
+            ("approved", "Approve module completion"),
+            ("redo_required", "Request module to be redone"),
+        ],
+        widget=forms.RadioSelect,
+    )
+    review_note = forms.CharField(
+        required=False,
+        max_length=3000,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "maxlength": 3000,
+                "placeholder": (
+                    "Explain the decision. For redo requests, identify the "
+                    "specific material or action the employee needs to revisit."
+                ),
+            }
+        ),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if (
+            cleaned_data.get("decision") == "redo_required"
+            and not cleaned_data.get("review_note", "").strip()
+        ):
+            self.add_error(
+                "review_note",
+                "Explain what the employee needs to redo.",
+            )
+        return cleaned_data
 
 
 class InductionDeclarationForm(forms.Form):

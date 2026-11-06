@@ -1,47 +1,159 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block page_title %}
-Induction Setup
-{% endblock %}
+{% block title %}Induction Setup | YD Dashboard{% endblock %}
+{% block page_title %}Induction setup{% endblock %}
+{% block page_subtitle %}Set up a clear, supported start for this team member.{% endblock %}
 
-{% block page_subtitle %}
-Configure the employee's onboarding programme.
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/induction-setup.css' %}">
 {% endblock %}
 
 {% block content %}
+<div class="induction-setup-page">
+    <nav class="induction-setup-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'induction_dashboard' %}">Employee inductions</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'induction_detail' induction.id %}">{{ induction.employee.full_name }}</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Setup</span>
+    </nav>
 
-<div class="employee-panel">
-
-    <h2>
-        {{ induction.employee.full_name }}
-    </h2>
-
-    <form method="post">
-
-        {% csrf_token %}
-
-        {{ form.as_p }}
-
-        <div class="form-actions">
-
-            <button
-                type="submit"
-                class="btn btn-primary"
-            >
-                Save Induction
-            </button>
-
-            <a
-                href="{% url 'induction_detail' induction.id %}"
-                class="btn btn-outline"
-            >
-                Cancel
-            </a>
-
+    <header class="induction-setup-hero">
+        <div class="induction-setup-hero-copy">
+            <span class="induction-setup-eyebrow"><span></span> PEOPLE &amp; TRAINING</span>
+            <h2>Build a confident first day.</h2>
+            <p>Personalise the induction plan, clarify who will support the new starter, and make sure the practical details are ready.</p>
         </div>
+        <div class="induction-setup-hero-art" aria-hidden="true">
+            <span class="induction-setup-art-orbit"></span>
+            <span class="induction-setup-art-check">✓</span>
+            <span class="induction-setup-art-spark">✦</span>
+        </div>
+    </header>
 
-    </form>
+    <section class="induction-setup-person" aria-label="Employee details">
+        <div class="induction-setup-avatar">
+            {{ induction.employee.full_name|default:"Employee"|slice:":1"|upper }}
+        </div>
+        <div class="induction-setup-person-copy">
+            <span>INDUCTION FOR</span>
+            <h3>{{ induction.employee.full_name }}</h3>
+            <p>
+                {{ induction.employee.get_role_display|default:induction.employee.role|default:"Team member" }}
+                {% if induction.employee.email %}<span aria-hidden="true">·</span> {{ induction.employee.email }}{% endif %}
+            </p>
+        </div>
+        <div class="induction-setup-status {% if induction.is_expired %}is-expired{% elif induction.status == 'in_progress' %}is-in-progress{% endif %}">
+            <span class="induction-setup-status-dot"></span>
+            {{ induction.get_status_display }}
+        </div>
+        <a class="induction-setup-back" href="{% url 'induction_detail' induction.id %}" aria-label="Back to induction details">
+            <span aria-hidden="true">←</span> View induction
+        </a>
+    </section>
 
+    <div class="induction-setup-layout">
+        <form method="post" class="induction-setup-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="induction-setup-error-summary" role="alert">
+                    <strong>Please review the form.</strong>
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <section class="induction-setup-card">
+                <div class="induction-setup-section-heading">
+                    <span class="induction-setup-section-icon" aria-hidden="true">01</span>
+                    <div>
+                        <h3>Programme &amp; timing</h3>
+                        <p>Choose the training pathway and agree on a realistic start plan.</p>
+                    </div>
+                </div>
+                <div class="induction-setup-fields induction-setup-fields-two">
+                    {% for field in form %}
+                        {% if field.name == "programme" or field.name == "employment_type" or field.name == "start_date" or field.name == "expiry_months" or field.name == "induction_duration_minutes" %}
+                            <div class="induction-setup-field {% if field.name == 'programme' %}induction-setup-field-wide{% endif %}">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="induction-setup-required">Required</span>{% endif %}</label>
+                                {{ field }}
+                                {% if field.help_text %}<small class="induction-setup-help">{{ field.help_text }}</small>{% endif %}
+                                {% if field.errors %}<div class="induction-setup-field-error" role="alert">{{ field.errors }}</div>{% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="induction-setup-card">
+                <div class="induction-setup-section-heading">
+                    <span class="induction-setup-section-icon induction-setup-section-icon-teal" aria-hidden="true">02</span>
+                    <div>
+                        <h3>People &amp; work location</h3>
+                        <p>Make it easy for the employee to know who to contact and where to report.</p>
+                    </div>
+                </div>
+                <div class="induction-setup-fields induction-setup-fields-two">
+                    {% for field in form %}
+                        {% if field.name == "supervisor_name" or field.name == "primary_work_location" %}
+                            <div class="induction-setup-field">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="induction-setup-required">Required</span>{% endif %}</label>
+                                {{ field }}
+                                {% if field.help_text %}<small class="induction-setup-help">{{ field.help_text }}</small>{% endif %}
+                                {% if field.errors %}<div class="induction-setup-field-error" role="alert">{{ field.errors }}</div>{% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="induction-setup-card">
+                <div class="induction-setup-section-heading">
+                    <span class="induction-setup-section-icon induction-setup-section-icon-amber" aria-hidden="true">03</span>
+                    <div>
+                        <h3>Notes for the coordinator</h3>
+                        <p>Add any useful context for the person delivering the induction.</p>
+                    </div>
+                </div>
+                {% for field in form %}
+                    {% if field.name == "notes" %}
+                        <div class="induction-setup-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="induction-setup-required">Required</span>{% endif %}</label>
+                            {{ field }}
+                            {% if field.help_text %}<small class="induction-setup-help">{{ field.help_text }}</small>{% endif %}
+                            {% if field.errors %}<div class="induction-setup-field-error" role="alert">{{ field.errors }}</div>{% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </section>
+
+            <div class="induction-setup-actions">
+                <a class="induction-setup-button induction-setup-button-secondary" href="{% url 'induction_detail' induction.id %}">Cancel</a>
+                <button class="induction-setup-button induction-setup-button-primary" type="submit">
+                    Save induction plan <span aria-hidden="true">→</span>
+                </button>
+            </div>
+        </form>
+
+        <aside class="induction-setup-aside">
+            <section class="induction-setup-aside-card induction-setup-aside-highlight">
+                <span class="induction-setup-aside-icon" aria-hidden="true">✦</span>
+                <h3>A great start is a supported start.</h3>
+                <p>Use this setup to make ownership, timing and location clear before training begins.</p>
+            </section>
+
+            <section class="induction-setup-aside-card">
+                <span class="induction-setup-aside-label">SETUP CHECKLIST</span>
+                <ul class="induction-setup-checklist">
+                    <li><span>✓</span><div><strong>Choose the right programme</strong><small>Confirm the training content matches the role.</small></div></li>
+                    <li><span>✓</span><div><strong>Set the renewal cycle</strong><small>Choose 6 or 12 months; expiry reminders are sent 30 and 7 days beforehand and on expiry.</small></div></li>
+                    <li><span>✓</span><div><strong>Agree on a start date</strong><small>Allow time for a safe, unhurried induction.</small></div></li>
+                    <li><span>✓</span><div><strong>Name a point of contact</strong><small>Make sure the employee knows who to ask.</small></div></li>
+                </ul>
+            </section>
+            <p class="induction-setup-aside-footnote"><span aria-hidden="true">i</span> Changes are saved to this employee’s induction record.</p>
+        </aside>
+    </div>
 </div>
-
 {% endblock %}
