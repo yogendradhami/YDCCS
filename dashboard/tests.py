@@ -1256,6 +1256,45 @@ class BookingReassignmentFailureTests(TestCase):
         self.assertTrue(any("skipped by choice" in str(message) for message in messages))
 
     @patch("dashboard.views.create_or_update_booking_event")
+    @patch("dashboard.views.send_booking_confirmation_email", return_value=True)
+    @patch("rosters.services.sync_booking_roster")
+    def test_confirmation_email_is_sent_when_roster_sync_fails(
+        self, sync_roster, send_status_email, _sync_booking_event
+    ):
+        from rosters.services import RosterSyncPending
+
+        self.booking.customer = Customer.objects.create(
+            full_name="Confirmation Customer",
+            email="confirmation-customer@example.com",
+            phone="0400000000",
+        )
+        self.booking.save(update_fields=["customer"])
+        sync_roster.return_value = RosterSyncPending(
+            roster=self.roster,
+            error=RuntimeError("Calendar unavailable"),
+        )
+
+        response = self.client.post(
+            reverse(
+                "update_booking_quick_status",
+                args=[self.booking.pk, "confirmed"],
+            ),
+        )
+
+        self.booking.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.booking.status, "confirmed")
+        send_status_email.assert_called_once()
+        self.assertEqual(send_status_email.call_args.args[2], "pending")
+        messages = list(response.wsgi_request._messages)
+        self.assertTrue(
+            any("schedule could not be synced" in str(message) for message in messages)
+        )
+        self.assertTrue(
+            any("Customer notified by email" in str(message) for message in messages)
+        )
+
+    @patch("dashboard.views.create_or_update_booking_event")
     @patch("rosters.services.sync_booking_roster", return_value=None)
     @patch("dashboard.views.send_invoice_email")
     @patch("dashboard.views.send_booking_confirmation_email")

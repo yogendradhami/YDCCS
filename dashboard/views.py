@@ -6519,10 +6519,7 @@ def update_booking_quick_status(request, booking_id, new_status):
         )
         return redirect("booking_calendar")
 
-    if (
-        roster_sync_succeeded
-        and old_status != new_status
-    ):
+    if old_status != new_status:
         logger.info(
             "Booking status transition detected: booking=%s old=%s new=%s",
             booking.id,
