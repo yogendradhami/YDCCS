@@ -27,6 +27,27 @@ from .services.bulk_import import (
 )
 
 
+class CompanyDocumentListViewTests(TestCase):
+    def test_company_document_list_renders_its_javascript_asset(self):
+        staff = User.objects.create_user(
+            username="company-document-list-admin",
+            is_staff=True,
+        )
+        grant_dashboard_permissions(
+            staff,
+            "company_documents.view_companydocument",
+        )
+        self.client.force_login(staff)
+
+        response = self.client.get(reverse("company_documents:list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "js/dashboard/company-documents/company-documents",
+        )
+
+
 class ComplianceResolutionTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("document-admin")
