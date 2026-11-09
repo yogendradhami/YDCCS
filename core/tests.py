@@ -169,7 +169,15 @@ class SmokeTest(TestCase):
         sitemap_response = self.client.get("/sitemap.xml")
         self.assertEqual(sitemap_response.status_code, 200)
         self.assertIn("xml", sitemap_response["Content-Type"])
-        self.assertIn("<urlset", sitemap_response.content.decode("utf-8"))
+        sitemap_index = sitemap_response.content.decode("utf-8")
+        self.assertIn("<sitemapindex", sitemap_index)
+        self.assertIn("/sitemap-static.xml", sitemap_index)
+        self.assertNotIn("X-Robots-Tag", sitemap_response.headers)
+
+        section_response = self.client.get("/sitemap-static.xml")
+        self.assertEqual(section_response.status_code, 200)
+        self.assertIn("<urlset", section_response.content.decode("utf-8"))
+        self.assertIn("public, max-age=86400", section_response["Cache-Control"])
 
     def test_robots_exists(self):
         resp = self.client.get("/robots.txt")
@@ -360,7 +368,12 @@ class SmokeTest(TestCase):
         )
 
     def test_definition_only_services_are_in_the_sitemap(self):
-        sitemap = self.client.get(reverse("sitemap_xml")).content.decode("utf-8")
+        sitemap = self.client.get(
+            reverse(
+                "sitemap_section",
+                kwargs={"section": "service_details"},
+            )
+        ).content.decode("utf-8")
         self.assertIn("/services/kitchen-deep-cleaning-adelaide/", sitemap)
         self.assertIn("/services/standard-bathroom-cleaning-adelaide/", sitemap)
 
@@ -526,7 +539,12 @@ class SmokeTest(TestCase):
                 self.assertEqual(linked_page.status_code, 200)
 
     def test_adelaide_local_area_sitemap_contains_controlled_pages(self):
-        sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
+        sitemap = self.client.get(
+            reverse(
+                "sitemap_section",
+                kwargs={"section": "adelaide_local_areas"},
+            )
+        ).content.decode("utf-8")
         self.assertIn("/local/adelaide/aberfoyle-park-5159/", sitemap)
 
     def test_related_services_prefer_existing_adelaide_urls(self):
@@ -587,7 +605,12 @@ class SmokeTest(TestCase):
                 self.assertEqual(redirected.redirect_chain, [])
 
     def test_sitemap_uses_adelaide_prefixed_local_service_urls(self):
-        sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
+        sitemap = self.client.get(
+            reverse(
+                "sitemap_section",
+                kwargs={"section": "local_services"},
+            )
+        ).content.decode("utf-8")
         self.assertIn("/services/carpet-steam-cleaning-adelaide-glenelg/", sitemap)
         self.assertNotIn("/services/carpet-steam-cleaning-glenelg/", sitemap)
 

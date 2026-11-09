@@ -13,6 +13,12 @@ from django.urls import Resolver404, resolve
 logger = logging.getLogger(__name__)
 
 
+def _is_sitemap_path(path):
+    return path == "/sitemap.xml" or (
+        path.startswith("/sitemap-") and path.endswith(".xml")
+    )
+
+
 DASHBOARD_PERMISSION_SECTIONS = {
     "/dashboard/users/positions/create/": "security.manage_security_roles",
     "/dashboard/users/positions/": "security.manage_users",
@@ -762,7 +768,7 @@ class SEOMiddleware:
         # SITEMAP
         # ======================================================
 
-        if request.path == "/sitemap.xml":
+        if _is_sitemap_path(request.path):
             # Django may add an X-Robots-Tag header to the
             # sitemap. Remove it so the sitemap itself remains
             # crawlable.
@@ -961,7 +967,7 @@ class CacheHeaderMiddleware:
             )
             return response
 
-        if path == "/sitemap.xml":
+        if _is_sitemap_path(path):
             response["Cache-Control"] = (
                 "public, max-age=86400"
             )

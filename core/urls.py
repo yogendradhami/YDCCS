@@ -52,24 +52,33 @@ from .views_append import blog_detail
 
 
 
-# ADD THIS HERE
+from django.contrib.sitemaps.views import index as django_sitemap_index
 from django.contrib.sitemaps.views import sitemap as django_sitemap
 from .sitemaps import sitemaps
 
 
-# Sitemap view for SEO
-def sitemap_view(request):
+def _prepare_sitemap_response(response):
+    response.headers.pop("X-Robots-Tag", None)
+    response["Content-Type"] = "application/xml"
+    return response
 
+
+def sitemap_view(request):
+    response = django_sitemap_index(
+        request,
+        sitemaps=sitemaps,
+        sitemap_url_name="sitemap_section",
+    )
+    return _prepare_sitemap_response(response)
+
+
+def sitemap_section_view(request, section):
     response = django_sitemap(
         request,
-        sitemaps=sitemaps
+        sitemaps=sitemaps,
+        section=section,
     )
-
-    response.headers.pop("X-Robots-Tag", None)
-
-    response["Content-Type"] = "application/xml"
-
-    return response
+    return _prepare_sitemap_response(response)
 
 
 urlpatterns = [
@@ -115,7 +124,12 @@ urlpatterns = [
 
     # SEO files
     path("robots.txt", robots_txt, name="robots_txt"),
-    path("sitemap.xml", sitemap_view, name="sitemap_xml"),    # SEO service pages
+    path("sitemap.xml", sitemap_view, name="sitemap_xml"),
+    path(
+        "sitemap-<slug:section>.xml",
+        sitemap_section_view,
+        name="sitemap_section",
+    ),
     path("services/", services_list, name="services_home"),
     path("local/", local_services, name="local_services"),
     path(
