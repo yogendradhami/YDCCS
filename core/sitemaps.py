@@ -77,36 +77,41 @@ class StaticViewSitemap(BaseSitemap):
         return timezone.now()
 
 
-class LocalServiceSitemap(BaseSitemap):
+def _base_service_slug_for_local_page(service_slug):
+    """Remove the final local-area suffix from a generated service-page slug."""
+    for location in LOCATION_ALIASES:
+        suffix = f"-{location}"
+        if service_slug.endswith(suffix):
+            return service_slug[:-len(suffix)]
+    return service_slug
 
+
+class LocalServiceSitemap(BaseSitemap):
     def items(self):
+        # Load modification dates once per sitemap request. Calling
+        # Service.objects.filter(...).first() from lastmod() caused one
+        # database query for every generated local-service URL.
+        self._service_lastmod_by_slug = dict(
+            Service.objects.values_list("slug", "updated_at")
+        )
+        self._fallback_lastmod = timezone.now()
         return service_page_slugs()
+
     def priority(self, item):
         return 0.7
-
 
     def location(self, item):
         return reverse(
             "service_page",
-            kwargs={"service_slug": item}
+            kwargs={"service_slug": item},
         )
 
     def lastmod(self, item):
-
-        service_slug = item
-
-        for location in LOCATION_ALIASES:
-            suffix = f"-{location}"
-
-            if service_slug.endswith(suffix):
-                service_slug = service_slug[:-len(suffix)]
-                break
-
-        service = Service.objects.filter(
-            slug=service_slug
-        ).first()
-
-        return service.updated_at if service else timezone.now()
+        service_slug = _base_service_slug_for_local_page(item)
+        return self._service_lastmod_by_slug.get(
+            service_slug,
+            self._fallback_lastmod,
+        )
 
 
 class ServicesIndexSitemap(BaseSitemap):
