@@ -8,6 +8,7 @@ Cleaning Report | YD Commercial Cleaning
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/cleaning-report.css' %}">
+{% if request.user.employee_profile %}<link rel="stylesheet" href="{% static 'css/portal/employee-workspace.css' %}">{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -30,6 +31,10 @@ Cleaning Report | YD Commercial Cleaning
         </header>
     </div>
 </section>
+
+{% if request.user.employee_profile %}
+<div class="container">{% include "employees/partials/employee_workspace_nav.html" %}</div>
+{% endif %}
 
 <section class="section clean-report-body">
     <div class="container">

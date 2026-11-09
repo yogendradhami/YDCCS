@@ -6,6 +6,12 @@ from corporate.dashboard_views import (
     corporate_lead_detail,
     corporate_lead_update,
 )
+from attendance.dashboard_views import (
+    attendance_log_create,
+    attendance_log_delete,
+    attendance_log_detail,
+    attendance_log_edit,
+)
 from gallery.views import gallery_upload_batch
 from .testimonial_views import (
     add_testimonial_videos,
@@ -510,6 +516,26 @@ urlpatterns = [
         "dashboard/attendance/",
         attendance_report,
         name="attendance_report",
+    ),
+    path(
+        "dashboard/attendance/add/",
+        attendance_log_create,
+        name="attendance_log_create",
+    ),
+    path(
+        "dashboard/attendance/<int:attendance_id>/",
+        attendance_log_detail,
+        name="attendance_log_detail",
+    ),
+    path(
+        "dashboard/attendance/<int:attendance_id>/edit/",
+        attendance_log_edit,
+        name="attendance_log_edit",
+    ),
+    path(
+        "dashboard/attendance/<int:attendance_id>/delete/",
+        attendance_log_delete,
+        name="attendance_log_delete",
     ),
 
     path(

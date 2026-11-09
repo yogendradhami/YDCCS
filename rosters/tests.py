@@ -5,17 +5,18 @@ from django.contrib.auth.models import User
 from django.db import connection
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from bookings.models import Booking
 from core.test_utils import grant_dashboard_permissions
 from employees.models import Employee
-
 from .models import Roster
 from .services import (
     RosterSyncNotConfigured,
     RosterSyncPending,
     sync_booking_roster,
 )
+from attendance.models import AttendanceLog
 
 
 class BookingRosterSyncTests(TestCase):
@@ -169,6 +170,32 @@ class BookingRosterSyncTests(TestCase):
             [call(self.roster), call(self.roster)]
         )
 
+    @patch(
+        "google_reviews.calendar_utils.create_or_update_roster_event",
+        side_effect=RuntimeError("Calendar temporarily unavailable"),
+    )
+    def test_completed_team_rosters_create_attendance_if_calendar_sync_fails(
+        self, update_event
+    ):
+        self.booking.status = "completed"
+        self.booking.save(update_fields=["status"])
+        self.booking.assigned_employees.add(self.new_employee)
+
+        result = sync_booking_roster(self.booking)
+
+        self.assertIsInstance(result, RosterSyncPending)
+        self.assertEqual(
+            Roster.objects.filter(booking=self.booking, status="completed").count(),
+            2,
+        )
+        self.assertEqual(
+            AttendanceLog.objects.filter(
+                booking=self.booking,
+                source=AttendanceLog.Source.ROSTER,
+            ).count(),
+            2,
+        )
+
     @patch("google_reviews.calendar_utils.create_or_update_roster_event")
     @patch("google_reviews.calendar_utils.delete_roster_event")
     def test_stale_sync_rechecks_assignment_after_calendar_deletion(
@@ -281,6 +308,35 @@ class RosterMutationAuthorizationTests(TestCase):
         )
         self.client = Client()
 
+    def test_roster_register_groups_shifts_under_one_employee_and_has_view_action(self):
+        Roster.objects.create(
+            employee=self.employee,
+            booking=self.booking,
+            shift_date=date(2026, 10, 24),
+            start_time=time(10, 0),
+            end_time=time(12, 0),
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("roster_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["roster_groups"]), 1)
+        self.assertEqual(len(response.context["roster_groups"][0]["shifts"]), 2)
+        self.assertContains(response, reverse("roster_detail", args=[self.roster.pk]))
+        self.assertContains(response, '<details class="roster-employee-group">')
+        self.assertEqual(response.content.count(b"roster-employee-header"), 1)
+
+    def test_admin_can_view_roster_detail(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("roster_detail", args=[self.roster.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Roster Employee")
+        self.assertContains(response, "Office Cleaning")
+        self.assertContains(response, "9:00 AM")
+
     def test_employee_cannot_add_edit_or_delete_rosters(self):
         self.client.force_login(self.employee_user)
 
@@ -348,6 +404,8 @@ class RosterMutationAuthorizationTests(TestCase):
             fetch_redirect_response=False,
         )
         created_roster = Roster.objects.get(booking=new_booking)
+        created_attendance = AttendanceLog.objects.get(roster=created_roster)
+        self.assertEqual(created_attendance.total_hours, 2)
 
         response = self.client.post(
             reverse("edit_roster", args=[self.roster.pk]),
@@ -372,6 +430,10 @@ class RosterMutationAuthorizationTests(TestCase):
         self.assertEqual(self.roster.booking_id, self.booking.pk)
         self.assertEqual(self.roster.shift_date, date(2026, 10, 25))
         self.assertEqual(self.roster.notes, "Updated shift")
+        updated_attendance = AttendanceLog.objects.get(roster=self.roster)
+        self.assertEqual(timezone.localtime(updated_attendance.check_in_time).hour, 11)
+        self.assertEqual(timezone.localtime(updated_attendance.check_out_time).hour, 13)
+        self.assertEqual(updated_attendance.total_hours, 2)
         self.assertTrue(Roster.objects.filter(pk=created_roster.pk).exists())
         update_event.assert_called()
 

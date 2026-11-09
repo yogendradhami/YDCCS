@@ -39,7 +39,11 @@ def user_can_view_booking_report(user, booking):
         return True
 
     if hasattr(user, "employee_profile"):
-        return booking.assigned_employee == user.employee_profile
+        employee = user.employee_profile
+        return (
+            booking.assigned_employee_id == employee.pk
+            or booking.assigned_employees.filter(pk=employee.pk).exists()
+        )
 
     if hasattr(user, "customer_profile"):
         return booking.customer == user.customer_profile

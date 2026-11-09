@@ -1,7 +1,13 @@
 {% extends 'employees/employee_portal_base.html' %}
+{% load static %}
 
 {% block title %}
 My Schedule | Employee Portal
+{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/portal/employee-roster.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -10,7 +16,7 @@ My Schedule | Employee Portal
 <!-- Employee Roster Hero -->
 <!-- ===================================================== -->
 
-<section class="employee-portal-hero">
+<section class="employee-portal-hero employee-roster-hero">
     <div class="container">
         <div class="employee-hero-box">
 
@@ -27,11 +33,13 @@ My Schedule | Employee Portal
     </div>
 </section>
 
+<div class="container">{% include "employees/partials/employee_workspace_nav.html" %}</div>
+
 <!-- ===================================================== -->
 <!-- Employee Roster Content -->
 <!-- ===================================================== -->
 
-<section class="section employee-dashboard-section">
+<section class="section employee-dashboard-section employee-roster-page">
     <div class="container">
 
         <!-- Quick action buttons -->

@@ -276,7 +276,9 @@ def generate_cleaning_report_pdf(booking):
         story.append(table)
 
     customer = booking.customer
-    employee = booking.assigned_employee
+    employees = list(booking.assigned_employees.all())
+    if not employees and booking.assigned_employee:
+        employees = [booking.assigned_employee]
 
     add_section("SERVICE DETAILS", [
         ("Report reference", f"YD-{booking.pk:06d}"),
@@ -304,8 +306,15 @@ def generate_cleaning_report_pdf(booking):
     ])
 
     add_section("SERVICE TEAM", [
-        ("Assigned cleaner", employee.full_name if employee else "Not assigned"),
-        ("Cleaner phone", getattr(employee, "phone", "") if employee else ""),
+        (
+            "Assigned cleaners",
+            ", ".join(employee.full_name for employee in employees)
+            if employees else "Not assigned",
+        ),
+        (
+            "Cleaner phones",
+            ", ".join(employee.phone or "Not provided" for employee in employees),
+        ),
     ])
 
     story.append(Paragraph("COMPLETION NOTES", styles["YDSection"]))

@@ -93,7 +93,14 @@ def check_booking_availability(*, booking_date, booking_time, assigned_employee=
     }
 
 
-def create_booking(*, customer=None, service_type, booking_date, booking_time, address, suburb_postcode, quoted_price=0, notes="", assigned_employee=None, workflow_key=None, trusted_assignment=False, work_orders=None):
+def create_booking(*, customer=None, service_type, booking_date, booking_time, address, suburb_postcode, quoted_price=0, notes="", assigned_employee=None, assigned_employees=None, workflow_key=None, trusted_assignment=False, work_orders=None):
+    assigned_employees = list(assigned_employees or [])
+    assigned_employees = list(
+        {employee.pk: employee for employee in assigned_employees}.values()
+    )
+    if not assigned_employees and assigned_employee:
+        assigned_employees = [assigned_employee]
+    assigned_employee = assigned_employees[0] if assigned_employees else None
     normalized_work_orders = work_orders or [
         {"service_type": service_type, "price": quoted_price}
     ]
@@ -114,9 +121,9 @@ def create_booking(*, customer=None, service_type, booking_date, booking_time, a
         raise ValueError("A valid booking date and time are required.")
     if not address or not suburb_postcode:
         raise ValueError("Address and suburb/postcode are required.")
-    if assigned_employee is not None and not trusted_assignment:
+    if assigned_employees and not trusted_assignment:
         raise ValueError("Employee assignment must come from trusted staff logic.")
-    if assigned_employee is not None and not assigned_employee.active:
+    if any(not employee.active for employee in assigned_employees):
         raise ValueError("An inactive employee cannot be assigned to a booking.")
 
     try:
@@ -126,23 +133,31 @@ def create_booking(*, customer=None, service_type, booking_date, booking_time, a
                 if existing:
                     return existing, False
 
-            if assigned_employee:
-                # Serialize availability checks for this employee so concurrent
-                # booking requests cannot both pass when no conflicting row exists.
-                Employee.objects.select_for_update().get(pk=assigned_employee.pk)
-                if LeaveRequest.objects.filter(
-                    employee=assigned_employee,
-                    status="approved",
-                    start_date__lte=booking_date,
-                    end_date__gte=booking_date,
-                ).exists():
-                    raise ValueError("The assigned employee is on approved leave.")
-                if Booking.objects.select_for_update().filter(
-                    assigned_employee=assigned_employee,
-                    booking_date=booking_date,
-                    booking_time=booking_time,
-                ).exclude(status="cancelled").exists():
-                    raise ValueError("The assigned employee is not available.")
+            if assigned_employees:
+                # Lock employees in a consistent order so concurrent team
+                # assignments cannot pass availability checks simultaneously.
+                list(
+                    Employee.objects.select_for_update()
+                    .filter(pk__in=[employee.pk for employee in assigned_employees])
+                    .order_by("pk")
+                )
+                for employee in assigned_employees:
+                    if LeaveRequest.objects.filter(
+                        employee=employee,
+                        status="approved",
+                        start_date__lte=booking_date,
+                        end_date__gte=booking_date,
+                    ).exists():
+                        raise ValueError(
+                            f"{employee.full_name} is on approved leave."
+                        )
+                    if Booking.objects.assigned_to(employee).filter(
+                        booking_date=booking_date,
+                        booking_time=booking_time,
+                    ).exclude(status="cancelled").exists():
+                        raise ValueError(
+                            f"{employee.full_name} is not available."
+                        )
 
             booking = Booking.objects.create(
                 customer=customer,
@@ -156,6 +171,7 @@ def create_booking(*, customer=None, service_type, booking_date, booking_time, a
                 notes=notes,
                 idempotency_key=workflow_key,
             )
+            booking.assigned_employees.set(assigned_employees)
             replace_booking_work_orders(booking, normalized_work_orders)
     except IntegrityError:
         if workflow_key:

@@ -29,11 +29,23 @@ class PayrollRecord(models.Model):
     # Payroll status.
     STATUS_CHOICES = [
         ("draft", "Draft"),
+        ("sent", "Sent"),
         ("approved", "Approved"),
         ("paid", "Paid"),
     ]
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
+
+    class PaymentStatus(models.TextChoices):
+        NOT_STARTED = "not_started", "Not started"
+        IN_PROCESS = "in_process", "In process"
+        PAID = "paid", "Paid"
+
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PaymentStatus.choices,
+        default=PaymentStatus.NOT_STARTED,
+    )
 
     notes = models.TextField(blank=True)
 

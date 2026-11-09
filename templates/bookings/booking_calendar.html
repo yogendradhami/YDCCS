@@ -207,7 +207,13 @@ Plan bookings, employee coverage and approved leave across the week.
 
                                 <strong>
 
-                                    {% if booking.assigned_employee %}
+                                    {% if booking.assigned_employees.all %}
+
+                                        {% for employee in booking.assigned_employees.all %}
+                                            {{ employee.full_name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+
+                                    {% elif booking.assigned_employee %}
 
                                         {{ booking.assigned_employee.full_name }}
 
@@ -305,7 +311,7 @@ Plan bookings, employee coverage and approved leave across the week.
                             </a>
 
 
-                            {% if not booking.assigned_employee %}
+                            {% if not booking.assigned_employee and not booking.assigned_employees.all %}
 
                                 <a
                                     href="{% url 'edit_booking' booking.id %}"

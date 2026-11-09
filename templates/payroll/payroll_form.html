@@ -1,0 +1,38 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Edit Payroll | YD Dashboard{% endblock %}
+{% block page_title %}Edit Payroll Record{% endblock %}
+{% block page_subtitle %}Update the employee, pay period, hours, rate, gross pay, or internal notes.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="workforce-page workforce-form-page">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'payroll_list' %}">Payroll register</a><span>/</span><a href="{% url 'payroll_detail' payroll.pk %}">PAY-{{ payroll.pk|stringformat:"06d" }}</a><span>/</span><span>Edit</span></nav>
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div><span class="workforce-section-label">PAYROLL RECORD / PAY-{{ payroll.pk|stringformat:"06d" }}</span><h2>Update payroll details</h2><p>Workflow statuses are managed by send, approve, and payment actions.</p></div>
+        </header>
+        <form method="post" class="workforce-form-card">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="workforce-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="workforce-form-grid">
+                {% for field in form %}
+                    <div class="workforce-field {% if field.name == 'notes' %}workforce-field-wide{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                        {% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="workforce-form-actions">
+                <a class="workforce-button workforce-button-muted" href="{% url 'payroll_detail' payroll.pk %}">Cancel</a>
+                <button type="submit" class="workforce-button workforce-button-primary">Save changes <span>→</span></button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

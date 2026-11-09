@@ -706,6 +706,19 @@ class BookingReassignmentFailureTests(TestCase):
             follow=False,
         )
 
+    def test_booking_edit_employee_picker_is_dropdown_with_checkbox_selection(self):
+        response = self.client.get(reverse("edit_booking", args=[self.booking.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<details class="booking-employee-dropdown"')
+        self.assertContains(response, 'name="assigned_employees"')
+        self.assertContains(response, "booking-employee-trigger-icon")
+        self.assertContains(response, "booking-employee-preview")
+        self.assertIn(
+            'type="checkbox"',
+            str(response.context["form"]["assigned_employees"]),
+        )
+
     @patch("dashboard.views.create_or_update_booking_event")
     @patch("google_reviews.calendar_utils.create_or_update_roster_event")
     @patch("dashboard.views.Notification.objects.create")

@@ -5,6 +5,7 @@ from .views import (
     delete_roster,
     edit_roster,
     employee_roster,
+    roster_detail,
     roster_list,
 )
 
@@ -13,6 +14,11 @@ urlpatterns = [
         "dashboard/rosters/",
         roster_list,
         name="roster_list",
+    ),
+    path(
+        "dashboard/rosters/<int:roster_id>/",
+        roster_detail,
+        name="roster_detail",
     ),
 
     path(

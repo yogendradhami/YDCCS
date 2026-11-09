@@ -6,7 +6,7 @@ My Payslips | Employee Portal
 
 {% block content %}
 
-<section class="employee-portal-hero">
+<section class="employee-portal-hero employee-workspace-hero">
     <div class="container">
         <div class="employee-hero-box">
             <div>
@@ -21,7 +21,9 @@ My Payslips | Employee Portal
     </div>
 </section>
 
-<section class="section employee-dashboard-section">
+<div class="container">{% include "employees/partials/employee_workspace_nav.html" %}</div>
+
+<section class="section employee-dashboard-section employee-workspace-page employee-payslips-page">
     <div class="container">
 
         <div class="employee-action-row">
@@ -53,7 +55,8 @@ My Payslips | Employee Portal
                                 <th>Hours</th>
                                 <th>Rate</th>
                                 <th>Gross Pay</th>
-                                <th>Status</th>
+                                <th>Payroll Status</th>
+                                <th>Payment Status</th>
                                 <th>Download</th>
                             </tr>
                         </thead>
@@ -72,6 +75,10 @@ My Payslips | Employee Portal
                                             <span class="status-badge warning">
                                                 Draft
                                             </span>
+                                        {% elif payroll.status == "sent" %}
+                                            <span class="status-badge primary">
+                                                Sent
+                                            </span>
                                         {% elif payroll.status == "approved" %}
                                             <span class="status-badge success">
                                                 Approved
@@ -80,13 +87,17 @@ My Payslips | Employee Portal
                                             <span class="status-badge primary">
                                                 Paid
                                             </span>
+                                        {% else %}
+                                            <span class="status-badge">{{ payroll.get_status_display }}</span>
                                         {% endif %}
                                     </td>
 
+                                    <td>{{ payroll.get_payment_status_display }}</td>
+
                                     <td>
                                         <a
-                                            href="{% url 'download_payslip_pdf' payroll.id %}"
-                                            class="small-link-btn"
+                                            href="{% url 'employee_download_payslip_pdf' payroll.id %}"
+                                            class="small-link-btn payslip-download-btn"
                                         >
                                             PDF
                                         </a>

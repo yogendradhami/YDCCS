@@ -2,6 +2,7 @@ from django import forms
 from django.forms import formset_factory
 
 from leave_management.models import LeaveRequest
+from employees.models import Employee
 
 from .models import Booking, JobPhoto
 from .services import get_booking_service_choices
@@ -47,8 +48,41 @@ BookingWorkOrderFormSet = formset_factory(
 
 
 class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
+    assigned_employees = forms.ModelMultipleChoiceField(
+        queryset=Employee.objects.none(),
+        required=False,
+        label="Assigned Employees (Optional)",
+        widget=forms.CheckboxSelectMultiple(
+            attrs={
+                "class": "booking-employee-checkbox",
+            }
+        ),
+    )
 
     def __init__(self, *args, **kwargs):
+        data = kwargs.get("data")
+        if data is None and args:
+            data = args[0]
+        if data is not None and (
+            "assigned_employees" not in data
+            and "assigned_employee" in data
+        ):
+            data = data.copy()
+            getlist = getattr(data, "getlist", None)
+            selected = (
+                getlist("assigned_employee")
+                if getlist
+                else [data.get("assigned_employee")]
+            )
+            selected = [employee_id for employee_id in selected if employee_id]
+            if hasattr(data, "setlist"):
+                data.setlist("assigned_employees", selected)
+            else:
+                data["assigned_employees"] = selected
+            if args:
+                args = (data, *args[1:])
+            else:
+                kwargs["data"] = data
         super().__init__(*args, **kwargs)
 
         service_choices = get_booking_service_choices()
@@ -70,12 +104,16 @@ class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
         self.fields["customer"].required = False
         self.fields["customer"].label = "Customer (Optional)"
         self.fields["customer"].empty_label = "No customer"
-        self.fields["assigned_employee"].required = False
-        self.fields["assigned_employee"].label = "Assigned Employee (Optional)"
-        self.fields["assigned_employee"].empty_label = "No employee assigned"
-        self.fields["assigned_employee"].queryset = (
-            self.fields["assigned_employee"].queryset.filter(active=True)
-        )
+        self.fields["assigned_employees"].queryset = Employee.objects.filter(
+            active=True
+        ).order_by("full_name")
+        if not self.is_bound and self.instance and self.instance.pk:
+            employee_ids = list(
+                self.instance.assigned_employees.values_list("pk", flat=True)
+            )
+            if not employee_ids and self.instance.assigned_employee_id:
+                employee_ids = [self.instance.assigned_employee_id]
+            self.initial["assigned_employees"] = employee_ids
 
     class Meta:
         model = Booking
@@ -88,7 +126,7 @@ class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
             "address",
             "suburb_postcode",
             "quoted_price",
-            "assigned_employee",
+            "assigned_employees",
             "status",
             "notes",
         ]
@@ -127,11 +165,6 @@ class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
                     "step": "0.01",
                 }
             ),
-            "assigned_employee": forms.Select(
-                attrs={
-                    "class": "form-control",
-                }
-            ),
             "status": forms.Select(
                 attrs={
                     "class": "form-control",
@@ -150,46 +183,58 @@ class BookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
         cleaned_data = super().clean()
 
         booking_date = cleaned_data.get("booking_date")
-        assigned_employee = cleaned_data.get("assigned_employee")
+        assigned_employees = cleaned_data.get("assigned_employees", [])
+        booking_time = cleaned_data.get("booking_time")
 
-        if booking_date and assigned_employee:
+        if booking_date:
+            for assigned_employee in assigned_employees:
+                approved_leave = LeaveRequest.objects.filter(
+                    employee=assigned_employee,
+                    status="approved",
+                    start_date__lte=booking_date,
+                    end_date__gte=booking_date,
+                ).first()
 
-            approved_leave = LeaveRequest.objects.filter(
-                employee=assigned_employee,
-                status="approved",
-                start_date__lte=booking_date,
-                end_date__gte=booking_date,
-            ).first()
-
-            if approved_leave:
-                raise forms.ValidationError(
-                    f"{assigned_employee.full_name} is on approved "
-                    f"{approved_leave.get_leave_type_display()} "
-                    f"from {approved_leave.start_date} "
-                    f"to {approved_leave.end_date}."
-                )
-
-            booking_time = cleaned_data.get("booking_time")
-
-            if booking_time:
-                existing_booking = (
-                    Booking.objects.filter(
-                        assigned_employee=assigned_employee,
-                        booking_date=booking_date,
-                        booking_time=booking_time,
+                if approved_leave:
+                    self.add_error(
+                        "assigned_employees",
+                        f"{assigned_employee.full_name} is on approved "
+                        f"{approved_leave.get_leave_type_display()} "
+                        f"from {approved_leave.start_date} "
+                        f"to {approved_leave.end_date}.",
                     )
-                    .exclude(id=self.instance.id)
-                    .exclude(status="cancelled")
-                    .first()
-                )
 
-                if existing_booking:
-                    raise forms.ValidationError(
-                        f"{assigned_employee.full_name} already has another booking "
-                        f"on {booking_date} at {booking_time}."
+                if booking_time:
+                    existing_booking = (
+                        Booking.objects.assigned_to(assigned_employee)
+                        .filter(
+                            booking_date=booking_date,
+                            booking_time=booking_time,
+                        )
+                        .exclude(pk=self.instance.pk)
+                        .exclude(status="cancelled")
+                        .first()
                     )
+
+                    if existing_booking:
+                        self.add_error(
+                            "assigned_employees",
+                            f"{assigned_employee.full_name} already has another "
+                            f"booking on {booking_date} at {booking_time}.",
+                        )
 
         return cleaned_data
+
+    def save(self, commit=True):
+        booking = super().save(commit=False)
+        assigned_employees = list(self.cleaned_data["assigned_employees"])
+        booking.assigned_employee = (
+            assigned_employees[0] if assigned_employees else None
+        )
+        if commit:
+            booking.save()
+            self.save_m2m()
+        return booking
 
 class PublicBookingForm(BookingServiceChoicesValidationMixin, forms.ModelForm):
     name = forms.CharField(max_length=150)

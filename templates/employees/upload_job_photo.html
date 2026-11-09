@@ -7,18 +7,21 @@ Upload Job Photo | Employee Portal
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/components/media-upload-controls.css' %}">
+<link rel="stylesheet" href="{% static 'css/portal/employee-workspace.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<section class="page-hero">
+<section class="page-hero employee-workspace-hero">
     <div class="container">
         <h1>Upload Job Photo</h1>
         <p>Upload before or after cleaning photos for this assigned job.</p>
     </div>
 </section>
 
-<section class="section">
+<div class="container">{% include "employees/partials/employee_workspace_nav.html" %}</div>
+
+<section class="section employee-workspace-page employee-upload-page">
     <div class="container">
 
         <div class="booking-form-card">

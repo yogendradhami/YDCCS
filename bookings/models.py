@@ -1,7 +1,22 @@
 from django.db import models
+from django.db.models import Q
 
 from customers.models import Customer
 from employees.models import Employee
+
+
+class BookingQuerySet(models.QuerySet):
+    def assigned_to(self, employee):
+        return self.filter(
+            Q(assigned_employee=employee)
+            | Q(assigned_employees=employee)
+        ).distinct()
+
+    def unassigned(self):
+        return self.filter(
+            assigned_employee__isnull=True,
+            assigned_employees__isnull=True,
+        ).distinct()
 
 
 class Booking(models.Model):
@@ -49,6 +64,13 @@ class Booking(models.Model):
         blank=True,
         related_name="assigned_bookings",
     )
+    assigned_employees = models.ManyToManyField(
+        Employee,
+        blank=True,
+        related_name="team_assigned_bookings",
+    )
+
+    objects = BookingQuerySet.as_manager()
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     google_calendar_event_id = models.CharField(

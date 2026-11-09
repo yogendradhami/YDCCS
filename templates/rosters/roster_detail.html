@@ -1,0 +1,44 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Roster shift | YD Dashboard{% endblock %}
+{% block page_title %}Roster shift{% endblock %}
+{% block page_subtitle %}Review assignment, timing, booking details, and calendar status.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/attendance-register.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/roster-register.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="workforce-page attendance-register roster-register">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'roster_list' %}">Roster management</a><span>/</span><span>Shift details</span></nav>
+    <section class="workforce-form-intro">
+        <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / SHIFT DETAILS</span>
+        <h1>{{ roster.employee.full_name }}’s shift.</h1>
+        <p>{{ roster.shift_date|date:"l, d F Y" }} · {{ roster.start_time|time:"g:i A" }}–{{ roster.end_time|time:"g:i A" }}</p>
+    </section>
+    <article class="roster-detail-card">
+        <header class="roster-detail-header">
+            <div><span class="workforce-section-label">ASSIGNED BOOKING</span><h2>{{ roster.booking.service_type }}</h2><p>Booking #{{ roster.booking_id }}{% if roster.booking.customer %} · {{ roster.booking.customer.full_name }}{% endif %}</p></div>
+            <span class="workforce-pill {% if roster.time_status == 'completed' %}workforce-pill-good{% elif roster.time_status == 'cancelled' %}workforce-pill-neutral{% elif roster.time_status == 'in_progress' %}workforce-pill-warn{% else %}workforce-pill-blue{% endif %}">{{ roster.time_status_display }}</span>
+        </header>
+        <dl class="roster-detail-grid">
+            <div><dt>Employee</dt><dd>{{ roster.employee.full_name }}</dd></div>
+            <div><dt>Customer</dt><dd>{% if roster.booking.customer %}{{ roster.booking.customer.full_name }}{% else %}Customer unavailable{% endif %}</dd></div>
+            <div><dt>Shift date</dt><dd>{{ roster.shift_date|date:"l, d F Y" }}</dd></div>
+            <div><dt>Start time</dt><dd>{{ roster.start_time|time:"g:i A" }}</dd></div>
+            <div><dt>End time</dt><dd>{{ roster.end_time|time:"g:i A" }}</dd></div>
+            <div><dt>Scheduled hours</dt><dd>{{ roster.start_time|time:"H:i" }}–{{ roster.end_time|time:"H:i" }}</dd></div>
+            <div><dt>Roster status</dt><dd>{{ roster.get_status_display }}</dd></div>
+            <div><dt>Calendar sync</dt><dd>{% if roster.google_calendar_event_id %}<span class="workforce-sync-pill">Synced</span>{% else %}<span class="workforce-muted">Not synced</span>{% endif %}</dd></div>
+            <div class="roster-detail-notes"><dt>Notes</dt><dd>{{ roster.notes|default:"No notes added."|linebreaksbr }}</dd></div>
+        </dl>
+        <footer class="workforce-form-actions">
+            {% if perms.rosters.change_roster %}<a class="workforce-button workforce-button-primary" href="{% url 'edit_roster' roster.id %}">Edit shift</a>{% endif %}
+            {% if perms.rosters.delete_roster %}<a class="workforce-button workforce-button-muted" href="{% url 'delete_roster' roster.id %}">Delete shift</a>{% endif %}
+            <a class="workforce-button workforce-button-muted" href="{% url 'roster_list' %}">Back to rosters</a>
+        </footer>
+    </article>
+</div>
+{% endblock %}

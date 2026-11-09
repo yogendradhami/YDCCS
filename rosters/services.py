@@ -60,7 +60,163 @@ def sync_booking_roster(booking):
     """Keep the booking's roster shift and calendar event in sync."""
     using = booking._state.db or DEFAULT_DB_ALIAS
     with booking_roster_sync_lock(booking.pk, using=using):
-        return _sync_booking_roster_locked(booking.pk, using=using)
+        result = _sync_booking_roster_locked(booking.pk, using=using)
+        primary_pending = (
+            result if isinstance(result, RosterSyncPending) else None
+        )
+        primary_roster = (
+            result.roster
+            if isinstance(result, (RosterSyncNotConfigured, RosterSyncPending))
+            else result
+            if isinstance(result, Roster)
+            else None
+        )
+        team_result = _sync_assigned_team_rosters(
+            booking.pk,
+            using=using,
+            primary_roster_id=primary_roster.pk if primary_roster else None,
+        )
+        if primary_pending:
+            return primary_pending
+        if isinstance(team_result, RosterSyncPending):
+            return team_result
+        if isinstance(result, RosterSyncNotConfigured):
+            return result
+        return team_result or result
+
+
+def _sync_assigned_team_rosters(
+    booking_id,
+    using=DEFAULT_DB_ALIAS,
+    primary_roster_id=None,
+):
+    from google_reviews.calendar_utils import (
+        CalendarNotConfigured,
+        create_or_update_roster_event,
+        delete_roster_event,
+    )
+    from attendance.services import sync_roster_attendance
+
+    not_configured = None
+    pending = None
+    with transaction.atomic(using=using):
+        booking = (
+            Booking.objects.using(using)
+            .select_for_update()
+            .get(pk=booking_id)
+        )
+        assigned_employees = list(
+            booking.assigned_employees.using(using).all()
+        )
+        if booking.assigned_employee_id and all(
+            employee.pk != booking.assigned_employee_id
+            for employee in assigned_employees
+        ):
+            assigned_employees.append(booking.assigned_employee)
+        assigned_ids = {employee.pk for employee in assigned_employees}
+        rosters = list(
+            Roster.objects.using(using)
+            .select_for_update()
+            .filter(booking=booking)
+            .order_by("pk")
+        )
+
+        for employee in assigned_employees:
+            roster = next(
+                (
+                    candidate
+                    for candidate in rosters
+                    if candidate.employee_id == employee.pk
+                ),
+                None,
+            )
+            target_status = (
+                "cancelled"
+                if booking.status == "cancelled"
+                else "completed"
+                if booking.status == "completed"
+                else "scheduled"
+                if roster is None or roster.status in {"completed", "cancelled"}
+                else roster.status
+            )
+            if roster is None:
+                start = datetime.combine(
+                    booking.booking_date,
+                    booking.booking_time,
+                )
+                roster = Roster.objects.using(using).create(
+                    employee=employee,
+                    booking=booking,
+                    shift_date=booking.booking_date,
+                    start_time=booking.booking_time,
+                    end_time=(start + timedelta(hours=2)).time(),
+                    status=target_status,
+                    notes=booking.notes,
+                )
+                rosters.append(roster)
+            elif roster.status != target_status:
+                roster.status = target_status
+                roster.save(using=using, update_fields=["status"])
+
+        for roster in rosters:
+            if roster.employee_id in assigned_ids:
+                continue
+            if roster.status != "cancelled":
+                roster.status = "cancelled"
+                roster.save(using=using, update_fields=["status"])
+
+    for roster in rosters:
+        if roster.pk == primary_roster_id:
+            sync_roster_attendance(roster)
+            continue
+        if roster.status == "cancelled" and roster.google_calendar_event_id:
+            try:
+                deleted = delete_roster_event(roster)
+            except DatabaseError:
+                raise
+            except Exception as exc:
+                logger.exception(
+                    "Roster Calendar deletion failed for booking %s.",
+                    booking_id,
+                )
+                pending = pending or RosterSyncPending(
+                    roster=roster,
+                    error=exc,
+                )
+            else:
+                if not deleted:
+                    pending = pending or RosterSyncPending(
+                        roster=roster,
+                        error=RuntimeError(
+                            "The cancelled employee roster event could not be removed."
+                        ),
+                    )
+        elif roster.status != "cancelled":
+            try:
+                event = create_or_update_roster_event(roster)
+                if event is None:
+                    raise CalendarNotConfigured(
+                        "The employee's Calendar integration is not configured."
+                    )
+            except CalendarNotConfigured:
+                not_configured = not_configured or RosterSyncNotConfigured(
+                    roster=roster
+                )
+            except DatabaseError:
+                raise
+            except Exception as exc:
+                logger.exception(
+                    "Roster Calendar synchronization failed for booking %s.",
+                    booking_id,
+                )
+                pending = pending or RosterSyncPending(
+                    roster=roster,
+                    error=exc,
+                )
+
+        sync_roster_attendance(roster)
+
+    return pending or not_configured or (rosters[0] if rosters else None)
 
 
 def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
@@ -79,12 +235,14 @@ def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
             .get(pk=booking_id)
         )
         employee = locked_booking.assigned_employee
-        roster = (
+        rosters = (
             Roster.objects.using(using).select_for_update()
             .filter(booking=locked_booking)
             .order_by("id")
-            .first()
         )
+        roster = rosters.filter(employee=employee).first() if employee else None
+        if roster is None:
+            roster = rosters.first()
 
         if roster is None and locked_booking.status == "cancelled":
             return None
@@ -147,21 +305,9 @@ def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
                             ]
                         )
                 else:
-                    roster.employee = employee
-                    roster.shift_date = locked_booking.booking_date
-                    roster.start_time = start_time
-                    roster.end_time = end_time
                     roster.status = roster_status
-                    roster.notes = locked_booking.notes
                     roster.save(
-                        update_fields=[
-                            "employee",
-                            "shift_date",
-                            "start_time",
-                            "end_time",
-                            "status",
-                            "notes",
-                        ]
+                        update_fields=["status"]
                     )
             else:
                 roster = Roster.objects.create(

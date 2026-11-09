@@ -1,0 +1,25 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Delete attendance | YD Dashboard{% endblock %}
+{% block page_title %}Delete attendance{% endblock %}
+{% block page_subtitle %}Confirm removal of this employee attendance record.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/attendance-register.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="workforce-page workforce-form-page attendance-register">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'attendance_report' %}">Attendance register</a><span>/</span><span>Delete attendance</span></nav>
+    <section class="attendance-delete-card">
+        <span class="workforce-eyebrow"><i></i> CONFIRM RECORD REMOVAL</span>
+        <h1>Delete this attendance?</h1>
+        <p>This will remove the portal attendance record for <strong>{{ attendance.employee.full_name }}</strong> on <strong>{{ attendance.booking.booking_date|date:"d M Y" }}</strong> for {{ attendance.booking.service_type }}.</p>
+        <div class="workforce-form-actions">
+            <a class="workforce-button workforce-button-muted" href="{% url 'attendance_report' %}">Keep attendance</a>
+            <form method="post">{% csrf_token %}<button type="submit" class="workforce-button workforce-button-danger">Delete attendance</button></form>
+        </div>
+    </section>
+</div>
+{% endblock %}

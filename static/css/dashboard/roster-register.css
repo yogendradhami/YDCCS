@@ -1,0 +1,312 @@
+.roster-register .roster-employee-groups {
+    display: grid;
+    gap: 14px;
+    padding: 14px;
+}
+
+.roster-register .roster-employee-group {
+    overflow: hidden;
+    border: 1px solid #e5ebf0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(16, 43, 70, .035);
+}
+
+.roster-register .roster-employee-group > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.roster-register .roster-employee-group > summary::-webkit-details-marker {
+    display: none;
+}
+
+.roster-register .roster-employee-group > summary::marker {
+    content: "";
+}
+
+.roster-register .roster-employee-header {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 18px;
+    border-bottom: 1px solid #e8eef1;
+    background: linear-gradient(110deg, #f5faf9, #fff 75%);
+}
+
+.roster-register .roster-employee-group[open] > .roster-employee-header {
+    border-bottom-color: #e8eef1;
+    background: #f5faf9;
+}
+
+.roster-register .roster-employee-header .workforce-person small {
+    margin-top: 3px;
+}
+
+.roster-register .roster-employee-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.roster-register .roster-employee-disclosure {
+    color: #087f82;
+    font-size: 1.15rem;
+    transition: transform .18s ease;
+}
+
+.roster-register .roster-employee-group[open] .roster-employee-disclosure {
+    transform: rotate(180deg);
+}
+
+.roster-register .roster-shift-count {
+    color: #748596;
+    font-size: .68rem;
+}
+
+.roster-register .roster-shift-count strong {
+    display: inline-grid;
+    width: 25px;
+    height: 25px;
+    place-items: center;
+    margin-right: 4px;
+    border-radius: 50%;
+    background: #e6f4f1;
+    color: #087f82;
+}
+
+.roster-register .roster-shift-list {
+    display: grid;
+    gap: 9px;
+    padding: 11px;
+}
+
+.roster-register .roster-shift-card {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 13px;
+    border: 1px solid #edf1f3;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.roster-register .roster-shift-date {
+    display: flex;
+    width: 52px;
+    min-height: 61px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f0f7f6;
+    color: #087f82;
+}
+
+.roster-register .roster-shift-date span,
+.roster-register .roster-shift-date small {
+    font-size: .58rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.roster-register .roster-shift-date strong {
+    font-size: 1.2rem;
+    line-height: 1.1;
+}
+
+.roster-register .roster-shift-main {
+    min-width: 0;
+}
+
+.roster-register .roster-shift-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.roster-register .roster-shift-title h3 {
+    margin: 0;
+    color: #20354a;
+    font-size: .82rem;
+}
+
+.roster-register .roster-shift-main > p {
+    margin: 4px 0 8px;
+    color: #718392;
+    font-size: .69rem;
+}
+
+.roster-register .roster-shift-main > p span {
+    padding: 0 3px;
+    color: #a9b5bd;
+}
+
+.roster-register .roster-shift-facts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px 16px;
+    color: #627686;
+    font-size: .65rem;
+}
+
+.roster-register .roster-shift-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.roster-register .workforce-action-primary {
+    border-color: #087f82;
+    background: #087f82;
+    color: #fff;
+}
+
+.roster-register .workforce-action-primary:hover {
+    background: #06696c;
+    color: #fff;
+}
+
+.roster-register .roster-detail-card {
+    overflow: hidden;
+    border: 1px solid #e5ebf0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 32px rgba(16, 43, 70, .06);
+}
+
+.roster-register .roster-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 23px;
+    border-bottom: 1px solid #e9eef1;
+    background: linear-gradient(110deg, #f5faf9, #fff 76%);
+}
+
+.roster-register .roster-detail-header h2 {
+    margin: 7px 0 4px;
+    color: #172b45;
+    font-size: 1.35rem;
+}
+
+.roster-register .roster-detail-header p {
+    margin: 0;
+    color: #748596;
+    font-size: .78rem;
+}
+
+.roster-register .roster-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 8px 23px;
+}
+
+.roster-register .roster-detail-grid > div {
+    padding: 15px 8px;
+    border-bottom: 1px solid #edf1f3;
+}
+
+.roster-register .roster-detail-grid dt {
+    margin-bottom: 5px;
+    color: #80909c;
+    font-size: .64rem;
+    font-weight: 750;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.roster-register .roster-detail-grid dd {
+    margin: 0;
+    color: #293d50;
+    font-size: .82rem;
+    font-weight: 650;
+}
+
+.roster-register .roster-detail-grid .roster-detail-notes {
+    grid-column: 1 / -1;
+}
+
+.roster-register .roster-detail-card > .workforce-form-actions {
+    padding: 16px 23px;
+}
+
+.attendance-register .attendance-detail-card .attendance-detail-roster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 13px 17px;
+    border-bottom: 1px solid #edf1f3;
+    color: #526878;
+    font-size: .72rem;
+}
+
+.attendance-register .attendance-detail-roster > span {
+    color: #80909c;
+    font-size: .62rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.attendance-register .attendance-detail-roster a {
+    color: #087f82;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+@media (max-width: 760px) {
+    .roster-register .roster-shift-card {
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .roster-register .roster-shift-date {
+        width: 46px;
+    }
+
+    .roster-register .roster-shift-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        padding-left: 58px;
+    }
+
+    .roster-register .roster-employee-header {
+        padding: 10px;
+    }
+
+    .roster-register .roster-employee-summary {
+        gap: 6px;
+    }
+
+    .roster-register .roster-detail-header {
+        padding: 17px;
+    }
+
+    .roster-register .roster-detail-grid {
+        padding: 5px 14px;
+    }
+
+    .roster-register .roster-detail-card > .workforce-form-actions {
+        padding: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .roster-register .roster-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .roster-register .roster-detail-grid .roster-detail-notes {
+        grid-column: auto;
+    }
+}

@@ -4,12 +4,30 @@ from bookings.models import Booking
 
 
 class AttendanceLog(models.Model):
+    class Source(models.TextChoices):
+        PORTAL = "portal", "Employee portal"
+        ROSTER = "roster", "Roster hours"
+
     booking = models.ForeignKey(
         Booking, on_delete=models.CASCADE, related_name="attendance_logs"
     )
 
+    roster = models.ForeignKey(
+        "rosters.Roster",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="attendance_logs",
+    )
+
     employee = models.ForeignKey(
         "employees.Employee", on_delete=models.CASCADE, related_name="attendance_logs"
+    )
+
+    source = models.CharField(
+        max_length=12,
+        choices=Source.choices,
+        default=Source.PORTAL,
     )
 
     check_in_time = models.DateTimeField(null=True, blank=True)
@@ -37,6 +55,13 @@ class AttendanceLog(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["roster"],
+                condition=models.Q(roster__isnull=False),
+                name="unique_roster_attendance_log",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.booking.id}"

@@ -1,0 +1,40 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Attendance record | YD Dashboard{% endblock %}
+{% block page_title %}Attendance record{% endblock %}
+{% block page_subtitle %}Review the employee's recorded shift and attendance details.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/attendance-register.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="workforce-page attendance-register">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'attendance_report' %}">Attendance register</a><span>/</span><span>Record details</span></nav>
+    <section class="workforce-form-intro">
+        <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / TIME RECORDS</span>
+        <h1>{{ attendance.employee.full_name }}’s attendance.</h1>
+        <p>{{ attendance.booking.service_type }} · Booking #{{ attendance.booking_id }}</p>
+    </section>
+    <article class="attendance-record-card attendance-detail-card">
+        <div class="attendance-record-heading">
+            <div><span class="attendance-record-date">{{ attendance.booking.booking_date|date:"D, d M Y" }}</span><h3>{{ attendance.booking.service_type }}</h3><p>{% if attendance.booking.customer %}{{ attendance.booking.customer.full_name }}{% else %}Customer unavailable{% endif %}</p></div>
+            <div class="attendance-record-badges"><span class="attendance-source-pill">{{ attendance.get_source_display }}</span><span class="attendance-session-pill {% if attendance.source == 'roster' or attendance.check_out_time %}attendance-session-complete{% else %}attendance-session-open{% endif %}">{% if attendance.source == "roster" %}Roster allocation{% elif attendance.check_out_time %}Completed{% else %}Awaiting checkout{% endif %}</span></div>
+        </div>
+        <div class="attendance-record-facts">
+            <div><span>Check-in</span><strong>{{ attendance.check_in_time|date:"d M Y, g:i A"|default:"Not recorded" }}</strong>{% if attendance.check_in_latitude != None and attendance.check_in_longitude != None %}<a href="https://www.google.com/maps?q={{ attendance.check_in_latitude }},{{ attendance.check_in_longitude }}" target="_blank" rel="noopener noreferrer">View location ↗</a>{% endif %}</div>
+            <div><span>Check-out</span><strong>{{ attendance.check_out_time|date:"d M Y, g:i A"|default:"Not recorded" }}</strong>{% if attendance.check_out_latitude != None and attendance.check_out_longitude != None %}<a href="https://www.google.com/maps?q={{ attendance.check_out_latitude }},{{ attendance.check_out_longitude }}" target="_blank" rel="noopener noreferrer">View location ↗</a>{% endif %}</div>
+            <div class="attendance-hours"><span>Worked hours</span><strong>{{ attendance.total_hours|floatformat:2 }} <small>hrs</small></strong></div>
+        </div>
+        {% if attendance.roster %}
+        <div class="attendance-detail-roster"><span>Roster shift</span><strong>{{ attendance.roster.shift_date|date:"d M Y" }} · {{ attendance.roster.start_time|time:"g:i A" }}–{{ attendance.roster.end_time|time:"g:i A" }}</strong><a href="{% url 'roster_detail' attendance.roster_id %}">View roster shift →</a></div>
+        {% endif %}
+        <div class="workforce-form-actions">
+            {% if attendance.source == "portal" and perms.attendance.change_attendancelog %}<a class="workforce-button workforce-button-primary" href="{% url 'attendance_log_edit' attendance.id %}">Edit attendance</a>{% endif %}
+            {% if attendance.source == "roster" and attendance.roster_id and perms.rosters.change_roster %}<a class="workforce-button workforce-button-primary" href="{% url 'edit_roster' attendance.roster_id %}">Edit roster</a>{% endif %}
+            <a class="workforce-button workforce-button-muted" href="{% url 'attendance_report' %}">Back to attendance</a>
+        </div>
+    </article>
+</div>
+{% endblock %}

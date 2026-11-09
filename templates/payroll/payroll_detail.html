@@ -1,0 +1,48 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Payroll Details | YD Dashboard{% endblock %}
+{% block page_title %}Payroll Details{% endblock %}
+{% block page_subtitle %}Review the employee’s payroll statement and workflow status.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="workforce-page">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'payroll_list' %}">Payroll register</a><span>/</span><span>PAY-{{ payroll.pk|stringformat:"06d" }}</span></nav>
+    <section class="workforce-panel">
+        <header class="workforce-panel-header">
+            <div>
+                <span class="workforce-section-label">PAYROLL STATEMENT / PAY-{{ payroll.pk|stringformat:"06d" }}</span>
+                <h2>{{ payroll.employee.full_name }}</h2>
+                <p>{{ payroll.period_start|date:"d M Y" }} to {{ payroll.period_end|date:"d M Y" }}</p>
+            </div>
+            <div class="workforce-hero-actions">
+                {% if perms.payroll.change_payrollrecord %}<a class="workforce-small-action" href="{% url 'edit_payroll' payroll.pk %}">Edit record</a>{% endif %}
+                {% if perms.payroll.delete_payrollrecord %}<a class="workforce-small-action workforce-action-danger" href="{% url 'delete_payroll' payroll.pk %}">Delete</a>{% endif %}
+                <a class="workforce-small-action" href="{% url 'download_payslip_pdf' payroll.pk %}">Download PDF</a>
+            </div>
+        </header>
+        <div class="workforce-table-wrap">
+            <table class="workforce-table">
+                <tbody>
+                    <tr><th>Employee</th><td>{{ payroll.employee.full_name }}</td></tr>
+                    <tr><th>Email</th><td>{% if payroll.employee.email %}{{ payroll.employee.email }}{% elif payroll.employee.user %}{{ payroll.employee.user.email|default:"No email on file" }}{% else %}No email on file{% endif %}</td></tr>
+                    <tr><th>Pay period</th><td>{{ payroll.period_start|date:"d F Y" }} – {{ payroll.period_end|date:"d F Y" }}</td></tr>
+                    <tr><th>Hours worked</th><td>{{ payroll.total_hours|floatformat:2 }}</td></tr>
+                    <tr><th>Hourly rate</th><td>${{ payroll.hourly_rate|floatformat:2 }} AUD</td></tr>
+                    <tr><th>Gross pay</th><td><strong>${{ payroll.gross_pay|floatformat:2 }} AUD</strong></td></tr>
+                    <tr><th>Payroll status</th><td>{{ payroll.get_status_display }}</td></tr>
+                    <tr><th>Payment status</th><td>{{ payroll.get_payment_status_display }}</td></tr>
+                    <tr><th>Notes</th><td>{{ payroll.notes|default:"—"|linebreaksbr }}</td></tr>
+                    <tr><th>Last updated</th><td>{{ payroll.updated_at|date:"d M Y, H:i" }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <footer class="workforce-form-actions">
+            <a class="workforce-button workforce-button-muted" href="{% url 'payroll_list' %}">Back to payroll</a>
+        </footer>
+    </section>
+</div>
+{% endblock %}

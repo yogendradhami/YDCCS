@@ -2,6 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.db import transaction
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -38,7 +39,7 @@ def _submitted_coordinates(request):
 @employee_required
 def attendance_dashboard(request):
     employee = get_object_or_404(Employee, user=request.user)
-    jobs = Booking.objects.filter(assigned_employee=employee).order_by("booking_date")
+    jobs = Booking.objects.assigned_to(employee).order_by("booking_date")
     attendance_logs = AttendanceLog.objects.filter(employee=employee)
     return render(
         request,
@@ -65,15 +66,20 @@ def check_in(request, booking_id):
         booking = get_object_or_404(
             Booking.objects.select_for_update(),
             id=booking_id,
-            assigned_employee=employee,
         )
+        if not Booking.objects.assigned_to(employee).filter(pk=booking.pk).exists():
+            raise Http404
         if booking.status in {"completed", "cancelled"}:
             messages.error(request, "This job is no longer available for check-in.")
             return redirect("attendance_dashboard")
 
         log = (
             AttendanceLog.objects.select_for_update()
-            .filter(booking=booking, employee=employee)
+            .filter(
+                booking=booking,
+                employee=employee,
+                source=AttendanceLog.Source.PORTAL,
+            )
             .order_by("created_at", "id")
             .first()
         )
@@ -118,11 +124,16 @@ def check_out(request, booking_id):
         booking = get_object_or_404(
             Booking.objects.select_for_update(),
             id=booking_id,
-            assigned_employee=employee,
         )
+        if not Booking.objects.assigned_to(employee).filter(pk=booking.pk).exists():
+            raise Http404
         log = (
             AttendanceLog.objects.select_for_update()
-            .filter(booking=booking, employee=employee)
+            .filter(
+                booking=booking,
+                employee=employee,
+                source=AttendanceLog.Source.PORTAL,
+            )
             .order_by("created_at", "id")
             .first()
         )
@@ -147,6 +158,11 @@ def check_out(request, booking_id):
                     "total_hours",
                 ]
             )
+            roster = booking.rosters.filter(employee=employee).first()
+            if roster:
+                from .services import sync_roster_attendance
+
+                sync_roster_attendance(roster)
             messages.success(request, "Successfully checked out.")
         else:
             messages.info(request, "You have already checked out for this job.")

@@ -1,0 +1,440 @@
+.employee-workspace-nav {
+    display: flex;
+    width: min(100% - 32px, 1440px);
+    align-items: center;
+    gap: 5px;
+    margin: 18px auto 0;
+    padding: 7px;
+    overflow-x: auto;
+    border: 1px solid #e1e9ed;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 7px 22px rgba(16, 43, 70, .055);
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.employee-workspace-nav a {
+    display: inline-flex;
+    min-height: 42px;
+    flex: 1 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: #647988;
+    font-size: .73rem;
+    font-weight: 720;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .16s ease, background .16s ease, border-color .16s ease;
+}
+
+.employee-workspace-nav a:hover {
+    border-color: #e2eceb;
+    background: #f5faf9;
+    color: #087f82;
+}
+
+.employee-workspace-nav a[aria-current="page"] {
+    border-color: #d3e8e4;
+    background: #eaf6f3;
+    color: #086c70;
+}
+
+.employee-workspace-nav-icon {
+    display: grid;
+    width: 23px;
+    height: 23px;
+    flex: 0 0 23px;
+    place-items: center;
+    border-radius: 7px;
+    background: rgba(8, 127, 130, .08);
+    font-size: .82rem;
+    line-height: 1;
+}
+
+.employee-workspace-hero {
+    position: relative;
+    overflow: hidden;
+    margin: 22px auto 0;
+    padding: clamp(26px, 5vw, 46px);
+    border: 1px solid rgba(164, 221, 214, .42);
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 88% 12%, rgba(116, 218, 196, .2), transparent 30%),
+        linear-gradient(125deg, #102d43, #15505a 66%, #0e7470);
+    box-shadow: 0 18px 42px rgba(16, 43, 70, .13);
+    color: #fff;
+}
+
+.employee-workspace-hero h1 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: clamp(1.9rem, 4vw, 2.85rem);
+    font-weight: 760;
+    letter-spacing: -.055em;
+}
+
+.employee-workspace-hero p {
+    max-width: 720px;
+    margin: 0;
+    color: #d7e9e9;
+    font-size: .88rem;
+    line-height: 1.65;
+}
+
+.employee-workspace-hero .employee-back-btn {
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+}
+
+.employee-workspace-page {
+    padding-bottom: 48px;
+    background: #f5f8f9;
+}
+
+.employee-workspace-page > .container {
+    max-width: 1440px;
+}
+
+.employee-workspace-page .employee-action-row,
+.employee-workspace-page .employee-action-grid.compact {
+    gap: 9px;
+    margin: 0 0 17px;
+    padding: 12px;
+    border: 1px solid #e2e9ed;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(16, 43, 70, .045);
+}
+
+.employee-workspace-page .employee-action-row a {
+    min-height: 39px;
+    margin: 0;
+    border-radius: 8px;
+    font-size: .75rem;
+    font-weight: 720;
+}
+
+.employee-workspace-page .employee-panel,
+.employee-workspace-page .dashboard-table-card,
+.employee-workspace-page .invoice-detail-card,
+.employee-workspace-page .employee-leave-panel {
+    overflow: hidden;
+    border: 1px solid #e2e9ed;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 26px rgba(16, 43, 70, .05);
+}
+
+.employee-workspace-page .employee-panel-header,
+.employee-workspace-page .dashboard-table-card > h2 {
+    padding: 18px 21px;
+    border-bottom: 1px solid #edf1f3;
+    background: linear-gradient(105deg, #f7fbfa, #fff);
+    color: #172b45;
+    font-size: 1.05rem;
+    font-weight: 750;
+}
+
+.employee-workspace-page .employee-panel-header h2 {
+    margin: 0;
+    color: #172b45;
+    font-size: 1.05rem;
+    font-weight: 750;
+}
+
+.employee-workspace-page .table-wrapper {
+    margin: 0;
+    padding: 0 14px 14px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.employee-workspace-page .dashboard-table {
+    min-width: 730px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.employee-workspace-page .dashboard-table thead th {
+    padding: 13px;
+    background: #f5f8fa;
+    color: #6d8190;
+    font-size: .64rem;
+    font-weight: 800;
+    letter-spacing: .065em;
+    text-transform: uppercase;
+}
+
+.employee-workspace-page .dashboard-table tbody td {
+    padding: 14px 13px;
+    border-bottom: 1px solid #edf1f3;
+    color: #405466;
+    font-size: .77rem;
+    vertical-align: middle;
+}
+
+.employee-workspace-page .dashboard-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.employee-workspace-page .dashboard-table tbody tr:hover {
+    background: #f8fcfb;
+}
+
+.employee-workspace-page .small-link-btn {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    padding: 0 11px;
+    border: 1px solid #087f82 !important;
+    border-radius: 7px;
+    background: #087f82 !important;
+    color: #fff !important;
+    font-size: .69rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.employee-workspace-page .small-link-btn:hover {
+    border-color: #075f64 !important;
+    background: #075f64 !important;
+    color: #fff !important;
+}
+
+.employee-workspace-page .empty-box,
+.employee-workspace-page .portal-empty-state {
+    margin: 16px;
+    border: 1px dashed #dce6e9;
+    border-radius: 12px;
+    background: #fafcfd;
+}
+
+.employee-workspace-page .employee-panel,
+.employee-workspace-page .dashboard-table-card {
+    margin-bottom: 17px;
+}
+
+.employee-attendance-page .job-summary-box {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 18px;
+    margin: 12px;
+    padding: 19px;
+    border: 1px solid #e3eaee;
+    border-radius: 13px;
+    background: linear-gradient(145deg, #fff, #f8fbfc);
+    box-shadow: 0 5px 16px rgba(16, 43, 70, .035);
+}
+
+.employee-attendance-page .job-summary-box h3 {
+    grid-column: 1 / -1;
+    margin: 0 0 4px;
+    color: #172b45;
+    font-size: 1rem;
+}
+
+.employee-attendance-page .job-summary-box p {
+    margin: 0;
+    color: #647988;
+    font-size: .78rem;
+    line-height: 1.5;
+}
+
+.employee-attendance-page .job-summary-box .dashboard-actions {
+    grid-column: 1 / -1;
+    margin-top: 9px;
+}
+
+.employee-attendance-page .dashboard-actions,
+.employee-workspace-page .dashboard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.employee-attendance-page .dashboard-actions .gps-form {
+    margin: 0;
+}
+
+.employee-attendance-page .dashboard-actions .btn-fill,
+.employee-attendance-page .dashboard-actions .btn-outline {
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: .73rem;
+    font-weight: 720;
+}
+
+.employee-attendance-page .dashboard-table-card > h2 {
+    margin: 0;
+}
+
+.employee-job-detail-page .invoice-detail-card {
+    padding: clamp(18px, 3.5vw, 32px);
+}
+
+.employee-job-detail-page .invoice-header-row,
+.employee-job-detail-page .invoice-two-column {
+    gap: 22px;
+}
+
+.employee-job-detail-page .job-photo-card {
+    overflow: hidden;
+    border: 1px solid #e4eaee;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 17px rgba(16, 43, 70, .06);
+}
+
+.employee-job-detail-page .job-photo-card img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+}
+
+.employee-job-detail-page .verification-box {
+    border: 1px solid #e2e9ed;
+    border-radius: 12px;
+    background: #f9fbfc;
+}
+
+.employee-payslips-page .employee-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.employee-payslips-page .status-badge {
+    display: inline-flex;
+    min-height: 26px;
+    align-items: center;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: .67rem;
+    font-weight: 750;
+}
+
+.employee-payslips-page .payslip-download-btn {
+    border-color: #087f82 !important;
+    background: #087f82 !important;
+    color: #fff !important;
+    font-weight: 800;
+}
+
+.employee-payslips-page .payslip-download-btn:hover {
+    border-color: #075f64 !important;
+    background: #075f64 !important;
+    color: #fff !important;
+}
+
+.employee-workspace .employee-welcome {
+    border: 1px solid rgba(164, 221, 214, .3);
+    border-radius: 23px;
+    background:
+        radial-gradient(circle at 87% 11%, rgba(116, 218, 196, .18), transparent 27%),
+        linear-gradient(125deg, #102d43, #15505a 66%, #0e7470);
+    box-shadow: 0 18px 42px rgba(16, 43, 70, .13);
+}
+
+.employee-workspace .employee-welcome h1,
+.employee-workspace .employee-welcome h1 span {
+    color: #fff;
+}
+
+.employee-workspace .employee-welcome p {
+    color: #d7e9e9;
+}
+
+.employee-workspace .employee-metric-card,
+.employee-workspace .employee-action-card {
+    border-radius: 14px;
+}
+
+.employee-workspace .employee-action-card:hover {
+    border-color: #b6dcd5;
+    box-shadow: 0 12px 30px rgba(16, 43, 70, .09);
+}
+
+.employee-upload-page .booking-form-card {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: clamp(18px, 4vw, 34px);
+    border: 1px solid #e2e9ed;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 10px 32px rgba(16, 43, 70, .06);
+}
+
+.employee-upload-page .job-summary-box {
+    margin-bottom: 20px;
+    border: 1px solid #e1e9ed;
+    border-radius: 12px;
+    background: #f7fafb;
+}
+
+.employee-upload-page .form-group {
+    margin-bottom: 18px;
+}
+
+.employee-upload-page .form-control,
+.employee-upload-page select,
+.employee-upload-page textarea {
+    border-radius: 8px;
+}
+
+.employee-upload-page .full-width {
+    margin-top: 8px;
+}
+
+.employee-roster-page .employee-workspace-nav {
+    width: 100%;
+    margin: 0 0 16px;
+}
+
+.employee-leave-content .employee-workspace-nav {
+    margin-bottom: 16px;
+}
+
+@media (max-width: 700px) {
+    .employee-workspace-nav {
+        width: calc(100% - 24px);
+        justify-content: flex-start;
+        margin-top: 12px;
+        padding: 5px;
+    }
+
+    .employee-workspace-nav a {
+        min-height: 39px;
+        gap: 6px;
+        padding: 0 10px;
+        font-size: .68rem;
+    }
+
+    .employee-workspace-page .employee-action-grid.compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .employee-attendance-page .job-summary-box {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin: 9px;
+        padding: 15px;
+    }
+
+    .employee-attendance-page .job-summary-box h3,
+    .employee-attendance-page .job-summary-box .dashboard-actions {
+        grid-column: 1;
+    }
+
+    .employee-workspace-page .table-wrapper {
+        padding: 0 8px 10px;
+    }
+}

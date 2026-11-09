@@ -1,0 +1,351 @@
+.attendance-register .attendance-employee-groups {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+}
+
+.attendance-register .attendance-employee-group {
+    overflow: hidden;
+    border: 1px solid #e5ebf0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(16, 43, 70, .035);
+}
+
+.attendance-register .attendance-employee-group[hidden] {
+    display: none;
+}
+
+.attendance-register .attendance-employee-group > summary {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 17px;
+    background: linear-gradient(110deg, #f8fbfc, #fff 70%);
+    cursor: pointer;
+    list-style: none;
+}
+
+.attendance-register .attendance-employee-group > summary::-webkit-details-marker {
+    display: none;
+}
+
+.attendance-register .attendance-employee-group > summary::marker {
+    content: "";
+}
+
+.attendance-register .attendance-employee-group[open] > summary {
+    border-bottom: 1px solid #e8eef1;
+    background: #f5faf9;
+}
+
+.attendance-register .attendance-employee-group > summary .workforce-person {
+    text-decoration: none;
+}
+
+.attendance-register .attendance-employee-group > summary small a {
+    color: #63808c;
+    font-size: .66rem;
+    text-decoration: none;
+}
+
+.attendance-register .attendance-group-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #6d8190;
+    font-size: .68rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.attendance-register .attendance-group-meta strong {
+    display: grid;
+    width: 25px;
+    height: 25px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e6f4f1;
+    color: #087f82;
+    font-size: .7rem;
+}
+
+.attendance-register .attendance-disclosure {
+    color: #087f82;
+    font-size: 1.1rem;
+    transition: transform .18s ease;
+}
+
+.attendance-register .attendance-employee-group[open] .attendance-disclosure {
+    transform: rotate(180deg);
+}
+
+.attendance-register .attendance-record-list {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+}
+
+.attendance-register .attendance-record-card {
+    overflow: hidden;
+    border: 1px solid #e8edf0;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.attendance-register .attendance-record-card[hidden] {
+    display: none;
+}
+
+.attendance-register .attendance-record-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 15px 17px 12px;
+}
+
+.attendance-register .attendance-record-date {
+    color: #748697;
+    font-size: .66rem;
+    font-weight: 750;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.attendance-register .attendance-record-heading h3 {
+    margin: 4px 0 3px;
+    color: #20354a;
+    font-size: .9rem;
+}
+
+.attendance-register .attendance-record-heading p {
+    margin: 0;
+    color: #718392;
+    font-size: .72rem;
+}
+
+.attendance-register .attendance-record-heading p span {
+    padding: 0 3px;
+    color: #a9b5bd;
+}
+
+.attendance-register .attendance-record-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.attendance-register .attendance-source-pill,
+.attendance-register .attendance-session-pill {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: #f0f4f6;
+    color: #526878;
+    font-size: .62rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.attendance-register .attendance-session-complete {
+    background: #e7f5ef;
+    color: #26734f;
+}
+
+.attendance-register .attendance-session-open {
+    background: #fff3e1;
+    color: #9c6418;
+}
+
+.attendance-register .attendance-record-facts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(110px, .55fr);
+    border-top: 1px solid #edf1f3;
+    border-bottom: 1px solid #edf1f3;
+    background: #fafcfc;
+}
+
+.attendance-register .attendance-record-facts > div {
+    display: flex;
+    min-height: 72px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 17px;
+    border-right: 1px solid #edf1f3;
+}
+
+.attendance-register .attendance-record-facts > div:last-child {
+    border-right: 0;
+}
+
+.attendance-register .attendance-record-facts span {
+    color: #80909c;
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.attendance-register .attendance-record-facts strong {
+    color: #293d50;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.attendance-register .attendance-record-facts a {
+    width: fit-content;
+    color: #087f82;
+    font-size: .63rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.attendance-register .attendance-record-facts .attendance-hours strong {
+    color: #087f82;
+    font-size: 1.15rem;
+}
+
+.attendance-register .attendance-hours strong small {
+    font-size: .65rem;
+}
+
+.attendance-register .attendance-record-actions {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+}
+
+.attendance-register .attendance-action-link {
+    display: inline-flex;
+    min-height: 30px;
+    align-items: center;
+    margin-right: 5px;
+    padding: 0 9px;
+    border: 1px solid #dce8e8;
+    border-radius: 6px;
+    color: #087f82;
+    font-size: .65rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.attendance-register .attendance-action-link:hover {
+    background: #eff8f6;
+}
+
+.attendance-register .attendance-action-view {
+    border-color: #087f82;
+    background: #087f82;
+    color: #fff;
+}
+
+.attendance-register .attendance-action-view:hover {
+    background: #06696c;
+    color: #fff;
+}
+
+.attendance-register .attendance-action-danger {
+    border-color: #f0d9d9;
+    color: #a63f43;
+}
+
+.attendance-register .attendance-action-danger:hover {
+    background: #fff5f5;
+}
+
+.attendance-register .attendance-register-empty {
+    padding: 36px 20px;
+    color: #718392;
+    font-size: .82rem;
+    text-align: center;
+}
+
+.attendance-register .attendance-delete-card {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: clamp(24px, 5vw, 40px);
+    border: 1px solid #e5ebf0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 10px 32px rgba(16, 43, 70, .07);
+}
+
+.attendance-register .attendance-delete-card h1 {
+    margin: 13px 0 8px;
+    color: #172b45;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    letter-spacing: -.04em;
+}
+
+.attendance-register .attendance-delete-card p {
+    color: #6e7f8e;
+    font-size: .85rem;
+    line-height: 1.7;
+}
+
+.attendance-register .attendance-delete-card .workforce-form-actions form {
+    margin: 0;
+}
+
+@media (max-width: 700px) {
+    .attendance-register .attendance-employee-groups {
+        padding: 9px;
+    }
+
+    .attendance-register .attendance-employee-group > summary {
+        min-height: 66px;
+        padding: 10px;
+    }
+
+    .attendance-register .attendance-group-meta {
+        gap: 5px;
+        font-size: .61rem;
+    }
+
+    .attendance-register .attendance-employee-group > summary .workforce-person strong {
+        font-size: .7rem;
+    }
+
+    .attendance-register .attendance-record-heading {
+        flex-direction: column;
+        gap: 9px;
+        padding: 13px;
+    }
+
+    .attendance-register .attendance-record-badges {
+        justify-content: flex-start;
+    }
+
+    .attendance-register .attendance-record-facts {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .attendance-register .attendance-record-facts > div {
+        min-height: 67px;
+        padding: 9px 12px;
+    }
+
+    .attendance-register .attendance-record-facts > div:nth-child(2) {
+        border-right: 0;
+    }
+
+    .attendance-register .attendance-record-facts > div:last-child {
+        grid-column: 1 / -1;
+        min-height: 58px;
+        border-top: 1px solid #edf1f3;
+    }
+
+    .attendance-register .attendance-record-actions {
+        flex-wrap: wrap;
+        padding: 8px 10px;
+    }
+}

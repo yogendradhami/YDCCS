@@ -1,0 +1,8 @@
+<nav class="employee-workspace-nav" aria-label="Employee workspace">
+    <a href="{% url 'employee_dashboard' %}"{% if request.resolver_match.url_name == "employee_dashboard" %} aria-current="page"{% endif %}><span class="employee-workspace-nav-icon" aria-hidden="true">⌂</span><span>Dashboard</span></a>
+    <a href="{% url 'employee_roster' %}"{% if request.resolver_match.url_name == "employee_roster" %} aria-current="page"{% endif %}><span class="employee-workspace-nav-icon" aria-hidden="true">▦</span><span>My schedule</span></a>
+    <a href="{% url 'employee_jobs' %}"{% if request.resolver_match.url_name == "employee_jobs" or request.resolver_match.url_name == "employee_job_detail" or request.resolver_match.url_name == "upload_job_photo" %} aria-current="page"{% endif %}><span class="employee-workspace-nav-icon" aria-hidden="true">▤</span><span>My jobs</span></a>
+    <a href="{% url 'attendance_dashboard' %}"{% if request.resolver_match.url_name == "attendance_dashboard" %} aria-current="page"{% endif %}><span class="employee-workspace-nav-icon" aria-hidden="true">◷</span><span>Attendance</span></a>
+    <a href="{% url 'employee_leave_history' %}"{% if request.resolver_match.url_name == "employee_leave_history" or request.resolver_match.url_name == "employee_apply_leave" %} aria-current="page"{% endif %}><span class="employee-workspace-nav-icon" aria-hidden="true">＋</span><span>Leave</span></a>
+    <a href="{% url 'employee_payslips' %}"{% if request.resolver_match.url_name == "employee_payslips" %} aria-current="page"{% endif %}><span class="employee-workspace-nav-icon" aria-hidden="true">▣</span><span>Payslips</span></a>
+</nav>

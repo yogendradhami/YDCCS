@@ -6,10 +6,11 @@
 {% block page_subtitle %}Coordinate employee shifts, booking coverage, and calendar synchronization.{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/roster-register.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="workforce-page">
+<div class="workforce-page roster-register">
     <section class="workforce-hero">
         <div>
             <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / SHIFT CONTROL</span>
@@ -44,50 +45,34 @@
             {% if search or selected_status or selected_date %}<a class="workforce-filter-clear" href="{% url 'roster_list' %}">Clear</a>{% endif %}
         </form>
 
-        <div class="workforce-roster-section">
-            <header class="workforce-subsection-header"><div><span class="workforce-section-label">UPCOMING &amp; ACTIVE</span><h3>Current and upcoming shifts</h3></div><span>{{ active_rosters|length }} shift{{ active_rosters|length|pluralize }}</span></header>
-            <div class="workforce-table-wrap">
-                <table class="workforce-table">
-                    <thead><tr><th scope="col">Employee</th><th scope="col">Booking</th><th scope="col">Date &amp; time</th><th scope="col">Status</th><th scope="col">Calendar</th><th scope="col">Actions</th></tr></thead>
-                    <tbody>
-                        {% for roster in active_rosters %}
-                        <tr>
-                            <td><span class="workforce-person"><span class="workforce-avatar">{{ roster.employee.full_name|first|upper }}</span><span><strong>{{ roster.employee.full_name }}</strong><small>{% if roster.booking.customer %}{{ roster.booking.customer.full_name }}{% else %}Customer unavailable{% endif %}</small></span></span></td>
-                            <td><strong>{{ roster.booking.service_type }}</strong><small class="workforce-cell-subtitle">Booking #{{ roster.booking_id }}</small></td>
-                            <td>{{ roster.shift_date|date:"D, d M Y" }}<small class="workforce-cell-subtitle">{{ roster.start_time|time:"g:i A" }} – {{ roster.end_time|time:"g:i A" }}</small></td>
-                            <td><span class="workforce-pill {% if roster.time_status == 'in_progress' %}workforce-pill-warn{% else %}workforce-pill-good{% endif %}">{{ roster.time_status_display }}</span></td>
-                            <td>{% if roster.google_calendar_event_id %}<span class="workforce-sync-pill">Synced</span>{% else %}<span class="workforce-muted">Not synced</span>{% endif %}</td>
-                            <td><div class="workforce-actions"><a class="workforce-small-action" href="{% url 'edit_roster' roster.id %}">Edit</a><a class="workforce-small-action workforce-small-danger" href="{% url 'delete_roster' roster.id %}">Delete</a></div></td>
-                        </tr>
-                        {% empty %}
-                        <tr><td class="workforce-empty" colspan="6">No upcoming or active shifts match these filters.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="workforce-roster-section">
-            <header class="workforce-subsection-header"><div><span class="workforce-section-label">PAST &amp; CLOSED</span><h3>Previous shifts</h3></div><span>{{ past_rosters|length }} shift{{ past_rosters|length|pluralize }}</span></header>
-            <div class="workforce-table-wrap">
-                <table class="workforce-table">
-                    <thead><tr><th scope="col">Employee</th><th scope="col">Booking</th><th scope="col">Date &amp; time</th><th scope="col">Status</th><th scope="col">Calendar</th><th scope="col">Actions</th></tr></thead>
-                    <tbody>
-                        {% for roster in past_rosters %}
-                        <tr>
-                            <td><span class="workforce-person"><span class="workforce-avatar">{{ roster.employee.full_name|first|upper }}</span><span><strong>{{ roster.employee.full_name }}</strong><small>{% if roster.booking.customer %}{{ roster.booking.customer.full_name }}{% else %}Customer unavailable{% endif %}</small></span></span></td>
-                            <td><strong>{{ roster.booking.service_type }}</strong><small class="workforce-cell-subtitle">Booking #{{ roster.booking_id }}</small></td>
-                            <td>{{ roster.shift_date|date:"D, d M Y" }}<small class="workforce-cell-subtitle">{{ roster.start_time|time:"g:i A" }} – {{ roster.end_time|time:"g:i A" }}</small></td>
-                            <td><span class="workforce-pill {% if roster.status == 'completed' %}workforce-pill-good{% elif roster.status == 'cancelled' %}workforce-pill-neutral{% else %}workforce-pill-warn{% endif %}">{{ roster.time_status_display }}</span></td>
-                            <td>{% if roster.google_calendar_event_id %}<span class="workforce-sync-pill">Synced</span>{% else %}<span class="workforce-muted">Not synced</span>{% endif %}</td>
-                            <td><div class="workforce-actions"><a class="workforce-small-action" href="{% url 'edit_roster' roster.id %}">Edit</a><a class="workforce-small-action workforce-small-danger" href="{% url 'delete_roster' roster.id %}">Delete</a></div></td>
-                        </tr>
-                        {% empty %}
-                        <tr><td class="workforce-empty" colspan="6">No past or closed shifts match these filters.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="roster-employee-groups">
+            {% for group in roster_groups %}
+            <details class="roster-employee-group">
+                <summary class="roster-employee-header">
+                    <span class="workforce-person"><span class="workforce-avatar">{{ group.employee.full_name|first|upper }}</span><span><strong>{{ group.employee.full_name }}</strong><small>{{ group.shifts|length }} shift{{ group.shifts|length|pluralize }} in this view</small></span></span>
+                    <span class="roster-employee-summary"><span class="roster-shift-count"><strong>{{ group.shifts|length }}</strong> shift{{ group.shifts|length|pluralize }}</span><span class="roster-employee-disclosure" aria-hidden="true">⌄</span></span>
+                </summary>
+                <div class="roster-shift-list">
+                    {% for roster in group.shifts %}
+                    <article class="roster-shift-card">
+                        <div class="roster-shift-date"><span>{{ roster.shift_date|date:"D" }}</span><strong>{{ roster.shift_date|date:"d" }}</strong><small>{{ roster.shift_date|date:"M Y" }}</small></div>
+                        <div class="roster-shift-main">
+                            <div class="roster-shift-title"><h3>{{ roster.booking.service_type }}</h3><span class="workforce-pill {% if roster.time_status == 'completed' %}workforce-pill-good{% elif roster.time_status == 'cancelled' %}workforce-pill-neutral{% elif roster.time_status == 'in_progress' %}workforce-pill-warn{% else %}workforce-pill-blue{% endif %}">{{ roster.time_status_display }}</span></div>
+                            <p>{% if roster.booking.customer %}{{ roster.booking.customer.full_name }}{% else %}Customer unavailable{% endif %} <span>·</span> Booking #{{ roster.booking_id }}</p>
+                            <div class="roster-shift-facts"><span><i aria-hidden="true">◷</i>{{ roster.start_time|time:"g:i A" }} – {{ roster.end_time|time:"g:i A" }}</span><span>{% if roster.google_calendar_event_id %}<span class="workforce-sync-pill">Calendar synced</span>{% else %}<span class="workforce-muted">Calendar not synced</span>{% endif %}</span></div>
+                        </div>
+                        <nav class="roster-shift-actions" aria-label="Shift actions">
+                            <a class="workforce-small-action workforce-action-primary" href="{% url 'roster_detail' roster.id %}">View</a>
+                            {% if perms.rosters.change_roster %}<a class="workforce-small-action" href="{% url 'edit_roster' roster.id %}">Edit</a>{% endif %}
+                            {% if perms.rosters.delete_roster %}<a class="workforce-small-action workforce-small-danger" href="{% url 'delete_roster' roster.id %}">Delete</a>{% endif %}
+                        </nav>
+                    </article>
+                    {% endfor %}
+                </div>
+            </details>
+            {% empty %}
+            <div class="workforce-empty">No roster shifts match the selected filters.</div>
+            {% endfor %}
         </div>
     </section>
 </div>

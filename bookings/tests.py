@@ -4,6 +4,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.forms import CheckboxSelectMultiple
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -11,6 +12,7 @@ from django.utils import timezone
 from customers.models import Customer
 from employees.models import Employee
 from induction.models import EmployeeOnboardingProfile
+from induction.models import EmployeeInduction, InductionProgramme
 from leave_management.models import LeaveRequest
 
 from .forms import BookingForm, PublicBookingForm
@@ -245,21 +247,82 @@ class BookingServiceTests(TestCase):
 		)
 
 		self.assertFalse(form.fields["customer"].required)
-		self.assertFalse(form.fields["assigned_employee"].required)
+		self.assertFalse(form.fields["assigned_employees"].required)
 		self.assertTrue(form.is_valid(), form.errors)
 		booking = form.save()
 		self.assertIsNone(booking.customer)
 		self.assertIsNone(booking.assigned_employee)
 		self.assertEqual(str(booking), f"No customer - Office Cleaning - {booking.booking_date}")
 
-	def test_staff_form_lists_active_employee_without_ready_onboarding(self):
+	def test_staff_form_lists_active_employees_without_ready_onboarding(self):
 		form = BookingForm()
 
-		self.assertIn(self.employee, form.fields["assigned_employee"].queryset)
-		self.assertEqual(
-			form.fields["assigned_employee"].label,
-			"Assigned Employee (Optional)",
+		self.assertIn(self.employee, form.fields["assigned_employees"].queryset)
+		self.assertIsInstance(
+			form.fields["assigned_employees"].widget,
+			CheckboxSelectMultiple,
 		)
+		self.assertIn('type="checkbox"', str(form["assigned_employees"]))
+		self.assertEqual(
+			form.fields["assigned_employees"].label,
+			"Assigned Employees (Optional)",
+		)
+
+	def test_booking_can_be_assigned_to_multiple_employee_accounts(self):
+		team_member = Employee.objects.create(
+			user=User.objects.create_user("second-employee"),
+			full_name="Second Employee",
+			phone="0401",
+		)
+		form = BookingForm(
+			data={
+				"customer": self.customer.pk,
+				"service_type": "Office Cleaning",
+				"booking_date": (date.today() + timedelta(days=3)).isoformat(),
+				"booking_time": "10:00",
+				"address": "1 King Street",
+				"suburb_postcode": "Adelaide 5000",
+				"quoted_price": "200.00",
+				"assigned_employees": [
+					self.employee.pk,
+					team_member.pk,
+				],
+				"status": "confirmed",
+				"notes": "",
+			}
+		)
+
+		self.assertTrue(form.is_valid(), form.errors)
+		booking = form.save()
+		self.assertEqual(
+			set(booking.assigned_employees.all()),
+			{self.employee, team_member},
+		)
+		self.assertEqual(booking.assigned_employee, self.employee)
+
+		for employee in (self.employee, team_member):
+			programme = InductionProgramme.objects.create(
+				name=f"{employee.full_name} induction"
+			)
+			EmployeeInduction.objects.create(
+				employee=employee,
+				programme=programme,
+				status="completed",
+			)
+			self.client.force_login(employee.user)
+			jobs_response = self.client.get(reverse("employee_jobs"))
+			self.assertEqual(jobs_response.status_code, 200)
+			self.assertContains(jobs_response, booking.address)
+			dashboard_response = self.client.get(reverse("employee_dashboard"))
+			self.assertEqual(dashboard_response.status_code, 200)
+			self.assertIn(
+				booking,
+				dashboard_response.context["upcoming_jobs"],
+			)
+			detail_response = self.client.get(
+				reverse("employee_job_detail", args=[booking.pk])
+			)
+			self.assertEqual(detail_response.status_code, 200)
 
 	def test_active_employee_can_be_assigned_before_onboarding_is_ready(self):
 		booking, created = create_booking(

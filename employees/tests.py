@@ -547,6 +547,46 @@ class EmployeePortalLayoutTests(TestCase):
 		connected_response = self.client.get(reverse("employee_dashboard"))
 		self.assertContains(connected_response, "Reconnect Google Calendar")
 
+	def test_employee_workspace_navigation_is_consistent_across_linked_pages(self):
+		booking = Booking.objects.create(
+			service_type="Office Cleaning",
+			booking_date=date.today(),
+			booking_time=time(9, 0),
+			address="1 King Street",
+			suburb_postcode="Adelaide 5000",
+			assigned_employee=self.employee,
+			status="in_progress",
+		)
+		self.client.force_login(self.user)
+		urls = (
+			reverse("employee_dashboard"),
+			reverse("employee_roster"),
+			reverse("employee_jobs"),
+			reverse("employee_job_detail", args=[booking.pk]),
+			reverse("upload_job_photo", args=[booking.pk]),
+			reverse("attendance_dashboard"),
+			reverse("employee_apply_leave"),
+			reverse("employee_leave_history"),
+			reverse("employee_payslips"),
+			reverse("cleaning_report_detail", args=[booking.pk]),
+		)
+
+		for url in urls:
+			with self.subTest(url=url):
+				response = self.client.get(url)
+				self.assertEqual(
+					response.status_code,
+					200,
+					response.headers.get("Location"),
+				)
+				if url == reverse("employee_dashboard"):
+					self.assertNotContains(response, 'aria-label="Employee workspace"')
+					continue
+				self.assertContains(response, 'aria-label="Employee workspace"')
+				self.assertContains(response, reverse("employee_roster"))
+				self.assertContains(response, reverse("employee_jobs"))
+				self.assertContains(response, reverse("attendance_dashboard"))
+
 	def test_employee_login_keeps_public_header_without_duplicate_brand(self):
 		response = self.client.get("/employee/login/")
 
@@ -696,6 +736,12 @@ class EmployeePortalSecurityTests(TestCase):
 			full_name="Active Employee",
 			phone="0400000000",
 		)
+		teammate_user = User.objects.create_user("active-teammate")
+		teammate = Employee.objects.create(
+			user=teammate_user,
+			full_name="Active Teammate",
+			phone="0400000001",
+		)
 		programme = InductionProgramme.objects.create(name="Workflow induction")
 		EmployeeInduction.objects.create(
 			employee=employee,
@@ -718,6 +764,7 @@ class EmployeePortalSecurityTests(TestCase):
 			assigned_employee=employee,
 			status="in_progress",
 		)
+		booking.assigned_employees.add(teammate)
 		QuoteRequest.objects.create(
 			name=customer.full_name,
 			email=customer.email,
@@ -752,6 +799,16 @@ class EmployeePortalSecurityTests(TestCase):
 		)
 		booking.refresh_from_db()
 		self.assertEqual(booking.status, "completed")
+		employee.refresh_from_db()
+		teammate.refresh_from_db()
+		self.assertEqual(employee.jobs_completed, 1)
+		self.assertEqual(teammate.jobs_completed, 1)
+		self.assertTrue(
+			Notification.objects.filter(
+				user=teammate_user,
+				title="Team Job Completed",
+			).exists()
+		)
 		self.assertTrue(hasattr(booking, "cleaning_report"))
 		invoice = Invoice.objects.get(booking=booking)
 		self.assertEqual(invoice.status, "draft")

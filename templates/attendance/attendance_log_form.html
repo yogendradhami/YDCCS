@@ -1,0 +1,46 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}{% if editing %}Edit attendance{% else %}Add attendance{% endif %} | YD Dashboard{% endblock %}
+{% block page_title %}{% if editing %}Edit attendance{% else %}Add attendance{% endif %}{% endblock %}
+{% block page_subtitle %}Maintain employee attendance records and worked hours.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/workforce-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/attendance-register.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="workforce-page workforce-form-page attendance-register">
+    <nav class="workforce-breadcrumb" aria-label="Breadcrumb"><a href="{% url 'attendance_report' %}">Attendance register</a><span>/</span><span>{% if editing %}Edit attendance{% else %}Add attendance{% endif %}</span></nav>
+    <section class="workforce-form-intro">
+        <span class="workforce-eyebrow"><i></i> PEOPLE OPERATIONS / TIME RECORDS</span>
+        <h1>{% if editing %}Update attendance.{% else %}Record attendance.{% endif %}</h1>
+        <p>Worked hours are calculated from the check-in and check-out times.</p>
+    </section>
+    <form method="post" class="workforce-form-card">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="workforce-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <section class="workforce-form-section">
+            <header><span>01</span><div><h2>Employee &amp; booking</h2><p>Choose who worked and the related booking.</p></div></header>
+            <div class="workforce-form-grid">
+                {% for field in form %}
+                    {% if field.name == "employee" or field.name == "booking" %}
+                    <div class="workforce-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span>Required</span>{% endif %}</label>{{ field }}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+        <section class="workforce-form-section">
+            <header><span>02</span><div><h2>Attendance times</h2><p>Enter local check-in and check-out times.</p></div></header>
+            <div class="workforce-form-grid">
+                {% for field in form %}
+                    {% if field.name == "check_in_time" or field.name == "check_out_time" %}
+                    <div class="workforce-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="workforce-field-error">{{ field.errors }}</div>{% endif %}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+        <div class="workforce-form-actions"><a class="workforce-button workforce-button-muted" href="{% url 'attendance_report' %}">Cancel</a><button type="submit" class="workforce-button workforce-button-primary">{% if editing %}Save changes{% else %}Add attendance{% endif %} <span>→</span></button></div>
+    </form>
+</div>
+{% endblock %}

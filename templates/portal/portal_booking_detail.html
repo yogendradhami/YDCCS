@@ -112,6 +112,12 @@ Payroll
                                     Draft
                                 </span>
 
+                            {% elif payroll.status == "sent" %}
+
+                                <span class="status-badge primary">
+                                    Sent
+                                </span>
+
                             {% elif payroll.status == "approved" %}
 
                                 <span class="status-badge success">

@@ -6,7 +6,7 @@ My Jobs | Employee Portal
 
 {% block content %}
 
-<section class="employee-portal-hero">
+<section class="employee-portal-hero employee-workspace-hero">
     <div class="container">
         <div class="employee-hero-box">
             <div>
@@ -21,7 +21,9 @@ My Jobs | Employee Portal
     </div>
 </section>
 
-<section class="section employee-dashboard-section">
+<div class="container">{% include "employees/partials/employee_workspace_nav.html" %}</div>
+
+<section class="section employee-dashboard-section employee-workspace-page">
     <div class="container">
 
         <div class="employee-action-grid compact">

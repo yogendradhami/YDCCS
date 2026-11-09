@@ -693,7 +693,7 @@
                                     <!-- EMPLOYEE -->
                                     <td>
 
-                                        {% if booking.assigned_employee %}
+                                        {% if booking.assigned_employees.all %}
 
                                             <div class="employee-cell">
 
@@ -702,17 +702,28 @@
                                                 </div>
 
                                                 <div>
-
-                                                    <strong>
-                                                        {{ booking.assigned_employee.full_name }}
-                                                    </strong>
+                                                    {% for employee in booking.assigned_employees.all %}
+                                                        <strong>{{ employee.full_name }}</strong>{% if not forloop.last %}, {% endif %}
+                                                    {% endfor %}
 
                                                     <span class="assigned-label">
-                                                        Assigned
+                                                        Assigned team
                                                     </span>
 
                                                 </div>
 
+                                            </div>
+
+                                        {% elif booking.assigned_employee %}
+
+                                            <div class="employee-cell">
+                                                <div class="employee-avatar">
+                                                    {{ booking.assigned_employee.full_name|slice:":1"|upper }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ booking.assigned_employee.full_name }}</strong>
+                                                    <span class="assigned-label">Assigned</span>
+                                                </div>
                                             </div>
 
                                         {% else %}
@@ -1158,7 +1169,7 @@
 
                                     <td>
 
-                                        {% if booking.assigned_employee %}
+                                        {% if booking.assigned_employees.all %}
 
                                             <div class="employee-cell">
 
@@ -1167,17 +1178,28 @@
                                                 </div>
 
                                                 <div>
-
-                                                    <strong>
-                                                        {{ booking.assigned_employee.full_name }}
-                                                    </strong>
+                                                    {% for employee in booking.assigned_employees.all %}
+                                                        <strong>{{ employee.full_name }}</strong>{% if not forloop.last %}, {% endif %}
+                                                    {% endfor %}
 
                                                     <span class="assigned-label">
-                                                        Assigned
+                                                        Assigned team
                                                     </span>
 
                                                 </div>
 
+                                            </div>
+
+                                        {% elif booking.assigned_employee %}
+
+                                            <div class="employee-cell">
+                                                <div class="employee-avatar">
+                                                    {{ booking.assigned_employee.full_name|slice:":1"|upper }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ booking.assigned_employee.full_name }}</strong>
+                                                    <span class="assigned-label">Assigned</span>
+                                                </div>
                                             </div>
 
                                         {% else %}

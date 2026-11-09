@@ -287,7 +287,7 @@ def dashboard_home(request):
     )
 
     unassigned_jobs = (
-        Booking.objects.filter(assigned_employee__isnull=True, booking_date__gte=today)
+        Booking.objects.unassigned().filter(booking_date__gte=today)
         .exclude(status="cancelled")
         .order_by("booking_date", "booking_time")[:10]
     )
@@ -309,10 +309,19 @@ def dashboard_home(request):
     )
 
     employee_workload = (
-        Booking.objects.filter(assigned_employee__isnull=False, booking_date__gte=today)
-        .exclude(status="cancelled")
-        .values("assigned_employee__full_name")
-        .annotate(total=Count("id"))
+        Employee.objects.filter(active=True)
+        .annotate(
+            total=Count(
+                "team_assigned_bookings",
+                filter=(
+                    Q(team_assigned_bookings__booking_date__gte=today)
+                    & ~Q(team_assigned_bookings__status="cancelled")
+                ),
+                distinct=True,
+            )
+        )
+        .filter(total__gt=0)
+        .values("full_name", "total")
         .order_by("-total")[:8]
     )
 
@@ -1024,17 +1033,22 @@ def booking_list(request):
     bookings = (
         Booking.objects
         .select_related("customer", "assigned_employee")
-        .prefetch_related("work_orders")
+        .prefetch_related("work_orders", "assigned_employees")
     )
 
     booking_metrics = bookings.aggregate(
-        total=Count("pk"),
-        pending=Count("pk", filter=Q(status="pending")),
-        confirmed=Count("pk", filter=Q(status="confirmed")),
-        completed=Count("pk", filter=Q(status="completed")),
+        total=Count("pk", distinct=True),
+        pending=Count("pk", filter=Q(status="pending"), distinct=True),
+        confirmed=Count("pk", filter=Q(status="confirmed"), distinct=True),
+        completed=Count("pk", filter=Q(status="completed"), distinct=True),
         unassigned=Count(
             "pk",
-            filter=Q(assigned_employee__isnull=True) & ~Q(status="cancelled"),
+            filter=(
+                Q(assigned_employee__isnull=True)
+                & Q(assigned_employees__isnull=True)
+                & ~Q(status="cancelled")
+            ),
+            distinct=True,
         ),
     )
 
@@ -1056,15 +1070,24 @@ def booking_list(request):
     if not employee.isdecimal():
         employee = ""
     if employee:
-        bookings = bookings.filter(assigned_employee_id=employee)
+        bookings = bookings.filter(
+            Q(assigned_employee_id=employee)
+            | Q(assigned_employees__id=employee)
+        ).distinct()
 
     assignment = request.GET.get("assignment", "").strip()
     if assignment not in {"assigned", "unassigned"}:
         assignment = ""
     if assignment == "assigned":
-        bookings = bookings.filter(assigned_employee__isnull=False)
+        bookings = bookings.filter(
+            Q(assigned_employee__isnull=False)
+            | Q(assigned_employees__isnull=False)
+        ).distinct()
     elif assignment == "unassigned":
-        bookings = bookings.filter(assigned_employee__isnull=True)
+        bookings = bookings.filter(
+            assigned_employee__isnull=True,
+            assigned_employees__isnull=True,
+        ).distinct()
 
     search = request.GET.get("search", "").strip()[:100]
     if search:
@@ -1195,7 +1218,7 @@ def add_booking(request):
                         (item["price"] for item in work_orders),
                         Decimal("0.00"),
                     ),
-                    assigned_employee=form.cleaned_data.get("assigned_employee"),
+                    assigned_employees=form.cleaned_data["assigned_employees"],
                     notes=form.cleaned_data.get("notes", ""),
                     trusted_assignment=True,
                     work_orders=work_orders,
@@ -1306,23 +1329,22 @@ def _finish_new_booking(
             "Company booking notification email skipped by choice.",
         )
 
-    if (
-        roster_sync_succeeded
-        and booking.assigned_employee
-        and booking.assigned_employee.user
-    ):
-        Notification.objects.create(
-            user=booking.assigned_employee.user,
-            title="New Job Assigned",
-            message=(
-                f"You have been assigned "
-                f"{booking.service_type} on "
-                f"{booking.booking_date} at "
-                f"{booking.booking_time}."
-            ),
-            notification_type="booking",
-            link="/employee/jobs/",
-        )
+    if roster_sync_succeeded:
+        for employee in booking.assigned_employees.select_related("user"):
+            if not employee.user_id:
+                continue
+            Notification.objects.create(
+                user=employee.user,
+                title="New Job Assigned",
+                message=(
+                    f"You have been assigned "
+                    f"{booking.service_type} on "
+                    f"{booking.booking_date} at "
+                    f"{booking.booking_time}."
+                ),
+                notification_type="booking",
+                link=f"/employee/jobs/{booking.pk}/",
+            )
 
     create_activity_log(
         request.user,
@@ -1696,7 +1718,11 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
     old_roster_event_deleted = False
     roster = None
     original_employee_id = booking.assigned_employee_id
+    original_employee_ids = set()
+    original_assigned_employees = []
     reassignment_requested = False
+    primary_reassignment_requested = False
+    newly_assigned_employee_ids = set()
     reassignment_failed = False
     old_status = booking.status
 
@@ -1735,6 +1761,17 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
             old_status = booking.status
             original_employee = booking.assigned_employee
             original_employee_id = booking.assigned_employee_id
+            original_assigned_employees = list(
+                booking.assigned_employees.all()
+            )
+            if (
+                original_employee
+                and original_employee not in original_assigned_employees
+            ):
+                original_assigned_employees.append(original_employee)
+            original_employee_ids = {
+                employee.pk for employee in original_assigned_employees
+            }
             form = BookingForm(request.POST, instance=booking)
             if not form.is_valid():
                 return {
@@ -1786,14 +1823,26 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                 Decimal("0.00"),
             )
 
-            requested_employee = form.cleaned_data.get("assigned_employee")
-            requested_employee_id = (
-                requested_employee.pk if requested_employee else None
+            requested_employees = list(
+                form.cleaned_data["assigned_employees"]
             )
-            reassignment_requested = requested_employee_id != original_employee_id
+            requested_employee_id = (
+                requested_employees[0].pk if requested_employees else None
+            )
+            requested_employee_ids = {
+                employee.pk for employee in requested_employees
+            }
+            reassignment_requested = (
+                requested_employee_ids != original_employee_ids
+            )
+            newly_assigned_employee_ids = (
+                requested_employee_ids - original_employee_ids
+            )
+            primary_reassignment_requested = (
+                requested_employee_id != original_employee_id
+            )
 
-
-            if reassignment_requested:
+            if primary_reassignment_requested:
                 roster = booking.rosters.order_by("id").first()
                 if roster and roster.google_calendar_event_id:
                     try:
@@ -1811,7 +1860,9 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                         roster.refresh_from_db(
                             fields=["google_calendar_event_id"]
                         )
-                        form.instance.assigned_employee = original_employee
+                        form.cleaned_data["assigned_employees"] = (
+                            original_assigned_employees
+                        )
                         messages.warning(
                             request,
                             "Booking details were saved, but the employee "
@@ -1875,7 +1926,7 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                     if isinstance(sync_result, RosterSyncPending):
                         raise sync_result.error
                     if isinstance(sync_result, RosterSyncNotConfigured):
-                        if reassignment_requested:
+                        if primary_reassignment_requested:
                             reassignment_failed = True
                             messages.warning(
                                 request,
@@ -1897,7 +1948,7 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                         "Roster sync failed after editing booking %s.",
                         updated_booking.pk,
                     )
-                    if reassignment_requested:
+                    if primary_reassignment_requested:
                         current_roster = (
                             Roster.objects.filter(booking_id=updated_booking.pk)
                             .order_by("id")
@@ -1919,6 +1970,9 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                             Booking.objects.filter(pk=updated_booking.pk).update(
                                 assigned_employee_id=recovery_employee_id
                             )
+                            Booking.objects.get(
+                                pk=updated_booking.pk
+                            ).assigned_employees.set(original_employee_ids)
                             updated_booking.assigned_employee_id = (
                                 recovery_employee_id
                             )
@@ -1973,6 +2027,7 @@ def _save_and_sync_booking_edit(request, booking, form, work_order_formset=None)
                 "new_status": new_status,
                 "reassignment_requested": reassignment_requested,
                 "reassignment_failed": reassignment_failed,
+                "newly_assigned_employee_ids": newly_assigned_employee_ids,
                 "saved": True,
             }
     except (DatabaseError, RosterSyncLockError):
@@ -2067,10 +2122,16 @@ def edit_booking(request, booking_id):
                 new_status = result["new_status"]
                 reassignment_requested = result["reassignment_requested"]
                 reassignment_failed = result["reassignment_failed"]
+                newly_assigned_employee_ids = result[
+                    "newly_assigned_employee_ids"
+                ]
 
                 if reassignment_requested and not reassignment_failed:
-                    assigned_employee = updated_booking.assigned_employee
-                    if assigned_employee and assigned_employee.user:
+                    for assigned_employee in updated_booking.assigned_employees.filter(
+                        pk__in=newly_assigned_employee_ids
+                    ).select_related("user"):
+                        if not assigned_employee.user_id:
+                            continue
                         Notification.objects.create(
                             user=assigned_employee.user,
                             title="Booking Assigned",
@@ -2156,23 +2217,24 @@ def edit_booking(request, booking_id):
                             "Booking updated, but Google Calendar could not be synced automatically.",
                         )
 
-                if (
-                    not reassignment_failed
-                    and updated_booking.assigned_employee
-                    and updated_booking.assigned_employee.user
-                ):
-                    Notification.objects.create(
-                        user=updated_booking.assigned_employee.user,
-                        title="Booking Updated",
-                        message=(
-                            f"Booking updated: "
-                            f"{updated_booking.service_type} "
-                            f"on {updated_booking.booking_date} "
-                            f"at {updated_booking.booking_time}."
-                        ),
-                        notification_type="booking",
-                        link="/employee/jobs/",
-                    )
+                if not reassignment_failed:
+                    for assigned_employee in updated_booking.assigned_employees.select_related(
+                        "user"
+                    ):
+                        if not assigned_employee.user_id:
+                            continue
+                        Notification.objects.create(
+                            user=assigned_employee.user,
+                            title="Booking Updated",
+                            message=(
+                                f"Booking updated: "
+                                f"{updated_booking.service_type} "
+                                f"on {updated_booking.booking_date} "
+                                f"at {updated_booking.booking_time}."
+                            ),
+                            notification_type="booking",
+                            link="/employee/jobs/",
+                        )
 
                 create_activity_log(
                     request.user,
@@ -2302,6 +2364,7 @@ def booking_calendar(request):
         Booking.objects.filter(booking_date__gte=week_start, booking_date__lte=week_end)
         .exclude(status="cancelled")
         .select_related("customer", "assigned_employee")
+        .prefetch_related("assigned_employees")
         .order_by("booking_date", "booking_time")
     )
 
@@ -2351,7 +2414,7 @@ def booking_calendar(request):
 
     week_jobs = bookings.count()
 
-    unassigned_jobs = bookings.filter(assigned_employee__isnull=True).count()
+    unassigned_jobs = bookings.unassigned().count()
 
     return render(
         request,
@@ -3267,22 +3330,44 @@ def export_quotes_csv(request):
 @login_required
 def attendance_report(request):
     logs = AttendanceLog.objects.select_related(
-        "employee", "booking", "booking__customer"
-    ).order_by("-check_in_time", "-created_at")
+        "employee", "booking", "booking__customer", "roster"
+    ).order_by("employee__full_name", "-check_in_time", "-created_at")
 
-    completed_logs = logs.filter(check_out_time__isnull=False).count()
-    open_logs = logs.filter(check_out_time__isnull=True).count()
+    completed_logs = logs.filter(
+        Q(source=AttendanceLog.Source.PORTAL, check_out_time__isnull=False)
+        | Q(source=AttendanceLog.Source.ROSTER, roster__status="completed")
+    ).count()
+    open_logs = logs.filter(
+        source=AttendanceLog.Source.PORTAL,
+        check_out_time__isnull=True,
+    ).count()
+    roster_allocations = logs.filter(
+        source=AttendanceLog.Source.ROSTER
+    ).count()
     total_hours = (
         logs.aggregate(total=Sum("total_hours"))["total"]
         or 0
     )
+    grouped_logs = defaultdict(list)
+    for log in logs:
+        grouped_logs[log.employee_id].append(log)
+    attendance_groups = [
+        {
+            "employee": employee_logs[0].employee,
+            "logs": employee_logs,
+            "count": len(employee_logs),
+        }
+        for employee_logs in grouped_logs.values()
+    ]
     return render(
         request,
         "attendance/attendance_report.html",
         {
             "logs": logs,
+            "attendance_groups": attendance_groups,
             "completed_logs": completed_logs,
             "open_logs": open_logs,
+            "roster_allocations": roster_allocations,
             "total_hours": total_hours,
         },
     )
@@ -3344,16 +3429,16 @@ def employee_performance(request):
     performance_rows = []
 
     for employee in employees:
-        jobs_completed = Booking.objects.filter(
-            assigned_employee=employee, status="completed"
+        jobs_completed = Booking.objects.assigned_to(employee).filter(
+            status="completed"
         ).count()
 
-        assigned_jobs = Booking.objects.filter(assigned_employee=employee).count()
+        assigned_jobs = Booking.objects.assigned_to(employee).count()
 
         revenue_generated = (
-            Booking.objects.filter(
-                assigned_employee=employee, status="completed"
-            ).aggregate(total=Sum("quoted_price"))["total"]
+            Booking.objects.assigned_to(employee)
+            .filter(status="completed")
+            .aggregate(total=Sum("quoted_price"))["total"]
             or 0
         )
 
@@ -3870,7 +3955,7 @@ def reminder_center(request):
     )
 
     unassigned_jobs = (
-        Booking.objects.filter(assigned_employee__isnull=True, booking_date__gte=today)
+        Booking.objects.unassigned().filter(booking_date__gte=today)
         .exclude(status="cancelled")
         .select_related("customer")
         .order_by("booking_date", "booking_time")
@@ -5001,8 +5086,8 @@ def employee_bonuses(request):
     top_bonus_employee = None
 
     for employee in employees:
-        completed_bookings = Booking.objects.filter(
-            assigned_employee=employee, status="completed"
+        completed_bookings = Booking.objects.assigned_to(employee).filter(
+            status="completed"
         )
 
         jobs_completed = completed_bookings.count()
@@ -6184,7 +6269,7 @@ def employee_schedule(request):
 
         for day in week_days:
             jobs = list(
-                Booking.objects.filter(assigned_employee=employee, booking_date=day)
+                Booking.objects.assigned_to(employee).filter(booking_date=day)
                 .exclude(status="cancelled")
                 .select_related("customer")
                 .order_by("booking_time")
@@ -8099,8 +8184,7 @@ def operations_command_centre(request):
         status__in=["paid", "cancelled"]
     ).select_related("booking", "booking__customer").order_by("due_date")
 
-    unassigned_jobs = Booking.objects.filter(
-        assigned_employee__isnull=True,
+    unassigned_jobs = Booking.objects.unassigned().filter(
         booking_date__gte=today,
     ).exclude(status="cancelled").select_related("customer").order_by(
         "booking_date", "booking_time"
@@ -8400,16 +8484,16 @@ def employee_performance_centre(request):
 
     for employee in employees:
 
-        completed_jobs = Booking.objects.filter(
-            assigned_employee=employee, status="completed"
+        completed_jobs = Booking.objects.assigned_to(employee).filter(
+            status="completed"
         ).count()
 
-        total_jobs = Booking.objects.filter(assigned_employee=employee).count()
+        total_jobs = Booking.objects.assigned_to(employee).count()
 
         revenue_generated = (
-            Booking.objects.filter(
-                assigned_employee=employee, status="completed"
-            ).aggregate(total=Sum("quoted_price"))["total"]
+            Booking.objects.assigned_to(employee)
+            .filter(status="completed")
+            .aggregate(total=Sum("quoted_price"))["total"]
             or 0
         )
 
@@ -8520,7 +8604,7 @@ def employee_performance_detail(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
 
     bookings = (
-        Booking.objects.filter(assigned_employee=employee)
+        Booking.objects.assigned_to(employee)
         .select_related("customer")
         .order_by("-booking_date")
     )
@@ -8606,16 +8690,16 @@ def export_employee_performance_pdf(request):
 
     for employee in employees:
 
-        completed_jobs = Booking.objects.filter(
-            assigned_employee=employee, status="completed"
+        completed_jobs = Booking.objects.assigned_to(employee).filter(
+            status="completed"
         ).count()
 
-        total_jobs = Booking.objects.filter(assigned_employee=employee).count()
+        total_jobs = Booking.objects.assigned_to(employee).count()
 
         revenue_generated = (
-            Booking.objects.filter(
-                assigned_employee=employee, status="completed"
-            ).aggregate(total=Sum("quoted_price"))["total"]
+            Booking.objects.assigned_to(employee)
+            .filter(status="completed")
+            .aggregate(total=Sum("quoted_price"))["total"]
             or 0
         )
 
@@ -8711,12 +8795,12 @@ def email_employee_performance_report(request):
 
     for employee in employees:
 
-        total_jobs = Booking.objects.filter(assigned_employee=employee).count()
+        total_jobs = Booking.objects.assigned_to(employee).count()
 
         revenue = (
-            Booking.objects.filter(
-                assigned_employee=employee, status="completed"
-            ).aggregate(total=Sum("quoted_price"))["total"]
+            Booking.objects.assigned_to(employee)
+            .filter(status="completed")
+            .aggregate(total=Sum("quoted_price"))["total"]
             or 0
         )
 
@@ -8850,8 +8934,7 @@ def owner_command_centre(request):
     outstanding_invoices = Invoice.objects.exclude(
         status__in=["paid", "cancelled"]
     )
-    unassigned_jobs = Booking.objects.filter(
-        assigned_employee__isnull=True,
+    unassigned_jobs = Booking.objects.unassigned().filter(
         booking_date__gte=today,
     ).exclude(status="cancelled")
     today_jobs = Booking.objects.filter(booking_date=today).exclude(
@@ -9311,8 +9394,7 @@ def owner_alert_centre(request):
         | Q(registration_expiry__lt=today)
     )
     pending_leave = LeaveRequest.objects.filter(status="pending")
-    unassigned_jobs = Booking.objects.filter(
-        assigned_employee__isnull=True,
+    unassigned_jobs = Booking.objects.unassigned().filter(
         booking_date__gte=today,
     ).exclude(status="cancelled")
     context = {
@@ -9638,10 +9720,10 @@ def employee_kpi_dashboard(request):
 
     for employee in employees:
 
-        booking_count = Booking.objects.filter(assigned_employee=employee).count()
+        booking_count = Booking.objects.assigned_to(employee).count()
 
         revenue = (
-            Booking.objects.filter(assigned_employee=employee).aggregate(
+            Booking.objects.assigned_to(employee).aggregate(
                 total=Sum("quoted_price")
             )["total"]
             or 0

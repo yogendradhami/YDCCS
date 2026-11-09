@@ -6,21 +6,25 @@ Attendance Dashboard | Employee Portal
 
 {% block content %}
 
-<section class="page-hero">
+<section class="page-hero employee-workspace-hero">
     <div class="container">
         <h1>Attendance Dashboard</h1>
         <p>Check in and check out for your assigned cleaning jobs.</p>
     </div>
 </section>
 
-<section class="section dashboard-section">
+<div class="container">{% include "employees/partials/employee_workspace_nav.html" %}</div>
+
+<section class="section dashboard-section employee-workspace-page employee-attendance-page">
     <div class="container">
 
+        {% if job.status != "completed" and job.status != "cancelled" %}
         <div class="dashboard-actions">
             <a href="/employee/dashboard/" class="btn-outline">Back to Dashboard</a>
             <a href="/employee/jobs/" class="btn-fill">My Jobs</a>
             <a href="/employee/logout/" class="btn-outline">Logout</a>
         </div>
+        {% endif %}
 
         <div class="dashboard-table-card">
             <h2>Assigned Jobs</h2>
@@ -85,6 +89,7 @@ Attendance Dashboard | Employee Portal
                                 <th>Check In</th>
                                 <th>Check Out</th>
                                 <th>Total Hours</th>
+                                <th>Source</th>
                             </tr>
                         </thead>
 
@@ -97,6 +102,7 @@ Attendance Dashboard | Employee Portal
                                     <td>{{ log.check_in_time|default:"-" }}</td>
                                     <td>{{ log.check_out_time|default:"-" }}</td>
                                     <td>{{ log.total_hours }}</td>
+                                    <td>{{ log.get_source_display }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

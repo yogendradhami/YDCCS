@@ -1,0 +1,202 @@
+.employee-roster-hero .employee-hero-box {
+    overflow: hidden;
+    padding: clamp(24px, 5vw, 44px);
+    border: 1px solid rgba(164, 221, 214, .42);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 88% 12%, rgba(116, 218, 196, .2), transparent 30%),
+        linear-gradient(125deg, #102d43, #15505a 66%, #0e7470);
+    box-shadow: 0 18px 42px rgba(16, 43, 70, .14);
+    color: #fff;
+}
+
+.employee-roster-hero .employee-hero-box h1 {
+    color: #fff;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 760;
+    letter-spacing: -.055em;
+}
+
+.employee-roster-hero .employee-hero-box p {
+    color: #d7e9e9;
+}
+
+.employee-roster-hero .employee-back-btn {
+    border: 1px solid rgba(255, 255, 255, .45);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .09);
+    color: #fff;
+}
+
+.employee-roster-page {
+    padding-bottom: 54px;
+}
+
+.employee-roster-page .container {
+    max-width: 1440px;
+}
+
+.employee-roster-page .employee-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-bottom: 18px;
+    padding: 12px;
+    border: 1px solid #e6eaf0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(16, 24, 40, .045);
+}
+
+.employee-roster-page .employee-action-row a {
+    min-height: 40px;
+    margin: 0;
+    border-radius: 8px;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.employee-roster-page .employee-stats-grid {
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.employee-roster-page .employee-stats-grid .dashboard-card {
+    min-height: 120px;
+    padding: 20px;
+    border: 1px solid #e5ebf0;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #fff, #f8fbfc);
+    box-shadow: 0 8px 24px rgba(16, 43, 70, .05);
+}
+
+.employee-roster-page .employee-stats-grid .dashboard-card h3 {
+    color: #087f82;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 760;
+    letter-spacing: -.05em;
+}
+
+.employee-roster-page .employee-panel {
+    overflow: hidden;
+    margin: 0 0 18px;
+    border: 1px solid #e5ebf0;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 9px 28px rgba(16, 43, 70, .055);
+}
+
+.employee-roster-page .employee-panel-header {
+    padding: 20px 22px;
+    border-bottom: 1px solid #edf1f3;
+    background: linear-gradient(105deg, #f7fbfa, #fff);
+}
+
+.employee-roster-page .employee-panel-header h2 {
+    margin: 0;
+    color: #172b45;
+    font-size: 1.12rem;
+    font-weight: 760;
+    letter-spacing: -.025em;
+}
+
+.employee-roster-page .table-wrapper {
+    margin: 0;
+    padding: 0 14px 14px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.employee-roster-page .dashboard-table {
+    min-width: 760px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.employee-roster-page .dashboard-table thead th {
+    padding: 14px 13px;
+    background: #f5f8fa;
+    color: #6d8190;
+    font-size: .66rem;
+    font-weight: 800;
+    letter-spacing: .075em;
+    text-transform: uppercase;
+}
+
+.employee-roster-page .dashboard-table tbody td {
+    padding: 15px 13px;
+    border-bottom: 1px solid #edf1f3;
+    color: #405466;
+    font-size: .79rem;
+}
+
+.employee-roster-page .dashboard-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.employee-roster-page .dashboard-table tbody tr:hover {
+    background: #f8fcfb;
+}
+
+.employee-roster-page .status-badge {
+    display: inline-flex;
+    min-height: 27px;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 99px;
+    font-size: .67rem;
+    font-weight: 750;
+}
+
+.employee-roster-page .small-link-btn {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid #d8e8e5;
+    border-radius: 7px;
+    background: #f2faf8;
+    color: #087f82;
+    font-size: .7rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.employee-roster-page .empty-box {
+    margin: 16px;
+    border: 1px dashed #dce6e9;
+    border-radius: 12px;
+    background: #fafcfd;
+}
+
+@media (max-width: 720px) {
+    .employee-roster-page .employee-action-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .employee-roster-page .employee-action-row a {
+        justify-content: center;
+        padding: 0 8px;
+        font-size: .73rem;
+    }
+
+    .employee-roster-page .employee-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .employee-roster-page .employee-panel-header {
+        padding: 17px;
+    }
+
+    .employee-roster-page .table-wrapper {
+        padding: 0 9px 10px;
+    }
+
+    .employee-roster-hero .employee-hero-box {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+    }
+}

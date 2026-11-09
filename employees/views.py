@@ -93,9 +93,8 @@ def _lock_employee_booking_mutations(view):
 
         employee = get_object_or_404(Employee, user=request.user)
         get_object_or_404(
-            Booking,
+            Booking.objects.assigned_to(employee),
             pk=booking_id,
-            assigned_employee=employee,
         )
         from rosters.services import (
             RosterSyncLockError,
@@ -104,9 +103,10 @@ def _lock_employee_booking_mutations(view):
 
         try:
             with booking_roster_sync_lock(booking_id):
-                Booking.objects.select_for_update().get(
+                Booking.objects.select_for_update().get(pk=booking_id)
+                get_object_or_404(
+                    Booking.objects.assigned_to(employee),
                     pk=booking_id,
-                    assigned_employee=employee,
                 )
                 return view(request, booking_id, *args, **kwargs)
         except (DatabaseError, RosterSyncLockError):
@@ -543,19 +543,19 @@ def employee_dashboard(request):
     today = timezone.now().date()
 
     today_jobs = (
-        Booking.objects.filter(assigned_employee=employee, booking_date=today)
+        Booking.objects.assigned_to(employee).filter(booking_date=today)
         .exclude(status="cancelled")
         .order_by("booking_time")
     )
 
     upcoming_jobs = (
-        Booking.objects.filter(assigned_employee=employee, booking_date__gte=today)
+        Booking.objects.assigned_to(employee).filter(booking_date__gte=today)
         .exclude(status="cancelled")
         .order_by("booking_date", "booking_time")[:10]
     )
 
-    completed_jobs = Booking.objects.filter(
-        assigned_employee=employee, status="completed"
+    completed_jobs = Booking.objects.assigned_to(employee).filter(
+        status="completed"
     ).count()
 
     return render(
@@ -730,7 +730,7 @@ def employee_jobs(request):
     employee = get_object_or_404(Employee, user=request.user)
 
     jobs = (
-        Booking.objects.filter(assigned_employee=employee)
+        Booking.objects.assigned_to(employee)
         .prefetch_related("work_orders")
         .order_by("-booking_date", "-booking_time")
     )
@@ -760,9 +760,12 @@ def employee_damage_report(request):
             try:
                 with transaction.atomic():
                     booking = Booking.objects.select_for_update().get(
-                        pk=form.cleaned_data["booking"].pk,
-                        assigned_employee=employee,
+                        pk=form.cleaned_data["booking"].pk
                     )
+                    if not Booking.objects.assigned_to(employee).filter(
+                        pk=booking.pk
+                    ).exists():
+                        raise Booking.DoesNotExist
                     report = PropertyDamageReport.objects.create(
                         employee=employee,
                         booking=booking,
@@ -941,9 +944,8 @@ def employee_job_detail(request, booking_id):
     employee = get_object_or_404(Employee, user=request.user)
 
     booking = get_object_or_404(
-        Booking,
+        Booking.objects.assigned_to(employee),
         id=booking_id,
-        assigned_employee=employee,
     )
 
     before_photos = booking.job_photos.filter(
@@ -960,6 +962,7 @@ def employee_job_detail(request, booking_id):
 
     if request.method == "POST":
 
+        previous_status = booking.status
         form = EmployeeJobStatusForm(
             request.POST,
             instance=booking,
@@ -968,7 +971,6 @@ def employee_job_detail(request, booking_id):
         if form.is_valid():
 
             changed_fields = tuple(form.changed_data)
-            previous_status = booking.status
 
             updated_booking = form.save(commit=False)
 
@@ -1139,13 +1141,40 @@ def employee_job_detail(request, booking_id):
                 previous_status != "completed"
                 and updated_booking.status == "completed"
             ):
-
-                employee.jobs_completed = Booking.objects.filter(
-                    assigned_employee=employee,
-                    status="completed",
-                ).count()
-
-                employee.save()
+                assigned_employees = list(
+                    updated_booking.assigned_employees.select_related("user")
+                )
+                if (
+                    updated_booking.assigned_employee_id
+                    and all(
+                        assigned_employee.pk
+                        != updated_booking.assigned_employee_id
+                        for assigned_employee in assigned_employees
+                    )
+                ):
+                    assigned_employees.append(updated_booking.assigned_employee)
+                for assigned_employee in assigned_employees:
+                    assigned_employee.jobs_completed = (
+                        Booking.objects.assigned_to(assigned_employee)
+                        .filter(status="completed")
+                        .count()
+                    )
+                    assigned_employee.save(update_fields=["jobs_completed"])
+                    if (
+                        assigned_employee.pk != employee.pk
+                        and assigned_employee.user_id
+                    ):
+                        notify_user(
+                            assigned_employee.user,
+                            "Team Job Completed",
+                            (
+                                f"{employee.full_name} marked your shared "
+                                f"{updated_booking.service_type} job on "
+                                f"{updated_booking.booking_date} as completed."
+                            ),
+                            "booking",
+                            f"/employee/jobs/{updated_booking.pk}/",
+                        )
 
                 # Keep the existing branded review email available behind a
                 # setting, but do not send customer emails from the employee
@@ -1273,7 +1302,10 @@ def employee_job_detail(request, booking_id):
 @employee_required
 def upload_job_photo(request, booking_id):
     employee = get_object_or_404(Employee, user=request.user)
-    booking = get_object_or_404(Booking, id=booking_id, assigned_employee=employee)
+    booking = get_object_or_404(
+        Booking.objects.assigned_to(employee),
+        id=booking_id,
+    )
 
     if request.method == "POST" and request.POST.get("upload_action") == "cancel":
         nonce = request.POST.get("nonce", "")

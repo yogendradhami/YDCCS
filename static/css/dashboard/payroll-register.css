@@ -1,0 +1,128 @@
+.payroll-employee-groups {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+}
+
+.payroll-employee-group {
+    overflow: hidden;
+    border: 1px solid #e5ebf0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(16, 43, 70, .035);
+}
+
+.payroll-employee-group[hidden] {
+    display: none;
+}
+
+.payroll-employee-group > summary {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 17px;
+    background: linear-gradient(110deg, #f8fbfc, #fff 70%);
+    cursor: pointer;
+    list-style: none;
+}
+
+.payroll-employee-group > summary::-webkit-details-marker {
+    display: none;
+}
+
+.payroll-employee-group > summary::marker {
+    content: "";
+}
+
+.payroll-employee-group[open] > summary {
+    border-bottom: 1px solid #e8eef1;
+    background: #f5faf9;
+}
+
+.payroll-employee-group > summary .workforce-person {
+    text-decoration: none;
+}
+
+.payroll-employee-group > summary .workforce-person strong {
+    color: #233b50;
+}
+
+.payroll-employee-group > summary .workforce-person small {
+    color: #718392;
+}
+
+.payroll-group-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #6d8190;
+    font-size: .68rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.payroll-group-meta strong {
+    display: grid;
+    width: 25px;
+    height: 25px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e6f4f1;
+    color: #087f82;
+    font-size: .7rem;
+}
+
+.payroll-disclosure {
+    color: #087f82;
+    font-size: 1.1rem;
+    transition: transform .18s ease;
+}
+
+.payroll-employee-group[open] .payroll-disclosure {
+    transform: rotate(180deg);
+}
+
+.payroll-employee-group .workforce-table-wrap {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.payroll-employee-group .payroll-detail-table {
+    min-width: 1030px;
+}
+
+.payroll-employee-group .payroll-detail-table th:first-child,
+.payroll-employee-group .payroll-detail-table td:first-child {
+    padding-left: 18px;
+}
+
+.payroll-employee-group .payroll-detail-table td {
+    vertical-align: middle;
+}
+
+.payroll-employee-group .payroll-row-actions {
+    white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+    .payroll-employee-groups {
+        padding: 9px;
+    }
+
+    .payroll-employee-group > summary {
+        min-height: 66px;
+        padding: 10px;
+    }
+
+    .payroll-group-meta {
+        gap: 5px;
+        font-size: .61rem;
+    }
+
+    .payroll-employee-group > summary .workforce-person strong {
+        font-size: .7rem;
+    }
+}

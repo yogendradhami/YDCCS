@@ -41,7 +41,7 @@ def roster_list(request):
         "employee",
         "booking",
         "booking__customer",
-    ).all()
+    ).order_by("employee__full_name", "shift_date", "start_time", "pk")
 
     search = request.GET.get("search", "").strip()
     status = request.GET.get("status", "").strip()
@@ -62,18 +62,14 @@ def roster_list(request):
     if date:
         rosters = rosters.filter(shift_date=date)
 
-    # --------------------------------------------------
-    # Separate upcoming/active and past rosters
-    # --------------------------------------------------
-
-    active_rosters = []
-    past_rosters = []
-
+    grouped_rosters = {}
     for roster in rosters:
-        if roster.time_status in ["upcoming", "in_progress"]:
-            active_rosters.append(roster)
-        elif roster.time_status in ["time_passed", "completed", "cancelled"]:
-            past_rosters.append(roster)
+        group = grouped_rosters.setdefault(
+            roster.employee_id,
+            {"employee": roster.employee, "shifts": []},
+        )
+        group["shifts"].append(roster)
+    roster_groups = list(grouped_rosters.values())
 
     # --------------------------------------------------
     # Summary counts
@@ -100,8 +96,7 @@ def roster_list(request):
         "rosters/roster_list.html",
         {
             "rosters": rosters,
-            "active_rosters": active_rosters,
-            "past_rosters": past_rosters,
+            "roster_groups": roster_groups,
 
             "total_count": total_count,
             "scheduled_count": scheduled_count,
@@ -139,7 +134,9 @@ def add_roster(request):
                             pk=booking_id
                         )
                         employee = form.cleaned_data["employee"]
-                        if booking.assigned_employee_id != employee.pk:
+                        if not Booking.objects.assigned_to(employee).filter(
+                            pk=booking.pk
+                        ).exists():
                             form.add_error(
                                 "employee",
                                 "The selected employee must match the booking assignment.",
@@ -190,6 +187,19 @@ def add_roster(request):
         "rosters/roster_form.html",
         {"form": form},
     )
+
+
+@admin_required
+def roster_detail(request, roster_id):
+    roster = get_object_or_404(
+        Roster.objects.select_related(
+            "employee",
+            "booking",
+            "booking__customer",
+        ),
+        pk=roster_id,
+    )
+    return render(request, "rosters/roster_detail.html", {"roster": roster})
 
 
 
@@ -313,11 +323,9 @@ def edit_roster(request, roster_id):
                     form.fields["employee"].disabled = True
                     form.fields["booking"].disabled = True
                     if form.is_valid():
-                        if (
-                            not booking.assigned_employee_id
-                            or roster.employee_id
-                            != booking.assigned_employee_id
-                        ):
+                        if not Booking.objects.assigned_to(roster.employee).filter(
+                            pk=booking.pk
+                        ).exists():
                             form.add_error(
                                 None,
                                 "Correct the employee assignment in the booking before editing this roster.",
@@ -356,21 +364,9 @@ def edit_roster(request, roster_id):
                 if form.is_valid():
                     calendar_sync_succeeded = True
                     try:
-                        from google_reviews.calendar_utils import (
-                            CalendarNotConfigured,
-                            create_or_update_roster_event,
-                        )
-
-                        event = create_or_update_roster_event(updated_roster)
-                        if event is None:
-                            raise CalendarNotConfigured(
-                                "Employee Calendar is not configured."
-                            )
-                    except CalendarNotConfigured:
-                        messages.info(
-                            request,
-                            "Roster shift and booking status were updated. Employee Calendar is not configured.",
-                        )
+                        roster_sync = sync_booking_roster(booking)
+                        if isinstance(roster_sync, RosterSyncPending):
+                            raise roster_sync.error
                     except Exception:
                         calendar_sync_succeeded = False
                         logger.exception(
@@ -382,10 +378,16 @@ def edit_roster(request, roster_id):
                             "Roster shift and booking were updated, but Calendar sync is pending.",
                         )
                     else:
-                        messages.success(
-                            request,
-                            "Roster shift updated, booking status synchronized, and Calendar updated.",
-                        )
+                        if isinstance(roster_sync, RosterSyncNotConfigured):
+                            messages.info(
+                                request,
+                                "Roster shift and booking status were updated. One or more employee Calendars are not configured.",
+                            )
+                        else:
+                            messages.success(
+                                request,
+                                "Roster shift updated, booking status synchronized, and Calendar updated.",
+                            )
                     if (
                         calendar_sync_succeeded
                         and booking_status_changed

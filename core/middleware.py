@@ -130,7 +130,8 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     """
     activity_log_list add_booking add_contract add_customer add_employee add_equipment
     add_expense add_gallery_item add_leave_request add_maintenance add_purchase_order add_review
-    add_roster add_supplier add_supply add_vehicle ai_quote_estimator approve_leave_request
+    add_roster add_supplier add_supply add_vehicle attendance_log_create attendance_log_delete
+    attendance_log_detail attendance_log_edit ai_quote_estimator approve_leave_request
     approve_payroll archive attendance_report booking_calendar booking_list bulk_import_analyse
     bulk_import_approve bulk_import_delete bulk_import_import bulk_import_item_edit bulk_import_list bulk_import_review
     bulk_import_upload business_forecasting_centre business_health business_intelligence business_kpis campaign_center
@@ -142,9 +143,9 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     dashboard dashboard_home dashboard_newsletter_subscribe delete delete_booking delete_campaign_history
     delete_contract delete_customer delete_employee delete_equipment delete_expense delete_gallery_item
     delete_invoice delete_newsletter_subscriber delete_quote_request delete_review delete_roster detail download
-    download_invoice_pdf download_payslip_pdf edit edit_booking edit_campaign_history edit_contract
+    delete_payroll download_invoice_pdf download_payslip_pdf edit edit_booking edit_campaign_history edit_contract
     edit_customer edit_employee edit_equipment edit_expense edit_gallery_item edit_invoice
-    edit_newsletter_subscriber edit_review edit_roster edit_supplier edit_supply edit_vehicle
+    edit_newsletter_subscriber edit_payroll edit_review edit_roster edit_supplier edit_supply edit_vehicle
     email email_business_report email_center email_employee_performance_report email_log_list employee_attendance_analytics
     employee_bonuses employee_compliance employee_compliance_matrix employee_kpi_dashboard employee_list employee_performance
     employee_performance_centre employee_performance_detail employee_schedule employee_training_dashboard equipment_list executive_bi_dashboard
@@ -155,10 +156,10 @@ DASHBOARD_PROTECTED_ROUTE_NAMES = frozenset(
     induction_supervisor_verification induction_training_export invoice_detail invoice_list
     job_profitability_dashboard lead_list leave_list
     list live_chat_assign live_chat_close live_chat_counts live_chat_detail live_chat_list live_chat_takeover maintenance_list
-    mark_invoice_paid mark_invoice_unpaid mark_payroll_paid newsletter_subscriber_detail onboarding_dashboard onboarding_detail
+    mark_invoice_paid mark_invoice_unpaid mark_payroll_paid newsletter_subscriber_detail onboarding_dashboard onboarding_detail payroll_detail
     onboarding_document_review onboarding_set_status operations_command_centre owner_alert_centre owner_command_centre payroll_list
     profit_loss_dashboard property_damage_report_list property_damage_report_conversation property_damage_report_reply property_damage_report_set_status purchase_orders quote_conversion_analytics quote_followup_centre receive_purchase_order reject_leave_request
-    reminder_centre report_list review_analytics review_list review_requests roster_list run_audit
+    reminder_centre report_list review_analytics review_list review_requests roster_detail roster_list run_audit
     security_center security_position_create security_position_edit security_position_list security_user_access_action security_user_create
     security_user_edit security_user_list send_booking_reminder send_contract_renewal_email send_customer_followup send_inactive_campaign
     send_invoice_reminder send_quote_followup send_quote_followup_email send_review_campaign send_review_request send_vip_campaign
@@ -252,6 +253,30 @@ DASHBOARD_PERMISSION_ROUTE_OVERRIDES = {
     "delete_newsletter_subscriber": {"GET": ("customers.delete_marketingsubscriber",), "POST": ("customers.delete_marketingsubscriber",)},
     "receive_purchase_order": {"POST": ("dashboard.change_purchaseorder", "dashboard.change_cleaningsupply")},
     "mark_payroll_paid": {"POST": ("payroll.change_payrollrecord",)},
+    "attendance_log_create": {
+        "GET": ("attendance.add_attendancelog",),
+        "POST": ("attendance.add_attendancelog",),
+    },
+    "attendance_log_detail": {
+        "GET": ("attendance.view_attendancelog",),
+        "HEAD": ("attendance.view_attendancelog",),
+    },
+    "attendance_log_edit": {
+        "GET": ("attendance.change_attendancelog",),
+        "POST": ("attendance.change_attendancelog",),
+    },
+    "attendance_log_delete": {
+        "GET": ("attendance.delete_attendancelog",),
+        "POST": ("attendance.delete_attendancelog",),
+    },
+    "roster_detail": {
+        "GET": ("rosters.view_roster",),
+        "HEAD": ("rosters.view_roster",),
+    },
+    "payroll_list": {"GET": ("payroll.view_payrollrecord",), "HEAD": ("payroll.view_payrollrecord",)},
+    "payroll_detail": {"GET": ("payroll.view_payrollrecord",), "HEAD": ("payroll.view_payrollrecord",)},
+    "edit_payroll": {"GET": ("payroll.change_payrollrecord",), "POST": ("payroll.change_payrollrecord",)},
+    "delete_payroll": {"GET": ("payroll.delete_payrollrecord",), "POST": ("payroll.delete_payrollrecord",)},
     "email_business_report": {"POST": ("expenses.view_expense", "invoices.view_invoice")},
     "send_quote_followup_email": {"POST": ("quotes.change_quoterequest",)},
     "send_booking_reminder": {"POST": ("bookings.change_booking", "dashboard.add_emaillog")},
@@ -403,6 +428,7 @@ DASHBOARD_POST_ROUTE_NAMES = frozenset(
         "send_vip_campaign_legacy", "send_inactive_campaign", "send_review_campaign",
         "edit_campaign_history", "delete_campaign_history", "generate_payroll",
         "approve_payroll", "mark_payroll_paid", "create_invoice", "edit_invoice",
+        "attendance_log_create", "attendance_log_edit", "attendance_log_delete",
         "mark_invoice_paid", "mark_invoice_unpaid", "cancel_invoice", "delete_invoice",
         "induction_setup", "induction_cancel", "induction_publish",
         "induction_publish_for_employee", "induction_module_review",

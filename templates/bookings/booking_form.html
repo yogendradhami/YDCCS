@@ -73,9 +73,29 @@ Create or update cleaning job bookings for YD Commercial Cleaning Services.
             </div>
 
             <div class="form-group">
-                <label>Assigned Employee (Optional)</label>
-                {{ form.assigned_employee }}
-                <div class="text-danger">{{ form.assigned_employee.errors }}</div>
+                <label>Assigned Employees (Optional)</label>
+                <details class="booking-employee-dropdown" {% if form.assigned_employees.errors %}open{% endif %}>
+                    <summary class="booking-employee-trigger" aria-label="Choose assigned employees">
+                        <span class="booking-employee-trigger-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M16 20v-1.6a3.4 3.4 0 0 0-3.4-3.4H6.4A3.4 3.4 0 0 0 3 18.4V20m16 0v-1.6a3.4 3.4 0 0 0-2.5-3.28M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-7.5a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <span class="booking-employee-trigger-copy"><strong>Choose your team</strong><small>Assign one or more employees</small></span>
+                        <span class="booking-employee-selection-count" aria-live="polite"><strong>0</strong><span>selected</span></span>
+                        <span class="booking-employee-disclosure" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div class="booking-employee-options" role="group" aria-label="Assigned employees">
+                        {% for employee_option in form.assigned_employees %}
+                            {{ employee_option }}
+                        {% empty %}
+                            <p>No active employees are available.</p>
+                        {% endfor %}
+                    </div>
+                </details>
+                <div class="booking-employee-preview" aria-live="polite" hidden></div>
+                <small>Each selected employee will see this job in their portal.</small>
+                <div class="text-danger">{{ form.assigned_employees.errors }}</div>
             </div>
 
             <div class="form-group">
@@ -205,6 +225,40 @@ Create or update cleaning job bookings for YD Commercial Cleaning Services.
 
 <script>
 (() => {
+    const employeeDropdown = document.querySelector(".booking-employee-dropdown");
+    if (employeeDropdown) {
+        const employeeOptions = employeeDropdown.querySelector(".booking-employee-options");
+        const selectionCount = employeeDropdown.querySelector(".booking-employee-selection-count");
+        const employeeCheckboxes = employeeDropdown.querySelectorAll('input[type="checkbox"]');
+        const employeePreview = employeeDropdown.parentElement.querySelector(".booking-employee-preview");
+        const updateEmployeeSelection = () => {
+            const selected = Array.from(employeeCheckboxes)
+                .filter((checkbox) => checkbox.checked)
+                .map((checkbox) => {
+                    const label = checkbox.closest("label");
+                    return label ? label.textContent.trim() : "";
+                })
+                .filter(Boolean);
+            selectionCount.querySelector("strong").textContent = selected.length;
+            employeePreview.replaceChildren();
+            employeePreview.hidden = selected.length === 0;
+            selected.slice(0, 3).forEach((name) => {
+                const chip = document.createElement("span");
+                chip.className = "booking-employee-chip";
+                chip.textContent = name;
+                employeePreview.append(chip);
+            });
+            if (selected.length > 3) {
+                const more = document.createElement("span");
+                more.className = "booking-employee-chip booking-employee-chip-more";
+                more.textContent = `+${selected.length - 3}`;
+                employeePreview.append(more);
+            }
+        };
+        employeeOptions.addEventListener("change", updateEmployeeSelection);
+        updateEmployeeSelection();
+    }
+
     const form = document.querySelector(".crm-form");
     const rows = document.getElementById("booking-work-order-rows");
     const count = document.getElementById("id_work_orders-TOTAL_FORMS");

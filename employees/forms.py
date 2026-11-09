@@ -260,7 +260,7 @@ class PropertyDamageReportForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["booking"].required = True
         self.fields["booking"].queryset = (
-            Booking.objects.filter(assigned_employee=employee)
+            Booking.objects.assigned_to(employee)
             .select_related("customer")
             .order_by("-booking_date", "-booking_time")
         )
