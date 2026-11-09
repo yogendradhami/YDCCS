@@ -19,11 +19,6 @@ class BaseSitemap(Sitemap):
     def get_domain(self, site=None):
         return "ydcleaning.com.au"
 
-    def get_latest_lastmod(self):
-        # Child sitemap URLs include lastmod; avoid scanning every item to
-        # calculate a timestamp for the sitemap index.
-        return None
-
 
 @lru_cache(maxsize=1)
 def service_page_slugs():

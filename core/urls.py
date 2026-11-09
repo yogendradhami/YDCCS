@@ -52,7 +52,6 @@ from .views_append import blog_detail
 
 
 
-from django.contrib.sitemaps.views import index as django_sitemap_index
 from django.contrib.sitemaps.views import sitemap as django_sitemap
 from .sitemaps import sitemaps
 
@@ -64,19 +63,9 @@ def _prepare_sitemap_response(response):
 
 
 def sitemap_view(request):
-    response = django_sitemap_index(
-        request,
-        sitemaps=sitemaps,
-        sitemap_url_name="sitemap_section",
-    )
-    return _prepare_sitemap_response(response)
-
-
-def sitemap_section_view(request, section):
     response = django_sitemap(
         request,
         sitemaps=sitemaps,
-        section=section,
     )
     return _prepare_sitemap_response(response)
 
@@ -125,11 +114,6 @@ urlpatterns = [
     # SEO files
     path("robots.txt", robots_txt, name="robots_txt"),
     path("sitemap.xml", sitemap_view, name="sitemap_xml"),
-    path(
-        "sitemap-<slug:section>.xml",
-        sitemap_section_view,
-        name="sitemap_section",
-    ),
     path("services/", services_list, name="services_home"),
     path("local/", local_services, name="local_services"),
     path(
