@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.utils import timezone
 
@@ -21,6 +23,19 @@ class LocalServiceSitemapPerformanceTests(TestCase):
             updated_at=cls.updated_at
         )
         cls.service.refresh_from_db()
+
+    def setUp(self):
+        self.service_slugs_patcher = patch(
+            "core.sitemaps.service_page_slugs",
+            return_value=[
+                "carpet-steam-cleaning-adelaide-glenelg",
+                "carpet-steam-cleaning-adelaide-norwood",
+            ],
+        )
+        self.service_slugs_patcher.start()
+
+    def tearDown(self):
+        self.service_slugs_patcher.stop()
 
     def test_local_page_slug_removes_only_the_final_area_suffix(self):
         self.assertEqual(
