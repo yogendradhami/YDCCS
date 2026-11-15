@@ -34,6 +34,7 @@ from reportlab.platypus import (
 from dashboard.decorators import admin_required
 from employees.models import Employee
 from notifications.utils import notify_user
+from core.pdf_branding import CompanyWatermarkCanvas
 
 from .forms import (
     InductionDeclarationForm,
@@ -1395,7 +1396,10 @@ def _build_induction_pdf(
         )
     )
 
-    document.build(story)
+    document.build(
+        story,
+        canvasmaker=CompanyWatermarkCanvas,
+    )
 
     buffer.seek(0)
 

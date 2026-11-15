@@ -17,6 +17,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from core.pdf_branding import CompanyWatermarkCanvas
+
 
 NAVY = colors.HexColor("#0f172a")
 BLUE = colors.HexColor("#0759c9")
@@ -443,6 +445,11 @@ def generate_invoice_pdf(invoice):
         Spacer(1, 9 * mm),
         summary,
     ]
-    document.build(story, onFirstPage=_footer, onLaterPages=_footer)
+    document.build(
+        story,
+        onFirstPage=_footer,
+        onLaterPages=_footer,
+        canvasmaker=CompanyWatermarkCanvas,
+    )
     buffer.seek(0)
     return buffer

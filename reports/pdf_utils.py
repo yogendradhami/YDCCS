@@ -9,7 +9,7 @@ from PIL import Image as PILImage
 from PIL import ImageOps
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import (
     getSampleStyleSheet,
@@ -26,6 +26,8 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+
+from core.pdf_branding import CompanyWatermarkCanvas
 
 
 DARK_GREEN = colors.HexColor("#0B2C24")
@@ -101,21 +103,52 @@ def generate_cleaning_report_pdf(booking):
         name="YDTitle",
         parent=styles["Title"],
         fontName="Helvetica-Bold",
-        fontSize=21,
-        leading=26,
+        fontSize=12,
+        leading=15,
         textColor=DARK_GREEN,
-        alignment=TA_CENTER,
-        spaceAfter=5,
+        alignment=TA_LEFT,
+        spaceAfter=2,
     ))
 
     styles.add(ParagraphStyle(
         name="YDSubtitle",
         parent=styles["Normal"],
-        fontSize=9,
-        leading=14,
+        fontSize=7.5,
+        leading=10,
         textColor=MUTED,
+        alignment=TA_LEFT,
+        spaceAfter=1,
+    ))
+
+    styles.add(ParagraphStyle(
+        name="YDGeneratedLabel",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=7,
+        leading=9,
+        textColor=MUTED,
+        alignment=TA_RIGHT,
+    ))
+
+    styles.add(ParagraphStyle(
+        name="YDGeneratedValue",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        leading=11,
+        textColor=DARK_GREEN,
+        alignment=TA_RIGHT,
+    ))
+
+    styles.add(ParagraphStyle(
+        name="YDPageTitle",
+        parent=styles["Title"],
+        fontName="Helvetica-Bold",
+        fontSize=20,
+        leading=24,
+        textColor=DARK_GREEN,
         alignment=TA_CENTER,
-        spaceAfter=12,
+        spaceAfter=5,
     ))
 
     styles.add(ParagraphStyle(
@@ -170,6 +203,7 @@ def generate_cleaning_report_pdf(booking):
     ))
 
     story = []
+    generated_at = timezone.localtime()
 
     # Brand header and logo
     logo_path = os.path.join(
@@ -183,8 +217,8 @@ def generate_cleaning_report_pdf(booking):
     logo = None
     if os.path.exists(logo_path):
         try:
-            logo = Image(logo_path, width=27 * mm, height=27 * mm)
-            logo._restrictSize(27 * mm, 27 * mm)
+            logo = Image(logo_path, width=22 * mm, height=22 * mm)
+            logo._restrictSize(22 * mm, 22 * mm)
         except (OSError, ValueError):
             logo = None
 
@@ -204,21 +238,37 @@ def generate_cleaning_report_pdf(booking):
         ),
     ]
 
+    generated = [
+        Paragraph("GENERATED DATE &amp; TIME", styles["YDGeneratedLabel"]),
+        Paragraph(
+            generated_at.strftime("%d %b %Y"),
+            styles["YDGeneratedValue"],
+        ),
+        Paragraph(
+            generated_at.strftime("%I:%M %p"),
+            styles["YDGeneratedValue"],
+        ),
+    ]
+
     if logo:
         header = Table(
-            [[logo, brand]],
-            colWidths=[32 * mm, 142 * mm],
+            [[logo, brand, generated]],
+            colWidths=[24 * mm, 110 * mm, 40 * mm],
         )
-        header.setStyle(TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 0),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-            ("TOPPADDING", (0, 0), (-1, -1), 0),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-        ]))
-        story.append(header)
     else:
-        story.extend(brand)
+        header = Table(
+            [[brand, generated]],
+            colWidths=[128 * mm, 46 * mm],
+        )
+
+    header.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 1),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    story.append(header)
 
     story.append(Spacer(1, 5 * mm))
 
@@ -231,12 +281,11 @@ def generate_cleaning_report_pdf(booking):
 
     story.append(Paragraph(
         "CLEANING COMPLETION REPORT",
-        styles["YDTitle"],
+        styles["YDPageTitle"],
     ))
 
     story.append(Paragraph(
-        f"Report reference: YD-{booking.pk:06d}<br/>"
-        f"Generated: {timezone.localtime().strftime('%d %B %Y, %I:%M %p')}",
+        f"Report reference: YD-{booking.pk:06d}",
         styles["YDSubtitle"],
     ))
 
@@ -336,7 +385,7 @@ def generate_cleaning_report_pdf(booking):
         ]
 
         story.append(PageBreak())
-        story.append(Paragraph(title, styles["YDTitle"]))
+        story.append(Paragraph(title, styles["YDPageTitle"]))
         story.append(Paragraph(
             "Photographic evidence recorded for this service.",
             styles["YDSubtitle"],
@@ -404,7 +453,7 @@ def generate_cleaning_report_pdf(booking):
     story.append(PageBreak())
     story.append(Paragraph(
         "VERIFICATION &amp; SIGNATURES",
-        styles["YDTitle"],
+        styles["YDPageTitle"],
     ))
     story.append(Spacer(1, 8 * mm))
 
@@ -476,6 +525,7 @@ def generate_cleaning_report_pdf(booking):
         story,
         onFirstPage=draw_page,
         onLaterPages=draw_page,
+        canvasmaker=CompanyWatermarkCanvas,
     )
 
     buffer.seek(0)

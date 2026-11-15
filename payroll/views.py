@@ -39,6 +39,7 @@ from reportlab.platypus import (
 )
 
 from attendance.models import AttendanceLog
+from core.pdf_branding import CompanyWatermarkCanvas
 from dashboard.models import ActivityLog
 from employees.models import Employee
 from .forms import PayrollRecordForm
@@ -855,6 +856,7 @@ def generate_payroll_pdf(payroll):
         story,
         onFirstPage=draw_footer,
         onLaterPages=draw_footer,
+        canvasmaker=CompanyWatermarkCanvas,
     )
 
     buffer.seek(0)

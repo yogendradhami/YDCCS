@@ -46,6 +46,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 from attendance.models import AttendanceLog
+from core.pdf_branding import CompanyWatermarkCanvas
 from bookings.forms import BookingForm, BookingWorkOrderFormSet
 from bookings.models import Booking
 from bookings.services import create_booking, replace_booking_work_orders
@@ -8097,7 +8098,10 @@ def export_business_report(request):
 
     content.append(Paragraph(f"Profit: ${estimated_profit}", styles["Normal"]))
 
-    doc.build(content)
+    doc.build(
+        content,
+        canvasmaker=CompanyWatermarkCanvas,
+    )
 
     return response
 
@@ -8142,7 +8146,10 @@ def email_business_report(request):
 
     content.append(Paragraph(f"Profit: ${estimated_profit}", styles["Normal"]))
 
-    doc.build(content)
+    doc.build(
+        content,
+        canvasmaker=CompanyWatermarkCanvas,
+    )
 
     pdf = buffer.getvalue()
 
@@ -8742,7 +8749,10 @@ def export_employee_performance_pdf(request):
 
     content.append(table)
 
-    doc.build(content)
+    doc.build(
+        content,
+        canvasmaker=CompanyWatermarkCanvas,
+    )
 
     return response
 
@@ -8833,7 +8843,10 @@ def email_employee_performance_report(request):
 
     content.append(table)
 
-    doc.build(content)
+    doc.build(
+        content,
+        canvasmaker=CompanyWatermarkCanvas,
+    )
 
     pdf = buffer.getvalue()
 

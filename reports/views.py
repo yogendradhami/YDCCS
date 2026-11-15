@@ -14,6 +14,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from bookings.models import Booking
+from core.pdf_branding import draw_company_watermark
 from reports.models import CleaningReport
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -132,6 +133,7 @@ def download_cleaning_report_pdf(request, booking_id):
         pdf.drawString(50, 28, "YD Commercial Cleaning Services")
         pdf.drawRightString(width - 50, 28, f"Page {page_number}")
         pdf.setFillColorRGB(0, 0, 0)
+        draw_company_watermark(pdf, A4)
 
     def new_page():
         nonlocal page_number
@@ -203,16 +205,32 @@ def download_cleaning_report_pdf(request, booking_id):
             pass
 
     pdf.setFillColorRGB(*green)
-    pdf.setFont("Helvetica-Bold", 17)
-    pdf.drawRightString(
-        width - 50, y, "YD Commercial Cleaning Services"
-    )
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(165, y - 4, "YD Commercial Cleaning Services")
 
     pdf.setFillColorRGB(0, 0, 0)
     pdf.setFont("Helvetica", 9)
-    pdf.drawRightString(width - 50, y - 19, "ABN: 95 916 203 175")
-    pdf.drawRightString(width - 50, y - 33, "Phone: 0430 049 865")
-    pdf.drawRightString(width - 50, y - 47, "Email: info@ydcleaning.com.au")
+    pdf.drawString(165, y - 19, "ABN: 95 916 203 175")
+    pdf.drawString(165, y - 32, "Phone: 0430 049 865")
+    pdf.drawString(165, y - 45, "Email: info@ydcleaning.com.au")
+
+    generated_at = timezone.localtime()
+    pdf.setFillColorRGB(*grey)
+    pdf.setFont("Helvetica-Bold", 7)
+    pdf.drawRightString(width - 50, y - 4, "GENERATED DATE & TIME")
+    pdf.setFillColorRGB(0, 0, 0)
+    pdf.setFont("Helvetica-Bold", 8)
+    pdf.drawRightString(
+        width - 50,
+        y - 19,
+        generated_at.strftime("%d %b %Y"),
+    )
+    pdf.setFont("Helvetica", 8)
+    pdf.drawRightString(
+        width - 50,
+        y - 32,
+        generated_at.strftime("%I:%M %p"),
+    )
 
     y -= 85
     pdf.setStrokeColorRGB(*green)
@@ -227,16 +245,6 @@ def download_cleaning_report_pdf(request, booking_id):
     )
     pdf.setFillColorRGB(0, 0, 0)
     y -= 35
-
-    pdf.setFont("Helvetica", 9)
-    pdf.setFillColorRGB(*grey)
-    pdf.drawString(
-        50,
-        y,
-        f"Report generated: {timezone.localtime().strftime('%d %B %Y, %I:%M %p')}",
-    )
-    pdf.setFillColorRGB(0, 0, 0)
-    y -= 30
 
     # ---------------------------------------------------------
     # Job details
