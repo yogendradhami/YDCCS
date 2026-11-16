@@ -3,7 +3,9 @@ from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo
 
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
@@ -224,6 +226,34 @@ class GoogleBusinessProfileServiceTests(TestCase):
             resource_name="locations/200",
             title="YD Commercial Cleaning Services",
             is_selected=True,
+        )
+
+    def test_profile_admin_pages_expose_discovery_and_selection_instructions(self):
+        user_model = get_user_model()
+        user = user_model.objects.create_superuser(
+            username="profile-admin",
+            email="profile-admin@example.com",
+            password="test-password",
+        )
+        self.client.force_login(user)
+
+        account_response = self.client.get(
+            reverse("admin:google_reviews_googlebusinessprofileaccount_changelist")
+        )
+        location_response = self.client.get(
+            reverse("admin:google_reviews_googlebusinessprofilelocation_changelist")
+        )
+
+        self.assertEqual(account_response.status_code, 200)
+        self.assertContains(account_response, "Discover Google Business Profiles")
+        self.assertEqual(location_response.status_code, 200)
+        self.assertContains(
+            location_response,
+            "Select as Google Reviews location",
+        )
+        self.assertContains(
+            location_response,
+            "Refresh available profiles and locations",
         )
 
     @staticmethod

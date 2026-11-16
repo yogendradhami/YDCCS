@@ -29,8 +29,54 @@ class GoogleAccountAdmin(admin.ModelAdmin):
     )
 
 
+class GoogleBusinessProfileDiscoveryAdmin(admin.ModelAdmin):
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "discover-profiles/",
+                self.admin_site.admin_view(self.discover_profiles),
+                name=f"discover_{self.model._meta.model_name}_profiles",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def discover_profiles(self, request):
+        try:
+            accounts = refresh_discovered_profiles()
+        except GoogleBusinessProfileError as exc:
+            self.message_user(request, exc.user_message, level=messages.ERROR)
+        except Exception:
+            logger.exception(
+                "Google Business Profile administrator discovery failed."
+            )
+            self.message_user(
+                request,
+                "Google Business Profile discovery failed. Check server logs.",
+                level=messages.ERROR,
+            )
+        else:
+            account_report = ", ".join(
+                f"{item.get('accountName') or item.get('name')} "
+                f"({item.get('name')}; verification "
+                f"{item.get('verificationState') or 'not provided'})"
+                for item in accounts
+            ) or "No accessible accounts"
+            self.message_user(
+                request,
+                f"Discovered {len(accounts)} account(s): {account_report}. "
+                "Select the correct YDCCS business location on the next page.",
+                level=messages.SUCCESS,
+            )
+        return redirect(
+            reverse("admin:google_reviews_googlebusinessprofilelocation_changelist")
+        )
+
+
 @admin.register(GoogleBusinessProfileAccount)
-class GoogleBusinessProfileAccountAdmin(admin.ModelAdmin):
+class GoogleBusinessProfileAccountAdmin(GoogleBusinessProfileDiscoveryAdmin):
+    change_list_template = (
+        "admin/google_reviews/googlebusinessprofileaccount/change_list.html"
+    )
     list_display = (
         "account_name",
         "resource_name",
@@ -60,7 +106,10 @@ class GoogleBusinessProfileAccountAdmin(admin.ModelAdmin):
 
 
 @admin.register(GoogleBusinessProfileLocation)
-class GoogleBusinessProfileLocationAdmin(admin.ModelAdmin):
+class GoogleBusinessProfileLocationAdmin(GoogleBusinessProfileDiscoveryAdmin):
+    change_list_template = (
+        "admin/google_reviews/googlebusinessprofilelocation/change_list.html"
+    )
     list_display = (
         "title",
         "account",
@@ -190,14 +239,7 @@ class GoogleReviewAdmin(admin.ModelAdmin):
 
     change_list_template = "reviews/google_review_change_list.html"
     def get_urls(self):
-        urls = super().get_urls()
-
         custom_urls = [
-            path(
-                "discover-profiles/",
-                self.admin_site.admin_view(self.discover_profiles),
-                name="discover_google_business_profiles",
-            ),
             path(
                 "sync/",
                 self.admin_site.admin_view(self.sync_reviews),
@@ -205,39 +247,7 @@ class GoogleReviewAdmin(admin.ModelAdmin):
             ),
         ]
 
-        return custom_urls + urls
-
-    def discover_profiles(self, request):
-        try:
-            accounts = refresh_discovered_profiles()
-        except GoogleBusinessProfileError as exc:
-            self.message_user(request, exc.user_message, level=messages.ERROR)
-        except Exception:
-            logger.exception(
-                "Google Business Profile administrator discovery failed."
-            )
-            self.message_user(
-                request,
-                "Google Business Profile discovery failed. Check server logs.",
-                level=messages.ERROR,
-            )
-        else:
-            account_report = ", ".join(
-                f"{item.get('accountName') or item.get('name')} "
-                f"({item.get('name')}; verification "
-                f"{item.get('verificationState') or 'not provided'})"
-                for item in accounts
-            ) or "No accessible accounts"
-            self.message_user(
-                request,
-                f"Discovered {len(accounts)} account(s): {account_report}. "
-                "Review available locations and select the correct YDCCS listing.",
-                level=messages.SUCCESS,
-            )
-        return redirect(
-            reverse("admin:google_reviews_googlebusinessprofilelocation_changelist")
-        )
-
+        return custom_urls + super().get_urls()
 
     def sync_reviews(self, request):
 

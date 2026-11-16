@@ -1,0 +1,11 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools %}
+<div style="margin-bottom: 15px;">
+    <a href="discover-profiles/" class="button">Discover Google Business Profiles</a>
+    <a href="{% url 'admin:google_reviews_googlebusinessprofilelocation_changelist' %}" class="button">
+        View and select a business location
+    </a>
+</div>
+{{ block.super }}
+{% endblock %}
