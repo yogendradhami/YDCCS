@@ -1,9 +1,10 @@
 import base64
 import hashlib
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
 
 from django.conf import settings
+from django.utils import timezone
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -22,6 +23,21 @@ class CalendarServiceUnavailable(RuntimeError):
 
 class CalendarNotConfigured(RuntimeError):
     pass
+
+
+def _google_credentials_expiry(updated_at):
+    if timezone.is_naive(updated_at):
+        updated_at = timezone.make_aware(
+            updated_at,
+            timezone.get_default_timezone(),
+        )
+
+    expiry = updated_at + timedelta(minutes=55)
+    # google-auth compares expiry to a naive UTC clock.
+    return timezone.make_naive(
+        expiry.astimezone(datetime_timezone.utc),
+        datetime_timezone.utc,
+    )
 
 
 EMPLOYEE_GOOGLE_SCOPES = [
@@ -47,7 +63,7 @@ def get_company_google_calendar_service():
         client_id=settings.GOOGLE_CLIENT_ID,
         client_secret=settings.GOOGLE_CLIENT_SECRET,
         scopes=COMPANY_GOOGLE_SCOPES,
-        expiry=google_account.updated_at + timedelta(minutes=55),
+        expiry=_google_credentials_expiry(google_account.updated_at),
     )
 
     if credentials.expired:
@@ -92,7 +108,7 @@ def get_employee_google_calendar_service(employee):
         client_id=settings.GOOGLE_CLIENT_ID,
         client_secret=settings.GOOGLE_CLIENT_SECRET,
         scopes=EMPLOYEE_GOOGLE_SCOPES,
-        expiry=google_account.updated_at + timedelta(minutes=55),
+        expiry=_google_credentials_expiry(google_account.updated_at),
     )
 
     # Refresh expired access token automatically.

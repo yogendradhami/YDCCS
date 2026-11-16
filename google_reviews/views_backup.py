@@ -4,11 +4,12 @@ import requests
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.conf import settings
+from django.utils import timezone
 from google_auth_oauthlib.flow import Flow
 from .models import GoogleAccount
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -157,7 +158,7 @@ def test_calendar_event(request):
         credentials=creds
     )
 
-    start_time = datetime.utcnow() + timedelta(days=1)
+    start_time = timezone.now() + timedelta(days=1)
 
     end_time = start_time + timedelta(hours=1)
 
@@ -165,10 +166,10 @@ def test_calendar_event(request):
         "summary": "YD Commercial Cleaning Test Event",
         "description": "Calendar integration test.",
         "start": {
-            "dateTime": start_time.isoformat() + "Z",
+            "dateTime": start_time.isoformat(),
         },
         "end": {
-            "dateTime": end_time.isoformat() + "Z",
+            "dateTime": end_time.isoformat(),
         },
     }
 

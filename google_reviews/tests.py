@@ -1,16 +1,22 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
 from unittest.mock import MagicMock, patch
+from zoneinfo import ZoneInfo
 
 from django.test import TestCase
 from django.utils import timezone
 from google.auth.exceptions import RefreshError
+from google.oauth2.credentials import Credentials
 
 from bookings.models import Booking
 from employees.models import Employee, EmployeeGoogleAccount
 from rosters.models import Roster
 
 from .models import GoogleAccount, GoogleReview
-from .calendar_utils import delete_booking_event, delete_roster_event
+from .calendar_utils import (
+    _google_credentials_expiry,
+    delete_booking_event,
+    delete_roster_event,
+)
 from .review_utils import get_google_reviews_api, get_public_google_reviews
 from googleapiclient.errors import HttpError
 
@@ -21,9 +27,16 @@ from google_reviews.calendar_utils import (
     create_or_update_roster_event,
     sync_existing_bookings_to_company_calendar,
 )
+from google_reviews.views import _parse_google_datetime
 
 
 class GoogleReviewsUtilsTests(TestCase):
+    def _set_oauth_session(self):
+        session = self.client.session
+        session["google_oauth_state"] = "oauth-state"
+        session["google_code_verifier"] = "oauth-verifier"
+        session.save()
+
     def test_get_public_google_reviews_returns_db_reviews(self):
         GoogleReview.objects.create(
             review_id="review-1",
@@ -50,10 +63,7 @@ class GoogleReviewsUtilsTests(TestCase):
         flow.credentials.refresh_token = None
         flow.credentials.id_token = {"email": "company@example.com"}
 
-        session = self.client.session
-        session["google_oauth_state"] = "oauth-state"
-        session["google_code_verifier"] = "oauth-verifier"
-        session.save()
+        self._set_oauth_session()
 
         with (
             patch("google_reviews.views.get_flow", return_value=flow),
@@ -72,6 +82,116 @@ class GoogleReviewsUtilsTests(TestCase):
         self.assertEqual(account.access_token, "new-access-token")
         self.assertEqual(account.refresh_token, "existing-refresh-token")
         self.assertEqual(account.email, "company@example.com")
+        self.assertEqual(
+            flow.fetch_token.call_args.kwargs["code_verifier"],
+            "oauth-verifier",
+        )
+
+    def test_company_google_callback_saves_new_refresh_token_without_duplicate(self):
+        account = GoogleAccount.objects.create(
+            access_token="old-access-token",
+            refresh_token="old-refresh-token",
+        )
+        flow = MagicMock()
+        flow.credentials.token = "new-access-token"
+        flow.credentials.refresh_token = "new-refresh-token"
+        flow.credentials.id_token = {"email": "company@example.com"}
+        self._set_oauth_session()
+
+        with (
+            patch("google_reviews.views.get_flow", return_value=flow),
+            patch(
+                "google_reviews.calendar_utils.sync_existing_bookings_to_company_calendar",
+                return_value=(0, 0),
+            ),
+        ):
+            response = self.client.get("/google/oauth/callback/")
+
+        self.assertEqual(response.status_code, 200)
+        account.refresh_from_db()
+        self.assertEqual(account.access_token, "new-access-token")
+        self.assertEqual(account.refresh_token, "new-refresh-token")
+        self.assertEqual(GoogleAccount.objects.count(), 1)
+
+    def test_calendar_backfill_failure_does_not_fail_oauth_or_discard_tokens(self):
+        flow = MagicMock()
+        flow.credentials.token = "saved-access-token"
+        flow.credentials.refresh_token = "saved-refresh-token"
+        flow.credentials.id_token = {"email": "company@example.com"}
+        self._set_oauth_session()
+
+        with (
+            patch("google_reviews.views.get_flow", return_value=flow),
+            patch(
+                "google_reviews.calendar_utils.sync_existing_bookings_to_company_calendar",
+                side_effect=RuntimeError("sensitive-refresh-token-value"),
+            ),
+            self.assertLogs("google_reviews.views", level="ERROR") as log_output,
+        ):
+            response = self.client.get("/google/oauth/callback/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Google connected successfully")
+        self.assertContains(response, "Calendar synchronisation needs attention")
+        self.assertContains(response, "do not need to reconnect Google")
+        self.assertNotContains(response, "sensitive-refresh-token-value")
+        self.assertIn("Google Calendar backfill", log_output.output[0])
+
+        account = GoogleAccount.objects.get()
+        self.assertEqual(account.access_token, "saved-access-token")
+        self.assertEqual(account.refresh_token, "saved-refresh-token")
+
+
+class GoogleDatetimeNormalizationTests(TestCase):
+    def test_naive_google_credential_timestamp_normalizes_to_naive_utc(self):
+        updated_at = timezone.make_naive(
+            timezone.now(),
+            timezone.get_default_timezone(),
+        )
+        expiry = _google_credentials_expiry(updated_at)
+        expected = (
+            timezone.make_aware(updated_at, timezone.get_default_timezone())
+            .astimezone(datetime_timezone.utc)
+            .replace(tzinfo=None)
+            + timedelta(minutes=55)
+        )
+
+        self.assertEqual(expiry, expected)
+        self.assertTrue(timezone.is_naive(expiry))
+        self.assertFalse(Credentials(token="test", expiry=expiry).expired)
+
+    def test_aware_google_credential_timestamp_preserves_its_instant(self):
+        updated_at = timezone.now().astimezone(
+            ZoneInfo("Australia/Adelaide")
+        )
+        expiry = _google_credentials_expiry(updated_at)
+        expected = (
+            updated_at.astimezone(datetime_timezone.utc)
+            .replace(tzinfo=None)
+            + timedelta(minutes=55)
+        )
+
+        self.assertEqual(expiry, expected)
+        self.assertTrue(timezone.is_naive(expiry))
+        self.assertFalse(Credentials(token="test", expiry=expiry).expired)
+
+    def test_naive_google_api_timestamp_is_assumed_in_configured_timezone(self):
+        parsed = _parse_google_datetime("2026-06-01T12:00:00")
+
+        self.assertTrue(timezone.is_aware(parsed))
+        self.assertEqual(
+            parsed,
+            timezone.make_aware(
+                datetime(2026, 6, 1, 12, 0),
+                timezone.get_default_timezone(),
+            ),
+        )
+
+    def test_aware_google_api_timestamp_preserves_its_offset(self):
+        parsed = _parse_google_datetime("2026-06-01T12:00:00+09:00")
+
+        self.assertTrue(timezone.is_aware(parsed))
+        self.assertEqual(parsed.utcoffset(), timedelta(hours=9))
 
 
 class GoogleReviewSyncTests(TestCase):
@@ -198,7 +318,7 @@ class CalendarDeleteRetryTests(TestCase):
         credentials_factory.assert_called_once()
         self.assertEqual(
             credentials_factory.call_args.kwargs["expiry"],
-            account.updated_at + timedelta(minutes=55),
+            _google_credentials_expiry(account.updated_at),
         )
         credentials.refresh.assert_called_once_with(google_request.return_value)
         build_calendar.assert_called_once()

@@ -1,8 +1,9 @@
 from django.utils import timezone
 import base64
 import hashlib
+import logging
 import secrets
-from datetime import datetime, timedelta
+from datetime import timedelta
 import requests
 from django.conf import settings
 from django.http import HttpResponse, response
@@ -17,14 +18,25 @@ from .models import GoogleAccount, GoogleReview
 from .review_utils import get_public_google_reviews
 from django.utils.dateparse import parse_datetime
 
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request as GoogleAuthRequest
+logger = logging.getLogger(__name__)
 
 
 SCOPES = [
     "https://www.googleapis.com/auth/business.manage",
     "https://www.googleapis.com/auth/calendar",
 ]
+
+
+def _parse_google_datetime(value):
+    if not isinstance(value, str):
+        return None
+
+    parsed = parse_datetime(value)
+    if parsed is None:
+        return None
+    if timezone.is_naive(parsed):
+        return timezone.make_aware(parsed, timezone.get_default_timezone())
+    return parsed
 
 
 def create_code_challenge(code_verifier):
@@ -84,8 +96,8 @@ def google_callback(request):
             """
         )
 
+    operation = "OAuth token exchange"
     try:
-
         flow = get_flow()
         flow.oauth2session.state = state
 
@@ -96,9 +108,7 @@ def google_callback(request):
 
         credentials = flow.credentials
 
-
-        # Preserve the existing refresh token when Google does not issue a new
-        # one during reconnection.
+        operation = "OAuth account persistence"
         google_account = GoogleAccount.objects.order_by(
             "-updated_at", "-id"
         ).first()
@@ -112,31 +122,51 @@ def google_callback(request):
             google_account.email = id_token.get("email", "")
         google_account.save()
 
+    except Exception:
+        logger.exception(
+            "Google OAuth callback failed during %s.",
+            operation,
+            extra={"operation": operation},
+        )
+        return HttpResponse(
+            """
+            <h2>Google connection failed</h2>
+            <p>Google could not be connected. Please try again.</p>
+            """,
+            status=500,
+        )
+
+    operation = "Google Calendar backfill"
+    try:
         from .calendar_utils import sync_existing_bookings_to_company_calendar
 
         synced_count, failed_count = sync_existing_bookings_to_company_calendar()
-
-
+    except Exception:
+        logger.exception(
+            "Google OAuth succeeded, but %s failed.",
+            operation,
+            extra={"operation": operation},
+        )
         return HttpResponse(
-            f"""
-            <h2>✅ Google connected successfully</h2>
-            <p>Your Google account is connected.</p>
-            <p>{synced_count} existing job(s) synced to the company calendar.</p>
-            <p>{failed_count} job(s) could not be synced. Check the application logs
-            and reconnect or retry after fixing the reported issue.</p>
+            """
+            <h2>Google connected successfully</h2>
+            <p>Your Google account is connected and the credentials were saved.</p>
+            <p>Calendar synchronisation needs attention. Check the application
+            logs and retry the calendar sync; you do not need to reconnect Google.</p>
             <a href="/google/reviews/">Check Reviews</a>
             """
         )
 
-
-    except Exception as e:
-
-        return HttpResponse(
-            f"""
-            <h2>Google OAuth Error</h2>
-            <pre>{e}</pre>
-            """
-        )
+    return HttpResponse(
+        f"""
+        <h2>✅ Google connected successfully</h2>
+        <p>Your Google account is connected.</p>
+        <p>{synced_count} existing job(s) synced to the company calendar.</p>
+        <p>{failed_count} job(s) could not be synced. Check the application logs
+        and retry the calendar sync if needed.</p>
+        <a href="/google/reviews/">Check Reviews</a>
+        """
+    )
 
 def public_google_reviews(request):
     reviews = get_public_google_reviews(limit=100)
@@ -357,9 +387,7 @@ def sync_google_reviews(request):
                     ),
 
                 "review_date":
-                    parse_datetime(create_time)
-                    if isinstance(create_time, str)
-                    else None,
+                    _parse_google_datetime(create_time),
 
                 "reply":
                     review_reply.get(
@@ -368,9 +396,7 @@ def sync_google_reviews(request):
                     ),
 
                 "reply_date":
-                    parse_datetime(reply_time)
-                    if isinstance(reply_time, str)
-                    else None,
+                    _parse_google_datetime(reply_time),
 
                 "review_url":
                     review.get(
@@ -465,7 +491,7 @@ def test_calendar_event(request):
 
     service = build("calendar", "v3", credentials=creds)
 
-    start_time = datetime.utcnow() + timedelta(days=1)
+    start_time = timezone.now() + timedelta(days=1)
 
     end_time = start_time + timedelta(hours=1)
 
@@ -473,10 +499,10 @@ def test_calendar_event(request):
         "summary": "YD Commercial Cleaning Test Event",
         "description": "Calendar integration test.",
         "start": {
-            "dateTime": start_time.isoformat() + "Z",
+            "dateTime": start_time.isoformat(),
         },
         "end": {
-            "dateTime": end_time.isoformat() + "Z",
+            "dateTime": end_time.isoformat(),
         },
     }
 
