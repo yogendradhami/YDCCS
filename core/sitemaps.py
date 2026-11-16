@@ -1,23 +1,25 @@
 from functools import lru_cache
+from urllib.parse import urlsplit
+
 from django.contrib.sitemaps import Sitemap
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 
 from .seo_data import LOCATION_ALIASES
 from .seo_data import SERVICE_DEFINITIONS
 from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
 from .adelaide_local_content import ADELAIDE_LOCAL_CONTENT
+from blog.models import BlogPost
 from services.models import Service
-from django.utils import timezone
 from .models import TestimonialVideo
-
 
 
 class BaseSitemap(Sitemap):
     protocol = "https"
 
     def get_domain(self, site=None):
-        return "ydcleaning.com.au"
+        return urlsplit(settings.SITE_URL).netloc
 
 
 @lru_cache(maxsize=1)
@@ -55,13 +57,22 @@ def service_page_slugs():
 
 class StaticViewSitemap(BaseSitemap):
 
-
     def items(self):
         return [
             "home",
+            "about",
+            "pricing",
+            "team",
             "contact",
-            "booking",
+            "resources",
             "testimonials",
+            "guides",
+            "case_studies",
+            "faq",
+            "insurance",
+            "eco_friendly_cleaning",
+            "emergency_cleaning",
+            "blog",
             "cleaning_services_video",
             "customer_testimonial_video",
         ]
@@ -70,8 +81,10 @@ class StaticViewSitemap(BaseSitemap):
         return reverse(item)
 
     def priority(self, item):
-        if item in ["home", "booking"]:
+        if item == "home":
             return 1.0
+        if item in {"services_home", "guides", "blog"}:
+            return 0.9
         return 0.8
 
     def lastmod(self, item):
@@ -239,6 +252,41 @@ class TestimonialVideoSitemap(BaseSitemap):
         return 0.7
 
 
+class BlogPostSitemap(BaseSitemap):
+    def items(self):
+        return BlogPost.objects.filter(published=True).order_by("slug")
+
+    def location(self, post):
+        return reverse("blog_detail", kwargs={"blog_slug": post.slug})
+
+    def lastmod(self, post):
+        return post.updated_at
+
+    def priority(self, post):
+        return 0.7
+
+
+class GuideSitemap(BaseSitemap):
+    def items(self):
+        return (
+            "end-of-lease-checklist",
+            "office-checklist",
+            "maintenance-schedule",
+            "post-construction-checklist",
+            "residential-checklist",
+            "window-glass-guide",
+        )
+
+    def location(self, item):
+        return reverse("guide_detail", kwargs={"guide_slug": item})
+
+    def priority(self, item):
+        return 0.7
+
+    def lastmod(self, item):
+        return timezone.now()
+
+
 sitemaps = {
     "static": StaticViewSitemap,
     "services_index": ServicesIndexSitemap,
@@ -248,4 +296,6 @@ sitemaps = {
     "adelaide_local_index": AdelaideLocalIndexSitemap,
     "adelaide_local_letters": AdelaideLocalLetterSitemap,
     "testimonial_videos": TestimonialVideoSitemap,
+    "blog_posts": BlogPostSitemap,
+    "guides": GuideSitemap,
 }

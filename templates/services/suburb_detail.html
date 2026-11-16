@@ -9,6 +9,10 @@
 {{ page_description }}
 {% endblock %}
 
+{% block robots_meta %}
+{% if is_indexable %}index, follow{% else %}noindex, follow{% endif %}
+{% endblock %}
+
 {% block og_title %}
 {{ page_title }}
 {% endblock %}
@@ -922,13 +926,13 @@
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://ydcleaning.com.au/"
+                "item": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}/"
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Adelaide Cleaning Services",
-                "item": "https://ydcleaning.com.au/local/index/adelaide/"
+                "item": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}{% url 'local_area_index_default' %}"
             },
             {
                 "@type": "ListItem",

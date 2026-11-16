@@ -1,9 +1,17 @@
 from unittest.mock import patch
 
+from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
 
-from core.sitemaps import LocalServiceSitemap, _base_service_slug_for_local_page
+from blog.models import BlogPost
+from core.sitemaps import (
+    BlogPostSitemap,
+    GuideSitemap,
+    LocalServiceSitemap,
+    StaticViewSitemap,
+    _base_service_slug_for_local_page,
+)
 from services.models import Service
 
 
@@ -88,3 +96,51 @@ class LocalServiceSitemapPerformanceTests(TestCase):
             second = sitemap.lastmod("unknown-service-norwood")
 
         self.assertEqual(first, second)
+
+
+class PublicContentSitemapTests(TestCase):
+    def test_sitemaps_use_the_configured_canonical_domain(self):
+        sitemap = StaticViewSitemap()
+        self.assertEqual(sitemap.get_domain(), settings.SITE_URL.split("://", 1)[1])
+        self.assertNotIn("booking", sitemap.items())
+
+    def test_guides_sitemap_contains_only_existing_public_guides(self):
+        sitemap = GuideSitemap()
+        self.assertEqual(
+            set(sitemap.items()),
+            {
+                "end-of-lease-checklist",
+                "office-checklist",
+                "maintenance-schedule",
+                "post-construction-checklist",
+                "residential-checklist",
+                "window-glass-guide",
+            },
+        )
+        self.assertTrue(
+            all(
+                sitemap.location(item).startswith("/guides/")
+                for item in sitemap.items()
+            )
+        )
+
+    def test_blog_sitemap_excludes_unpublished_posts(self):
+        published = BlogPost.objects.create(
+            title="Published cleaning guide",
+            slug="published-cleaning-guide",
+            content="Published content.",
+            published=True,
+        )
+        BlogPost.objects.create(
+            title="Draft cleaning guide",
+            slug="draft-cleaning-guide",
+            content="Draft content.",
+            published=False,
+        )
+
+        sitemap = BlogPostSitemap()
+        self.assertEqual(list(sitemap.items()), [published])
+        self.assertEqual(
+            sitemap.location(published),
+            "/blog/published-cleaning-guide/",
+        )

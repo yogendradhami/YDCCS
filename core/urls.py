@@ -117,10 +117,17 @@ urlpatterns = [
     path("services/", services_list, name="services_home"),
     path("local/", local_services, name="local_services"),
     path(
-        "local/index/adelaide/",
+        "local/adelaide/",
         local_area_index,
         {"letter": "a"},
         name="local_area_index_default",
+    ),
+    path(
+        "local/index/adelaide/",
+        RedirectView.as_view(
+            pattern_name="local_area_index_default",
+            permanent=True,
+        ),
     ),
     path(
         "local/index/adelaide/<slug:letter>/",

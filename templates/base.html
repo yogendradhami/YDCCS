@@ -376,15 +376,15 @@
 
         {
           "@type": "Organization",
-          "@id": "https://ydcleaning.com.au/#organization",
+          "@id": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}/#organization",
 
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
 
-          "url": "{{ site_url|default:'https://ydcleaning.com.au'|escapejs }}",
+          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
 
           "logo": {
             "@type": "ImageObject",
-            "url": "https://ydcleaning.com.au/static/images/company/logoo.webp"
+            "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}/static/images/company/logoo.webp"
           },
 
           "sameAs": [
@@ -419,15 +419,15 @@
 
         {
           "@type": "LocalBusiness",
-          "@id": "https://ydcleaning.com.au/#localbusiness",
+          "@id": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}/#localbusiness",
 
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
 
-          "url": "{{ site_url|default:'https://ydcleaning.com.au'|escapejs }}",
+          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
 
           "image": {
             "@type": "ImageObject",
-            "url": "https://ydcleaning.com.au/static/images/company/logoo.webp"
+            "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}/static/images/company/logoo.webp"
           },
 
           "telephone": "{{ company_settings.phone|default:'+61 430 049 865'|escapejs }}",
@@ -489,16 +489,16 @@
 
         {
           "@type": "WebSite",
-          "@id": "https://ydcleaning.com.au/#website",
+          "@id": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}/#website",
 
-          "url": "{{ site_url|default:'https://ydcleaning.com.au'|escapejs }}",
+          "url": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}",
 
           "name": "{{ company_settings.business_name|default:'YD Commercial Cleaning Services'|escapejs }}",
 
           "description": "{{ page_description|default:default_seo_description|default:'Professional cleaning services in Adelaide by YD Commercial Cleaning Services.'|escapejs }}",
 
           "publisher": {
-            "@id": "https://ydcleaning.com.au/#organization"
+            "@id": "{{ site_url|default:'https://www.ydcleaning.com.au'|escapejs }}/#organization"
           }
         }
 

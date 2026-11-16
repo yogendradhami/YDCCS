@@ -14,6 +14,7 @@ import os
 import sys
 import warnings
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import environ
 from django.utils.csp import CSP
@@ -29,14 +30,6 @@ env = environ.Env(
 
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-SITE_URL = env.str(
-    "SITE_URL",
-    default="https://www.ydcleaning.com.au",
-).rstrip("/")
-
-SITE_ID = 1
-
 
 # ==========================================================
 # LOAD LOCAL ENVIRONMENT FILES
@@ -70,6 +63,22 @@ if IS_PRODUCTION and DEBUG:
     raise RuntimeError(
         "DJANGO_DEBUG=True is not allowed when IS_PRODUCTION=True."
     )
+
+_configured_site_url = env.str(
+    "SITE_URL",
+    default="https://www.ydcleaning.com.au",
+).rstrip("/")
+_configured_site_host = (urlsplit(_configured_site_url).hostname or "").lower()
+
+if IS_PRODUCTION or _configured_site_host in {
+    "ydcleaning.com.au",
+    "www.ydcleaning.com.au",
+}:
+    SITE_URL = "https://www.ydcleaning.com.au"
+else:
+    SITE_URL = _configured_site_url
+
+SITE_ID = 1
 
 
 # ==========================================================

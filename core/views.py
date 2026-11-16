@@ -1336,40 +1336,38 @@ def local_area_index(request, letter="a"):
 def local_suburb_detail(request, area_slug):
     location_name = "Adelaide"
 
-
-
-    # ---------------------------------------------------------
-    # 1. Prefer controlled Adelaide content
-    # ---------------------------------------------------------
     suburb_data = ADELAIDE_LOCAL_AREAS.get(area_slug)
-
-    # ---------------------------------------------------------
-    # 2. If there is no controlled page yet, find the suburb
-    #    in the existing statewide suburb dataset.
-    #
-    #    IMPORTANT:
-    #    We are NOT modifying suburbs_data.py.
-    # ---------------------------------------------------------
     if not suburb_data:
-        for areas in ADELAIDE_SUBURBS.values():
-            for area in areas:
-                if _slugify_area(area) == area_slug:
-                    suburb_data = {
-                        "name": area["name"],
-                        "postcode": area["postcode"],
-                        "letter": area_slug[:1].upper(),
-                    }
-                    break
+        unique_content = ADELAIDE_LOCAL_CONTENT.get(area_slug)
+        if unique_content:
+            suburb = _get_suburb_by_slug(area_slug)
+            if not suburb:
+                raise Http404("Adelaide service area not found")
+            suburb_data = {
+                "name": suburb["name"],
+                "postcode": suburb["postcode"],
+                **unique_content,
+            }
 
-            if suburb_data:
-                break
-
-    # ---------------------------------------------------------
-    # 3. Preserve the existing fallback behaviour for genuinely
-    #    unknown URLs.
-    # ---------------------------------------------------------
+    is_curated_area = suburb_data is not None
     if not suburb_data:
-        return redirect("local_services")
+        suburb = _get_suburb_by_slug(area_slug)
+        if not suburb:
+            raise Http404("Adelaide service area not found")
+
+        try:
+            postcode = int(suburb["postcode"])
+        except (KeyError, TypeError, ValueError):
+            raise Http404("Adelaide service area not found") from None
+
+        if not 5000 <= postcode <= 5199:
+            raise Http404("Adelaide service area not found")
+
+        suburb_data = {
+            "name": suburb["name"],
+            "postcode": suburb["postcode"],
+            "letter": area_slug[:1].upper(),
+        }
 
     suburb_name = suburb_data["name"]
     suburb_data = {
@@ -1600,6 +1598,7 @@ def local_suburb_detail(request, area_slug):
 
         "page_title": page_title,
         "page_description": page_description,
+        "is_indexable": is_curated_area,
 
         "services": services,
         "related_services": _select_adelaide_service_links(services),
@@ -2203,9 +2202,17 @@ def _build_service_resource_links(service_slug, location):
     }
 
 def legacy_service_redirect(request, service_slug):
+    normalized_slug = _normalize_service_slug(service_slug)
+    if normalized_slug not in SERVICE_DEFINITIONS and not Service.objects.filter(
+        is_active=True,
+        slug__in=(normalized_slug, f"{normalized_slug}-adelaide"),
+    ).exists():
+        raise Http404("Service not found")
+
     canonical_path = _get_canonical_service_redirect_path(service_slug)
     if canonical_path:
         return redirect(canonical_path, permanent=True)
+
     return redirect(
         f"/services/{service_slug}/",
         permanent=True
@@ -2743,6 +2750,21 @@ def service_page(request, service_slug):
     if not service:
         raise Http404("Service not found")
 
+    if location and location.casefold() != "adelaide":
+        service_title = str(service.get("title") or "Cleaning Service")
+        service_title = service_title.removesuffix(" Adelaide").strip()
+        description = (
+            service.get("meta_description")
+            or service.get("description")
+            or "Cleaning planned around your property requirements."
+        )
+        localized_description = (
+            f"{service_title} in {location}, Adelaide. {description}"
+        )
+        if len(localized_description) > 160:
+            localized_description = localized_description[:160].rsplit(" ", 1)[0]
+        service["meta_description"] = localized_description
+
     service["related_services"] = _build_related_service_links(
         normalized_slug,
         service_obj=service_obj,
@@ -3222,12 +3244,12 @@ def _video_watch_context(request, *, title, description, video_url,
         "embedUrl": canonical,
         "publisher": {
             "@type": "Organization",
-            "@id": "https://ydcleaning.com.au/#organization",
+            "@id": f"{settings.SITE_URL.rstrip('/')}/#organization",
             "name": "YD Commercial Cleaning Services",
-            "url": "https://ydcleaning.com.au/",
+            "url": f"{settings.SITE_URL.rstrip('/')}/",
             "logo": {
                 "@type": "ImageObject",
-                "url": "https://ydcleaning.com.au/static/images/company/logoo.webp",
+                "url": f"{settings.SITE_URL.rstrip('/')}/static/images/company/logoo.webp",
             },
         },
     }

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from unittest.mock import patch
 from urllib.parse import urlsplit
+from xml.etree import ElementTree
 
 from django.conf import settings
 from django.test import TestCase, override_settings
@@ -173,6 +174,30 @@ class SmokeTest(TestCase):
         self.assertIn("<urlset", sitemap)
         self.assertNotIn("<sitemapindex", sitemap)
         self.assertGreaterEqual(sitemap.count("<url>"), 1790)
+        self.assertIn(f"<loc>{settings.SITE_URL}/</loc>", sitemap)
+        self.assertNotIn(f"{settings.SITE_URL}/booking/", sitemap)
+        sitemap_root = ElementTree.fromstring(sitemap_response.content)
+        sitemap_urls = [
+            element.text
+            for element in sitemap_root.iter()
+            if element.tag.endswith("loc")
+        ]
+        self.assertEqual(len(sitemap_urls), len(set(sitemap_urls)))
+        self.assertTrue(
+            all(url.startswith(f"{settings.SITE_URL}/") for url in sitemap_urls)
+        )
+        self.assertFalse(
+            any(
+                f"{settings.SITE_URL}{path}" in sitemap_urls
+                for path in (
+                    "/admin/",
+                    "/dashboard/",
+                    "/portal/",
+                    "/employee/",
+                    "/booking/",
+                )
+            )
+        )
         self.assertNotIn("X-Robots-Tag", sitemap_response.headers)
         self.assertIn("public, max-age=86400", sitemap_response["Cache-Control"])
 
@@ -189,7 +214,14 @@ class SmokeTest(TestCase):
             if line.strip()
         }
         self.assertNotIn("Disallow: /", robots_lines)
-        self.assertIn("Sitemap:", body)
+        self.assertNotIn("Disallow: /booking/", robots_lines)
+        self.assertIn(f"Sitemap: {settings.SITE_URL}/sitemap.xml", body)
+
+    def test_booking_page_is_noindex_without_duplicate_robots_header(self):
+        response = self.client.get("/booking/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("noindex, follow", response.content.decode("utf-8"))
+        self.assertNotIn("X-Robots-Tag", response.headers)
 
     def test_testimonials_page_includes_live_google_reviews_section(self):
         GoogleReview.objects.create(
@@ -323,7 +355,10 @@ class SmokeTest(TestCase):
 
         body = response.content.decode("utf-8")
         self.assertIn('aria-label="Breadcrumb"', body)
-        self.assertIn('"@id": "https://ydcleaning.com.au/#localbusiness"', body)
+        self.assertIn(
+            f'"@id": "{settings.SITE_URL}/#localbusiness"',
+            body,
+        )
         self.assertNotIn("Satisfaction Guaranteed", body)
         self.assertNotIn("Happy Adelaide Customers", body)
         self.assertIn("fetchpriority=\"high\"", body)
@@ -376,6 +411,40 @@ class SmokeTest(TestCase):
         self.assertIn("Aberfoyle Park Cleaning Services | YD Commercial Cleaning", body)
         self.assertIn("Professional cleaning services in Aberfoyle Park, Adelaide", body)
         self.assertIn("Aberfoyle Park", body)
+
+    def test_only_adelaide_metro_locations_are_served_and_curated_pages_are_indexable(self):
+        curated = self.client.get("/local/adelaide/aberfoyle-park-5159/")
+        self.assertEqual(curated.status_code, 200)
+        self.assertIn("index, follow", curated.content.decode("utf-8"))
+
+        metro_but_uncurated = self.client.get("/local/adelaide/melrose-park-5039/")
+        self.assertEqual(metro_but_uncurated.status_code, 200)
+        self.assertIn(
+            "noindex, follow",
+            metro_but_uncurated.content.decode("utf-8"),
+        )
+
+        for unsupported_url in (
+            "/local/adelaide/arkaroola-5732/",
+            "/local/adelaide/bulloo-creek-5440/",
+            "/local/adelaide/adelaide-5884/",
+            "/local/adelaide/melrose-park-5000/",
+            "/local/adelaide/not-a-real-location-5000/",
+        ):
+            with self.subTest(url=unsupported_url):
+                self.assertEqual(self.client.get(unsupported_url).status_code, 404)
+
+    def test_adelaide_directory_hub_uses_canonical_path(self):
+        hub = self.client.get("/local/adelaide/")
+        self.assertEqual(hub.status_code, 200)
+        self.assertContains(
+            hub,
+            f'<link rel="canonical" href="{settings.SITE_URL}/local/adelaide/">',
+        )
+
+        legacy_hub = self.client.get("/local/index/adelaide/", follow=False)
+        self.assertEqual(legacy_hub.status_code, 301)
+        self.assertEqual(legacy_hub["Location"], "/local/adelaide/")
 
     def test_adelaide_directory_and_all_letter_pages_link_to_controlled_suburbs(self):
         from core.views import _get_controlled_adelaide_areas
@@ -570,6 +639,13 @@ class SmokeTest(TestCase):
                 self.assertEqual(resp.status_code, 301)
                 self.assertEqual(resp["Location"], canonical_url)
 
+    def test_unknown_legacy_service_urls_return_404_instead_of_redirecting(self):
+        response = self.client.get(
+            "/not-a-real-cleaning-service/",
+            follow=False,
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_canonical_service_urls_remain_200_and_self_referential(self):
         canonical_urls = [
             "/services/carpet-steam-cleaning-adelaide-glenelg/",
@@ -591,10 +667,48 @@ class SmokeTest(TestCase):
                 self.assertEqual(redirected.status_code, 200)
                 self.assertEqual(redirected.redirect_chain, [])
 
+    def test_service_location_metadata_is_unique_and_self_referential(self):
+        glenelg = self.client.get(
+            "/services/carpet-steam-cleaning-adelaide-glenelg/"
+        )
+        norwood = self.client.get(
+            "/services/carpet-steam-cleaning-adelaide-norwood/"
+        )
+
+        self.assertEqual(glenelg.status_code, 200)
+        self.assertEqual(norwood.status_code, 200)
+        self.assertNotEqual(
+            glenelg.context["service"]["meta_description"],
+            norwood.context["service"]["meta_description"],
+        )
+        self.assertIn(
+            "Carpet Steam Cleaning in Glenelg",
+            glenelg.content.decode("utf-8"),
+        )
+        self.assertIn(
+            "Carpet Steam Cleaning in Norwood",
+            norwood.content.decode("utf-8"),
+        )
+        self.assertIn(
+            f'<link rel="canonical" href="{settings.SITE_URL}/services/carpet-steam-cleaning-adelaide-glenelg/">',
+            glenelg.content.decode("utf-8"),
+        )
+
     def test_sitemap_uses_adelaide_prefixed_local_service_urls(self):
         sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
         self.assertIn("/services/carpet-steam-cleaning-adelaide-glenelg/", sitemap)
         self.assertNotIn("/services/carpet-steam-cleaning-glenelg/", sitemap)
+
+    def test_sitemap_and_local_area_urls_use_canonical_routes(self):
+        sitemap = self.client.get("/sitemap.xml").content.decode("utf-8")
+        self.assertIn(
+            f"<loc>{settings.SITE_URL}/local/adelaide/</loc>",
+            sitemap,
+        )
+        self.assertNotIn(
+            f"<loc>{settings.SITE_URL}/local/index/adelaide/</loc>",
+            sitemap,
+        )
 
 
 class PublicBookingWorkflowTests(TestCase):

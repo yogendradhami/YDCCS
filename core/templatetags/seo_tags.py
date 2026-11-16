@@ -58,13 +58,14 @@ def twitter_image(context):
 @register.simple_tag()
 def organization_schema():
     """Return Organization JSON-LD schema for YD Commercial Cleaning."""
+    site_url = settings.SITE_URL.rstrip("/")
     schema = {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         "name": "YD Commercial Cleaning Services",
         "alternateName": "YD Cleaning",
-        "url": "https://ydcleaning.com.au",
-        "logo": "https://ydcleaning.com.au/static/images/company/logoo.webp",
+        "url": site_url,
+        "logo": f"{site_url}/static/images/company/logoo.webp",
         "description": "Professional cleaning services in Adelaide for homes, offices, end-of-lease and commercial spaces.",
         "address": {
             "@type": "PostalAddress",
@@ -99,14 +100,15 @@ def organization_schema():
 @register.simple_tag()
 def website_schema():
     """Return WebSite JSON-LD schema."""
+    site_url = settings.SITE_URL.rstrip("/")
     schema = {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "YD Commercial Cleaning Services",
-        "url": "https://ydcleaning.com.au",
+        "url": site_url,
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://ydcleaning.com.au/?q={search_term_string}",
+            "target": f"{site_url}/?q={{search_term_string}}",
             "query-input": "required name=search_term_string"
         }
     }

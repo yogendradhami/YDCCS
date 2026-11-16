@@ -8,6 +8,7 @@
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count, F
 from django.utils import timezone
@@ -55,9 +56,13 @@ def seo_context(request):
     return {
         "default_seo_description": "Professional cleaning services in Adelaide. Expert residential, office, end-of-lease and commercial cleaning by YD Commercial Cleaning Services.",
         "default_seo_keywords": "cleaning services adelaide, commercial cleaning, office cleaning, house cleaning, end of lease cleaning, bond cleaning, window cleaning, carpet cleaning",
-        "open_graph_image": "https://ydcleaning.com.au/static/images/company/logoo.webp",
-        "twitter_image": "https://ydcleaning.com.au/static/images/company/logoo.webp",
-        "site_url": "https://ydcleaning.com.au",
+        "open_graph_image": (
+            f"{settings.SITE_URL}/static/images/company/logoo.webp"
+        ),
+        "twitter_image": (
+            f"{settings.SITE_URL}/static/images/company/logoo.webp"
+        ),
+        "site_url": settings.SITE_URL,
         "same_as_urls": '["https://www.facebook.com/ydcommercialcleaning","https://www.instagram.com/ydcommercialcleaning","https://www.tiktok.com/@yd_cleaning3"]',
         "service_area_list": '["Adelaide","South Australia"]',
         "address_street": "Adelaide",

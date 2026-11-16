@@ -1,6 +1,7 @@
 # core/middleware.py
 
 import logging
+import re
 import time
 
 from django.contrib import messages
@@ -11,6 +12,10 @@ from django.shortcuts import redirect
 from django.urls import Resolver404, resolve
 
 logger = logging.getLogger(__name__)
+ROBOTS_META_RE = re.compile(
+    rb"<meta\b[^>]*\bname\s*=\s*['\"]robots['\"]",
+    re.IGNORECASE,
+)
 
 
 DASHBOARD_PERMISSION_SECTIONS = {
@@ -749,6 +754,7 @@ class SEOMiddleware:
     Authenticated responses:
         Cache-Control: private, no-store
 
+    HTML robots meta directives take precedence over a duplicate header.
     Sitemap and robots.txt are handled separately.
     """
 
@@ -809,7 +815,10 @@ class SEOMiddleware:
             response.status_code == 200
             and "text/html" in response.get("Content-Type", "")
         ):
-            response["X-Robots-Tag"] = "index, follow"
+            if not response.streaming and ROBOTS_META_RE.search(response.content):
+                response.headers.pop("X-Robots-Tag", None)
+            else:
+                response["X-Robots-Tag"] = "index, follow"
 
         return response
 

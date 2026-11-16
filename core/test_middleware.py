@@ -1,7 +1,7 @@
 import re
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import AnonymousUser, Permission
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse
 from django.test import RequestFactory, SimpleTestCase, TestCase
@@ -10,9 +10,58 @@ from django.urls import URLResolver, get_resolver, resolve
 from .middleware import (
     ExceptionLoggingMiddleware,
     RoleAccessMiddleware,
+    SEOMiddleware,
     SlowRequestLoggingMiddleware,
     dashboard_required_permissions,
 )
+
+
+class SeoMiddlewareTests(SimpleTestCase):
+    def test_existing_meta_robots_does_not_get_a_duplicate_header(self):
+        request = RequestFactory().get("/")
+        request.user = AnonymousUser()
+
+        def get_response(current_request):
+            response = HttpResponse(
+                '<meta name="robots" content="index, follow">',
+                content_type="text/html",
+            )
+            response["X-Robots-Tag"] = "index, follow"
+            return response
+
+        middleware = SEOMiddleware(get_response)
+
+        response = middleware(request)
+
+        self.assertNotIn("X-Robots-Tag", response.headers)
+
+    def test_public_html_without_meta_keeps_the_robots_header_fallback(self):
+        request = RequestFactory().get("/")
+        request.user = AnonymousUser()
+        middleware = SEOMiddleware(
+            lambda current_request: HttpResponse(
+                "<main>Public page</main>",
+                content_type="text/html",
+            )
+        )
+
+        response = middleware(request)
+
+        self.assertEqual(response["X-Robots-Tag"], "index, follow")
+
+    def test_private_path_remains_noindex(self):
+        request = RequestFactory().get("/dashboard/")
+        request.user = AnonymousUser()
+        middleware = SEOMiddleware(
+            lambda current_request: HttpResponse(
+                "<main>Private page</main>",
+                content_type="text/html",
+            )
+        )
+
+        response = middleware(request)
+
+        self.assertEqual(response["X-Robots-Tag"], "noindex, nofollow")
 
 
 class DashboardPermissionMappingTests(SimpleTestCase):
