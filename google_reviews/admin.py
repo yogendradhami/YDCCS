@@ -149,13 +149,123 @@ class GoogleBusinessProfileLocationAdmin(GoogleBusinessProfileDiscoveryAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "check-selected-verification/",
+                self.admin_site.admin_view(
+                    self.check_selected_verification
+                ),
+                name="check_google_business_profile_verification",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def check_selected_verification(self, request):
+        location = GoogleBusinessProfileLocation.objects.filter(
+            is_selected=True
+        ).first()
+        if location is None:
+            self.message_user(
+                request,
+                "Select a Google Business Profile location before checking its status.",
+                level=messages.ERROR,
+            )
+            return redirect(
+                reverse(
+                    "admin:google_reviews_googlebusinessprofilelocation_changelist"
+                )
+            )
+
+        from .business_profile import GoogleBusinessProfileService
+
+        try:
+            state = GoogleBusinessProfileService().get_location_voice_of_merchant_state(
+                location.resource_name
+            )
+        except GoogleBusinessProfileError as exc:
+            self.message_user(request, exc.user_message, level=messages.ERROR)
+        except Exception:
+            logger.exception(
+                "Google Business Profile verification-state check failed."
+            )
+            self.message_user(
+                request,
+                "Could not check this location's Google verification state. "
+                "Check server logs.",
+                level=messages.ERROR,
+            )
+        else:
+            has_voice_of_merchant = state.get("hasVoiceOfMerchant")
+            if isinstance(has_voice_of_merchant, bool):
+                location.has_voice_of_merchant = has_voice_of_merchant
+                location.save(update_fields=("has_voice_of_merchant",))
+
+            if state.get("verify") is not None:
+                pending = state["verify"].get("hasPendingVerification")
+                detail = (
+                    "A verification is already pending; complete it in Google "
+                    "Business Profile."
+                    if pending
+                    else "Complete the requested verification in Google "
+                    "Business Profile before syncing reviews."
+                )
+                self.message_user(
+                    request,
+                    f"Google reports that {location.title or location.resource_name} "
+                    f"requires verification. {detail}",
+                    level=messages.ERROR,
+                )
+            elif state.get("resolveOwnershipConflict") is not None:
+                self.message_user(
+                    request,
+                    "Google reports an ownership conflict or duplicate listing. "
+                    "Resolve it in Google Business Profile before syncing reviews.",
+                    level=messages.ERROR,
+                )
+            elif state.get("complyWithGuidelines") is not None:
+                self.message_user(
+                    request,
+                    "Google requires this listing to address a Business Profile "
+                    "guidelines issue before it can be used.",
+                    level=messages.ERROR,
+                )
+            elif state.get("waitForVoiceOfMerchant") is not None:
+                self.message_user(
+                    request,
+                    "Google reports that this listing is under review. Wait for "
+                    "Google to grant Voice of Merchant, then retry review sync.",
+                    level=messages.WARNING,
+                )
+            elif has_voice_of_merchant is True:
+                self.message_user(
+                    request,
+                    "Google reports that this location has Voice of Merchant "
+                    "and is in good standing. If review sync still fails, refresh "
+                    "the selected account/location resources.",
+                    level=messages.SUCCESS,
+                )
+            else:
+                self.message_user(
+                    request,
+                    "Google did not confirm this location's Voice of Merchant "
+                    "state. Its verification status remains unknown.",
+                    level=messages.WARNING,
+                )
+
+        return redirect(
+            reverse(
+                "admin:google_reviews_googlebusinessprofilelocation_changelist"
+            )
+        )
+
     @admin.display(description="Voice of Merchant")
     def voice_of_merchant_status(self, location):
         if location.has_voice_of_merchant is None:
             return "Not provided by Google"
         return "Available" if location.has_voice_of_merchant else "Unavailable"
 
-    @admin.display(description="Account verification")
+    @admin.display(description="Account verification (not location)")
     def account_verification_state(self, location):
         return location.account.verification_state or "Not provided by Google"
 
@@ -199,22 +309,27 @@ class GoogleBusinessProfileLocationAdmin(GoogleBusinessProfileDiscoveryAdmin):
                 pk=location.pk
             ).update(is_selected=True)
 
-        verification_message = ""
-        if location.has_voice_of_merchant is not True:
+        if location.has_voice_of_merchant is False:
             verification_message = (
-                " Google's Voice of Merchant metadata does not confirm listing "
-                "verification; the reviews API will validate access during sync."
+                " Google reports this location does not currently have Voice of "
+                "Merchant. Check its verification or ownership status before syncing."
             )
+            level = messages.WARNING
+        elif location.has_voice_of_merchant is None:
+            verification_message = (
+                " Google did not provide Voice of Merchant metadata; the location "
+                "verification state is unknown."
+            )
+            level = messages.WARNING
+        else:
+            verification_message = ""
+            level = messages.SUCCESS
         self.message_user(
             request,
             f"Selected {location.title or location.resource_name} under "
             f"{location.account.account_name or location.account.resource_name}."
             f"{verification_message}",
-            level=(
-                messages.WARNING
-                if verification_message
-                else messages.SUCCESS
-            ),
+            level=level,
         )
 
 

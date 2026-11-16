@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 ACCOUNT_API = "https://mybusinessaccountmanagement.googleapis.com/v1"
 LOCATION_API = "https://mybusinessbusinessinformation.googleapis.com/v1"
+VERIFICATION_API = "https://mybusinessverifications.googleapis.com/v1"
 REVIEWS_API = "https://mybusiness.googleapis.com/v4"
 LOCATION_READ_MASK = "name,title,storefrontAddress,metadata"
 ACCOUNT_PAGE_SIZE = 20
@@ -56,6 +57,16 @@ class GooglePermissionError(GoogleBusinessProfileError):
     )
 
 
+class GoogleBusinessProfileApiDisabled(GoogleBusinessProfileError):
+    status_code = 403
+    category = "api_disabled"
+    user_message = (
+        "The Google My Business Verifications API is disabled for this Google "
+        "Cloud project. Enable it for the project used by this app, wait for "
+        "Google's change to propagate, then check location verification again."
+    )
+
+
 class GoogleAccountNotFound(GoogleBusinessProfileError):
     status_code = 404
     category = "account_not_found"
@@ -69,8 +80,9 @@ class GoogleLocationNotFound(GoogleBusinessProfileError):
     status_code = 404
     category = "location_not_found"
     user_message = (
-        "The selected Google Business Profile location was not found under its "
-        "stored account. Run administrator discovery and verify the selection."
+        "Google could not find the selected Business Profile account/location "
+        "resource. This does not by itself prove the location is unverified. "
+        "Refresh profiles and locations, then select the matching YDCCS listing."
     )
 
 
@@ -206,14 +218,20 @@ class GoogleBusinessProfileService:
                 if response.status_code == 401:
                     raise GoogleAuthenticationError
                 if response.status_code == 403:
+                    if any(
+                        detail.get("reason") == "SERVICE_DISABLED"
+                        and detail.get("metadata", {}).get("service")
+                        == "mybusinessverifications.googleapis.com"
+                        for detail in error.get("details", [])
+                        if isinstance(detail, dict)
+                    ):
+                        raise GoogleBusinessProfileApiDisabled
                     raise GooglePermissionError
                 if response.status_code == 404:
                     if operation == "account discovery":
                         raise GoogleAccountNotFound
                     if operation.startswith("locations for "):
                         raise GoogleAccountNotFound
-                    if operation.startswith("reviews for "):
-                        raise GoogleLocationNotVerified
                     raise GoogleLocationNotFound
                 if response.status_code == 429:
                     raise GoogleRateLimitError
@@ -277,6 +295,14 @@ class GoogleBusinessProfileService:
             page_token = payload.get("nextPageToken")
             if not page_token:
                 return locations
+
+    def get_location_voice_of_merchant_state(self, location_resource_name):
+        if not LOCATION_RESOURCE_RE.fullmatch(location_resource_name or ""):
+            raise GoogleLocationNotFound
+        return self._get_json(
+            f"{VERIFICATION_API}/{location_resource_name}/VoiceOfMerchantState",
+            operation=f"verification state for {location_resource_name}",
+        )
 
     @staticmethod
     def _get_selected_location():

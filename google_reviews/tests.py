@@ -24,9 +24,9 @@ from .calendar_utils import (
 from .business_profile import (
     GoogleAccountNotFound,
     GoogleAuthenticationError,
+    GoogleBusinessProfileApiDisabled,
     GoogleBusinessProfileService,
     GoogleLocationNotFound,
-    GoogleLocationNotVerified,
     GooglePermissionError,
     GoogleReviewsResponseIncomplete,
     LOCATION_READ_MASK,
@@ -315,8 +315,67 @@ class GoogleBusinessProfileServiceTests(TestCase):
         )
         self.assertContains(
             location_response,
+            "Check selected location verification",
+        )
+        self.assertContains(
+            location_response,
             "Refresh available profiles and locations",
         )
+
+    def test_admin_verification_check_reports_verified_and_unverified_states(self):
+        user = get_user_model().objects.create_superuser(
+            username="verification-admin",
+            email="verification-admin@example.com",
+            password="test-password",
+        )
+        model_admin = GoogleBusinessProfileLocationAdmin(
+            GoogleBusinessProfileLocation,
+            admin.site,
+        )
+
+        for state, expected_level, expected_message in (
+            (
+                {
+                    "hasVoiceOfMerchant": True,
+                    "hasBusinessAuthority": True,
+                },
+                "success",
+                "has Voice of Merchant and is in good standing",
+            ),
+            (
+                {
+                    "hasVoiceOfMerchant": False,
+                    "hasBusinessAuthority": True,
+                    "verify": {"hasPendingVerification": False},
+                },
+                "error",
+                "requires verification",
+            ),
+        ):
+            request = RequestFactory().get(
+                "/admin/google_reviews/googlebusinessprofilelocation/"
+                "check-selected-verification/"
+            )
+            request.user = user
+            request.session = self.client.session
+            request._messages = FallbackStorage(request)
+            with self.subTest(state=state), patch(
+                "google_reviews.business_profile.GoogleBusinessProfileService."
+                "get_location_voice_of_merchant_state",
+                return_value=state,
+            ):
+                response = model_admin.check_selected_verification(request)
+
+            self.assertEqual(response.status_code, 302)
+            message = list(request._messages)[0]
+            self.assertEqual(message.level_tag, expected_level)
+            self.assertIn(expected_message, str(message))
+            self.location.refresh_from_db()
+            self.assertIs(
+                self.location.has_voice_of_merchant,
+                state["hasVoiceOfMerchant"],
+            )
+            self.assertTrue(self.location.is_selected)
 
     @staticmethod
     def response(payload=None, status=200):
@@ -511,6 +570,29 @@ class GoogleBusinessProfileServiceTests(TestCase):
             True,
         )
 
+    def test_profile_discovery_persists_unverified_voice_of_merchant_state(self):
+        accounts = [{"name": "accounts/100", "accountName": "YDCCS"}]
+        with (
+            patch(
+                "google_reviews.business_profile.GoogleBusinessProfileService.discover_accounts",
+                return_value=accounts,
+            ),
+            patch(
+                "google_reviews.business_profile.GoogleBusinessProfileService.discover_locations",
+                return_value=[
+                    {
+                        "name": "locations/200",
+                        "title": "YD Commercial Cleaning Services",
+                        "metadata": {"hasVoiceOfMerchant": False},
+                    }
+                ],
+            ),
+        ):
+            refresh_discovered_profiles()
+
+        self.location.refresh_from_db()
+        self.assertIs(self.location.has_voice_of_merchant, False)
+
     def test_missing_account_is_reported(self):
         with patch(
             "google_reviews.business_profile.requests.get",
@@ -529,7 +611,7 @@ class GoogleBusinessProfileServiceTests(TestCase):
         ), self.assertRaises(GoogleLocationNotFound):
             GoogleBusinessProfileService().get_selected_reviews()
 
-    def test_unverified_location_is_reported(self):
+    def test_reviews_404_does_not_assume_location_is_unverified(self):
         responses = [
             self.response({"accounts": [{"name": "accounts/100"}]}),
             self.response({
@@ -546,8 +628,49 @@ class GoogleBusinessProfileServiceTests(TestCase):
         with patch(
             "google_reviews.business_profile.requests.get",
             side_effect=responses,
-        ), self.assertRaises(GoogleLocationNotVerified):
+        ), self.assertRaises(GoogleLocationNotFound) as raised:
             GoogleBusinessProfileService().get_selected_reviews()
+        self.assertIn("does not by itself prove", raised.exception.user_message)
+
+    def test_get_location_voice_of_merchant_state_uses_verifications_api(self):
+        state = {"hasVoiceOfMerchant": True, "hasBusinessAuthority": True}
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=self.response(state),
+        ) as api_get:
+            result = GoogleBusinessProfileService().get_location_voice_of_merchant_state(
+                "locations/200"
+            )
+
+        self.assertEqual(result, state)
+        self.assertEqual(
+            api_get.call_args.args[0],
+            "https://mybusinessverifications.googleapis.com/v1/"
+            "locations/200/VoiceOfMerchantState",
+        )
+
+    def test_disabled_verifications_api_has_specific_admin_diagnostic(self):
+        response = self.response(
+            {
+                "error": {
+                    "status": "PERMISSION_DENIED",
+                    "details": [{
+                        "reason": "SERVICE_DISABLED",
+                        "metadata": {
+                            "service": "mybusinessverifications.googleapis.com",
+                        },
+                    }],
+                }
+            },
+            status=403,
+        )
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=response,
+        ), self.assertRaises(GoogleBusinessProfileApiDisabled):
+            GoogleBusinessProfileService().get_location_voice_of_merchant_state(
+                "locations/200"
+            )
 
     def test_incorrect_stored_account_resource_is_rejected(self):
         self.profile_account.resource_name = "accounts/not-an-id"
@@ -690,18 +813,19 @@ class GoogleBusinessProfileServiceTests(TestCase):
             self.assertEqual(call.kwargs["params"]["orderBy"], "updateTime desc")
         self.assertEqual(review_calls[1].kwargs["params"]["pageToken"], "page-2")
 
-    def test_reviews_404_is_reported_as_unverified_or_unavailable_location(self):
+    def test_reviews_404_is_reported_as_missing_resource_not_unverified(self):
         with patch(
             "google_reviews.business_profile.requests.get",
             return_value=self.response(
                 {"error": {"status": "NOT_FOUND"}},
                 status=404,
             ),
-        ), self.assertRaises(GoogleLocationNotVerified):
+        ), self.assertRaises(GoogleLocationNotFound) as raised:
             GoogleBusinessProfileService()._get_json(
                 "https://example.test/reviews",
                 operation="reviews for locations/200",
             )
+        self.assertIn("does not by itself prove", raised.exception.user_message)
 
     def test_403_is_reported_as_permission_denied(self):
         with patch(
