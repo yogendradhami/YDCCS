@@ -27,6 +27,9 @@ class GoogleAccountAdmin(admin.ModelAdmin):
         "connected_at",
         "updated_at",
     )
+    change_list_template = (
+        "admin/google_reviews/googleaccount/change_list.html"
+    )
 
 
 class GoogleBusinessProfileDiscoveryAdmin(admin.ModelAdmin):

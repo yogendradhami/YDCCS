@@ -32,7 +32,11 @@ from .business_profile import (
     LOCATION_READ_MASK,
     refresh_discovered_profiles,
 )
-from .admin import GoogleBusinessProfileLocationAdmin, GoogleReviewAdmin
+from .admin import (
+    GoogleAccountAdmin,
+    GoogleBusinessProfileLocationAdmin,
+    GoogleReviewAdmin,
+)
 from .review_utils import get_google_reviews_api, get_public_google_reviews
 from googleapiclient.errors import HttpError
 
@@ -69,6 +73,62 @@ class GoogleReviewsUtilsTests(TestCase):
         self.assertEqual(reviews[0]["reviewer_name"], "Alicia")
         self.assertEqual(reviews[0]["comment"], "Excellent service and attention to detail.")
         self.assertEqual(reviews[0]["rating"], "⭐⭐⭐⭐⭐")
+
+    def test_google_account_admin_has_oauth_reconnect_action(self):
+        user = get_user_model().objects.create_superuser(
+            username="google-admin",
+            email="google-admin@example.com",
+            password="test-password",
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(
+            reverse("admin:google_reviews_googleaccount_changelist")
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Reconnect Google account")
+        self.assertContains(response, 'href="/google/connect/"')
+        self.assertContains(response, "Add Google Account")
+
+    def test_google_account_admin_connect_starts_existing_oauth_flow(self):
+        user = get_user_model().objects.create_superuser(
+            username="google-admin",
+            email="google-admin@example.com",
+            password="test-password",
+        )
+        self.client.force_login(user)
+        flow = MagicMock()
+        flow.authorization_url.return_value = (
+            "https://accounts.google.com/oauth",
+            "oauth-state",
+        )
+
+        with patch("google_reviews.views.get_flow", return_value=flow):
+            response = self.client.get("/google/connect/")
+
+        self.assertRedirects(
+            response,
+            "https://accounts.google.com/oauth",
+            fetch_redirect_response=False,
+        )
+        session = self.client.session
+        self.assertEqual(session["google_oauth_state"], "oauth-state")
+        self.assertTrue(session.get("google_code_verifier"))
+        flow.authorization_url.assert_called_once()
+
+    def test_existing_oauth_start_remains_available_without_admin_login(self):
+        flow = MagicMock()
+        flow.authorization_url.return_value = (
+            "https://accounts.google.com/oauth",
+            "oauth-state",
+        )
+        with patch("google_reviews.views.get_flow", return_value=flow):
+            response = self.client.get("/google/connect/")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "https://accounts.google.com/oauth")
+        self.assertEqual(GoogleAccount.objects.count(), 0)
 
     def test_company_google_callback_backfills_bookings_and_keeps_refresh_token(self):
         account = GoogleAccount.objects.create(
@@ -546,6 +606,14 @@ class GoogleBusinessProfileServiceTests(TestCase):
         self.assertEqual(GoogleReview.objects.count(), 1)
         existing.refresh_from_db()
         self.assertEqual(existing.comment, "Existing review")
+
+    def test_incomplete_reviews_response_gives_actionable_admin_diagnostic(self):
+        error = GoogleReviewsResponseIncomplete()
+
+        self.assertIn("Business Profile API access is approved", error.user_message)
+        self.assertIn("same project as this app's OAuth client", error.user_message)
+        self.assertIn("listing is verified and active", error.user_message)
+        self.assertIn("Reconnecting Google will not resolve", error.user_message)
 
     def test_explicit_zero_review_response_is_a_valid_empty_result(self):
         responses = self.discovery_responses(

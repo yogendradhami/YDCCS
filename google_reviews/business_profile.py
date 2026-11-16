@@ -88,9 +88,11 @@ class GoogleReviewsResponseIncomplete(GoogleBusinessProfileError):
     status_code = 502
     category = "reviews_response_incomplete"
     user_message = (
-        "Google returned an empty Reviews API response for the selected listing. "
-        "No reviews were changed. Verify the listing in Google Business Profile "
-        "and confirm the Reviews API is available for this project."
+        "Google accepted the Reviews API request but returned no review data. "
+        "No reviews were changed. In Google Cloud, confirm Business Profile API "
+        "access is approved and the required APIs are enabled for the same "
+        "project as this app's OAuth client. Also confirm the listing is verified "
+        "and active, then retry. Reconnecting Google will not resolve this response."
     )
 
 

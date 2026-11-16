@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools %}
+<div style="margin-bottom: 15px;">
+    <a href="{% url 'google_connect' %}" class="button">Reconnect Google account</a>
+    <p>
+        Use the existing Google OAuth connection flow. The standard Django
+        “Add Google Account” option remains available for adding an account manually.
+    </p>
+</div>
+{{ block.super }}
+{% endblock %}
