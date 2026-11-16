@@ -84,6 +84,16 @@ class GoogleLocationNotVerified(GoogleBusinessProfileError):
     )
 
 
+class GoogleReviewsResponseIncomplete(GoogleBusinessProfileError):
+    status_code = 502
+    category = "reviews_response_incomplete"
+    user_message = (
+        "Google returned an empty Reviews API response for the selected listing. "
+        "No reviews were changed. Verify the listing in Google Business Profile "
+        "and confirm the Reviews API is available for this project."
+    )
+
+
 class GoogleRateLimitError(GoogleBusinessProfileError):
     status_code = 429
     category = "rate_limit"
@@ -209,13 +219,22 @@ class GoogleBusinessProfileService:
                     raise GoogleServiceUnavailable
                 raise GoogleBusinessProfileError
             try:
-                return response.json()
+                payload = response.json()
             except ValueError as exc:
                 logger.exception(
                     "Google Business Profile returned invalid JSON during %s.",
                     operation,
                 )
                 raise GoogleBusinessProfileError from exc
+            if not isinstance(payload, dict):
+                logger.error(
+                    "Google Business Profile returned an unexpected JSON type "
+                    "during %s: %s",
+                    operation,
+                    type(payload).__name__,
+                )
+                raise GoogleBusinessProfileError
+            return payload
 
     def discover_accounts(self):
         accounts = []
@@ -317,7 +336,27 @@ class GoogleBusinessProfileService:
                 params=params,
                 operation=f"reviews for {selected.resource_name}",
             )
-            reviews.extend(payload.get("reviews", []))
+            page_reviews = payload.get("reviews")
+            if page_reviews is None:
+                total_review_count = payload.get("totalReviewCount")
+                if total_review_count is None:
+                    logger.error(
+                        "Google Reviews API returned no review fields for "
+                        "account=%s location=%s",
+                        selected.account.resource_name,
+                        selected.resource_name,
+                    )
+                    raise GoogleReviewsResponseIncomplete
+                page_reviews = []
+            if not isinstance(page_reviews, list):
+                logger.error(
+                    "Google Reviews API returned an invalid reviews field for "
+                    "account=%s location=%s",
+                    selected.account.resource_name,
+                    selected.resource_name,
+                )
+                raise GoogleReviewsResponseIncomplete
+            reviews.extend(page_reviews)
             page_token = payload.get("nextPageToken")
             if not page_token:
                 return reviews

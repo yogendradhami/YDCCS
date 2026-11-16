@@ -255,7 +255,13 @@ class GoogleReviewAdmin(admin.ModelAdmin):
 
         response = sync_google_reviews(request)
 
-        if response.status_code == 200:
+        if response.status_code == 204:
+            messages.warning(
+                request,
+                response.content.decode()
+                or "Google returned zero reviews. Existing saved reviews were left unchanged.",
+            )
+        elif response.status_code == 200:
             messages.success(
                 request,
                 response.content.decode()

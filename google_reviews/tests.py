@@ -4,7 +4,8 @@ from zoneinfo import ZoneInfo
 
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 from google.auth.exceptions import RefreshError
@@ -27,10 +28,11 @@ from .business_profile import (
     GoogleLocationNotFound,
     GoogleLocationNotVerified,
     GooglePermissionError,
+    GoogleReviewsResponseIncomplete,
     LOCATION_READ_MASK,
     refresh_discovered_profiles,
 )
-from .admin import GoogleBusinessProfileLocationAdmin
+from .admin import GoogleBusinessProfileLocationAdmin, GoogleReviewAdmin
 from .review_utils import get_google_reviews_api, get_public_google_reviews
 from googleapiclient.errors import HttpError
 
@@ -266,7 +268,9 @@ class GoogleBusinessProfileServiceTests(TestCase):
         return [
             self.response({"accounts": [{"name": "accounts/100"}]}),
             self.response({"locations": locations or []}),
-            self.response(reviews or {"reviews": []}),
+            self.response(
+                {"reviews": []} if reviews is None else reviews
+            ),
         ]
 
     def test_successful_account_discovery(self):
@@ -522,6 +526,82 @@ class GoogleBusinessProfileServiceTests(TestCase):
             result = GoogleBusinessProfileService().get_selected_reviews()
 
         self.assertEqual(result, [review])
+
+    def test_empty_reviews_object_is_not_reported_as_success_or_delete_saved_reviews(self):
+        existing = GoogleReview.objects.create(
+            review_id="existing-review",
+            reviewer_name="Existing reviewer",
+            comment="Existing review",
+        )
+        responses = self.discovery_responses(
+            locations=[{"name": "locations/200"}],
+            reviews={},
+        )
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ), self.assertRaises(GoogleReviewsResponseIncomplete):
+            GoogleBusinessProfileService().sync_selected_reviews()
+
+        self.assertEqual(GoogleReview.objects.count(), 1)
+        existing.refresh_from_db()
+        self.assertEqual(existing.comment, "Existing review")
+
+    def test_explicit_zero_review_response_is_a_valid_empty_result(self):
+        responses = self.discovery_responses(
+            locations=[{"name": "locations/200"}],
+            reviews={"reviews": [], "totalReviewCount": 0},
+        )
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ):
+            result = GoogleBusinessProfileService().get_selected_reviews()
+
+        self.assertEqual(result, [])
+
+    def test_empty_sync_result_uses_no_content_status_without_removing_reviews(self):
+        existing = GoogleReview.objects.create(
+            review_id="existing-review",
+            reviewer_name="Existing reviewer",
+            comment="Existing review",
+        )
+        with patch(
+            "google_reviews.business_profile.GoogleBusinessProfileService.sync_selected_reviews",
+            return_value=(0, 0),
+        ):
+            response = self.client.get("/google/sync-reviews/")
+
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.content, b"")
+        existing.refresh_from_db()
+        self.assertEqual(existing.comment, "Existing review")
+
+        user = get_user_model().objects.create_superuser(
+            username="review-admin",
+            email="review-admin@example.com",
+            password="test-password",
+        )
+        request = RequestFactory().get("/admin/google_reviews/googlereview/sync/")
+        request.user = user
+        request.session = self.client.session
+        request._messages = FallbackStorage(request)
+        with patch(
+            "google_reviews.business_profile.GoogleBusinessProfileService.sync_selected_reviews",
+            return_value=(0, 0),
+        ):
+            admin_response = GoogleReviewAdmin(
+                GoogleReview, admin.site
+            ).sync_reviews(request)
+
+        self.assertEqual(admin_response.status_code, 302)
+        warning = list(request._messages)[0]
+        self.assertEqual(warning.level_tag, "warning")
+        self.assertEqual(
+            str(warning),
+            "Google returned zero reviews for the selected listing. "
+            "Existing saved reviews were left unchanged.",
+        )
 
     def test_review_pagination_follows_every_next_page_token(self):
         responses = self.discovery_responses(

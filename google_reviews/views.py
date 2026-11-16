@@ -205,6 +205,12 @@ def sync_google_reviews(request):
             "Google Business Profile reviews could not be synced. Check server logs.",
             status=500,
         )
+    if retrieved == 0:
+        return HttpResponse(
+            "Google returned zero reviews for the selected listing. "
+            "Existing saved reviews were left unchanged.",
+            status=204,
+        )
     return HttpResponse(
         f"Google reviews synced successfully. Retrieved {retrieved} review(s) "
         f"and saved {saved}."
