@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone as datetime_timezone
 from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo
 
+from django.contrib import admin
 from django.test import TestCase
 from django.utils import timezone
 from google.auth.exceptions import RefreshError
@@ -17,6 +18,17 @@ from .calendar_utils import (
     delete_booking_event,
     delete_roster_event,
 )
+from .business_profile import (
+    GoogleAccountNotFound,
+    GoogleAuthenticationError,
+    GoogleBusinessProfileService,
+    GoogleLocationNotFound,
+    GoogleLocationNotVerified,
+    GooglePermissionError,
+    LOCATION_READ_MASK,
+    refresh_discovered_profiles,
+)
+from .admin import GoogleBusinessProfileLocationAdmin
 from .review_utils import get_google_reviews_api, get_public_google_reviews
 from googleapiclient.errors import HttpError
 
@@ -28,6 +40,7 @@ from google_reviews.calendar_utils import (
     sync_existing_bookings_to_company_calendar,
 )
 from google_reviews.views import _parse_google_datetime
+from .models import GoogleBusinessProfileAccount, GoogleBusinessProfileLocation
 
 
 class GoogleReviewsUtilsTests(TestCase):
@@ -194,68 +207,429 @@ class GoogleDatetimeNormalizationTests(TestCase):
         self.assertEqual(parsed.utcoffset(), timedelta(hours=9))
 
 
-class GoogleReviewSyncTests(TestCase):
+class GoogleBusinessProfileServiceTests(TestCase):
     def setUp(self):
-        self.account = GoogleAccount.objects.create(
-            access_token="old-access-token",
-            refresh_token="existing-refresh-token",
+        self.google_account = GoogleAccount.objects.create(
+            access_token="stored-access-token",
+            refresh_token="stored-refresh-token",
+        )
+        self.profile_account = GoogleBusinessProfileAccount.objects.create(
+            resource_name="accounts/100",
+            account_name="YD Commercial Cleaning Services",
+            account_type="PERSONAL",
+            verification_state="VERIFIED",
+        )
+        self.location = GoogleBusinessProfileLocation.objects.create(
+            account=self.profile_account,
+            resource_name="locations/200",
+            title="YD Commercial Cleaning Services",
+            is_selected=True,
         )
 
-    @patch("google_reviews.views.GoogleAuthRequest")
-    @patch("google_reviews.views.Credentials")
-    def test_sync_asks_to_reconnect_when_refresh_token_is_revoked(
-        self,
-        credentials_factory,
-        google_request,
-    ):
-        credentials = credentials_factory.return_value
-        credentials.refresh.side_effect = RefreshError(
-            "invalid_grant: Token has been expired or revoked."
-        )
+    @staticmethod
+    def response(payload=None, status=200):
+        result = MagicMock(status_code=status)
+        result.json.return_value = payload or {}
+        return result
 
-        with patch("google_reviews.views.requests.get") as google_api_request:
-            response = self.client.get("/google/sync-reviews/")
+    def discovery_responses(self, locations=None, reviews=None):
+        return [
+            self.response({"accounts": [{"name": "accounts/100"}]}),
+            self.response({"locations": locations or []}),
+            self.response(reviews or {"reviews": []}),
+        ]
 
-        self.assertEqual(response.status_code, 401)
-        self.assertContains(response, "Reconnect Google", status_code=401)
-        credentials.refresh.assert_called_once_with(google_request.return_value)
-        google_api_request.assert_not_called()
-        self.account.refresh_from_db()
-        self.assertEqual(self.account.access_token, "old-access-token")
-
-    @patch("google_reviews.views.GoogleAuthRequest")
-    @patch("google_reviews.views.Credentials")
-    def test_sync_uses_refreshed_token_for_google_reviews_request(
-        self,
-        credentials_factory,
-        google_request,
-    ):
-        credentials = credentials_factory.return_value
-        credentials.token = "new-access-token"
-        credentials.refresh_token = "existing-refresh-token"
-        google_api_response = MagicMock(
-            status_code=200,
-            text="",
-        )
-        google_api_response.json.return_value = {
-            "reviews": [],
-            "totalReviewCount": 0,
-        }
-
+    def test_successful_account_discovery(self):
         with patch(
-            "google_reviews.views.requests.get",
-            return_value=google_api_response,
-        ) as google_api_request:
-            response = self.client.get("/google/sync-reviews/")
+            "google_reviews.business_profile.requests.get",
+            return_value=self.response(
+                {"accounts": [{"name": "accounts/100", "accountName": "YDCCS"}]}
+            ),
+        ):
+            accounts = GoogleBusinessProfileService().discover_accounts()
 
-        self.assertEqual(response.status_code, 200)
-        credentials.refresh.assert_called_once_with(google_request.return_value)
-        self.account.refresh_from_db()
-        self.assertEqual(self.account.access_token, "new-access-token")
+        self.assertEqual(accounts[0]["name"], "accounts/100")
+        self.assertEqual(accounts[0]["accountName"], "YDCCS")
+
+    def test_multiple_accessible_accounts_are_all_returned(self):
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=self.response(
+                {"accounts": [
+                    {"name": "accounts/100"},
+                    {"name": "accounts/101"},
+                ]}
+            ),
+        ):
+            accounts = GoogleBusinessProfileService().discover_accounts()
+
         self.assertEqual(
-            google_api_request.call_args.kwargs["headers"]["Authorization"],
-            "Bearer new-access-token",
+            [item["name"] for item in accounts],
+            ["accounts/100", "accounts/101"],
         )
+
+    def test_multiple_locations_and_location_pagination_are_returned(self):
+        responses = [
+            self.response({
+                "locations": [{"name": "locations/200"}],
+                "nextPageToken": "next-location-page",
+            }),
+            self.response({"locations": [{"name": "locations/201"}]}),
+        ]
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ) as api_get:
+            locations = GoogleBusinessProfileService().discover_locations(
+                "accounts/100"
+            )
+
+        self.assertEqual(
+            [item["name"] for item in locations],
+            ["locations/200", "locations/201"],
+        )
+        self.assertEqual(
+            api_get.call_args_list[0].args[0],
+            "https://mybusinessbusinessinformation.googleapis.com/v1/"
+            "accounts/100/locations",
+        )
+        self.assertEqual(
+            api_get.call_args_list[0].kwargs["params"]["readMask"],
+            LOCATION_READ_MASK,
+        )
+        self.assertEqual(
+            api_get.call_args_list[1].kwargs["params"]["readMask"],
+            LOCATION_READ_MASK,
+        )
+        self.assertEqual(
+            api_get.call_args_list[1].kwargs["params"]["pageToken"],
+            "next-location-page",
+        )
+
+    def test_correct_ydccs_location_is_selected_not_first_discovered(self):
+        GoogleBusinessProfileLocation.objects.create(
+            account=self.profile_account,
+            resource_name="locations/199",
+            title="Different Business",
+        )
+        responses = self.discovery_responses(
+            locations=[
+                {"name": "locations/199", "title": "Different Business"},
+                {
+                    "name": "locations/200",
+                    "title": "YD Commercial Cleaning Services",
+                    "metadata": {"hasVoiceOfMerchant": True},
+                },
+            ],
+            reviews={"reviews": []},
+        )
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ) as api_get:
+            self.assertEqual(
+                GoogleBusinessProfileService().get_selected_reviews(), []
+            )
+
+        self.assertIn("/accounts/100/locations/200/reviews", api_get.call_args.args[0])
+
+    def test_admin_can_select_verified_ydccs_location(self):
+        self.location.is_selected = False
+        self.location.has_voice_of_merchant = True
+        self.location.save(update_fields=["is_selected", "has_voice_of_merchant"])
+        other_location = GoogleBusinessProfileLocation.objects.create(
+            account=self.profile_account,
+            resource_name="locations/199",
+            title="Different Business",
+            is_selected=True,
+        )
+        model_admin = GoogleBusinessProfileLocationAdmin(
+            GoogleBusinessProfileLocation,
+            admin.site,
+        )
+
+        with patch.object(model_admin, "message_user"):
+            model_admin.select_as_reviews_location(
+                MagicMock(),
+                GoogleBusinessProfileLocation.objects.filter(
+                    pk=self.location.pk
+                ),
+            )
+
+        self.location.refresh_from_db()
+        other_location.refresh_from_db()
+        self.assertTrue(self.location.is_selected)
+        self.assertFalse(other_location.is_selected)
+
+    def test_profile_discovery_persists_all_candidates_without_selecting_one(self):
+        accounts = [
+            {
+                "name": "accounts/100",
+                "accountName": "YDCCS",
+                "type": "PERSONAL",
+                "verificationState": "UNVERIFIED",
+            },
+            {
+                "name": "accounts/101",
+                "accountName": "Other account",
+                "type": "BUSINESS",
+            },
+        ]
+        locations_by_account = {
+            "accounts/100": [
+                {
+                    "name": "locations/200",
+                    "title": "YD Commercial Cleaning Services",
+                    "storefrontAddress": {"locality": "Prospect"},
+                    "metadata": {},
+                }
+            ],
+            "accounts/101": [
+                {
+                    "name": "locations/201",
+                    "title": "Other Business",
+                    "metadata": {"hasVoiceOfMerchant": True},
+                }
+            ],
+        }
+        with (
+            patch(
+                "google_reviews.business_profile.GoogleBusinessProfileService.discover_accounts",
+                return_value=accounts,
+            ),
+            patch(
+                "google_reviews.business_profile.GoogleBusinessProfileService.discover_locations",
+                side_effect=lambda account_name: locations_by_account[account_name],
+            ),
+        ):
+            refresh_discovered_profiles()
+
+        self.assertEqual(GoogleBusinessProfileAccount.objects.count(), 2)
+        self.assertEqual(GoogleBusinessProfileLocation.objects.count(), 2)
+        self.assertEqual(
+            GoogleBusinessProfileLocation.objects.filter(is_selected=True).count(),
+            1,
+        )
+        self.assertEqual(
+            GoogleBusinessProfileLocation.objects.get(
+                resource_name="locations/201"
+            ).has_voice_of_merchant,
+            True,
+        )
+
+    def test_missing_account_is_reported(self):
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=self.response({"accounts": []}),
+        ), self.assertRaises(GoogleAccountNotFound):
+            GoogleBusinessProfileService().get_selected_reviews()
+
+    def test_missing_location_is_reported(self):
+        responses = [
+            self.response({"accounts": [{"name": "accounts/100"}]}),
+            self.response({"locations": [{"name": "locations/201"}]}),
+        ]
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ), self.assertRaises(GoogleLocationNotFound):
+            GoogleBusinessProfileService().get_selected_reviews()
+
+    def test_unverified_location_is_reported(self):
+        responses = [
+            self.response({"accounts": [{"name": "accounts/100"}]}),
+            self.response({
+                "locations": [{
+                    "name": "locations/200",
+                    "metadata": {"hasVoiceOfMerchant": False},
+                }]
+            }),
+            self.response(
+                {"error": {"status": "NOT_FOUND"}},
+                status=404,
+            ),
+        ]
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ), self.assertRaises(GoogleLocationNotVerified):
+            GoogleBusinessProfileService().get_selected_reviews()
+
+    def test_incorrect_stored_account_resource_is_rejected(self):
+        self.profile_account.resource_name = "accounts/not-an-id"
+        self.profile_account.save(update_fields=["resource_name"])
+
+        with patch("google_reviews.business_profile.requests.get") as api_get:
+            with self.assertRaises(GoogleAccountNotFound):
+                GoogleBusinessProfileService().get_selected_reviews()
+        api_get.assert_not_called()
+
+    def test_location_discovery_always_sends_read_mask(self):
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=self.response({"locations": []}),
+        ) as api_get:
+            GoogleBusinessProfileService().discover_locations("accounts/100")
+
+        self.assertEqual(
+            api_get.call_args.kwargs["params"]["readMask"],
+            "name,title,storefrontAddress,metadata",
+        )
+
+    def test_successful_review_retrieval_uses_original_review_fields(self):
+        review = {
+            "reviewId": "review-1",
+            "comment": "Customer comment",
+            "reviewReply": {"comment": "Business reply"},
+        }
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=self.discovery_responses(
+                locations=[{"name": "locations/200"}],
+                reviews={"reviews": [review]},
+            ),
+        ):
+            result = GoogleBusinessProfileService().get_selected_reviews()
+
+        self.assertEqual(result, [review])
+
+    def test_review_pagination_follows_every_next_page_token(self):
+        responses = self.discovery_responses(
+            locations=[{"name": "locations/200"}],
+            reviews={"reviews": [{"reviewId": "first"}], "nextPageToken": "page-2"},
+        )
+        responses.append(self.response({"reviews": [{"reviewId": "second"}]}))
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ) as api_get:
+            result = GoogleBusinessProfileService().get_selected_reviews()
+
+        self.assertEqual([item["reviewId"] for item in result], ["first", "second"])
+        review_calls = api_get.call_args_list[-2:]
+        for call in review_calls:
+            self.assertEqual(call.kwargs["params"]["pageSize"], 50)
+            self.assertEqual(call.kwargs["params"]["orderBy"], "updateTime desc")
+        self.assertEqual(review_calls[1].kwargs["params"]["pageToken"], "page-2")
+
+    def test_reviews_404_is_reported_as_unverified_or_unavailable_location(self):
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=self.response(
+                {"error": {"status": "NOT_FOUND"}},
+                status=404,
+            ),
+        ), self.assertRaises(GoogleLocationNotVerified):
+            GoogleBusinessProfileService()._get_json(
+                "https://example.test/reviews",
+                operation="reviews for locations/200",
+            )
+
+    def test_403_is_reported_as_permission_denied(self):
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=self.response(
+                {"error": {"status": "PERMISSION_DENIED"}},
+                status=403,
+            ),
+        ), self.assertRaises(GooglePermissionError):
+            GoogleBusinessProfileService()._get_json(
+                "https://example.test/reviews",
+                operation="reviews for locations/200",
+            )
+
+    @patch("google_reviews.business_profile.GoogleAuthRequest")
+    @patch("google_reviews.business_profile.Credentials")
+    def test_401_refreshes_and_persists_access_and_replacement_refresh_tokens(
+        self,
+        credentials_factory,
+        google_request,
+    ):
+        credentials = credentials_factory.return_value
+        credentials.token = "rotated-access-token"
+        credentials.refresh_token = "rotated-refresh-token"
+        responses = [
+            self.response(status=401),
+            self.response({"accounts": [{"name": "accounts/100"}]}),
+        ]
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ) as api_get:
+            result = GoogleBusinessProfileService().discover_accounts()
+
+        self.assertEqual(result[0]["name"], "accounts/100")
+        credentials.refresh.assert_called_once_with(google_request.return_value)
+        self.assertEqual(
+            api_get.call_args_list[1].kwargs["headers"]["Authorization"],
+            "Bearer rotated-access-token",
+        )
+        self.google_account.refresh_from_db()
+        self.assertEqual(self.google_account.access_token, "rotated-access-token")
+        self.assertEqual(self.google_account.refresh_token, "rotated-refresh-token")
+
+    def test_duplicate_reviews_are_not_created_and_business_reply_is_separate(self):
+        item = {
+            "reviewId": "review-duplicate",
+            "reviewer": {"displayName": "Sam", "profilePhotoUrl": "https://example.test/sam.jpg"},
+            "starRating": "FIVE",
+            "comment": "Original customer comment",
+            "createTime": "2026-01-01T10:00:00Z",
+            "updateTime": "2026-01-02T10:00:00Z",
+            "reviewReply": {
+                "comment": "Business response",
+                "updateTime": "2026-01-03T10:00:00Z",
+            },
+            "reviewUrl": "https://example.test/review",
+        }
+        responses = self.discovery_responses(
+            locations=[{"name": "locations/200"}],
+            reviews={"reviews": [item], "nextPageToken": "page-2"},
+        )
+        responses.append(self.response({"reviews": [item]}))
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=responses,
+        ):
+            saved, retrieved = GoogleBusinessProfileService().sync_selected_reviews()
+
+        self.assertEqual((saved, retrieved), (2, 2))
+        self.assertEqual(GoogleReview.objects.count(), 1)
+        review = GoogleReview.objects.get(review_id="review-duplicate")
+        self.assertEqual(review.comment, "Original customer comment")
+        self.assertEqual(review.reply, "Business response")
+        self.assertEqual(review.reviewer_name, "Sam")
+        self.assertEqual(review.review_url, "https://example.test/review")
+        self.assertTrue(timezone.is_aware(review.review_updated_at))
+        self.assertTrue(timezone.is_aware(review.reply_date))
+
+    def test_existing_review_is_updated(self):
+        existing = GoogleReview.objects.create(
+            review_id="review-update",
+            reviewer_name="Old name",
+            comment="Old comment",
+        )
+        updated = {
+            "reviewId": "review-update",
+            "reviewer": {"displayName": "New name"},
+            "comment": "Updated original comment",
+            "starRating": "FOUR",
+        }
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            side_effect=self.discovery_responses(
+                locations=[{"name": "locations/200"}],
+                reviews={"reviews": [updated]},
+            ),
+        ):
+            saved, retrieved = GoogleBusinessProfileService().sync_selected_reviews()
+
+        existing.refresh_from_db()
+        self.assertEqual((saved, retrieved), (1, 1))
+        self.assertEqual(GoogleReview.objects.count(), 1)
+        self.assertEqual(existing.reviewer_name, "New name")
+        self.assertEqual(existing.comment, "Updated original comment")
+        self.assertEqual(existing.rating, "FOUR")
 
 
 class CalendarDeleteRetryTests(TestCase):
@@ -388,55 +762,30 @@ class CalendarDeleteRetryTests(TestCase):
         self.roster.refresh_from_db()
         self.assertEqual(self.roster.google_calendar_event_id, "roster-event-1")
 
-    def test_get_google_reviews_api_returns_empty_without_account(self):
-        with patch("google_reviews.review_utils.GoogleAccount.objects") as objects_mock:
-            objects_mock.first.return_value = None
-            self.assertEqual(get_google_reviews_api(), [])
+    def test_get_google_reviews_api_requires_a_selected_location(self):
+        with self.assertRaises(GoogleAuthenticationError):
+            get_google_reviews_api()
 
-    def test_get_google_reviews_api_parses_reviews_successfully(self):
-        account = MagicMock(
-            access_token="test_token",
-            refresh_token="refresh_token",
-            save=MagicMock(),
-        )
+    def test_get_google_reviews_api_preserves_original_comment(self):
+        reviews = [
+            {
+                "reviewId": "review-1",
+                "reviewer": {"displayName": "Sam"},
+                "comment": "Original customer comment",
+                "starRating": "FIVE",
+                "reviewReply": {"comment": "Business response"},
+            }
+        ]
+        with patch(
+            "google_reviews.business_profile.GoogleBusinessProfileService"
+        ) as service_factory:
+            service_factory.return_value.get_selected_reviews.return_value = reviews
+            result = get_google_reviews_api()
 
-        def request_side_effect(url, headers, timeout):
-            response = MagicMock()
-            if url.endswith("/accounts"):
-                response.status_code = 200
-                response.json.return_value = {"accounts": [{"name": "accounts/123"}]}
-            elif "/reviews" in url:
-                response.status_code = 200
-                response.json.return_value = {
-                    "reviews": [
-                        {
-                            "reviewer": {"displayName": "Sam"},
-                            "comment": "Great job",
-                            "starRating": "FIVE",
-                            "createTime": "2026-07-23T12:00:00Z",
-                        }
-                    ]
-                }
-            elif "/locations" in url:
-                response.status_code = 200
-                response.json.return_value = {
-                    "locations": [{"name": "accounts/123/locations/456"}]
-                }
-            else:
-                response.status_code = 404
-                response.json.return_value = {}
-            return response
-
-        with patch("google_reviews.review_utils.GoogleAccount.objects") as objects_mock:
-            objects_mock.first.return_value = account
-            with patch("google_reviews.review_utils.requests.get", side_effect=request_side_effect):
-                reviews = get_google_reviews_api()
-
-        self.assertEqual(len(reviews), 1)
-        self.assertEqual(reviews[0]["reviewer_name"], "Sam")
-        self.assertEqual(reviews[0]["comment"], "Great job")
-        self.assertEqual(reviews[0]["rating"], "⭐⭐⭐⭐⭐")
-
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["reviewer_name"], "Sam")
+        self.assertEqual(result[0]["comment"], "Original customer comment")
+        self.assertEqual(result[0]["rating"], "⭐⭐⭐⭐⭐")
 
 
     def test_booking_delete_404_clears_stale_event_id(self):

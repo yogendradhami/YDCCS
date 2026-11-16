@@ -19,6 +19,55 @@ class GoogleAccount(models.Model):
         return "Google Account"
 
 
+class GoogleBusinessProfileAccount(models.Model):
+    resource_name = models.CharField(max_length=255, unique=True)
+    account_name = models.CharField(max_length=255, blank=True)
+    account_type = models.CharField(max_length=40, blank=True)
+    verification_state = models.CharField(max_length=40, blank=True)
+    is_available = models.BooleanField(default=True)
+    last_discovered_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("account_name", "resource_name")
+        verbose_name = "Google Business Profile account"
+        verbose_name_plural = "Google Business Profile accounts"
+
+    def __str__(self):
+        return f"{self.account_name or self.resource_name} ({self.resource_name})"
+
+
+class GoogleBusinessProfileLocation(models.Model):
+    account = models.ForeignKey(
+        GoogleBusinessProfileAccount,
+        on_delete=models.CASCADE,
+        related_name="locations",
+    )
+    resource_name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
+    storefront_address = models.JSONField(default=dict, blank=True)
+    has_voice_of_merchant = models.BooleanField(null=True, blank=True)
+    is_available = models.BooleanField(default=True)
+    is_selected = models.BooleanField(default=False)
+    last_discovered_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("title", "resource_name")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("account", "resource_name"),
+                name="unique_google_profile_location",
+            ),
+            models.UniqueConstraint(
+                fields=("is_selected",),
+                condition=models.Q(is_selected=True),
+                name="one_selected_google_profile_location",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.title or self.resource_name} ({self.account.resource_name})"
+
+
 
 class GoogleReview(models.Model):
 
@@ -47,6 +96,11 @@ class GoogleReview(models.Model):
     )
 
     review_date = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    review_updated_at = models.DateTimeField(
         blank=True,
         null=True
     )
