@@ -351,6 +351,15 @@ class GoogleBusinessProfileServiceTests(TestCase):
                 "error",
                 "requires verification",
             ),
+            (
+                {
+                    "hasVoiceOfMerchant": False,
+                    "hasBusinessAuthority": False,
+                    "resolveOwnershipConflict": {},
+                },
+                "error",
+                "explicitly reports resolveOwnershipConflict",
+            ),
         ):
             request = RequestFactory().get(
                 "/admin/google_reviews/googlebusinessprofilelocation/"
@@ -376,6 +385,35 @@ class GoogleBusinessProfileServiceTests(TestCase):
                 state["hasVoiceOfMerchant"],
             )
             self.assertTrue(self.location.is_selected)
+
+    def test_verification_permission_failure_is_not_reported_as_ownership_conflict(self):
+        user = get_user_model().objects.create_superuser(
+            username="permission-admin",
+            email="permission-admin@example.com",
+            password="test-password",
+        )
+        request = RequestFactory().get(
+            "/admin/google_reviews/googlebusinessprofilelocation/"
+            "check-selected-verification/"
+        )
+        request.user = user
+        request.session = self.client.session
+        request._messages = FallbackStorage(request)
+        model_admin = GoogleBusinessProfileLocationAdmin(
+            GoogleBusinessProfileLocation,
+            admin.site,
+        )
+
+        with patch(
+            "google_reviews.business_profile.GoogleBusinessProfileService."
+            "get_location_voice_of_merchant_state",
+            side_effect=GooglePermissionError(),
+        ):
+            model_admin.check_selected_verification(request)
+
+        message = list(request._messages)[0]
+        self.assertIn("Google denied access", str(message))
+        self.assertNotIn("ownership conflict", str(message).lower())
 
     @staticmethod
     def response(payload=None, status=200):
@@ -484,7 +522,16 @@ class GoogleBusinessProfileServiceTests(TestCase):
                 GoogleBusinessProfileService().get_selected_reviews(), []
             )
 
-        self.assertIn("/accounts/100/locations/200/reviews", api_get.call_args.args[0])
+        review_request = api_get.call_args_list[-1]
+        self.assertEqual(
+            review_request.args[0],
+            "https://mybusiness.googleapis.com/v4/"
+            "accounts/100/locations/200/reviews",
+        )
+        self.assertEqual(
+            review_request.kwargs["params"]["orderBy"],
+            "updateTime desc",
+        )
 
     def test_admin_can_select_verified_ydccs_location(self):
         self.location.is_selected = False
@@ -681,6 +728,15 @@ class GoogleBusinessProfileServiceTests(TestCase):
                 GoogleBusinessProfileService().get_selected_reviews()
         api_get.assert_not_called()
 
+    def test_incorrect_stored_location_resource_is_rejected(self):
+        self.location.resource_name = "locations/not-an-id"
+        self.location.save(update_fields=["resource_name"])
+
+        with patch("google_reviews.business_profile.requests.get") as api_get:
+            with self.assertRaises(GoogleLocationNotFound):
+                GoogleBusinessProfileService().get_selected_reviews()
+        api_get.assert_not_called()
+
     def test_location_discovery_always_sends_read_mask(self):
         with patch(
             "google_reviews.business_profile.requests.get",
@@ -720,12 +776,24 @@ class GoogleBusinessProfileServiceTests(TestCase):
             locations=[{"name": "locations/200"}],
             reviews={},
         )
-        with patch(
-            "google_reviews.business_profile.requests.get",
-            side_effect=responses,
-        ), self.assertRaises(GoogleReviewsResponseIncomplete):
+        with (
+            patch(
+                "google_reviews.business_profile.requests.get",
+                side_effect=responses,
+            ),
+            self.assertLogs(
+                "google_reviews.business_profile",
+                level="ERROR",
+            ) as log_output,
+            self.assertRaises(GoogleReviewsResponseIncomplete),
+        ):
             GoogleBusinessProfileService().sync_selected_reviews()
 
+        self.assertIn(
+            "/accounts/100/locations/200/reviews",
+            log_output.output[0],
+        )
+        self.assertIn("response_fields=[]", log_output.output[0])
         self.assertEqual(GoogleReview.objects.count(), 1)
         existing.refresh_from_db()
         self.assertEqual(existing.comment, "Existing review")
@@ -733,9 +801,9 @@ class GoogleBusinessProfileServiceTests(TestCase):
     def test_incomplete_reviews_response_gives_actionable_admin_diagnostic(self):
         error = GoogleReviewsResponseIncomplete()
 
-        self.assertIn("Business Profile API access is approved", error.user_message)
-        self.assertIn("same project as this app's OAuth client", error.user_message)
-        self.assertIn("listing is verified and active", error.user_message)
+        self.assertIn("Check selected location verification", error.user_message)
+        self.assertIn("does not prove that the location is unverified", error.user_message)
+        self.assertIn("API access is missing", error.user_message)
         self.assertIn("Reconnecting Google will not resolve", error.user_message)
 
     def test_explicit_zero_review_response_is_a_valid_empty_result(self):
@@ -813,19 +881,74 @@ class GoogleBusinessProfileServiceTests(TestCase):
             self.assertEqual(call.kwargs["params"]["orderBy"], "updateTime desc")
         self.assertEqual(review_calls[1].kwargs["params"]["pageToken"], "page-2")
 
-    def test_reviews_404_is_reported_as_missing_resource_not_unverified(self):
+    def test_successful_paginated_review_sync_saves_every_returned_review(self):
+        first_review = {
+            "reviewId": "first",
+            "reviewer": {"displayName": "First"},
+            "comment": "First customer review",
+            "starRating": "FIVE",
+            "createTime": "2026-11-01T10:00:00Z",
+        }
+        second_review = {
+            "reviewId": "second",
+            "reviewer": {"displayName": "Second"},
+            "comment": "Second customer review",
+            "starRating": "FOUR",
+            "createTime": "2026-11-02T10:00:00Z",
+        }
+        responses = self.discovery_responses(
+            locations=[{"name": "locations/200"}],
+            reviews={
+                "reviews": [first_review],
+                "totalReviewCount": 2,
+                "nextPageToken": "page-2",
+            },
+        )
+        responses.append(
+            self.response({"reviews": [second_review], "totalReviewCount": 2})
+        )
+
         with patch(
             "google_reviews.business_profile.requests.get",
-            return_value=self.response(
-                {"error": {"status": "NOT_FOUND"}},
-                status=404,
-            ),
-        ), self.assertRaises(GoogleLocationNotFound) as raised:
+            side_effect=responses,
+        ) as api_get:
+            saved, retrieved = GoogleBusinessProfileService().sync_selected_reviews()
+
+        self.assertEqual((saved, retrieved), (2, 2))
+        self.assertEqual(GoogleReview.objects.count(), 2)
+        self.assertEqual(
+            set(GoogleReview.objects.values_list("review_id", flat=True)),
+            {"first", "second"},
+        )
+        self.assertEqual(api_get.call_args_list[-1].kwargs["params"]["pageToken"], "page-2")
+
+    def test_reviews_404_is_reported_as_missing_resource_not_unverified(self):
+        response = self.response(
+            {
+                "error": {
+                    "code": 404,
+                    "status": "NOT_FOUND",
+                    "message": "Requested entity was not found.",
+                }
+            },
+            status=404,
+        )
+        with patch(
+            "google_reviews.business_profile.requests.get",
+            return_value=response,
+        ), self.assertLogs("google_reviews.business_profile", level="ERROR") as log_output, self.assertRaises(
+            GoogleLocationNotFound
+        ) as raised:
             GoogleBusinessProfileService()._get_json(
-                "https://example.test/reviews",
+                "https://mybusiness.googleapis.com/v4/"
+                "accounts/100/locations/200/reviews",
                 operation="reviews for locations/200",
             )
         self.assertIn("does not by itself prove", raised.exception.user_message)
+        self.assertIn("http_status=404", log_output.output[0])
+        self.assertIn("Requested entity was not found", log_output.output[0])
+        self.assertIn("/accounts/100/locations/200/reviews", log_output.output[0])
+        self.assertNotIn("stored-access-token", log_output.output[0])
 
     def test_403_is_reported_as_permission_denied(self):
         with patch(

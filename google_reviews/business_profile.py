@@ -1,5 +1,6 @@
 import logging
 import re
+from urllib.parse import urlsplit
 
 import requests
 from django.conf import settings
@@ -86,25 +87,16 @@ class GoogleLocationNotFound(GoogleBusinessProfileError):
     )
 
 
-class GoogleLocationNotVerified(GoogleBusinessProfileError):
-    status_code = 404
-    category = "location_not_verified"
-    user_message = (
-        "Google could not return reviews for the selected location. Confirm that "
-        "the listing is verified in Google Business Profile and check the stored "
-        "account and location resources."
-    )
-
-
 class GoogleReviewsResponseIncomplete(GoogleBusinessProfileError):
     status_code = 502
     category = "reviews_response_incomplete"
     user_message = (
-        "Google accepted the Reviews API request but returned no review data. "
-        "No reviews were changed. In Google Cloud, confirm Business Profile API "
-        "access is approved and the required APIs are enabled for the same "
-        "project as this app's OAuth client. Also confirm the listing is verified "
-        "and active, then retry. Reconnecting Google will not resolve this response."
+        "Google returned no review records or total count. No reviews were "
+        "changed. Use “Check selected location verification” in the Business "
+        "Profile locations admin to retrieve Google's verification or ownership "
+        "state. An empty Reviews API response alone does not prove that the "
+        "location is unverified or that API access is missing. Reconnecting Google "
+        "will not resolve this response."
     )
 
 
@@ -180,6 +172,8 @@ class GoogleBusinessProfileService:
 
     def _get_json(self, url, *, params=None, operation):
         refreshed = False
+        endpoint = urlsplit(url).path
+        resources = re.findall(r"(?:accounts|locations)/[^/]+", endpoint)
         while True:
             try:
                 response = requests.get(
@@ -193,8 +187,11 @@ class GoogleBusinessProfileService:
                 )
             except requests.RequestException as exc:
                 logger.exception(
-                    "Google Business Profile network request failed during %s.",
+                    "Google Business Profile network request failed: "
+                    "operation=%s endpoint=%s resources=%s",
                     operation,
+                    endpoint,
+                    resources,
                 )
                 raise GoogleNetworkError from exc
 
@@ -204,23 +201,43 @@ class GoogleBusinessProfileService:
                 continue
             if response.status_code != 200:
                 try:
-                    error = response.json().get("error", {})
+                    response_payload = response.json()
                 except (ValueError, AttributeError):
+                    response_payload = {}
+                error = (
+                    response_payload.get("error", {})
+                    if isinstance(response_payload, dict)
+                    else {}
+                )
+                if not isinstance(error, dict):
                     error = {}
+                error_details = {
+                    key: error.get(key)
+                    for key in ("code", "status", "message", "details")
+                    if key in error
+                }
                 logger.error(
                     "Google Business Profile request failed: operation=%s "
-                    "status=%s google_status=%s google_message=%s",
+                    "endpoint=%s resources=%s http_status=%s google_error=%s",
                     operation,
+                    endpoint,
+                    resources,
                     response.status_code,
-                    error.get("status"),
-                    error.get("message"),
+                    error_details,
+                    extra={
+                        "operation": operation,
+                        "google_endpoint": endpoint,
+                        "google_resources": resources,
+                        "http_status": response.status_code,
+                        "google_error": error_details,
+                    },
                 )
                 if response.status_code == 401:
                     raise GoogleAuthenticationError
                 if response.status_code == 403:
                     if any(
                         detail.get("reason") == "SERVICE_DISABLED"
-                        and detail.get("metadata", {}).get("service")
+                        and (detail.get("metadata") or {}).get("service")
                         == "mybusinessverifications.googleapis.com"
                         for detail in error.get("details", [])
                         if isinstance(detail, dict)
@@ -249,11 +266,29 @@ class GoogleBusinessProfileService:
             if not isinstance(payload, dict):
                 logger.error(
                     "Google Business Profile returned an unexpected JSON type "
-                    "during %s: %s",
+                    "during %s: endpoint=%s resources=%s type=%s",
                     operation,
+                    endpoint,
+                    resources,
                     type(payload).__name__,
                 )
                 raise GoogleBusinessProfileError
+            logger.info(
+                "Google Business Profile request succeeded: operation=%s "
+                "endpoint=%s resources=%s http_status=%s response_fields=%s",
+                operation,
+                endpoint,
+                resources,
+                response.status_code,
+                sorted(payload),
+                extra={
+                    "operation": operation,
+                    "google_endpoint": endpoint,
+                    "google_resources": resources,
+                    "http_status": response.status_code,
+                    "response_fields": sorted(payload),
+                },
+            )
             return payload
 
     def discover_accounts(self):
@@ -352,7 +387,9 @@ class GoogleBusinessProfileService:
         url = f"{REVIEWS_API}/accounts/{account_id}/locations/{location_id}/reviews"
         reviews = []
         page_token = None
+        page_number = 0
         while True:
+            page_number += 1
             params = {
                 "pageSize": REVIEW_PAGE_SIZE,
                 "orderBy": "updateTime desc",
@@ -369,21 +406,55 @@ class GoogleBusinessProfileService:
                 total_review_count = payload.get("totalReviewCount")
                 if total_review_count is None:
                     logger.error(
-                        "Google Reviews API returned no review fields for "
-                        "account=%s location=%s",
+                        "Google Reviews API returned no review fields: "
+                        "endpoint=%s account=%s location=%s response_fields=%s",
+                        urlsplit(url).path,
                         selected.account.resource_name,
                         selected.resource_name,
+                        sorted(payload),
+                        extra={
+                            "google_endpoint": urlsplit(url).path,
+                            "google_resources": [
+                                selected.account.resource_name,
+                                selected.resource_name,
+                            ],
+                            "response_fields": sorted(payload),
+                        },
                     )
                     raise GoogleReviewsResponseIncomplete
                 page_reviews = []
             if not isinstance(page_reviews, list):
                 logger.error(
                     "Google Reviews API returned an invalid reviews field for "
-                    "account=%s location=%s",
+                    "endpoint=%s account=%s location=%s",
+                    urlsplit(url).path,
                     selected.account.resource_name,
                     selected.resource_name,
                 )
                 raise GoogleReviewsResponseIncomplete
+            logger.info(
+                "Google Reviews API page received: endpoint=%s account=%s "
+                "location=%s page=%s review_records=%s total_reviews=%s "
+                "has_next_page=%s",
+                urlsplit(url).path,
+                selected.account.resource_name,
+                selected.resource_name,
+                page_number,
+                len(page_reviews),
+                payload.get("totalReviewCount"),
+                bool(payload.get("nextPageToken")),
+                extra={
+                    "google_endpoint": urlsplit(url).path,
+                    "google_resources": [
+                        selected.account.resource_name,
+                        selected.resource_name,
+                    ],
+                    "page": page_number,
+                    "review_records": len(page_reviews),
+                    "total_reviews": payload.get("totalReviewCount"),
+                    "has_next_page": bool(payload.get("nextPageToken")),
+                },
+            )
             reviews.extend(page_reviews)
             page_token = payload.get("nextPageToken")
             if not page_token:

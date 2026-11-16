@@ -197,6 +197,34 @@ class GoogleBusinessProfileLocationAdmin(GoogleBusinessProfileDiscoveryAdmin):
             )
         else:
             has_voice_of_merchant = state.get("hasVoiceOfMerchant")
+            recommendation = next(
+                (
+                    key
+                    for key in (
+                        "verify",
+                        "resolveOwnershipConflict",
+                        "complyWithGuidelines",
+                        "waitForVoiceOfMerchant",
+                    )
+                    if state.get(key) is not None
+                ),
+                None,
+            )
+            logger.info(
+                "Google location verification state received: resource=%s "
+                "has_voice_of_merchant=%s has_business_authority=%s "
+                "recommendation=%s",
+                location.resource_name,
+                has_voice_of_merchant,
+                state.get("hasBusinessAuthority"),
+                recommendation,
+                extra={
+                    "google_resource": location.resource_name,
+                    "has_voice_of_merchant": has_voice_of_merchant,
+                    "has_business_authority": state.get("hasBusinessAuthority"),
+                    "verification_recommendation": recommendation,
+                },
+            )
             if isinstance(has_voice_of_merchant, bool):
                 location.has_voice_of_merchant = has_voice_of_merchant
                 location.save(update_fields=("has_voice_of_merchant",))
@@ -219,8 +247,12 @@ class GoogleBusinessProfileLocationAdmin(GoogleBusinessProfileDiscoveryAdmin):
             elif state.get("resolveOwnershipConflict") is not None:
                 self.message_user(
                     request,
-                    "Google reports an ownership conflict or duplicate listing. "
-                    "Resolve it in Google Business Profile before syncing reviews.",
+                    "Google's Voice of Merchant response explicitly reports "
+                    "resolveOwnershipConflict for this location, which Google "
+                    "defines as a duplicate of another location in good standing. "
+                    "This is not inferred from the account verification status or "
+                    "a Reviews API error. Confirm the affected resource in Google "
+                    "Business Profile before taking action.",
                     level=messages.ERROR,
                 )
             elif state.get("complyWithGuidelines") is not None:
