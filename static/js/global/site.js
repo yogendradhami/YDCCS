@@ -254,152 +254,189 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    initReviewCarousel();
+    document.querySelectorAll("[data-review-carousel]").forEach(initReviewCarousel);
 });
 
-function initReviewCarousel() {
-    const carousel = document.querySelector('[data-review-carousel]');
-    if (!carousel) {
+function initReviewCarousel(carousel) {
+    if (!carousel || carousel.dataset.carouselInitialized === "true") {
         return;
     }
 
-    const track = carousel.querySelector('.home-review-carousel-track');
-    const slides = Array.from(track.querySelectorAll('.home-review-slide'));
-    const prevButton = carousel.parentElement.querySelector('.carousel-control.prev');
-    const nextButton = carousel.parentElement.querySelector('.carousel-control.next');
+    const viewport = carousel.querySelector(".home-reviews-viewport");
+    const track = carousel.querySelector(".home-reviews-track");
+    const dotsContainer = carousel.parentElement.querySelector(".review-carousel-dots");
+    const prevButton = carousel.querySelector(".review-prev");
+    const nextButton = carousel.querySelector(".review-next");
 
-    if (!track || slides.length === 0 || !prevButton || !nextButton) {
+    if (!viewport || !track || !prevButton || !nextButton) {
+        return;
+    }
+
+    const slides = Array.from(track.querySelectorAll(".home-review-slide"));
+    carousel.dataset.carouselInitialized = "true";
+    if (!slides.length) {
+        prevButton.hidden = true;
+        nextButton.hidden = true;
+        if (dotsContainer) {
+            dotsContainer.hidden = true;
+        }
         return;
     }
 
     let currentIndex = 0;
-    let slideWidth = slides[0].getBoundingClientRect().width + 24;
-    let autoPlay;
-    const dotsContainer = carousel.parentElement.querySelector('.carousel-dots');
-    let dots = [];
-    let touchStartX = 0;
-    let touchEndX = 0;
-    let isDragging = false;
+    let autoplayTimer = null;
+    let isHovered = false;
+    let isFocused = false;
+    let isTouching = false;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const dots = [];
 
-    function updateButtons() {
-        prevButton.disabled = currentIndex === 0;
-        nextButton.disabled = currentIndex >= slides.length - 1;
+    function currentOffset() {
+        return currentIndex === 0 ? 0 : currentIndex * viewport.clientWidth;
     }
 
-    function renderDots() {
+    function isPaused() {
+        return isHovered || isFocused || isTouching ||
+            document.visibilityState === "hidden" || reducedMotion.matches;
+    }
+
+    function update() {
+        const offset = currentOffset();
+        track.style.transform = `translate3d(${offset === 0 ? 0 : -offset}px, 0, 0)`;
+        viewport.style.height = `${slides[currentIndex].offsetHeight}px`;
+
+        slides.forEach(function (slide, index) {
+            const isActive = index === currentIndex;
+            slide.setAttribute("aria-hidden", String(!isActive));
+            slide.classList.toggle("is-active", isActive);
+        });
+
+        dots.forEach(function (dot, index) {
+            const isActive = index === currentIndex;
+            dot.classList.toggle("active", isActive);
+            if (isActive) {
+                dot.setAttribute("aria-current", "true");
+            } else {
+                dot.removeAttribute("aria-current");
+            }
+        });
+    }
+
+    function show(index) {
+        currentIndex = (index + slides.length) % slides.length;
+        update();
+    }
+
+    function stopAutoplay() {
+        if (autoplayTimer !== null) {
+            window.clearTimeout(autoplayTimer);
+            autoplayTimer = null;
+        }
+    }
+
+    function scheduleAutoplay() {
+        stopAutoplay();
+        if (slides.length < 2 || isPaused()) {
+            return;
+        }
+        autoplayTimer = window.setTimeout(function () {
+            autoplayTimer = null;
+            show(currentIndex + 1);
+            scheduleAutoplay();
+        }, 5000);
+    }
+
+    function restartAutoplay() {
+        stopAutoplay();
+        scheduleAutoplay();
+    }
+
+    slides.forEach(function (_slide, index) {
         if (!dotsContainer) {
             return;
         }
-        dotsContainer.innerHTML = '';
-        dots = slides.map((slide, index) => {
-            const dot = document.createElement('button');
-            dot.type = 'button';
-            dot.className = 'carousel-dot';
-            dot.setAttribute('aria-label', `Go to review ${index + 1}`);
-            dot.addEventListener('click', function () {
-                goTo(index);
-                startAutoPlay();
-            });
-            dotsContainer.appendChild(dot);
-            return dot;
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "review-carousel-dot";
+        dot.setAttribute("aria-label", `Go to review ${index + 1}`);
+        dot.addEventListener("click", function () {
+            show(index);
+            restartAutoplay();
         });
-        updateDots();
-    }
+        dotsContainer.appendChild(dot);
+        dots.push(dot);
+    });
 
-    function updateDots() {
-        if (!dots.length) {
-            return;
+    prevButton.disabled = slides.length < 2;
+    nextButton.disabled = slides.length < 2;
+    prevButton.addEventListener("click", function () {
+        show(currentIndex - 1);
+        restartAutoplay();
+    });
+    nextButton.addEventListener("click", function () {
+        show(currentIndex + 1);
+        restartAutoplay();
+    });
+
+    viewport.addEventListener("mouseenter", function () {
+        isHovered = true;
+        stopAutoplay();
+    });
+    viewport.addEventListener("mouseleave", function () {
+        isHovered = false;
+        scheduleAutoplay();
+    });
+    carousel.addEventListener("focusin", function () {
+        isFocused = true;
+        stopAutoplay();
+    });
+    carousel.addEventListener("focusout", function (event) {
+        if (!carousel.contains(event.relatedTarget)) {
+            isFocused = false;
+            scheduleAutoplay();
         }
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentIndex);
-        });
-    }
-
-    function refreshDimensions() {
-        const visibleWidth = carousel.clientWidth || slides[0].getBoundingClientRect().width;
-        slideWidth = visibleWidth + 24;
-        track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-        if (window.innerWidth <= 980) {
-            slides.forEach((slide) => {
-                slide.style.width = `${carousel.clientWidth}px`;
-                slide.style.minWidth = `${carousel.clientWidth}px`;
-                slide.style.flexBasis = `${carousel.clientWidth}px`;
-            });
-        } else {
-            slides.forEach((slide) => {
-                slide.style.width = '';
-                slide.style.minWidth = '';
-                slide.style.flexBasis = '';
-            });
+    });
+    carousel.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            show(currentIndex - 1);
+            restartAutoplay();
+        } else if (event.key === "ArrowRight") {
+            event.preventDefault();
+            show(currentIndex + 1);
+            restartAutoplay();
         }
-    }
+    });
 
-    function goTo(index) {
-        currentIndex = Math.max(0, Math.min(index, slides.length - 1));
-        track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-        updateButtons();
-        updateDots();
-    }
-
-    function startAutoPlay() {
-        if (autoPlay) {
-            clearInterval(autoPlay);
-        }
-        autoPlay = setInterval(function () {
-            const nextIndex = currentIndex >= slides.length - 1 ? 0 : currentIndex + 1;
-            goTo(nextIndex);
-        }, 6500);
-    }
-
-    function handleSwipe() {
-        const swipeThreshold = 50;
-        const diff = touchStartX - touchEndX;
-
-        if (Math.abs(diff) > swipeThreshold) {
-            if (diff > 0) {
-                goTo(currentIndex + 1);
-            } else {
-                goTo(currentIndex - 1);
+    let touchStartX = null;
+    viewport.addEventListener("touchstart", function (event) {
+        touchStartX = event.changedTouches[0].clientX;
+        isTouching = true;
+        stopAutoplay();
+    }, { passive: true });
+    viewport.addEventListener("touchend", function (event) {
+        if (touchStartX !== null) {
+            const distance = touchStartX - event.changedTouches[0].clientX;
+            if (Math.abs(distance) > 50) {
+                show(currentIndex + (distance > 0 ? 1 : -1));
             }
-            startAutoPlay();
         }
-    }
+        touchStartX = null;
+        isTouching = false;
+        scheduleAutoplay();
+    }, { passive: true });
+    viewport.addEventListener("touchcancel", function () {
+        touchStartX = null;
+        isTouching = false;
+        scheduleAutoplay();
+    }, { passive: true });
 
-    prevButton.addEventListener('click', function () {
-        goTo(currentIndex - 1);
-    });
+    document.addEventListener("visibilitychange", scheduleAutoplay);
+    reducedMotion.addEventListener("change", scheduleAutoplay);
+    window.addEventListener("resize", update);
 
-    nextButton.addEventListener('click', function () {
-        goTo(currentIndex + 1);
-    });
-
-    carousel.addEventListener('touchstart', function (e) {
-        touchStartX = e.changedTouches[0].screenX;
-        isDragging = true;
-        if (autoPlay) {
-            clearInterval(autoPlay);
-        }
-    }, false);
-
-    carousel.addEventListener('touchend', function (e) {
-        touchEndX = e.changedTouches[0].screenX;
-        isDragging = false;
-        handleSwipe();
-    }, false);
-
-    carousel.addEventListener('mouseenter', function () {
-        if (autoPlay) {
-            clearInterval(autoPlay);
-        }
-    });
-
-    carousel.addEventListener('mouseleave', startAutoPlay);
-    window.addEventListener('resize', refreshDimensions);
-
-    renderDots();
-    refreshDimensions();
-    updateButtons();
-    startAutoPlay();
+    update();
+    scheduleAutoplay();
 }
 
 function getCookie(name) {

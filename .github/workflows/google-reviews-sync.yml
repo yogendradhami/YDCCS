@@ -1,0 +1,89 @@
+
+name: Daily Google Reviews Sync
+
+on:
+  schedule:
+    # 7:00 AM Adelaide during daylight saving (UTC+10:30)
+    - cron: "30 20 * * *"
+
+    # 7:00 AM Adelaide during standard time (UTC+9:30)
+    - cron: "30 21 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: google-reviews-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-google-reviews:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    env:
+      DJANGO_SETTINGS_MODULE: ydcleaning.settings
+      DJANGO_DEBUG: "False"
+      IS_PRODUCTION: "True"
+      DJANGO_ALLOWED_HOSTS: "ydcleaning.com.au,www.ydcleaning.com.au"
+      SITE_URL: "https://www.ydcleaning.com.au"
+
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      SECURITY_ALERT_EMAIL: ${{ secrets.SECURITY_ALERT_EMAIL }}
+      DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check Adelaide schedule
+        id: schedule
+        run: |
+          python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          import os
+
+          now = datetime.now(ZoneInfo("Australia/Adelaide"))
+          github_event = os.environ.get("GITHUB_EVENT_NAME")
+          should_run = (
+              github_event == "workflow_dispatch"
+              or (now.hour == 7 and now.minute < 30)
+          )
+
+          print(f"Adelaide time: {now.isoformat()}")
+          print(f"Trigger: {github_event}")
+          print(f"Run sync: {should_run}")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"run={str(should_run).lower()}\n")
+          PY
+
+      - name: Run Google Reviews synchronisation
+        if: steps.schedule.outputs.run == 'true'
+        run: python manage.py sync_google_reviews

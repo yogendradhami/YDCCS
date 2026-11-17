@@ -73,6 +73,7 @@ from services.models import Service
 from google_reviews.review_utils import (
     get_google_reviews_api,
     get_public_google_reviews,
+    get_public_google_review_stats,
 )
 
 from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
@@ -629,16 +630,9 @@ def home(request):
             for review in featured_reviews
         ]
 
-    rating_values = []
-    for review in google_reviews:
-        rating = review.get("rating")
-        if isinstance(rating, str):
-            rating_values.append(rating.count("★") or rating.count("⭐"))
-        elif isinstance(rating, int):
-            rating_values.append(rating)
-
-    average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
-    google_review_count = len(google_reviews)
+    google_review_stats = get_public_google_review_stats()
+    average_rating = google_review_stats["average_rating"]
+    google_review_count = google_review_stats["review_count"]
 
     if request.method == "POST" and request.POST.get("quick_quote_submit") != "1":
         form = QuoteRequestForm(request.POST, request.FILES, request=request)

@@ -161,11 +161,12 @@ Read genuine Google reviews from Adelaide customers about YD Commercial Cleaning
                         <div class="featured-review-content">
 
                             <div class="featured-stars">
-                                ★★★★★
+
+                                {{ review.rating }}
                             </div>
 
                             <blockquote>
-                                “{{ review.comment }}”
+                                {{ review.comment }}
                             </blockquote>
 
                             <div class="featured-author">
@@ -248,17 +249,13 @@ Read genuine Google reviews from Adelaide customers about YD Commercial Cleaning
 
 
                         <div class="review-rating">
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
-                            <span>★</span>
+                            {{ review.rating }}
                         </div>
 
 
                         {% if review.comment %}
                             <p class="review-text">
-                                “{{ review.comment }}”
+                                {{ review.comment }}
                             </p>
                         {% else %}
                             <p class="review-text review-no-comment">

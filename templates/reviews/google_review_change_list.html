@@ -1,17 +1,25 @@
+
 {% extends "admin/change_list.html" %}
 
 {% block object-tools %}
 
-<div style="margin-bottom:15px;">
-    <a href="sync/" class="button">
-        ⭐ Sync Google Reviews
-    </a>
+<div style="margin-bottom:15px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+
+    <form method="post" action="sync/" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="button">
+            ⭐ Sync Google Reviews
+        </button>
+    </form>
+
     <a href="discover-profiles/" class="button">
         Discover Business Profiles
     </a>
+
     <a href="{% url 'admin:google_reviews_googlebusinessprofilelocation_changelist' %}" class="button">
         Select Business Location
     </a>
+
 </div>
 
 {{ block.super }}

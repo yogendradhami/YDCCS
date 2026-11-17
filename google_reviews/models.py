@@ -48,6 +48,22 @@ class GoogleBusinessProfileLocation(models.Model):
     has_voice_of_merchant = models.BooleanField(null=True, blank=True)
     is_available = models.BooleanField(default=True)
     is_selected = models.BooleanField(default=False)
+    google_total_review_count = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    google_average_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    reviews_last_synced_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
     last_discovered_at = models.DateTimeField(auto_now=True)
 
     class Meta:

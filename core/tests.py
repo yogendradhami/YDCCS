@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 from xml.etree import ElementTree
 
 from django.conf import settings
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -133,6 +134,30 @@ class SmokeTest(TestCase):
         body = response.content.decode("utf-8")
         self.assertIn("js/fast-image-upload.js", body)
         self.assertIn("js/quote-image-upload.js", body)
+
+    def test_homepage_google_reviews_carousel_markup(self):
+        GoogleReview.objects.create(
+            review_id="homepage-carousel-review",
+            reviewer_name="Homepage customer",
+            comment="A long review remains available to the responsive carousel.",
+            rating="4",
+        )
+        cache.delete("homepage_google_reviews")
+
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-review-carousel')
+        self.assertContains(response, 'class="home-reviews-viewport"')
+        self.assertContains(response, 'class="home-reviews-track"')
+        self.assertContains(response, 'class="review-carousel-control review-prev"')
+        self.assertContains(response, 'class="review-carousel-control review-next"')
+        self.assertContains(response, 'type="button"')
+        self.assertContains(response, 'aria-label="4 out of 5 stars"')
+        self.assertNotContains(
+            response,
+            '"A long review remains available to the responsive carousel."',
+        )
 
     def test_public_resource_pages(self):
         public_urls = [

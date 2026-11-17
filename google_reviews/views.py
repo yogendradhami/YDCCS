@@ -12,13 +12,19 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
 from .business_profile import (
     GoogleBusinessProfileError,
     GoogleBusinessProfileService,
     parse_google_datetime as _parse_google_datetime,
 )
 from .models import GoogleAccount
-from .review_utils import get_public_google_reviews
+from .review_utils import (
+    get_public_google_reviews,
+    get_public_google_review_stats,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -158,25 +164,19 @@ def google_callback(request):
         """
     )
 
+
 def public_google_reviews(request):
     reviews = get_public_google_reviews(limit=100)
-    review_count = len(reviews)
-    average_rating = 5.0
-
-    if reviews:
-        rating_values = []
-        for review in reviews:
-            rating_text = review.get("rating", "")
-            rating_values.append(len(rating_text.replace("☆", "").replace("★", "")) or 5)
-        average_rating = round(sum(rating_values) / len(rating_values), 1) if rating_values else 5.0
+    stats = get_public_google_review_stats()
 
     return render(
         request,
         "google_reviews/public_reviews.html",
         {
             "reviews": reviews,
-            "review_count": review_count,
-            "average_rating": average_rating,
+            "review_count": stats["review_count"],
+            "average_rating": stats["average_rating"],
+            "reviews_last_synced_at": stats["last_synced_at"],
         },
     )
 
@@ -194,7 +194,9 @@ def google_reviews(request):
         )
     return JsonResponse({"reviews": reviews})
 
-def sync_google_reviews(request):
+
+def _sync_google_reviews_response():
+    """Run the Google Reviews sync and return its result."""
     try:
         saved, retrieved = GoogleBusinessProfileService().sync_selected_reviews()
     except GoogleBusinessProfileError as exc:
@@ -205,16 +207,26 @@ def sync_google_reviews(request):
             "Google Business Profile reviews could not be synced. Check server logs.",
             status=500,
         )
+
     if retrieved == 0:
         return HttpResponse(
             "Google returned zero reviews for the selected listing. "
             "Existing saved reviews were left unchanged.",
             status=204,
         )
+
     return HttpResponse(
         f"Google reviews synced successfully. Retrieved {retrieved} review(s) "
         f"and saved {saved}."
     )
+
+
+@require_POST
+@staff_member_required
+def sync_google_reviews(request):
+    return _sync_google_reviews_response()
+
+
 
 def get_google_reviews(request):
     return google_reviews(request)

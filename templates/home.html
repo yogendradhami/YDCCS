@@ -1210,7 +1210,13 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
         </div>
 
 
-        <div class="reviews-carousel-wrapper">
+        <div
+            class="reviews-carousel-wrapper"
+            data-review-carousel
+            role="region"
+            aria-label="Customer reviews"
+            aria-roledescription="carousel"
+        >
 
             <button
                 type="button"
@@ -1227,7 +1233,12 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
 
                     {% for review in google_reviews %}
 
-                        <article class="home-review-slide">
+                        <article
+                            class="home-review-slide"
+                            role="group"
+                            aria-roledescription="slide"
+                            aria-label="Review {{ forloop.counter }} of {{ google_reviews|length }}"
+                        >
 
                             <div class="review-card">
 
@@ -1256,31 +1267,16 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
                                 </div>
 
 
-                                <div class="review-stars">
-
-                                    {% if review.rating %}
-
-                                        {% for i in "12345" %}
-
-                                            {% if forloop.counter <= review.rating %}
-                                                ★
-                                            {% else %}
-                                                ☆
-                                            {% endif %}
-
-                                        {% endfor %}
-
-                                    {% else %}
-
-                                        ★★★★★
-
-                                    {% endif %}
-
+                                <div
+                                    class="review-stars"
+                                    aria-label="{{ review.rating|default:'★★★★★'|length }} out of 5 stars"
+                                >
+                                    {{ review.rating|default:"★★★★★" }}
                                 </div>
 
 
                                 <p>
-                                    "{{ review.comment }}"
+                                    {{ review.comment }}
                                 </p>
 
 
@@ -1318,6 +1314,7 @@ cleaning services Adelaide, commercial cleaning Adelaide, office cleaning Adelai
 
         <div
             class="review-carousel-dots"
+            role="group"
             aria-label="Review navigation"
         ></div>
 
