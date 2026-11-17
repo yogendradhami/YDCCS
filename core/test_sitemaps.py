@@ -1,3 +1,4 @@
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.conf import settings
@@ -6,9 +7,14 @@ from django.utils import timezone
 
 from blog.models import BlogPost
 from core.sitemaps import (
+    AdelaideLocalAreaSitemap,
+    AdelaideLocalIndexSitemap,
+    AdelaideLocalLetterSitemap,
     BlogPostSitemap,
     GuideSitemap,
     LocalServiceSitemap,
+    ServiceDetailSitemap,
+    ServicesIndexSitemap,
     StaticViewSitemap,
     _base_service_slug_for_local_page,
 )
@@ -70,6 +76,13 @@ class LocalServiceSitemapPerformanceTests(TestCase):
             sitemap.lastmod("carpet-steam-cleaning-adelaide-glenelg"),
             self.updated_at,
         )
+        self.assertEqual(
+            ServiceDetailSitemap().lastmod(self.service),
+            self.updated_at,
+        )
+        self.assertIsNone(
+            ServiceDetailSitemap().lastmod("generated-static-service-adelaide")
+        )
 
     def test_lastmod_does_not_query_database_for_each_local_url(self):
         sitemap = LocalServiceSitemap()
@@ -87,22 +100,53 @@ class LocalServiceSitemapPerformanceTests(TestCase):
 
         self.assertTrue(all(date == self.updated_at for date in dates))
 
-    def test_unknown_service_uses_one_stable_fallback_timestamp(self):
+    def test_unknown_service_has_no_fabricated_lastmod(self):
         sitemap = LocalServiceSitemap()
         sitemap.items()
 
         with self.assertNumQueries(0):
-            first = sitemap.lastmod("unknown-service-glenelg")
-            second = sitemap.lastmod("unknown-service-norwood")
+            lastmod = sitemap.lastmod("unknown-service-glenelg")
 
-        self.assertEqual(first, second)
+        self.assertIsNone(lastmod)
 
 
 class PublicContentSitemapTests(TestCase):
     def test_sitemaps_use_the_configured_canonical_domain(self):
         sitemap = StaticViewSitemap()
         self.assertEqual(sitemap.get_domain(), settings.SITE_URL.split("://", 1)[1])
-        self.assertNotIn("booking", sitemap.items())
+        self.assertIn("booking", sitemap.items())
+        self.assertEqual(sitemap.location("booking"), "/booking/")
+        self.assertEqual(sitemap.priority("booking"), 0.8)
+
+    def test_static_sitemaps_do_not_fabricate_lastmod_values(self):
+        for sitemap in (
+            StaticViewSitemap(),
+            ServicesIndexSitemap(),
+            AdelaideLocalAreaSitemap(),
+            AdelaideLocalIndexSitemap(),
+            AdelaideLocalLetterSitemap(),
+            GuideSitemap(),
+        ):
+            with self.subTest(sitemap=type(sitemap).__name__):
+                self.assertFalse(hasattr(sitemap, "lastmod"))
+
+        service_sitemap = ServiceDetailSitemap()
+        self.assertIsNone(
+            service_sitemap.lastmod("static-service-definition-adelaide")
+        )
+
+    def test_database_backed_sitemaps_use_real_updated_at(self):
+        updated_at = timezone.now() - timedelta(days=30)
+        post = BlogPost.objects.create(
+            title="Recently updated cleaning guide",
+            slug="recently-updated-cleaning-guide",
+            content="Published content.",
+            published=True,
+        )
+        BlogPost.objects.filter(pk=post.pk).update(updated_at=updated_at)
+        post.refresh_from_db()
+
+        self.assertEqual(BlogPostSitemap().lastmod(post), updated_at)
 
     def test_guides_sitemap_contains_only_existing_public_guides(self):
         sitemap = GuideSitemap()

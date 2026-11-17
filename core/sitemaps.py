@@ -4,7 +4,6 @@ from urllib.parse import urlsplit
 from django.contrib.sitemaps import Sitemap
 from django.conf import settings
 from django.urls import reverse
-from django.utils import timezone
 
 from .seo_data import LOCATION_ALIASES
 from .seo_data import SERVICE_DEFINITIONS
@@ -75,6 +74,7 @@ class StaticViewSitemap(BaseSitemap):
             "blog",
             "cleaning_services_video",
             "customer_testimonial_video",
+            "booking",
         ]
 
     def location(self, item):
@@ -85,10 +85,9 @@ class StaticViewSitemap(BaseSitemap):
             return 1.0
         if item in {"services_home", "guides", "blog"}:
             return 0.9
+        if item == "booking":
+            return 0.8
         return 0.8
-
-    def lastmod(self, item):
-        return timezone.now()
 
 
 def _base_service_slug_for_local_page(service_slug):
@@ -108,7 +107,6 @@ class LocalServiceSitemap(BaseSitemap):
         self._service_lastmod_by_slug = dict(
             Service.objects.values_list("slug", "updated_at")
         )
-        self._fallback_lastmod = timezone.now()
         return service_page_slugs()
 
     def priority(self, item):
@@ -122,10 +120,7 @@ class LocalServiceSitemap(BaseSitemap):
 
     def lastmod(self, item):
         service_slug = _base_service_slug_for_local_page(item)
-        return self._service_lastmod_by_slug.get(
-            service_slug,
-            self._fallback_lastmod,
-        )
+        return self._service_lastmod_by_slug.get(service_slug)
 
 
 class ServicesIndexSitemap(BaseSitemap):
@@ -138,10 +133,6 @@ class ServicesIndexSitemap(BaseSitemap):
 
     def priority(self, item):
         return 0.9
-
-    def lastmod(self, item):
-        return timezone.now()
-
 
 class ServiceDetailSitemap(BaseSitemap):
 
@@ -162,7 +153,7 @@ class ServiceDetailSitemap(BaseSitemap):
         return 0.8
 
     def lastmod(self, obj):
-        return obj.updated_at if isinstance(obj, Service) else timezone.now()
+        return obj.updated_at if isinstance(obj, Service) else None
 
     def location(self, obj):
         service_slug = obj.slug if isinstance(obj, Service) else obj
@@ -186,10 +177,6 @@ class AdelaideLocalAreaSitemap(BaseSitemap):
             kwargs={"area_slug": item},
         )
 
-    def lastmod(self, item):
-        return timezone.now()
-
-
 class AdelaideLocalIndexSitemap(BaseSitemap):
     """Main Adelaide local SEO hub."""
 
@@ -201,10 +188,6 @@ class AdelaideLocalIndexSitemap(BaseSitemap):
 
     def priority(self, item):
         return 0.9
-
-    def lastmod(self, item):
-        return timezone.now()
-
 
 class AdelaideLocalLetterSitemap(BaseSitemap):
     """A-Z Adelaide local-area index pages with actual suburb data."""
@@ -228,10 +211,6 @@ class AdelaideLocalLetterSitemap(BaseSitemap):
 
     def priority(self, item):
         return 0.75
-
-    def lastmod(self, item):
-        return timezone.now()
-
 
 class TestimonialVideoSitemap(BaseSitemap):
     """Dedicated watch pages for active customer testimonial videos."""
@@ -282,10 +261,6 @@ class GuideSitemap(BaseSitemap):
 
     def priority(self, item):
         return 0.7
-
-    def lastmod(self, item):
-        return timezone.now()
-
 
 sitemaps = {
     "static": StaticViewSitemap,

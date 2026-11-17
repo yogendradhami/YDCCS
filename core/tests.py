@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from unittest.mock import patch
@@ -200,7 +201,6 @@ class SmokeTest(TestCase):
         self.assertNotIn("<sitemapindex", sitemap)
         self.assertGreaterEqual(sitemap.count("<url>"), 1790)
         self.assertIn(f"<loc>{settings.SITE_URL}/</loc>", sitemap)
-        self.assertNotIn(f"{settings.SITE_URL}/booking/", sitemap)
         sitemap_root = ElementTree.fromstring(sitemap_response.content)
         sitemap_urls = [
             element.text
@@ -211,6 +211,18 @@ class SmokeTest(TestCase):
         self.assertTrue(
             all(url.startswith(f"{settings.SITE_URL}/") for url in sitemap_urls)
         )
+        booking_entry = next(
+            entry
+            for entry in sitemap_root
+            if any(
+                element.tag.endswith("loc")
+                and element.text == f"{settings.SITE_URL}/booking/"
+                for element in entry
+            )
+        )
+        self.assertFalse(
+            any(element.tag.endswith("lastmod") for element in booking_entry)
+        )
         self.assertFalse(
             any(
                 f"{settings.SITE_URL}{path}" in sitemap_urls
@@ -219,10 +231,10 @@ class SmokeTest(TestCase):
                     "/dashboard/",
                     "/portal/",
                     "/employee/",
-                    "/booking/",
                 )
             )
         )
+        self.assertIn(f"{settings.SITE_URL}/booking/", sitemap_urls)
         self.assertNotIn("X-Robots-Tag", sitemap_response.headers)
         self.assertIn("public, max-age=86400", sitemap_response["Cache-Control"])
 
@@ -242,10 +254,18 @@ class SmokeTest(TestCase):
         self.assertNotIn("Disallow: /booking/", robots_lines)
         self.assertIn(f"Sitemap: {settings.SITE_URL}/sitemap.xml", body)
 
-    def test_booking_page_is_noindex_without_duplicate_robots_header(self):
+    def test_booking_page_is_indexable_with_self_referencing_canonical(self):
         response = self.client.get("/booking/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("noindex, follow", response.content.decode("utf-8"))
+        body = response.content.decode("utf-8")
+        self.assertRegex(
+            body,
+            r'<meta\s+name="robots"\s+content="index,\s*follow"\s*>',
+        )
+        self.assertIn(
+            f'<link rel="canonical" href="{settings.SITE_URL}/booking/">',
+            body,
+        )
         self.assertNotIn("X-Robots-Tag", response.headers)
 
     def test_testimonials_page_includes_live_google_reviews_section(self):
