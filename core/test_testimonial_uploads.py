@@ -442,6 +442,9 @@ class TestimonialVideoDirectUploadTests(TestCase):
         response = self.client.get(self.add_url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "testimonial-video-upload.js")
+        self.assertRegex(
+            response.content.decode(),
+            r"testimonial-video-upload(?:\.[a-f0-9]+)?\.js",
+        )
         self.assertContains(response, "testimonial-video-progress")
         self.assertContains(response, "data-upload-url")

@@ -2127,8 +2127,17 @@ def _service_context_from_definition(service_slug, location_name="Adelaide"):
 
 def _get_service_google_reviews(limit=6):
     google_reviews = get_public_google_reviews(limit=limit)
+
     if not google_reviews:
-        google_reviews = get_google_reviews_api()
+        try:
+            google_reviews = get_google_reviews_api()
+        except Exception as exc:
+            logger.warning(
+                "Unable to fetch live Google reviews for service page: %s",
+                exc,
+            )
+            google_reviews = []
+
     if not google_reviews:
         recent_reviews = Review.objects.order_by("-created_at")[:limit]
         google_reviews = [
@@ -2139,8 +2148,8 @@ def _get_service_google_reviews(limit=6):
             }
             for review in recent_reviews
         ]
-    return google_reviews
 
+    return google_reviews
 
 def _build_service_resource_links(service_slug, location):
     profile_slug = _service_base_slug(service_slug)
