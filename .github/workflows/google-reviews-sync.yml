@@ -27,6 +27,7 @@ jobs:
       DJANGO_SETTINGS_MODULE: ydcleaning.settings
       DJANGO_DEBUG: "False"
       IS_PRODUCTION: "True"
+      ALLOW_INMEMORY_CHANNEL_LAYER: "True"
       DJANGO_ALLOWED_HOSTS: "ydcleaning.com.au,www.ydcleaning.com.au"
       SITE_URL: "https://www.ydcleaning.com.au"
 
@@ -44,6 +45,7 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       SECURITY_ALERT_EMAIL: ${{ secrets.SECURITY_ALERT_EMAIL }}
       DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
+
 
     steps:
       - name: Checkout repository

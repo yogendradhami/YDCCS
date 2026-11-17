@@ -383,7 +383,16 @@ REDIS_URL = env.str(
     default="",
 ).strip()
 
-if IS_PRODUCTION and not REDIS_URL:
+ALLOW_INMEMORY_CHANNEL_LAYER = env.bool(
+    "ALLOW_INMEMORY_CHANNEL_LAYER",
+    default=False,
+)
+
+if (
+    IS_PRODUCTION
+    and not REDIS_URL
+    and not ALLOW_INMEMORY_CHANNEL_LAYER
+):
     raise RuntimeError(
         "REDIS_URL must be configured in production for multi-worker Django Channels."
     )
