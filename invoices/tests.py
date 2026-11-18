@@ -508,6 +508,7 @@ class StripeInvoicePaymentTests(TestCase):
             parameters["metadata"]["invoice_number"],
             invoice.invoice_number,
         )
+        self.assertNotIn("timeout", parameters)
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, "pending")
         self.assertEqual(invoice.stripe_checkout_session_id, "cs_test_new")
@@ -529,7 +530,7 @@ class StripeInvoicePaymentTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
-        retrieve_session.assert_called_once_with(self.session_id, timeout=20)
+        retrieve_session.assert_called_once_with(self.session_id)
         create_session.assert_not_called()
 
     @skipUnless(
@@ -728,7 +729,7 @@ class StripeInvoicePaymentTests(TestCase):
             "https://checkout.stripe.com/c/pay/cs_test_invoice",
             fetch_redirect_response=False,
         )
-        retrieve_session.assert_called_once_with("cs_test_invoice", timeout=20)
+        retrieve_session.assert_called_once_with("cs_test_invoice")
 
     def test_payment_link_returns_diagnostic_when_invoice_schema_is_unavailable(self):
         token = get_invoice_payment_token(self.invoice)

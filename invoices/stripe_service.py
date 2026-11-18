@@ -34,7 +34,6 @@ def create_checkout_session(invoice, success_url, cancel_url):
         if locked_invoice.stripe_checkout_session_id:
             existing = stripe.checkout.Session.retrieve(
                 locked_invoice.stripe_checkout_session_id,
-                timeout=20,
             )
             if existing.status == "open":
                 return existing
@@ -68,7 +67,6 @@ def create_checkout_session(invoice, success_url, cancel_url):
         if locked_invoice.stripe_checkout_session_id:
             existing = stripe.checkout.Session.retrieve(
                 locked_invoice.stripe_checkout_session_id,
-                timeout=20,
             )
             if existing.status == "open":
                 return existing
@@ -101,7 +99,6 @@ def create_checkout_session(invoice, success_url, cancel_url):
             success_url=success_url,
             cancel_url=cancel_url,
             idempotency_key=f"invoice-{invoice_id}-{idempotency_key}",
-            timeout=20,
         )
         Invoice.objects.filter(pk=locked_invoice.pk).update(
             stripe_checkout_session_id=session.id,
