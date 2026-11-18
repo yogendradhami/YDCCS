@@ -355,7 +355,7 @@ body { background: #edf2f2; color: var(--invoice-ink); font-family: "Avenir Next
             {% endif %}
             <div class="invoice-toolbar-actions">
                 <button class="invoice-toolbar-btn" type="button" onclick="window.print()">Print</button>
-                {% if invoice.status != "paid" and invoice.status != "cancelled" %}
+                {% if stripe_payments_enabled and invoice.status != "paid" and invoice.status != "cancelled" %}
                     <a class="invoice-toolbar-btn green" href="{{ payment_url }}">PAY NOW</a>
                 {% endif %}
                 <a class="invoice-toolbar-btn green" href="{% url 'download_invoice_pdf' invoice.id %}">Download PDF</a>

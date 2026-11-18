@@ -344,7 +344,7 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             <a href="/portal/invoices/" class="invoice-btn btn-blue">← Back to Invoices</a>
             <a href="/dashboard/invoices/{{ invoice.id }}/download/" class="invoice-btn btn-blue">⬇ Download PDF</a>
 
-            {% if invoice.status != "paid" %}
+            {% if stripe_payments_enabled and invoice.status != "paid" and invoice.status != "cancelled" %}
                 <form method="post" action="{% url 'portal_create_stripe_checkout_session' invoice.id %}">
                     {% csrf_token %}
                     <button type="submit" class="invoice-btn btn-green">💳 Pay Now with Stripe</button>

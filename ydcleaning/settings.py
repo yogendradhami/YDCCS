@@ -601,6 +601,11 @@ STRIPE_WEBHOOK_SECRET = env.str(
     default="",
 )
 
+STRIPE_PAYMENTS_ENABLED = env.bool(
+    "STRIPE_PAYMENTS_ENABLED",
+    default=False,
+)
+
 
 # ==========================================================
 # EMAIL SETTINGS

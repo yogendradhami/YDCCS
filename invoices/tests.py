@@ -31,6 +31,7 @@ from .payment_links import (
 from .services import get_or_create_invoice_for_booking
 
 
+@override_settings(STRIPE_PAYMENTS_ENABLED=False)
 class ManualInvoiceEmailTests(TestCase):
     def setUp(self):
         self.customer = Customer.objects.create(
@@ -308,8 +309,9 @@ class ManualInvoiceEmailTests(TestCase):
         self.assertEqual(sent_email.attachments[0][2], "application/pdf")
         self.assertTrue(sent_email.attachments[0][1].startswith(b"%PDF-"))
         self.assertGreater(len(sent_email.attachments[0][1]), 1000)
-        self.assertIn("/invoice/pay/", sent_email.body)
-        self.assertIn("/invoice/pay/", sent_email.alternatives[0][0])
+        self.assertNotIn("/invoice/pay/", sent_email.body)
+        self.assertNotIn("/invoice/pay/", sent_email.alternatives[0][0])
+        self.assertNotIn("PAY NOW", sent_email.alternatives[0][0])
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, "sent")
         self.assertContains(
@@ -359,21 +361,43 @@ class ManualInvoiceEmailTests(TestCase):
             "YD Commercial Cleaning Services",
             "035-050",
             "407482",
-            "PAY ONLINE",
-            "PAY NOW",
             invoice.invoice_number,
         ):
             self.assertIn(expected_text, pdf_text)
+        self.assertNotIn("PAY ONLINE", pdf_text)
+        self.assertNotIn("PAY NOW", pdf_text)
         pdf_document = fitz.open(stream=pdf_content, filetype="pdf")
-        self.assertTrue(
+        self.assertFalse(
             any(
-                link.get("uri", "").startswith(
-                    "https://www.ydcleaning.com.au/invoice/pay/"
-                )
+                "/invoice/pay/" in link.get("uri", "")
                 for page in pdf_document
                 for link in page.get_links()
             )
         )
+
+    def test_stripe_pay_button_and_signed_payment_link_are_disabled(self):
+        invoice = Invoice.objects.create(
+            booking=self.booking,
+            amount=Decimal("250.00"),
+        )
+
+        detail_response = self.client.get(
+            reverse("invoice_detail", args=[invoice.pk])
+        )
+        self.assertEqual(detail_response.status_code, 200)
+        self.assertNotContains(detail_response, "PAY NOW")
+        self.assertContains(detail_response, "BANK DETAILS")
+
+        with patch("invoices.views.create_checkout_session") as create_checkout:
+            response = self.client.get(
+                get_invoice_payment_url(invoice).replace(
+                    "https://www.ydcleaning.com.au", ""
+                )
+            )
+
+        self.assertEqual(response.status_code, 503)
+        self.assertContains(response, "Please use the bank details", status_code=503)
+        create_checkout.assert_not_called()
 
     @override_settings(
         EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
@@ -400,6 +424,7 @@ class ManualInvoiceEmailTests(TestCase):
     STRIPE_SECRET_KEY="sk_test_value",
     STRIPE_WEBHOOK_SECRET="whsec_test_value",
     STRIPE_CURRENCY="aud",
+    STRIPE_PAYMENTS_ENABLED=True,
     SITE_URL="https://www.ydcleaning.com.au",
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
     DEFAULT_FROM_EMAIL="billing@example.com",

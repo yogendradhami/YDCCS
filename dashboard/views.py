@@ -2465,13 +2465,18 @@ def send_invoice_email(request, invoice):
     )
 
     portal_url = f"{settings.SITE_URL.rstrip('/')}/portal/"
-    payment_url = get_invoice_payment_url(invoice)
+    payment_url = (
+        get_invoice_payment_url(invoice)
+        if settings.STRIPE_PAYMENTS_ENABLED
+        else ""
+    )
 
     email_context = {
         "customer": customer,
         "booking": booking,
         "invoice": invoice,
         "portal_url": portal_url,
+        "stripe_payments_enabled": settings.STRIPE_PAYMENTS_ENABLED,
         "payment_url": payment_url,
     }
 
@@ -4046,11 +4051,16 @@ def send_invoice_reminder(request, invoice_id):
     subject = f"Payment Reminder - Invoice {invoice.invoice_number}"
 
     # Build the customer payment URL.
-    payment_url = get_invoice_payment_url(invoice)
+    payment_url = (
+        get_invoice_payment_url(invoice)
+        if settings.STRIPE_PAYMENTS_ENABLED
+        else ""
+    )
 
     context = {
         "invoice": invoice,
         "customer": customer,
+        "stripe_payments_enabled": settings.STRIPE_PAYMENTS_ENABLED,
         "payment_url": payment_url,
     }
 

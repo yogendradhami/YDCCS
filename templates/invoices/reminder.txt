@@ -14,7 +14,7 @@ We would appreciate it if you could arrange payment at your earliest convenience
 
 Your invoice is attached to this email for your records.
 
-{% if payment_url %}
+{% if stripe_payments_enabled and payment_url %}
 Payment link:
 {{ payment_url }}
 {% endif %}

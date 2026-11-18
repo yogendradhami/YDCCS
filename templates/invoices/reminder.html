@@ -178,7 +178,7 @@
 
     <!-- Payment CTA -->
 
-    {% if payment_url %}
+    {% if stripe_payments_enabled and payment_url %}
 
     <div style="
         margin: 28px 0;

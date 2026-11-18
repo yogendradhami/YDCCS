@@ -517,42 +517,40 @@ def generate_invoice_pdf(invoice, payment_url=None):
         _safe_paragraph("Account Number", styles["InvoiceBankLabel"]),
         _safe_paragraph("407482", styles["InvoiceBankValue"]),
         _safe_paragraph("Payment Reference", styles["InvoiceBankLabel"]),
-        _safe_paragraph(
-            "Please use your invoice number.",
-            styles["InvoiceBankValue"],
-        ),
-        Spacer(1, 3 * mm),
-        Paragraph("PAY ONLINE", styles["InvoiceTermsHeading"]),
+        _safe_paragraph("Please use your invoice number.", styles["InvoiceBankValue"]),
     ]
-    payment_url = payment_url or get_invoice_payment_url(invoice)
-    qr_code = QrCodeWidget(payment_url)
-    qr_bounds = qr_code.getBounds()
-    qr_width = qr_bounds[2] - qr_bounds[0]
-    qr_height = qr_bounds[3] - qr_bounds[1]
-    qr_size = 27 * mm
-    qr_drawing = Drawing(
-        qr_size,
-        qr_size,
-        transform=[
-            qr_size / qr_width,
-            0,
-            0,
-            qr_size / qr_height,
-            0,
-            0,
-        ],
-    )
-    qr_drawing.add(qr_code)
-    bank_details.extend(
-        [
-            qr_drawing,
-            Paragraph(
-                f'<link href="{escape(payment_url)}" color="#0759c9">'
-                "PAY NOW</link>",
-                styles["InvoiceBankValue"],
-            ),
-        ]
-    )
+    if settings.STRIPE_PAYMENTS_ENABLED:
+        payment_url = payment_url or get_invoice_payment_url(invoice)
+        qr_code = QrCodeWidget(payment_url)
+        qr_bounds = qr_code.getBounds()
+        qr_width = qr_bounds[2] - qr_bounds[0]
+        qr_height = qr_bounds[3] - qr_bounds[1]
+        qr_size = 27 * mm
+        qr_drawing = Drawing(
+            qr_size,
+            qr_size,
+            transform=[
+                qr_size / qr_width,
+                0,
+                0,
+                qr_size / qr_height,
+                0,
+                0,
+            ],
+        )
+        qr_drawing.add(qr_code)
+        bank_details.extend(
+            [
+                Spacer(1, 3 * mm),
+                Paragraph("PAY ONLINE", styles["InvoiceTermsHeading"]),
+                qr_drawing,
+                Paragraph(
+                    f'<link href="{escape(payment_url)}" color="#0759c9">'
+                    "PAY NOW</link>",
+                    styles["InvoiceBankValue"],
+                ),
+            ]
+        )
     terms_and_payment = Table(
         [[terms_and_conditions, bank_details]],
         colWidths=[content_width * 0.62, content_width * 0.38],

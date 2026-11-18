@@ -882,7 +882,12 @@ def invoice_detail(request, invoice_id):
         {
             "invoice": invoice,
             "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
-            "payment_url": get_invoice_payment_url(invoice),
+            "stripe_payments_enabled": settings.STRIPE_PAYMENTS_ENABLED,
+            "payment_url": (
+                get_invoice_payment_url(invoice)
+                if settings.STRIPE_PAYMENTS_ENABLED
+                else ""
+            ),
         },
     )
 
@@ -894,6 +899,10 @@ def create_stripe_checkout_session(request, invoice_id):
         request,
         invoice_id,
     )
+
+    if not settings.STRIPE_PAYMENTS_ENABLED:
+        messages.info(request, "Online card payments are temporarily unavailable.")
+        return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
 
     if invoice.status == "paid":
         messages.info(request, "This invoice has already been paid.")
@@ -931,6 +940,13 @@ def create_stripe_checkout_session(request, invoice_id):
 
 
 def stripe_pay_invoice_link(request, token):
+    if not settings.STRIPE_PAYMENTS_ENABLED:
+        return HttpResponse(
+            "Online card payments are temporarily unavailable. "
+            "Please use the bank details on your invoice.",
+            status=503,
+        )
+
     try:
         invoice_id = get_invoice_id_from_payment_token(token)
     except ValueError:
@@ -1041,7 +1057,12 @@ def _send_stripe_payment_confirmation(invoice):
         invoice.save(update_fields=["payment_confirmation_email_sent"])
         return
 
-    invoice_url = get_invoice_payment_url(invoice)
+    invoice_url = (
+        get_invoice_payment_url(invoice)
+        if settings.STRIPE_PAYMENTS_ENABLED
+        else f"{settings.SITE_URL.rstrip('/')}"
+        f"{reverse('portal_invoice_detail', kwargs={'invoice_id': invoice.pk})}"
+    )
     context = {
         "invoice": invoice,
         "customer": customer,

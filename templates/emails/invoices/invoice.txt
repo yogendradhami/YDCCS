@@ -26,9 +26,13 @@ Due date:
 Total:
 ${{ invoice.total_amount }}
 
+{% if stripe_payments_enabled %}
 Pay this invoice securely online:
 
 {{ payment_url }}
+{% else %}
+To pay by bank transfer, please use the bank details in the attached invoice.
+{% endif %}
 
 A PDF copy of {{ invoice.invoice_number }} is attached to this email.
 You may also pay by bank transfer using the details in the attached invoice.

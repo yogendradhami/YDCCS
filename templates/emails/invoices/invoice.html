@@ -41,7 +41,6 @@ Your invoice {{ invoice.invoice_number }} from YD Commercial Cleaning Services.
 
         </td>
     </tr>
-
     <tr>
         <td style="
             padding: 22px 0 0 0;
@@ -232,6 +231,7 @@ Your invoice {{ invoice.invoice_number }} from YD Commercial Cleaning Services.
 
     <!-- CTA -->
 
+    {% if stripe_payments_enabled %}
     <tr>
         <td align="center" style="padding: 30px 0 12px 0;">
 
@@ -265,6 +265,7 @@ Your invoice {{ invoice.invoice_number }} from YD Commercial Cleaning Services.
 
         </td>
     </tr>
+    {% endif %}
 
     <tr>
         <td style="

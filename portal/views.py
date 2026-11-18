@@ -376,6 +376,7 @@ def portal_invoice_detail(request, invoice_id):
         {
             "customer": customer,
             "invoice": invoice,
+            "stripe_payments_enabled": settings.STRIPE_PAYMENTS_ENABLED,
         },
     )
 
