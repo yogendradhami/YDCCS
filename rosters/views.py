@@ -145,6 +145,7 @@ def add_roster(request):
                             roster = form.save(commit=False)
                             roster.booking = booking
                             roster.save()
+
                             roster_sync = sync_booking_roster(booking)
                 if form.errors:
                     return render(
@@ -364,7 +365,11 @@ def edit_roster(request, roster_id):
                 if form.is_valid():
                     calendar_sync_succeeded = True
                     try:
-                        roster_sync = sync_booking_roster(booking)
+
+                        roster_sync = sync_booking_roster(
+                            booking,
+                            sync_booking_fields=False,
+                        )
                         if isinstance(roster_sync, RosterSyncPending):
                             raise roster_sync.error
                     except Exception:

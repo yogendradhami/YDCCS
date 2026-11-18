@@ -315,7 +315,10 @@ class GalleryDirectUploadTests(TestCase):
         response = self.client.get(reverse("add_gallery_item"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "gallery-direct-upload.js")
+        self.assertRegex(
+            response.content.decode(),
+            r"/static/js/gallery-direct-upload(?:\.[a-f0-9]+)?\.js",
+        )
         self.assertContains(response, "data-upload-url")
         self.assertContains(response, "Additional gallery images")
 

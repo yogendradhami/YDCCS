@@ -1,3 +1,4 @@
+import re
 import json
 from datetime import date, time
 from unittest.mock import patch
@@ -76,15 +77,41 @@ class JobPhotoDirectUploadTests(TestCase):
         }
         session.save()
 
+
+
     def test_upload_page_loads_image_optimizer_before_upload_handler(self):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
-        optimizer_position = content.index("/static/js/fast-image-upload.js")
-        upload_handler_position = content.index('form.addEventListener("submit"')
-        self.assertLess(optimizer_position, upload_handler_position)
-        self.assertIn("window.YDImageUpload.prepareFiles", content)
+
+        optimizer_match = re.search(
+            r"/static/js/fast-image-upload(?:\.[a-f0-9]+)?\.js",
+            content,
+        )
+
+        self.assertIsNotNone(
+            optimizer_match,
+            "Image optimizer JavaScript must be loaded.",
+        )
+        if optimizer_match is None:
+            return
+
+        upload_handler_position = content.index(
+            'form.addEventListener("submit"'
+        )
+
+        self.assertLess(
+            optimizer_match.start(),
+            upload_handler_position,
+            "Image optimizer must load before the upload handler.",
+        )
+
+        self.assertIn(
+            "window.YDImageUpload.prepareFiles",
+            content,
+        )
+
 
     def test_signing_requires_csrf_and_employee_job_assignment(self):
         csrf_client = Client(enforce_csrf_checks=True)

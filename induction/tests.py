@@ -526,6 +526,7 @@ class InductionSetupViewTests(TestCase):
     def test_setup_page_renders_employee_and_all_configuration_fields(self):
         admin = User.objects.create_superuser(
             username="induction-admin",
+            email="induction-admin@example.com",
             password="test-password",
         )
         employee = Employee.objects.create(
@@ -547,7 +548,10 @@ class InductionSetupViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200, response.content.decode()[:500])
         self.assertContains(response, "Setup Test Employee")
-        self.assertContains(response, "css/dashboard/induction-setup.css")
+        self.assertRegex(
+            response.content.decode(),
+            r"/static/css/dashboard/induction-setup(?:\.[a-f0-9]+)?\.css",
+        )
         for field_name in (
             "programme",
             "employment_type",

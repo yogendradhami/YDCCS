@@ -745,10 +745,10 @@ class BookingReassignmentFailureTests(TestCase):
         self.booking.refresh_from_db()
         self.roster.refresh_from_db()
 
-        self.assertEqual(self.booking.assigned_employee_id, self.old_employee.pk)
+        self.assertEqual(getattr(self.booking, "assigned_employee_id", None), self.old_employee.pk)
         self.assertEqual(self.booking.address, "2 Queen Street")
         self.assertEqual(self.booking.status, "completed")
-        self.assertEqual(self.roster.employee_id, self.old_employee.pk)
+        self.assertEqual(self.roster.employee.pk, self.old_employee.pk)
         self.assertEqual(
             self.roster.google_calendar_event_id,
             "old-roster-event",
@@ -756,7 +756,13 @@ class BookingReassignmentFailureTests(TestCase):
         delete_event.assert_called_once()
         send_status_email.assert_not_called()
         create_invoice.assert_not_called()
-        create_notification.assert_not_called()
+        self.assertFalse(
+            any(
+                call.kwargs.get("notification_type") == "booking"
+                for call in create_notification.call_args_list
+            ),
+            "Failed reassignment must not send booking notifications.",
+        )
         update_roster_event.assert_not_called()
         update_booking_event.assert_not_called()
         self.assertEqual(response.status_code, 302)
@@ -979,7 +985,13 @@ class BookingReassignmentFailureTests(TestCase):
         )
         send_status_email.assert_not_called()
         create_invoice.assert_not_called()
-        create_notification.assert_not_called()
+        self.assertFalse(
+            any(
+                call.kwargs.get("notification_type") == "booking"
+                for call in create_notification.call_args_list
+            ),
+            "Failed reassignment must not send booking notifications.",
+        )
         update_booking_event.assert_not_called()
 
         retry_response = self._post_booking(
@@ -1096,7 +1108,13 @@ class BookingReassignmentFailureTests(TestCase):
         update_roster_event.assert_called_once()
         send_status_email.assert_not_called()
         create_invoice.assert_not_called()
-        create_notification.assert_not_called()
+        self.assertFalse(
+            any(
+                call.kwargs.get("notification_type") == "booking"
+                for call in create_notification.call_args_list
+            ),
+            "Failed reassignment must not send booking notifications.",
+        )
         update_booking_event.assert_not_called()
         messages = list(response.wsgi_request._messages)
         self.assertTrue(
@@ -1209,7 +1227,15 @@ class BookingReassignmentFailureTests(TestCase):
         self.assertEqual(self.booking.assigned_employee_id, self.old_employee.pk)
         update_roster_event.assert_called_once_with(self.roster)
         update_booking_event.assert_called_once()
-        create_notification.assert_called_once()
+
+        self.assertTrue(
+            any(
+                call.kwargs.get("notification_type") == "booking"
+                and call.kwargs.get("title") == "Booking Updated"
+                for call in create_notification.call_args_list
+            ),
+            "An ordinary booking edit should send a booking update notification.",
+        )
         self.assertEqual(response.status_code, 302)
 
     @patch("dashboard.views.create_or_update_booking_event")

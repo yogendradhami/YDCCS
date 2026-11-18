@@ -56,11 +56,15 @@ def booking_roster_sync_lock(booking_id, using=DEFAULT_DB_ALIAS):
         ) from exc
 
 
-def sync_booking_roster(booking):
+def sync_booking_roster(booking, *, sync_booking_fields=True):
     """Keep the booking's roster shift and calendar event in sync."""
     using = booking._state.db or DEFAULT_DB_ALIAS
     with booking_roster_sync_lock(booking.pk, using=using):
-        result = _sync_booking_roster_locked(booking.pk, using=using)
+        result = _sync_booking_roster_locked(
+            booking.pk,
+            using=using,
+            sync_booking_fields=sync_booking_fields,
+        )
         primary_pending = (
             result if isinstance(result, RosterSyncPending) else None
         )
@@ -219,7 +223,11 @@ def _sync_assigned_team_rosters(
     return pending or not_configured or (rosters[0] if rosters else None)
 
 
-def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
+def _sync_booking_roster_locked(
+    booking_id,
+    using=DEFAULT_DB_ALIAS,
+    sync_booking_fields=True,
+):
     from google_reviews.calendar_utils import (
         CalendarNotConfigured,
         create_or_update_roster_event,
@@ -304,11 +312,28 @@ def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
                                 "notes",
                             ]
                         )
-                else:
-                    roster.status = roster_status
-                    roster.save(
-                        update_fields=["status"]
-                    )
+                elif sync_booking_fields:
+                    # Keep booking-controlled fields synchronised with the
+                    # existing roster without overwriting independent fields.
+                    desired_values = {
+                        "shift_date": locked_booking.booking_date,
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "status": roster_status,
+                        "notes": locked_booking.notes,
+                    }
+
+                    changed_fields = []
+
+                    for field_name, desired_value in desired_values.items():
+                        if getattr(roster, field_name) != desired_value:
+                            setattr(roster, field_name, desired_value)
+                            changed_fields.append(field_name)
+
+                    if changed_fields:
+                        roster.save(update_fields=changed_fields)
+
+
             else:
                 roster = Roster.objects.create(
                     employee=employee,
@@ -340,7 +365,11 @@ def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
             or current_roster.google_calendar_event_id
             != roster.google_calendar_event_id
         ):
-            return _sync_booking_roster_locked(booking_id, using=using)
+            return _sync_booking_roster_locked(
+                booking_id,
+                using=using,
+                sync_booking_fields=sync_booking_fields,
+            )
         roster = current_roster
         try:
             deleted = delete_roster_event(roster)
@@ -363,7 +392,11 @@ def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
                 )
             return RosterSyncPending(roster=roster, error=exc)
         if employee_changed:
-            return _sync_booking_roster_locked(booking_id, using=using)
+            return _sync_booking_roster_locked(
+                booking_id,
+                using=using,
+                sync_booking_fields=sync_booking_fields,
+            )
         return roster
 
     if (
@@ -383,7 +416,11 @@ def _sync_booking_roster_locked(booking_id, using=DEFAULT_DB_ALIAS):
         )
         current_employee_id = current_booking.assigned_employee_id
         if current_employee_id != current_roster.employee_id:
-            return _sync_booking_roster_locked(booking_id, using=using)
+            return _sync_booking_roster_locked(
+                booking_id,
+                using=using,
+                sync_booking_fields=sync_booking_fields,
+            )
         roster = current_roster
         try:
             event = create_or_update_roster_event(roster)

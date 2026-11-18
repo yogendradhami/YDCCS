@@ -37,7 +37,10 @@ class SystemWorkspacePageTests(TestCase):
             with self.subTest(page=page_name):
                 response = self.client.get(reverse(page_name))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, "workspace.css")
+                self.assertRegex(
+                    response.content.decode(),
+                    r"/static/css/dashboard/workspace(?:\.[a-f0-9]+)?\.css",
+                )
 
     def test_user_and_position_workflows_render(self):
         group = Group.objects.create(name="Workspace Test Position")
@@ -65,7 +68,7 @@ class SystemWorkspacePageTests(TestCase):
         response = self.client.get(reverse("security_position_edit", args=[group.pk]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Use least privilege")
+        self.assertContains(response, "principle of least privilege")
         self.assertContains(response, "Application permissions")
         self.assertContains(response, "Security")
         self.assertRegex(
