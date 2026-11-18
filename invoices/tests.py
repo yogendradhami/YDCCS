@@ -1,6 +1,7 @@
 from datetime import date, time, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
+from unittest import skipUnless
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -12,6 +13,7 @@ from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 import fitz
 
+from django.db import connection
 from bookings.models import Booking, BookingWorkOrder
 from core.test_utils import grant_dashboard_permissions
 from customers.models import Customer
@@ -529,6 +531,49 @@ class StripeInvoicePaymentTests(TestCase):
         self.assertEqual(response.status_code, 302)
         retrieve_session.assert_called_once_with(self.session_id, timeout=20)
         create_session.assert_not_called()
+
+    @skipUnless(
+        connection.vendor == "postgresql",
+        "PostgreSQL locking regression requires a PostgreSQL test database.",
+    )
+    @patch("invoices.stripe_service.stripe.checkout.Session.create")
+    def test_postgres_checkout_locks_only_invoice_with_nullable_customer(
+        self, create_session
+    ):
+        create_session.return_value = SimpleNamespace(
+            id="cs_test_postgres",
+            url="https://checkout.stripe.com/c/pay/cs_test_postgres",
+        )
+        self.invoice.stripe_checkout_session_id = ""
+        self.invoice.stripe_checkout_idempotency_key = ""
+        self.invoice.status = "sent"
+        self.invoice.save(
+            update_fields=[
+                "stripe_checkout_session_id",
+                "stripe_checkout_idempotency_key",
+                "status",
+            ]
+        )
+        self.booking.customer = None
+        self.booking.save(update_fields=["customer"])
+        self.invoice.refresh_from_db()
+
+        from .stripe_service import create_checkout_session
+
+        session = create_checkout_session(
+            self.invoice,
+            "https://example.com/success",
+            "https://example.com/cancel",
+        )
+
+        self.assertEqual(session.id, "cs_test_postgres")
+        self.assertTrue(create_session.called)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "pending")
+        self.assertEqual(
+            self.invoice.stripe_checkout_session_id,
+            "cs_test_postgres",
+        )
 
     def test_invalid_webhook_signature_is_rejected(self):
         with patch(

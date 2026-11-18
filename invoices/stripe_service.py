@@ -27,9 +27,7 @@ def create_checkout_session(invoice, success_url, cancel_url):
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
     with transaction.atomic():
-        locked_invoice = Invoice.objects.select_for_update().select_related(
-            "booking__customer"
-        ).get(pk=invoice.pk)
+        locked_invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
         if locked_invoice.status in {"paid", "cancelled"}:
             raise ValidationError("This invoice is not eligible for payment.")
 
@@ -60,9 +58,7 @@ def create_checkout_session(invoice, success_url, cancel_url):
         idempotency_key = locked_invoice.stripe_checkout_idempotency_key
 
     with transaction.atomic():
-        locked_invoice = Invoice.objects.select_for_update().select_related(
-            "booking__customer"
-        ).get(pk=invoice_id)
+        locked_invoice = Invoice.objects.select_for_update().get(pk=invoice_id)
         if locked_invoice.status in {"paid", "cancelled"}:
             raise ValidationError("This invoice is not eligible for payment.")
         if locked_invoice.stripe_checkout_idempotency_key != idempotency_key:
