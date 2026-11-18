@@ -303,6 +303,16 @@ body { background: #edf2f2; color: var(--invoice-ink); font-family: "Avenir Next
 .invoice-total-row strong { color: #2b4245; }
 .invoice-grand-total { margin: 13px 0 0; padding-top: 13px; border-color: #cdded9; color: #176b63; font-size: 18px; }
 .invoice-grand-total strong { color: #176b63; }
+.invoice-terms-payment { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(240px, 1fr); gap: 14px; margin-top: 20px; }
+.invoice-terms-box, .invoice-bank-box { min-width: 0; padding: 14px; border: 1px solid var(--invoice-line); border-radius: 6px; background: #f8fbfa; color: #43595c; font-size: 9px; line-height: 1.45; }
+.invoice-terms-box h3, .invoice-bank-box h3 { margin: 0 0 8px; color: #2f6963; font-size: 10px; font-weight: 900; }
+.invoice-terms-box ol { margin: 0; padding-left: 17px; }
+.invoice-terms-box li { margin: 0 0 4px; }
+.invoice-bank-row { margin: 0 0 7px; }
+.invoice-bank-row span, .invoice-bank-row strong { display: block; }
+.invoice-bank-row span { color: var(--invoice-muted); font-size: 8px; }
+.invoice-bank-row strong { color: var(--invoice-ink); overflow-wrap: anywhere; }
+.invoice-terms-thanks { margin: 8px 0 0; font-weight: 700; }
 .thank-you { margin-top: 23px; padding-top: 15px; border-top: 1px solid #edf1f0; color: #7a8a8b; font-size: 9px; }
 .thank-you p { margin: 4px 0; }
 @media print {
@@ -319,6 +329,7 @@ body { background: #edf2f2; color: var(--invoice-ink); font-family: "Avenir Next
     .invoice-meta { min-width: 0; text-align: left; }
     .invoice-info-grid { display: grid; grid-template-columns: 1fr; }
     .invoice-bottom { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .invoice-terms-payment { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) {
     .invoice-detail-toolbar { align-items: flex-start; flex-direction: column; }
@@ -344,6 +355,9 @@ body { background: #edf2f2; color: var(--invoice-ink); font-family: "Avenir Next
             {% endif %}
             <div class="invoice-toolbar-actions">
                 <button class="invoice-toolbar-btn" type="button" onclick="window.print()">Print</button>
+                {% if invoice.status != "paid" and invoice.status != "cancelled" %}
+                    <a class="invoice-toolbar-btn green" href="{{ payment_url }}">PAY NOW</a>
+                {% endif %}
                 <a class="invoice-toolbar-btn green" href="{% url 'download_invoice_pdf' invoice.id %}">Download PDF</a>
             </div>
         </nav>
@@ -481,9 +495,27 @@ body { background: #edf2f2; color: var(--invoice-ink); font-family: "Avenir Next
             </div>
         </div>
 
-        <div class="thank-you">
-            <p><strong>Thank you for your business!</strong></p>
-            <p>We appreciate the opportunity to serve you.</p>
+        <div class="invoice-terms-payment">
+            <section class="invoice-terms-box" aria-labelledby="invoice-terms-heading">
+                <h3 id="invoice-terms-heading">TERMS &amp; CONDITIONS</h3>
+                <ol>
+                    <li>Payment is due within 7 days from the invoice date, unless otherwise agreed in writing.</li>
+                    <li>All payments must include the relevant invoice number as the payment reference.</li>
+                    <li>Any additional services or variations outside the agreed scope will be charged separately.</li>
+                    <li>A minimum of 24 hours' written notice is required for cancellations or rescheduling.</li>
+                    <li>Any concerns regarding service quality must be reported within 24 hours of service completion.</li>
+                    <li>YD Commercial Cleaning Services reserves the right to pursue recovery of overdue accounts in accordance with applicable laws.</li>
+                </ol>
+                <p class="invoice-terms-thanks">Thank you for your business. We appreciate your trust in YD Commercial Cleaning Services.</p>
+            </section>
+
+            <section class="invoice-bank-box" aria-labelledby="invoice-bank-heading">
+                <h3 id="invoice-bank-heading">BANK DETAILS</h3>
+                <p class="invoice-bank-row"><span>Account Name</span><strong>YD Commercial Cleaning Services</strong></p>
+                <p class="invoice-bank-row"><span>BSB</span><strong>035-050</strong></p>
+                <p class="invoice-bank-row"><span>Account Number</span><strong>407482</strong></p>
+                <p class="invoice-bank-row"><span>Payment Reference</span><strong>Please use your invoice number.</strong></p>
+            </section>
         </div>
 
     </div>

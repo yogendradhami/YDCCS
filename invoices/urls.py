@@ -20,10 +20,30 @@ from .views import (
     mark_invoice_paid,
     mark_invoice_unpaid,
     stripe_payment_cancel,
+    stripe_payment_cancel_return,
+    stripe_payment_return,
     stripe_payment_success,
+    stripe_pay_invoice_link,
+    stripe_webhook,
 )
 
 urlpatterns = [
+    path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
+    path(
+        "invoice/pay/<str:token>/",
+        stripe_pay_invoice_link,
+        name="invoice_stripe_pay_link",
+    ),
+    path(
+        "invoice/payment-return/<str:token>/",
+        stripe_payment_return,
+        name="stripe_payment_return",
+    ),
+    path(
+        "invoice/payment-cancelled/<str:token>/",
+        stripe_payment_cancel_return,
+        name="stripe_payment_cancel_return",
+    ),
     path("dashboard/invoices/", invoice_list, name="invoice_list"),
     path("dashboard/invoices/create/", create_invoice, name="create_invoice"),
 

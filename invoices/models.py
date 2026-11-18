@@ -17,6 +17,7 @@ class Invoice(models.Model):
     STATUS_CHOICES = [
         ("draft", "Draft"),
         ("sent", "Sent"),
+        ("pending", "Pending payment"),
         ("paid", "Paid"),
         ("overdue", "Overdue"),
         ("cancelled", "Cancelled"),
@@ -55,6 +56,12 @@ class Invoice(models.Model):
     stripe_checkout_session_id = models.CharField(max_length=255, blank=True)
 
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True)
+
+    stripe_checkout_idempotency_key = models.CharField(max_length=255, blank=True)
+
+    payment_method = models.CharField(max_length=50, blank=True)
+
+    payment_confirmation_email_sent = models.BooleanField(default=False)
 
     paid_at = models.DateTimeField(null=True, blank=True)
 
@@ -223,3 +230,16 @@ class InvoiceWorkOrder(models.Model):
 
     def __str__(self):
         return f"{self.position + 1}. {self.description}"
+
+
+class StripeWebhookEvent(models.Model):
+    event_id = models.CharField(max_length=255, unique=True)
+    event_type = models.CharField(max_length=100)
+    received_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-received_at"]
+
+    def __str__(self):
+        return f"{self.event_type}: {self.event_id}"

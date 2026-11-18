@@ -190,6 +190,65 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     color: #0759c9;
 }
 
+.invoice-terms-payment {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(240px, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.invoice-terms-box,
+.invoice-bank-box {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #dbe3f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.invoice-terms-box h3,
+.invoice-bank-box h3 {
+    margin: 0 0 10px;
+    color: #0759c9;
+    font-size: 15px;
+}
+
+.invoice-terms-box ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.invoice-terms-box li {
+    margin-bottom: 5px;
+}
+
+.invoice-bank-row {
+    margin: 0 0 10px;
+}
+
+.invoice-bank-row span,
+.invoice-bank-row strong {
+    display: block;
+}
+
+.invoice-bank-row span {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.invoice-bank-row strong {
+    color: #0f172a;
+    overflow-wrap: anywhere;
+}
+
+.invoice-terms-thanks {
+    margin: 12px 0 0;
+    font-weight: 700;
+}
+
 .invoice-actions {
     display: flex;
     gap: 18px;
@@ -230,6 +289,10 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
     .invoice-info-grid,
     .invoice-bottom {
         display: block;
+    }
+
+    .invoice-terms-payment {
+        grid-template-columns: 1fr;
     }
 
     .invoice-meta {
@@ -368,11 +431,34 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             </div>
         </div>
 
+        <div class="invoice-terms-payment">
+            <section class="invoice-terms-box" aria-labelledby="invoice-terms-heading">
+                <h3 id="invoice-terms-heading">TERMS &amp; CONDITIONS</h3>
+                <ol>
+                    <li>Payment is due within 7 days from the invoice date, unless otherwise agreed in writing.</li>
+                    <li>All payments must include the relevant invoice number as the payment reference.</li>
+                    <li>Any additional services or variations outside the agreed scope will be charged separately.</li>
+                    <li>A minimum of 24 hours' written notice is required for cancellations or rescheduling.</li>
+                    <li>Any concerns regarding service quality must be reported within 24 hours of service completion.</li>
+                    <li>YD Commercial Cleaning Services reserves the right to pursue recovery of overdue accounts in accordance with applicable laws.</li>
+                </ol>
+                <p class="invoice-terms-thanks">Thank you for your business. We appreciate your trust in YD Commercial Cleaning Services.</p>
+            </section>
+
+            <section class="invoice-bank-box" aria-labelledby="invoice-bank-heading">
+                <h3 id="invoice-bank-heading">BANK DETAILS</h3>
+                <p class="invoice-bank-row"><span>Account Name</span><strong>YD Commercial Cleaning Services</strong></p>
+                <p class="invoice-bank-row"><span>BSB</span><strong>035-050</strong></p>
+                <p class="invoice-bank-row"><span>Account Number</span><strong>407482</strong></p>
+                <p class="invoice-bank-row"><span>Payment Reference</span><strong>Please use your invoice number.</strong></p>
+            </section>
+        </div>
+
         <div class="invoice-actions">
             <a href="/portal/invoices/" class="invoice-btn btn-blue">← Back to Invoices</a>
             <a href="{% url 'portal_download_invoice_pdf' invoice.id %}" class="invoice-btn btn-blue">⬇ Download PDF</a>
 
-            {% if invoice.status != "paid" %}
+            {% if invoice.status != "paid" and invoice.status != "cancelled" %}
                 <form method="post" action="{% url 'portal_create_stripe_checkout_session' invoice.id %}">
                     {% csrf_token %}
                     <button type="submit" class="invoice-btn btn-green">
@@ -382,11 +468,6 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning Services
             {% else %}
                 <span class="invoice-btn btn-green">Paid</span>
             {% endif %}
-        </div>
-
-        <div class="thank-you">
-            <p><strong>Thank you for your business!</strong></p>
-            <p>We appreciate the opportunity to serve you.</p>
         </div>
 
     </div>

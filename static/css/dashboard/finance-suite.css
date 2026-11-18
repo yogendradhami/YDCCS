@@ -147,6 +147,10 @@
     margin: 0 0 18px;
 }
 
+.finance-payment-metric-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .finance-metric {
     position: relative;
     min-width: 0;
@@ -352,6 +356,7 @@
 
 .finance-status.is-paid { background: #e8f7f0; color: #147052; }
 .finance-status.is-sent { background: #eaf3ff; color: #1769aa; }
+.finance-status.is-pending { background: #fff5df; color: #875600; }
 .finance-status.is-overdue { background: #fff0ef; color: #b42332; }
 .finance-status.is-draft { background: #f1f3f5; color: #637487; }
 

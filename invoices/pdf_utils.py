@@ -8,6 +8,8 @@ from reportlab.lib.enums import TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
+from reportlab.graphics.barcode.qr import QrCodeWidget
+from reportlab.graphics.shapes import Drawing
 from reportlab.platypus import (
     Image,
     Paragraph,
@@ -18,6 +20,7 @@ from reportlab.platypus import (
 )
 
 from core.pdf_branding import CompanyWatermarkCanvas
+from .payment_links import get_invoice_payment_url
 
 
 NAVY = colors.HexColor("#0f172a")
@@ -52,7 +55,7 @@ def _footer(canvas, document):
     canvas.restoreState()
 
 
-def generate_invoice_pdf(invoice):
+def generate_invoice_pdf(invoice, payment_url=None):
     booking = invoice.booking
     customer = booking.customer
     buffer = BytesIO()
@@ -209,6 +212,50 @@ def generate_invoice_pdf(invoice):
             name="GrandTotalRight",
             parent=styles["GrandTotal"],
             alignment=TA_RIGHT,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="InvoiceTermsHeading",
+            parent=styles["Heading3"],
+            fontName="Helvetica-Bold",
+            fontSize=9,
+            leading=11,
+            textColor=BLUE,
+            spaceAfter=5,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="InvoiceTerms",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=7,
+            leading=9,
+            textColor=SLATE,
+            spaceAfter=3,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="InvoiceBankLabel",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=7,
+            leading=9,
+            textColor=MUTED,
+            spaceAfter=1,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="InvoiceBankValue",
+            parent=styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=8,
+            leading=10,
+            textColor=NAVY,
+            spaceAfter=5,
         )
     )
 
@@ -436,6 +483,96 @@ def generate_invoice_pdf(invoice):
         )
     )
 
+    terms_and_conditions = [
+        Paragraph("TERMS &amp; CONDITIONS", styles["InvoiceTermsHeading"]),
+        *[
+            _safe_paragraph(f"{index}. {term}", styles["InvoiceTerms"])
+            for index, term in enumerate(
+                (
+                    "Payment is due within 7 days from the invoice date, unless otherwise agreed in writing.",
+                    "All payments must include the relevant invoice number as the payment reference.",
+                    "Any additional services or variations outside the agreed scope will be charged separately.",
+                    "A minimum of 24 hours' written notice is required for cancellations or rescheduling.",
+                    "Any concerns regarding service quality must be reported within 24 hours of service completion.",
+                    "YD Commercial Cleaning Services reserves the right to pursue recovery of overdue accounts in accordance with applicable laws.",
+                ),
+                start=1,
+            )
+        ],
+        _safe_paragraph(
+            "Thank you for your business. We appreciate your trust in "
+            "YD Commercial Cleaning Services.",
+            styles["InvoiceTerms"],
+        ),
+    ]
+    bank_details = [
+        Paragraph("BANK DETAILS", styles["InvoiceTermsHeading"]),
+        _safe_paragraph("Account Name", styles["InvoiceBankLabel"]),
+        _safe_paragraph(
+            "YD Commercial Cleaning Services",
+            styles["InvoiceBankValue"],
+        ),
+        _safe_paragraph("BSB", styles["InvoiceBankLabel"]),
+        _safe_paragraph("035-050", styles["InvoiceBankValue"]),
+        _safe_paragraph("Account Number", styles["InvoiceBankLabel"]),
+        _safe_paragraph("407482", styles["InvoiceBankValue"]),
+        _safe_paragraph("Payment Reference", styles["InvoiceBankLabel"]),
+        _safe_paragraph(
+            "Please use your invoice number.",
+            styles["InvoiceBankValue"],
+        ),
+        Spacer(1, 3 * mm),
+        Paragraph("PAY ONLINE", styles["InvoiceTermsHeading"]),
+    ]
+    payment_url = payment_url or get_invoice_payment_url(invoice)
+    qr_code = QrCodeWidget(payment_url)
+    qr_bounds = qr_code.getBounds()
+    qr_width = qr_bounds[2] - qr_bounds[0]
+    qr_height = qr_bounds[3] - qr_bounds[1]
+    qr_size = 27 * mm
+    qr_drawing = Drawing(
+        qr_size,
+        qr_size,
+        transform=[
+            qr_size / qr_width,
+            0,
+            0,
+            qr_size / qr_height,
+            0,
+            0,
+        ],
+    )
+    qr_drawing.add(qr_code)
+    bank_details.extend(
+        [
+            qr_drawing,
+            Paragraph(
+                f'<link href="{escape(payment_url)}" color="#0759c9">'
+                "PAY NOW</link>",
+                styles["InvoiceBankValue"],
+            ),
+        ]
+    )
+    terms_and_payment = Table(
+        [[terms_and_conditions, bank_details]],
+        colWidths=[content_width * 0.62, content_width * 0.38],
+        hAlign="LEFT",
+    )
+    terms_and_payment.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), PALE),
+                ("BOX", (0, 0), (-1, -1), 0.7, BORDER),
+                ("INNERGRID", (0, 0), (-1, -1), 0.7, BORDER),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                ("TOPPADDING", (0, 0), (-1, -1), 9),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+            ]
+        )
+    )
+
     story = [
         header,
         Spacer(1, 8 * mm),
@@ -444,6 +581,8 @@ def generate_invoice_pdf(invoice):
         item_table,
         Spacer(1, 9 * mm),
         summary,
+        Spacer(1, 6 * mm),
+        terms_and_payment,
     ]
     document.build(
         story,

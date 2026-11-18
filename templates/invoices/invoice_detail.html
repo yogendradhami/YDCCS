@@ -836,7 +836,7 @@ Invoice {{ invoice.invoice_number }} | YD Commercial Cleaning
                             </a>
 
 
-                            {% if invoice.status == "sent" or invoice.status == "overdue" %}
+                            {% if invoice.status == "sent" or invoice.status == "pending" or invoice.status == "overdue" %}
 
                                 <form
                                     method="post"

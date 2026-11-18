@@ -596,6 +596,11 @@ STRIPE_CURRENCY = env.str(
     default="aud",
 )
 
+STRIPE_WEBHOOK_SECRET = env.str(
+    "STRIPE_WEBHOOK_SECRET",
+    default="",
+)
+
 
 # ==========================================================
 # EMAIL SETTINGS

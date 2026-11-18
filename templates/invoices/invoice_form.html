@@ -342,7 +342,7 @@
             {% endif %}
 
             {% if is_edit %}
-                {% if invoice.status == "sent" or invoice.status == "overdue" %}
+                {% if invoice.status == "sent" or invoice.status == "pending" or invoice.status == "overdue" %}
                     <div class="invoice-warning">
                         This invoice has already been issued.
                         Changes should be made carefully because the customer

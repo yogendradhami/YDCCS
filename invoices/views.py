@@ -13,6 +13,7 @@
 
 import logging
 import json
+from datetime import datetime, timezone as datetime_timezone
 from decimal import Decimal
 
 logger = logging.getLogger(__name__)
@@ -21,16 +22,25 @@ import stripe
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
-from django.http import FileResponse
+from django.core import signing
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.mail import EmailMultiAlternatives
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from .forms import InvoiceForm
 from .forms import InvoiceWorkOrderFormSet
-from .models import Invoice
+from .models import Invoice, StripeWebhookEvent
 from .pdf_utils import generate_invoice_pdf
+from .payment_links import (
+    STRIPE_PAYMENT_LINK_SALT,
+    get_invoice_payment_token,
+    get_invoice_payment_url,
+)
 
 from django.db.models import Q, Sum
 
@@ -48,7 +58,11 @@ from .services import (
     get_booking_work_order_initial,
     replace_invoice_work_orders,
 )
-
+from .stripe_service import (
+    CheckoutSessionConflict,
+    create_checkout_session,
+    verify_webhook,
+)
 
 def get_accessible_invoice(request, invoice_id):
     invoice = get_object_or_404(
@@ -111,7 +125,7 @@ def invoice_list(request):
 
     outstanding_total = (
         base_invoices
-        .filter(status__in=["draft", "sent", "overdue"])
+        .filter(status__in=["draft", "sent", "pending", "overdue"])
         .aggregate(total=Sum("total_amount"))["total"]
         or 0
     )
@@ -208,6 +222,7 @@ def invoice_list(request):
                     status__in=[
                         "draft",
                         "sent",
+                        "pending",
                         "overdue",
                     ]
                 )
@@ -868,6 +883,7 @@ def invoice_detail(request, invoice_id):
         {
             "invoice": invoice,
             "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
+            "payment_url": get_invoice_payment_url(invoice),
         },
     )
 
@@ -875,183 +891,319 @@ def invoice_detail(request, invoice_id):
 @login_required
 @require_POST
 def create_stripe_checkout_session(request, invoice_id):
-
     invoice = get_accessible_invoice(
         request,
         invoice_id,
     )
 
     if invoice.status == "paid":
+        messages.info(request, "This invoice has already been paid.")
+        return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
+    if invoice.status == "cancelled":
+        messages.error(request, "Cancelled invoices cannot be paid.")
+        return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
 
-        messages.info(
-            request,
-            "This invoice has already been paid.",
-        )
+    is_portal = hasattr(request.user, "customer_profile")
+    cancel_name = (
+        "portal_stripe_payment_cancel" if is_portal else "stripe_payment_cancel"
+    )
+    base_url = settings.SITE_URL.rstrip("/")
+    return_token = get_invoice_payment_token(invoice)
+    success_url = (
+        f"{base_url}"
+        f"{reverse('stripe_payment_return', kwargs={'token': return_token})}"
+        "?session_id={CHECKOUT_SESSION_ID}"
+    )
+    cancel_url = (
+        f"{base_url}{reverse(cancel_name, kwargs={'invoice_id': invoice.id})}"
+    )
 
-        return redirect(
-            invoice_detail_redirect_name(request.user),
-            invoice_id=invoice.id,
-        )
+    try:
+        checkout_session = create_checkout_session(invoice, success_url, cancel_url)
+    except (CheckoutSessionConflict, ValidationError) as exc:
+        messages.error(request, str(exc))
+        return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
+    except stripe.error.StripeError:
+        logger.exception("Stripe Checkout creation failed for invoice=%s", invoice.pk)
+        messages.error(request, "Payment could not be started. Please try again later.")
+        return redirect(invoice_detail_redirect_name(request.user), invoice_id=invoice.id)
 
-    stripe.api_key = settings.STRIPE_SECRET_KEY
+    return redirect(checkout_session.url)
 
-    domain = request.build_absolute_uri("/").rstrip("/")
+
+def stripe_pay_invoice_link(request, token):
+    try:
+        invoice_id = signing.Signer(salt=STRIPE_PAYMENT_LINK_SALT).unsign(token)
+    except signing.BadSignature:
+        return HttpResponse("This payment link is invalid.", status=400)
+    invoice = get_object_or_404(
+        Invoice.objects.select_related("booking__customer"),
+        pk=invoice_id,
+    )
+    if invoice.status == "paid":
+        return HttpResponse("This invoice has already been paid.", status=200)
+    if invoice.status == "cancelled":
+        return HttpResponse("Cancelled invoices cannot be paid.", status=400)
 
     success_url = (
-        domain
-        + reverse(
-            (
-                "portal_stripe_payment_success"
-                if hasattr(request.user, "customer_profile")
-                else "stripe_payment_success"
-            ),
-            kwargs={
-                "invoice_id": invoice.id,
-            },
-        )
-        + "?session_id={CHECKOUT_SESSION_ID}"
+        f"{settings.SITE_URL.rstrip('/')}"
+        f"{reverse('stripe_payment_return', kwargs={'token': get_invoice_payment_token(invoice)})}"
+        "?session_id={CHECKOUT_SESSION_ID}"
     )
-
     cancel_url = (
-        domain
-        + reverse(
-            invoice_detail_redirect_name(request.user),
-            kwargs={
-                "invoice_id": invoice.id,
-            },
+        f"{settings.SITE_URL.rstrip('/')}"
+        f"{reverse('stripe_payment_cancel_return', kwargs={'token': token})}"
+    )
+    try:
+        session = create_checkout_session(invoice, success_url, cancel_url)
+    except (CheckoutSessionConflict, ValidationError) as exc:
+        return HttpResponse(str(exc), status=409)
+    except stripe.error.StripeError:
+        logger.exception("Stripe Checkout creation failed for invoice=%s", invoice.pk)
+        return HttpResponse(
+            "Payment could not be started. Please contact YD Commercial Cleaning Services.",
+            status=502,
         )
-    )
-
-    amount_in_cents = int(
-        invoice.total_amount * 100
-    )
-
-    checkout_session = stripe.checkout.Session.create(
-
-        payment_method_types=["card"],
-
-        mode="payment",
-
-        customer_email=(
-            invoice.booking.customer.email
-            or None
-        ),
-
-        line_items=[
-            {
-                "price_data": {
-                    "currency": settings.STRIPE_CURRENCY,
-
-                    "product_data": {
-                        "name": (
-                            f"Invoice "
-                            f"{invoice.invoice_number}"
-                        ),
-                        "description": invoice.description,
-                    },
-
-                    "unit_amount": amount_in_cents,
-                },
-
-                "quantity": 1,
-            }
-        ],
-
-        metadata={
-            "invoice_id": str(invoice.id),
-            "invoice_number": invoice.invoice_number,
-            "customer": invoice.booking.customer.full_name,
-        },
-
-        success_url=success_url,
-
-        cancel_url=cancel_url,
-    )
-
-    invoice.stripe_checkout_session_id = (
-        checkout_session.id
-    )
-
-    invoice.status = "sent"
-
-    invoice.save()
-
-    return redirect(
-        checkout_session.url
-    )
+    return redirect(session.url)
 
 
 @login_required
 def stripe_payment_success(request, invoice_id):
-
     invoice = get_accessible_invoice(
         request,
         invoice_id,
     )
-
-    session_id = request.GET.get(
-        "session_id"
-    )
-
-    if session_id:
-
-        stripe.api_key = settings.STRIPE_SECRET_KEY
-
-        session = stripe.checkout.Session.retrieve(
-            session_id
+    if invoice.status == "paid":
+        messages.success(request, "Payment confirmed. Thank you.")
+    else:
+        messages.info(
+            request,
+            "Thank you. Your payment is being verified; the invoice will update once confirmed.",
         )
-
-        metadata = session.metadata or {}
-
-        session_invoice_id = str(
-            metadata.get("invoice_id", "")
-        )
-
-        is_expected_session = (
-            session.id
-            == invoice.stripe_checkout_session_id
-        )
-
-        if (
-            is_expected_session
-            and session_invoice_id
-            == str(invoice.id)
-            and session.payment_status == "paid"
-        ):
-
-            invoice.status = "paid"
-
-            invoice.stripe_checkout_session_id = (
-                session.id
-            )
-
-            invoice.stripe_payment_intent_id = (
-                session.payment_intent or ""
-            )
-
-            invoice.paid_at = timezone.now()
-
-            invoice.save()
-
-            messages.success(
-                request,
-                "✅ Payment successful. Invoice marked as paid.",
-            )
-
-        else:
-
-            messages.error(
-                request,
-                (
-                    "The payment session does not match "
-                    "this invoice or is incomplete."
-                ),
-            )
-
     return redirect(
         invoice_detail_redirect_name(request.user),
         invoice_id=invoice.id,
     )
+
+
+def stripe_payment_return(request, token):
+    try:
+        signing.Signer(salt=STRIPE_PAYMENT_LINK_SALT).unsign(token)
+    except signing.BadSignature:
+        return HttpResponse("This payment link is invalid.", status=400)
+    return HttpResponse(
+        "Thank you. Your payment is being verified. "
+        "The invoice will update after Stripe confirms payment."
+    )
+
+
+def stripe_payment_cancel_return(request, token):
+    try:
+        signing.Signer(salt=STRIPE_PAYMENT_LINK_SALT).unsign(token)
+    except signing.BadSignature:
+        return HttpResponse("This payment link is invalid.", status=400)
+    return HttpResponse(
+        "Payment was cancelled and has not been recorded. "
+        "You can return to your invoice payment link to try again."
+    )
+
+
+def _send_stripe_payment_confirmation(invoice):
+    customer = invoice.booking.customer
+    if not customer or not customer.email:
+        logger.warning(
+            "Payment confirmation not emailed: invoice=%s has no customer email",
+            invoice.invoice_number,
+        )
+        invoice.payment_confirmation_email_sent = True
+        invoice.save(update_fields=["payment_confirmation_email_sent"])
+        return
+
+    invoice_url = get_invoice_payment_url(invoice)
+    context = {
+        "invoice": invoice,
+        "customer": customer,
+        "invoice_url": invoice_url,
+    }
+    html_body = render_to_string("emails/invoices/payment_received.html", context)
+    email = EmailMultiAlternatives(
+        subject=f"Payment received for invoice {invoice.invoice_number}",
+        body=(
+            f"Hi {customer.full_name}, payment for invoice "
+            f"{invoice.invoice_number} has been received. Thank you."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[customer.email],
+    )
+    email.attach_alternative(html_body, "text/html")
+    pdf_buffer = generate_invoice_pdf(invoice, payment_url=invoice_url)
+    email.attach(
+        f"{invoice.invoice_number}.pdf",
+        pdf_buffer.getvalue(),
+        "application/pdf",
+    )
+    email.send(fail_silently=False)
+    invoice.payment_confirmation_email_sent = True
+    invoice.save(update_fields=["payment_confirmation_email_sent"])
+
+
+@csrf_exempt
+@require_POST
+def stripe_webhook(request):
+    try:
+        event = verify_webhook(
+            request.body,
+            request.headers.get("Stripe-Signature", ""),
+        )
+    except (ValueError, stripe.error.SignatureVerificationError):
+        logger.warning("Rejected Stripe webhook with invalid signature")
+        return HttpResponse(status=400)
+    except ValidationError:
+        logger.exception("Stripe webhook signing is not configured")
+        return HttpResponse(status=503)
+
+    event_id = event.get("id")
+    event_type = event.get("type")
+    if not event_id or not event_type:
+        logger.warning("Rejected verified Stripe webhook without event identity")
+        return HttpResponse(status=400)
+
+    try:
+        with transaction.atomic():
+            webhook_event, created = StripeWebhookEvent.objects.get_or_create(
+                event_id=event_id,
+                defaults={"event_type": event_type},
+            )
+            if not created:
+                return HttpResponse(status=200)
+
+            if event_type in {
+                "checkout.session.completed",
+                "checkout.session.async_payment_succeeded",
+                "checkout.session.async_payment_failed",
+                "checkout.session.expired",
+            }:
+                session = event.get("data", {}).get("object", {})
+                metadata = session.get("metadata") or {}
+                invoice_id = metadata.get("invoice_id")
+                invoice = (
+                    Invoice.objects.select_for_update()
+                    .select_related("booking__customer")
+                    .filter(pk=invoice_id)
+                    .first()
+                    if isinstance(invoice_id, str) and invoice_id.isdigit()
+                    else None
+                )
+                if invoice is None:
+                    logger.error(
+                        "Stripe event=%s references unknown invoice id=%s",
+                        event_id,
+                        invoice_id,
+                    )
+                elif event_type in {
+                    "checkout.session.async_payment_failed",
+                    "checkout.session.expired",
+                }:
+                    session_id = session.get("id")
+                    valid_session = (
+                        session_id == invoice.stripe_checkout_session_id
+                        and metadata.get("invoice_number") == invoice.invoice_number
+                        and session.get("client_reference_id") == str(invoice.pk)
+                    )
+                    if valid_session and invoice.status == "pending":
+                        retry_status = (
+                            "overdue"
+                            if invoice.due_date
+                            and invoice.due_date < timezone.localdate()
+                            else "sent"
+                        )
+                        Invoice.objects.filter(
+                            pk=invoice.pk,
+                            status="pending",
+                            stripe_checkout_session_id=session_id,
+                        ).update(
+                            status=retry_status,
+                            stripe_checkout_session_id="",
+                            stripe_checkout_idempotency_key="",
+                        )
+                        logger.info(
+                            "Stripe Checkout %s for invoice=%s; invoice is available for retry",
+                            event_type.rsplit(".", 1)[-1],
+                            invoice.pk,
+                        )
+                    elif not valid_session:
+                        logger.error(
+                            "Stripe event=%s failed invoice/session validation: "
+                            "invoice=%s session=%s",
+                            event_id,
+                            invoice.pk,
+                            session_id,
+                        )
+                else:
+                    amount_total = session.get("amount_total")
+                    expected_amount = int(invoice.total_amount * 100)
+                    payment_intent = session.get("payment_intent")
+                    if not isinstance(payment_intent, str):
+                        payment_intent = getattr(payment_intent, "id", "") or ""
+                    valid_session = (
+                        session.get("id") == invoice.stripe_checkout_session_id
+                        and metadata.get("invoice_number") == invoice.invoice_number
+                        and session.get("client_reference_id") == str(invoice.pk)
+                        and session.get("mode") == "payment"
+                        and (session.get("currency") or "").lower() == "aud"
+                        and amount_total == expected_amount
+                    )
+                    if not valid_session:
+                        logger.error(
+                            "Stripe event=%s failed invoice/session validation: "
+                            "invoice=%s session=%s",
+                            event_id,
+                            invoice.pk,
+                            session.get("id"),
+                        )
+                    elif session.get("payment_status") == "paid":
+                        if invoice.status == "cancelled":
+                            logger.error(
+                                "Paid Stripe session received for cancelled invoice=%s",
+                                invoice.pk,
+                            )
+                        else:
+                            if invoice.status != "paid":
+                                invoice.status = "paid"
+                            if not invoice.paid_at:
+                                invoice.paid_at = datetime.fromtimestamp(
+                                    event.get("created", timezone.now().timestamp()),
+                                    tz=datetime_timezone.utc,
+                                )
+                            invoice.stripe_payment_intent_id = payment_intent
+                            methods = session.get("payment_method_types") or []
+                            invoice.payment_method = (
+                                f"Stripe ({methods[0]})" if methods else "Stripe"
+                            )[:50]
+                            invoice.save(
+                                update_fields=[
+                                    "status",
+                                    "paid_at",
+                                    "stripe_payment_intent_id",
+                                    "payment_method",
+                                ]
+                            )
+                            if not invoice.payment_confirmation_email_sent:
+                                _send_stripe_payment_confirmation(invoice)
+                    else:
+                        logger.info(
+                            "Stripe event=%s not paid; invoice=%s remains unpaid",
+                            event_id,
+                            invoice.pk,
+                        )
+
+            webhook_event.processed_at = timezone.now()
+            webhook_event.save(update_fields=["processed_at"])
+    except Exception:
+        logger.exception("Stripe webhook processing failed: event=%s", event_id)
+        return HttpResponse(status=500)
+
+    return HttpResponse(status=200)
 
 
 @login_required

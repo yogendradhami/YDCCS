@@ -23,7 +23,7 @@
         </div>
     </section>
 
-    <div class="finance-metric-grid">
+    <div class="finance-metric-grid finance-payment-metric-grid">
         <article class="finance-metric">
             <span class="finance-metric-label">Revenue · today</span>
             <strong class="finance-metric-value">${{ today_revenue|floatformat:2 }}</strong>
@@ -55,7 +55,12 @@
         <article class="finance-metric">
             <span class="finance-metric-label">Unpaid invoices</span>
             <strong class="finance-metric-value">{{ unpaid_invoices }}</strong>
-            <small class="finance-metric-foot">{{ due_this_week }} due in the next 7 days</small>
+            <small class="finance-metric-foot">Draft or sent; {{ due_this_week }} due in the next 7 days</small>
+        </article>
+        <article class="finance-metric">
+            <span class="finance-metric-label">Pending payments</span>
+            <strong class="finance-metric-value">{{ pending_invoices }}</strong>
+            <small class="finance-metric-foot">Awaiting Stripe confirmation</small>
         </article>
         <article class="finance-metric is-negative">
             <span class="finance-metric-label">Overdue invoices</span>
@@ -97,8 +102,8 @@
         <header class="finance-panel-heading">
             <div>
                 <span class="finance-overline">Collections</span>
-                <h3>Outstanding invoices</h3>
-                <p>Search this list and send a reminder or open the invoice details.</p>
+                <h3>Invoice payment tracking</h3>
+                <p>Recent invoice status, payment date, method and Stripe transaction reference.</p>
             </div>
             <a class="finance-button-secondary" href="{% url 'invoice_list' %}">Invoice register</a>
         </header>
@@ -113,6 +118,8 @@
                     <option value="">All statuses</option>
                     <option value="draft">Draft</option>
                     <option value="sent">Sent</option>
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
                     <option value="overdue">Overdue</option>
                 </select>
             </div>
@@ -128,19 +135,22 @@
         </div>
         <div class="finance-table-wrap">
             <table class="finance-table" id="invoiceTable">
-                <thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th>Status</th><th class="numeric">Total</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th>Status</th><th>Paid date</th><th>Method</th><th>Stripe reference</th><th class="numeric">Total</th><th>Actions</th></tr></thead>
                 <tbody>
-                    {% for invoice in recent_outstanding_invoices %}
+                    {% for invoice in recent_payment_invoices %}
                         <tr data-status="{{ invoice.status }}" data-amount="{{ invoice.total_amount|floatformat:2 }}">
                             <td><strong>{{ invoice.invoice_number }}</strong></td>
                             <td>{{ invoice.booking.customer.full_name|default:"No customer" }}</td>
                             <td>{% if invoice.due_date %}{{ invoice.due_date|date:"j M Y" }}{% else %}Not set{% endif %}</td>
                             <td><span class="finance-status is-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
+                            <td>{% if invoice.paid_at %}{{ invoice.paid_at|date:"j M Y, H:i" }}{% else %}—{% endif %}</td>
+                            <td>{{ invoice.payment_method|default:"—" }}</td>
+                            <td>{{ invoice.stripe_payment_intent_id|default:"—" }}</td>
                             <td class="numeric"><strong>${{ invoice.total_amount|floatformat:2 }}</strong></td>
                             <td>
                                 <div class="finance-inline-actions">
                                     <a class="finance-button-secondary" href="{% url 'invoice_detail' invoice.id %}">Open</a>
-                                    {% if invoice.status == "sent" or invoice.status == "overdue" %}
+                                    {% if invoice.status == "sent" or invoice.status == "pending" or invoice.status == "overdue" %}
                                         <form method="post" action="{% url 'send_invoice_reminder' invoice.id %}">
                                             {% csrf_token %}
                                             <button class="finance-button-secondary" type="submit">Remind</button>
@@ -150,7 +160,7 @@
                             </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="6"><div class="finance-empty-state"><strong>All caught up</strong>No outstanding invoices were found.</div></td></tr>
+                        <tr><td colspan="9"><div class="finance-empty-state"><strong>No invoices yet</strong>Invoices will appear here as they are created.</div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>

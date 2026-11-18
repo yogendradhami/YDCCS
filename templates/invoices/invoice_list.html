@@ -836,6 +836,13 @@
                         </option>
 
                         <option
+                            value="pending"
+                            {% if request.GET.status == "pending" %}selected{% endif %}
+                        >
+                            Pending payment
+                        </option>
+
+                        <option
                             value="paid"
                             {% if request.GET.status == "paid" %}selected{% endif %}
                         >
@@ -954,6 +961,12 @@
 
                             <th>Status</th>
 
+                            <th>Paid date</th>
+
+                            <th>Payment method</th>
+
+                            <th>Stripe reference</th>
+
                             <th>Actions</th>
 
                         </tr>
@@ -967,7 +980,7 @@
 
                             {% ifchanged invoice.booking.customer_id %}
                                 <tr class="invoice-customer-group">
-                                    <th colspan="7">
+                                    <th colspan="10">
                                         {% if invoice.booking.customer %}
                                             <a href="{% url 'customer_profile_360' invoice.booking.customer_id %}">
                                                 {{ invoice.booking.customer.full_name }}
@@ -1059,6 +1072,12 @@
 
                                 </td>
 
+                                <td>{% if invoice.paid_at %}{{ invoice.paid_at|date:"d M Y H:i" }}{% else %}—{% endif %}</td>
+
+                                <td>{{ invoice.payment_method|default:"—" }}</td>
+
+                                <td>{{ invoice.stripe_payment_intent_id|default:"—" }}</td>
+
 
                                 <!-- ACTIONS -->
 
@@ -1102,7 +1121,7 @@
 
                                         <!-- Reminder -->
 
-                                        {% if invoice.status == "sent" or invoice.status == "overdue" %}
+                                        {% if invoice.status == "sent" or invoice.status == "pending" or invoice.status == "overdue" %}
 
                                             <form
                                                 method="POST"

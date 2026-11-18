@@ -1,16 +1,25 @@
 from datetime import date, time, timedelta
 from decimal import Decimal
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.core import signing
+from django.core.exceptions import ValidationError
 from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
+import fitz
 
 from bookings.models import Booking, BookingWorkOrder
 from core.test_utils import grant_dashboard_permissions
 from customers.models import Customer
-from .models import Invoice
+from .models import Invoice, StripeWebhookEvent
+from .payment_links import (
+    STRIPE_PAYMENT_LINK_SALT,
+    get_invoice_payment_token,
+    get_invoice_payment_url,
+)
 from .services import get_or_create_invoice_for_booking
 
 
@@ -291,6 +300,8 @@ class ManualInvoiceEmailTests(TestCase):
         self.assertEqual(sent_email.attachments[0][2], "application/pdf")
         self.assertTrue(sent_email.attachments[0][1].startswith(b"%PDF-"))
         self.assertGreater(len(sent_email.attachments[0][1]), 1000)
+        self.assertIn("/invoice/pay/", sent_email.body)
+        self.assertIn("/invoice/pay/", sent_email.alternatives[0][0])
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, "sent")
         self.assertContains(
@@ -322,6 +333,39 @@ class ManualInvoiceEmailTests(TestCase):
         pdf_content = b"".join(response.streaming_content)
         self.assertTrue(pdf_content.startswith(b"%PDF-"))
         self.assertGreater(len(pdf_content), 1000)
+        pdf_text = " ".join(
+            page.get_text()
+            for page in fitz.open(stream=pdf_content, filetype="pdf")
+        ).split()
+        pdf_text = " ".join(pdf_text)
+        for expected_text in (
+            "TERMS & CONDITIONS",
+            "Payment is due within 7 days from the invoice date",
+            "All payments must include the relevant invoice number",
+            "Any additional services or variations outside the agreed scope",
+            "A minimum of 24 hours' written notice",
+            "Any concerns regarding service quality must be reported within 24 hours",
+            "recovery of overdue accounts in accordance with applicable laws",
+            "Thank you for your business. We appreciate your trust in",
+            "BANK DETAILS",
+            "YD Commercial Cleaning Services",
+            "035-050",
+            "407482",
+            "PAY ONLINE",
+            "PAY NOW",
+            invoice.invoice_number,
+        ):
+            self.assertIn(expected_text, pdf_text)
+        pdf_document = fitz.open(stream=pdf_content, filetype="pdf")
+        self.assertTrue(
+            any(
+                link.get("uri", "").startswith(
+                    "https://www.ydcleaning.com.au/invoice/pay/"
+                )
+                for page in pdf_document
+                for link in page.get_links()
+            )
+        )
 
     @override_settings(
         EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
@@ -342,6 +386,280 @@ class ManualInvoiceEmailTests(TestCase):
         self.assertTrue(send_invoice_email(request, invoice))
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, "sent")
+
+
+@override_settings(
+    STRIPE_SECRET_KEY="sk_test_value",
+    STRIPE_WEBHOOK_SECRET="whsec_test_value",
+    STRIPE_CURRENCY="aud",
+    SITE_URL="https://www.ydcleaning.com.au",
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    DEFAULT_FROM_EMAIL="billing@example.com",
+)
+class StripeInvoicePaymentTests(TestCase):
+    def setUp(self):
+        self.customer = Customer.objects.create(
+            full_name="Stripe Recipient",
+            email="stripe-recipient@example.com",
+            phone="0400000000",
+        )
+        self.booking = Booking.objects.create(
+            customer=self.customer,
+            service_type="Office Cleaning",
+            booking_date=date.today() + timedelta(days=1),
+            booking_time=time(10, 0),
+            address="1 King Street",
+            suburb_postcode="Adelaide 5000",
+            quoted_price="100.00",
+        )
+        self.invoice = Invoice.objects.create(
+            booking=self.booking,
+            description="Office cleaning",
+            amount=Decimal("100.00"),
+            status="sent",
+        )
+        self.session_id = "cs_test_invoice"
+        self.invoice.stripe_checkout_session_id = self.session_id
+        self.invoice.status = "pending"
+        self.invoice.save(
+            update_fields=["stripe_checkout_session_id", "status"]
+        )
+
+    def _paid_session(self, **overrides):
+        session = {
+            "id": self.session_id,
+            "metadata": {
+                "invoice_id": str(self.invoice.pk),
+                "invoice_number": self.invoice.invoice_number,
+            },
+            "client_reference_id": str(self.invoice.pk),
+            "mode": "payment",
+            "currency": "aud",
+            "amount_total": int(self.invoice.total_amount * 100),
+            "payment_status": "paid",
+            "payment_intent": "pi_test_invoice",
+            "payment_method_types": ["card"],
+        }
+        session.update(overrides)
+        return session
+
+    def _post_webhook(self, event_id, session=None, event_type="checkout.session.completed"):
+        event = {
+            "id": event_id,
+            "type": event_type,
+            "created": 1_750_000_000,
+            "data": {"object": session or self._paid_session()},
+        }
+        with patch("invoices.views.verify_webhook", return_value=event):
+            return self.client.post(
+                reverse("stripe_webhook"),
+                data=b"verified-by-mock",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="signature",
+            )
+
+    @patch("invoices.stripe_service.stripe.checkout.Session.create")
+    def test_signed_payment_link_creates_aud_checkout_for_invoice_total(
+        self, create_session
+    ):
+        create_session.return_value = SimpleNamespace(
+            id="cs_test_new",
+            url="https://checkout.stripe.com/c/pay/cs_test_new",
+        )
+        invoice = self.invoice
+        invoice.status = "sent"
+        invoice.stripe_checkout_session_id = ""
+        invoice.stripe_checkout_idempotency_key = ""
+        invoice.save(
+            update_fields=[
+                "status",
+                "stripe_checkout_session_id",
+                "stripe_checkout_idempotency_key",
+            ]
+        )
+
+        response = self.client.get(
+            get_invoice_payment_url(invoice).replace(
+                "https://www.ydcleaning.com.au", ""
+            )
+        )
+
+        self.assertRedirects(
+            response,
+            "https://checkout.stripe.com/c/pay/cs_test_new",
+            fetch_redirect_response=False,
+        )
+        parameters = create_session.call_args.kwargs
+        self.assertEqual(parameters["mode"], "payment")
+        self.assertEqual(
+            parameters["line_items"][0]["price_data"]["currency"],
+            "aud",
+        )
+        self.assertEqual(
+            parameters["line_items"][0]["price_data"]["unit_amount"],
+            int(invoice.total_amount * 100),
+        )
+        self.assertEqual(parameters["metadata"]["invoice_id"], str(invoice.pk))
+        self.assertEqual(
+            parameters["metadata"]["invoice_number"],
+            invoice.invoice_number,
+        )
+        invoice.refresh_from_db()
+        self.assertEqual(invoice.status, "pending")
+        self.assertEqual(invoice.stripe_checkout_session_id, "cs_test_new")
+        self.assertTrue(invoice.stripe_checkout_idempotency_key)
+
+    @patch("invoices.stripe_service.stripe.checkout.Session.create")
+    @patch("invoices.stripe_service.stripe.checkout.Session.retrieve")
+    def test_open_checkout_session_is_reused(
+        self, retrieve_session, create_session
+    ):
+        retrieve_session.return_value = SimpleNamespace(
+            status="open",
+            url="https://checkout.stripe.com/c/pay/cs_test_invoice",
+        )
+        response = self.client.get(
+            get_invoice_payment_url(self.invoice).replace(
+                "https://www.ydcleaning.com.au", ""
+            )
+        )
+
+        self.assertEqual(response.status_code, 302)
+        retrieve_session.assert_called_once_with(self.session_id, timeout=20)
+        create_session.assert_not_called()
+
+    def test_invalid_webhook_signature_is_rejected(self):
+        with patch(
+            "invoices.views.verify_webhook",
+            side_effect=ValueError("Invalid signature"),
+        ):
+            response = self.client.post(
+                reverse("stripe_webhook"),
+                data=b"untrusted",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="invalid",
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "pending")
+
+    def test_paid_webhook_updates_invoice_and_sends_pdf_confirmation_once(self):
+        response = self._post_webhook("evt_paid")
+        self.assertEqual(response.status_code, 200)
+
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "paid")
+        self.assertEqual(self.invoice.stripe_payment_intent_id, "pi_test_invoice")
+        self.assertEqual(self.invoice.payment_method, "Stripe (card)")
+        self.assertTrue(self.invoice.payment_confirmation_email_sent)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(
+            mail.outbox[0].attachments[0][0],
+            f"{self.invoice.invoice_number}.pdf",
+        )
+        self.assertEqual(StripeWebhookEvent.objects.count(), 1)
+
+        duplicate_response = self._post_webhook("evt_paid")
+        self.assertEqual(duplicate_response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_unpaid_checkout_event_does_not_mark_invoice_paid(self):
+        response = self._post_webhook(
+            "evt_unpaid",
+            session=self._paid_session(payment_status="unpaid"),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "pending")
+        self.assertFalse(self.invoice.payment_confirmation_email_sent)
+
+    def test_failed_async_payment_event_does_not_mark_invoice_paid(self):
+        response = self._post_webhook(
+            "evt_failed",
+            event_type="checkout.session.async_payment_failed",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "sent")
+        self.assertEqual(self.invoice.stripe_checkout_session_id, "")
+
+    def test_payment_return_page_does_not_mark_invoice_paid(self):
+        token = get_invoice_payment_token(self.invoice)
+        response = self.client.get(
+            reverse("stripe_payment_return", kwargs={"token": token})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "being verified")
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "pending")
+
+    def test_invalid_session_amount_is_not_accepted(self):
+        response = self._post_webhook(
+            "evt_wrong_amount",
+            session=self._paid_session(amount_total=1),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "pending")
+
+    def test_paid_and_cancelled_invoices_cannot_start_checkout(self):
+        token = get_invoice_payment_token(self.invoice)
+        self.invoice.status = "cancelled"
+        self.invoice.save(update_fields=["status"])
+
+        with patch("invoices.stripe_service.stripe.checkout.Session.create") as create:
+            response = self.client.get(
+                reverse("invoice_stripe_pay_link", kwargs={"token": token})
+            )
+
+        self.assertEqual(response.status_code, 400)
+        create.assert_not_called()
+
+    def test_paid_invoice_cannot_start_checkout(self):
+        token = get_invoice_payment_token(self.invoice)
+        self.invoice.status = "paid"
+        self.invoice.save(update_fields=["status"])
+
+        with patch("invoices.stripe_service.stripe.checkout.Session.create") as create:
+            response = self.client.get(
+                reverse("invoice_stripe_pay_link", kwargs={"token": token})
+            )
+
+        self.assertEqual(response.status_code, 200)
+        create.assert_not_called()
+
+    def test_cancel_return_does_not_change_invoice_status(self):
+        token = get_invoice_payment_token(self.invoice)
+        response = self.client.get(
+            reverse("stripe_payment_cancel_return", kwargs={"token": token})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Payment was cancelled")
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, "pending")
+
+    def test_signed_link_is_bound_to_an_existing_invoice(self):
+        invalid_token = signing.Signer(
+            salt=STRIPE_PAYMENT_LINK_SALT
+        ).sign(str(self.invoice.pk + 1000))
+        with patch("invoices.stripe_service.stripe.checkout.Session.create") as create:
+            response = self.client.get(
+                reverse("invoice_stripe_pay_link", kwargs={"token": invalid_token})
+            )
+
+        self.assertEqual(response.status_code, 404)
+        create.assert_not_called()
+
+
+class ManualInvoiceEmailContinuationTests(TestCase):
+    def setUp(self):
+        ManualInvoiceEmailTests.setUp(self)
 
     @patch("dashboard.views.send_invoice_email", return_value=True)
     def test_manual_invoice_creation_creates_a_separate_booking_for_each_invoice(
@@ -475,6 +793,11 @@ class InvoiceBookingServiceTests(TestCase):
         self.assertIn(b"<!DOCTYPE html>", response.content)
         self.assertContains(response, "YD Commercial Cleaning Services")
         self.assertContains(response, "class=\"invoice-card\"")
+        self.assertContains(response, "TERMS &amp; CONDITIONS")
+        self.assertContains(response, "BANK DETAILS")
+        self.assertContains(response, "035-050")
+        self.assertContains(response, "407482")
+        self.assertContains(response, "Please use your invoice number.")
         self.assertNotContains(response, "crm-sidebar")
         self.assertNotContains(response, "crm-topbar")
         self.assertNotContains(response, "Pay Now with Stripe")

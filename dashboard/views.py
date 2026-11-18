@@ -79,6 +79,7 @@ from google_reviews.calendar_utils import (
     delete_roster_event,
 )
 from invoices.models import Invoice
+from invoices.payment_links import get_invoice_payment_url
 from invoices.services import get_or_create_invoice_for_booking
 from invoices.pdf_utils import generate_invoice_pdf
 from leave_management.models import LeaveRequest
@@ -1407,7 +1408,6 @@ def send_booking_confirmation_email(request, booking, old_status=None):
         # Portal URL
         # --------------------------------------------------
         portal_url = f"{settings.SITE_URL.rstrip('/')}/portal/"
-
         # --------------------------------------------------
         # Status-specific customer messaging
         # --------------------------------------------------
@@ -2465,18 +2465,14 @@ def send_invoice_email(request, invoice):
     )
 
     portal_url = f"{settings.SITE_URL.rstrip('/')}/portal/"
+    payment_url = get_invoice_payment_url(invoice)
 
     email_context = {
         "customer": customer,
         "booking": booking,
         "invoice": invoice,
         "portal_url": portal_url,
-        "payment_url": request.build_absolute_uri(
-            reverse(
-                "create_stripe_checkout_session",
-                kwargs={"invoice_id": invoice.id},
-            )
-        ),
+        "payment_url": payment_url,
     }
 
     try:
@@ -2491,7 +2487,7 @@ def send_invoice_email(request, invoice):
         )
 
         # Generate the invoice PDF using the existing PDF generator.
-        pdf_buffer = generate_invoice_pdf(invoice)
+        pdf_buffer = generate_invoice_pdf(invoice, payment_url=payment_url)
 
         pdf_content = pdf_buffer.getvalue()
 
@@ -3746,11 +3742,12 @@ def financial_dashboard(request):
     )
 
     paid_invoices = paid_invoice_qs.count()
-    unpaid_invoices = Invoice.objects.exclude(status__in=["paid", "cancelled"]).count()
+    unpaid_invoices = Invoice.objects.filter(status__in=["draft", "sent"]).count()
+    pending_invoices = Invoice.objects.filter(status="pending").count()
     overdue_invoices = Invoice.objects.filter(status="overdue").count()
 
     due_this_week = Invoice.objects.filter(
-        status__in=["draft", "sent", "overdue"],
+        status__in=["draft", "sent", "pending", "overdue"],
         due_date__gte=today,
         due_date__lte=week_due_end,
     ).count()
@@ -3775,10 +3772,10 @@ def financial_dashboard(request):
     ).aggregate(total=Sum("amount"))["total"] or 0
     estimated_profit = year_revenue - payroll_total - year_expenses
 
-    recent_outstanding_invoices = (
-        Invoice.objects.exclude(status__in=["paid", "cancelled"])
+    recent_payment_invoices = (
+        Invoice.objects.exclude(status="cancelled")
         .select_related("booking", "booking__customer")
-        .order_by("due_date", "-created_at")[:10]
+        .order_by("-updated_at")[:10]
     )
 
     # -----------------------------
@@ -3821,13 +3818,14 @@ def financial_dashboard(request):
             "year_revenue": year_revenue,
             "paid_invoices": paid_invoices,
             "unpaid_invoices": unpaid_invoices,
+            "pending_invoices": pending_invoices,
             "overdue_invoices": overdue_invoices,
             "due_this_week": due_this_week,
             "outstanding_balance": outstanding_balance,
             "payroll_total": payroll_total,
             "year_expenses": year_expenses,
             "estimated_profit": estimated_profit,
-            "recent_outstanding_invoices": recent_outstanding_invoices,
+            "recent_payment_invoices": recent_payment_invoices,
             "revenue_labels": revenue_labels,
             "revenue_values": revenue_values,
             "customer_labels": customer_labels,
@@ -4048,12 +4046,7 @@ def send_invoice_reminder(request, invoice_id):
     subject = f"Payment Reminder - Invoice {invoice.invoice_number}"
 
     # Build the customer payment URL.
-    payment_url = request.build_absolute_uri(
-        reverse(
-            "create_stripe_checkout_session",
-            kwargs={"invoice_id": invoice.id},
-        )
-    )
+    payment_url = get_invoice_payment_url(invoice)
 
     context = {
         "invoice": invoice,
