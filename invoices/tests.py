@@ -17,6 +17,7 @@ from customers.models import Customer
 from .models import Invoice, StripeWebhookEvent
 from .payment_links import (
     STRIPE_PAYMENT_LINK_SALT,
+    get_invoice_id_from_payment_token,
     get_invoice_payment_token,
     get_invoice_payment_url,
 )
@@ -655,6 +656,45 @@ class StripeInvoicePaymentTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
         create.assert_not_called()
+
+    def test_existing_timestamped_payment_link_still_starts_checkout(self):
+        legacy_token = signing.dumps(
+            self.invoice.pk,
+            salt=STRIPE_PAYMENT_LINK_SALT,
+        )
+        self.assertEqual(
+            get_invoice_id_from_payment_token(legacy_token),
+            str(self.invoice.pk),
+        )
+        with patch(
+            "invoices.stripe_service.stripe.checkout.Session.retrieve",
+            return_value=SimpleNamespace(
+                status="open",
+                url="https://checkout.stripe.com/c/pay/cs_test_invoice",
+            ),
+        ) as retrieve_session:
+            response = self.client.get(
+                reverse("invoice_stripe_pay_link", kwargs={"token": legacy_token})
+            )
+
+        self.assertRedirects(
+            response,
+            "https://checkout.stripe.com/c/pay/cs_test_invoice",
+            fetch_redirect_response=False,
+        )
+        retrieve_session.assert_called_once_with("cs_test_invoice", timeout=20)
+
+    def test_legacy_token_is_supported_on_success_return(self):
+        legacy_token = signing.dumps(
+            self.invoice.pk,
+            salt=STRIPE_PAYMENT_LINK_SALT,
+        )
+
+        response = self.client.get(
+            reverse("stripe_payment_return", kwargs={"token": legacy_token})
+        )
+
+        self.assertEqual(response.status_code, 200)
 
 
 class ManualInvoiceEmailContinuationTests(TestCase):

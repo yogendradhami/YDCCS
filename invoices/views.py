@@ -22,7 +22,6 @@ import stripe
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core import signing
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.http import FileResponse, HttpResponse
@@ -37,7 +36,7 @@ from .forms import InvoiceWorkOrderFormSet
 from .models import Invoice, StripeWebhookEvent
 from .pdf_utils import generate_invoice_pdf
 from .payment_links import (
-    STRIPE_PAYMENT_LINK_SALT,
+    get_invoice_id_from_payment_token,
     get_invoice_payment_token,
     get_invoice_payment_url,
 )
@@ -933,8 +932,8 @@ def create_stripe_checkout_session(request, invoice_id):
 
 def stripe_pay_invoice_link(request, token):
     try:
-        invoice_id = signing.Signer(salt=STRIPE_PAYMENT_LINK_SALT).unsign(token)
-    except signing.BadSignature:
+        invoice_id = get_invoice_id_from_payment_token(token)
+    except ValueError:
         return HttpResponse("This payment link is invalid.", status=400)
     invoice = get_object_or_404(
         Invoice.objects.select_related("booking__customer"),
@@ -988,8 +987,8 @@ def stripe_payment_success(request, invoice_id):
 
 def stripe_payment_return(request, token):
     try:
-        signing.Signer(salt=STRIPE_PAYMENT_LINK_SALT).unsign(token)
-    except signing.BadSignature:
+        get_invoice_id_from_payment_token(token)
+    except ValueError:
         return HttpResponse("This payment link is invalid.", status=400)
     return HttpResponse(
         "Thank you. Your payment is being verified. "
@@ -999,8 +998,8 @@ def stripe_payment_return(request, token):
 
 def stripe_payment_cancel_return(request, token):
     try:
-        signing.Signer(salt=STRIPE_PAYMENT_LINK_SALT).unsign(token)
-    except signing.BadSignature:
+        get_invoice_id_from_payment_token(token)
+    except ValueError:
         return HttpResponse("This payment link is invalid.", status=400)
     return HttpResponse(
         "Payment was cancelled and has not been recorded. "
