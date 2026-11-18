@@ -3,6 +3,9 @@ from decimal import Decimal
 from types import SimpleNamespace
 from unittest import skipUnless
 from unittest.mock import patch
+from urllib.parse import urlsplit
+
+import stripe
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -18,6 +21,7 @@ from bookings.models import Booking, BookingWorkOrder
 from core.test_utils import grant_dashboard_permissions
 from customers.models import Customer
 from .models import Invoice, StripeWebhookEvent
+from .pdf_utils import generate_invoice_pdf
 from .payment_links import (
     STRIPE_PAYMENT_LINK_SALT,
     get_invoice_id_from_payment_token,
@@ -532,6 +536,80 @@ class StripeInvoicePaymentTests(TestCase):
         self.assertEqual(response.status_code, 302)
         retrieve_session.assert_called_once_with(self.session_id)
         create_session.assert_not_called()
+
+    @patch("invoices.stripe_service.stripe.checkout.Session.create")
+    @patch("invoices.stripe_service.stripe.checkout.Session.retrieve")
+    def test_pdf_payment_link_replaces_missing_checkout_session(
+        self, retrieve_session, create_session
+    ):
+        retrieve_session.side_effect = stripe.error.InvalidRequestError(
+            "No such checkout session",
+            param="id",
+            code="resource_missing",
+            http_status=404,
+        )
+        create_session.return_value = SimpleNamespace(
+            id="cs_test_replacement",
+            url="https://checkout.stripe.com/c/pay/cs_test_replacement",
+        )
+
+        pdf = generate_invoice_pdf(self.invoice)
+        document = fitz.open(stream=pdf.getvalue(), filetype="pdf")
+        payment_link = next(
+            link["uri"]
+            for page in document
+            for link in page.get_links()
+            if "/invoice/pay/" in link.get("uri", "")
+        )
+        response = self.client.get(urlsplit(payment_link).path)
+
+        self.assertRedirects(
+            response,
+            "https://checkout.stripe.com/c/pay/cs_test_replacement",
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(retrieve_session.call_count, 1)
+        parameters = create_session.call_args.kwargs
+        self.assertEqual(parameters["metadata"]["invoice_id"], str(self.invoice.pk))
+        self.assertEqual(
+            parameters["line_items"][0]["price_data"]["unit_amount"],
+            int(self.invoice.total_amount * 100),
+        )
+        self.assertNotIn("timeout", parameters)
+        self.invoice.refresh_from_db()
+        self.assertEqual(
+            self.invoice.stripe_checkout_session_id,
+            "cs_test_replacement",
+        )
+        self.assertEqual(self.invoice.status, "pending")
+
+    @patch("invoices.stripe_service.stripe.checkout.Session.create")
+    @patch("invoices.stripe_service.stripe.checkout.Session.retrieve")
+    def test_non_missing_stripe_retrieval_error_does_not_create_new_session(
+        self, retrieve_session, create_session
+    ):
+        retrieve_session.side_effect = stripe.error.InvalidRequestError(
+            "Invalid request",
+            param="id",
+            code="parameter_invalid",
+            http_status=400,
+        )
+
+        from .stripe_service import create_checkout_session
+
+        with self.assertRaises(stripe.error.InvalidRequestError):
+            create_checkout_session(
+                self.invoice,
+                "https://example.com/success",
+                "https://example.com/cancel",
+            )
+
+        create_session.assert_not_called()
+        self.invoice.refresh_from_db()
+        self.assertEqual(
+            self.invoice.stripe_checkout_session_id,
+            self.session_id,
+        )
 
     @skipUnless(
         connection.vendor == "postgresql",
