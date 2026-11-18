@@ -46,7 +46,7 @@ from django.db.models import Q, Sum
 from bookings.models import Booking
 from dashboard.decorators import admin_required
 from dashboard.models import ActivityLog
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.db.models import Sum, Q
 from dashboard.models import ActivityLog
 from bookings.models import Booking
@@ -935,10 +935,21 @@ def stripe_pay_invoice_link(request, token):
         invoice_id = get_invoice_id_from_payment_token(token)
     except ValueError:
         return HttpResponse("This payment link is invalid.", status=400)
-    invoice = get_object_or_404(
-        Invoice.objects.select_related("booking__customer"),
-        pk=invoice_id,
-    )
+    try:
+        invoice = get_object_or_404(
+            Invoice.objects.select_related("booking__customer"),
+            pk=invoice_id,
+        )
+    except DatabaseError:
+        logger.exception(
+            "Invoice payment link lookup failed; invoice schema may not be migrated"
+        )
+        return HttpResponse(
+            "Online invoice payment is temporarily unavailable. "
+            "Please contact YD Commercial Cleaning Services or use the bank details "
+            "on your invoice.",
+            status=503,
+        )
     if invoice.status == "paid":
         return HttpResponse("This invoice has already been paid.", status=200)
     if invoice.status == "cancelled":
@@ -962,6 +973,18 @@ def stripe_pay_invoice_link(request, token):
         return HttpResponse(
             "Payment could not be started. Please contact YD Commercial Cleaning Services.",
             status=502,
+        )
+    except DatabaseError:
+        logger.exception(
+            "Stripe Checkout persistence failed for invoice=%s; "
+            "invoice payment migrations may not be applied",
+            invoice.pk,
+        )
+        return HttpResponse(
+            "Online invoice payment is temporarily unavailable. "
+            "Please contact YD Commercial Cleaning Services or use the bank details "
+            "on your invoice.",
+            status=503,
         )
     return redirect(session.url)
 

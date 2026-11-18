@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core import signing
 from django.core.exceptions import ValidationError
+from django.db import DatabaseError
 from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 import fitz
@@ -683,6 +684,22 @@ class StripeInvoicePaymentTests(TestCase):
             fetch_redirect_response=False,
         )
         retrieve_session.assert_called_once_with("cs_test_invoice", timeout=20)
+
+    def test_payment_link_returns_diagnostic_when_invoice_schema_is_unavailable(self):
+        token = get_invoice_payment_token(self.invoice)
+        with patch(
+            "invoices.views.get_object_or_404",
+            side_effect=DatabaseError("missing payment tracking column"),
+        ):
+            response = self.client.get(
+                reverse("invoice_stripe_pay_link", kwargs={"token": token})
+            )
+
+        self.assertEqual(response.status_code, 503)
+        self.assertIn(
+            b"Online invoice payment is temporarily unavailable",
+            response.content,
+        )
 
     def test_legacy_token_is_supported_on_success_return(self):
         legacy_token = signing.dumps(
