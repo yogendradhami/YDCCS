@@ -35,6 +35,29 @@ class SeoMiddlewareTests(SimpleTestCase):
 
         self.assertNotIn("X-Robots-Tag", response.headers)
 
+    def test_chat_session_token_endpoint_is_not_indexed(self):
+        request = RequestFactory().get("/chat/session-token/")
+        request.user = AnonymousUser()
+
+        middleware = SEOMiddleware(
+            lambda current_request: HttpResponse(
+                '{"success": true}',
+                content_type="application/json",
+            )
+        )
+
+        response = middleware(request)
+
+        self.assertEqual(
+            response["X-Robots-Tag"],
+            "noindex, nofollow",
+        )
+        self.assertEqual(
+            response["Cache-Control"],
+            "private, no-store",
+        )
+
+
     def test_public_html_without_meta_keeps_the_robots_header_fallback(self):
         request = RequestFactory().get("/")
         request.user = AnonymousUser()

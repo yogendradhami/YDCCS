@@ -785,6 +785,15 @@ class SEOMiddleware:
             return response
 
         # ======================================================
+        # CUSTOMER LIVE CHAT SESSION TOKEN API
+        # ======================================================
+
+        if request.path == "/chat/session-token/":
+            response["X-Robots-Tag"] = "noindex, nofollow"
+            response["Cache-Control"] = "private, no-store"
+            return response
+
+        # ======================================================
         # AUTHENTICATED RESPONSES
         # ======================================================
 
