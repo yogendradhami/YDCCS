@@ -66,7 +66,7 @@ if IS_PRODUCTION and DEBUG:
 
 _configured_site_url = env.str(
     "SITE_URL",
-    default="https://www.ydcleaning.com.au",
+    default="https://ydcleaning.com.au",
 ).rstrip("/")
 _configured_site_host = (urlsplit(_configured_site_url).hostname or "").lower()
 
@@ -74,7 +74,7 @@ if IS_PRODUCTION or _configured_site_host in {
     "ydcleaning.com.au",
     "www.ydcleaning.com.au",
 }:
-    SITE_URL = "https://www.ydcleaning.com.au"
+    SITE_URL = "https://ydcleaning.com.au"
 else:
     SITE_URL = _configured_site_url
 
