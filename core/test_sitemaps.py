@@ -55,9 +55,8 @@ class CuratedServiceLocationIndexingTests(TestCase):
 
         self.assertIn("carpet-steam-cleaning-adelaide-glenelg", slugs)
         self.assertNotIn("carpet-steam-cleaning-adelaide-aldgate", slugs)
-        self.assertFalse(
-            any(slug.startswith("standard-bathroom-cleaning-adelaide-") for slug in slugs)
-        )
+        self.assertIn("standard-bathroom-cleaning-adelaide-glenelg", slugs)
+        self.assertNotIn("standard-bathroom-cleaning-adelaide-aldgate", slugs)
 
 
 class LocalServiceSitemapPerformanceTests(TestCase):
