@@ -5,7 +5,11 @@ from django.contrib.sitemaps import Sitemap
 from django.conf import settings
 from django.urls import reverse
 
-from .seo_data import SERVICE_DEFINITIONS, get_curated_service_location_slugs
+from .seo_data import (
+    LOCATION_ALIASES,
+    SERVICE_DEFINITIONS,
+    get_curated_service_location_slugs,
+)
 from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
 from .adelaide_local_content import ADELAIDE_LOCAL_CONTENT
 from blog.models import BlogPost
