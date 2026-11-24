@@ -299,6 +299,10 @@ MIDDLEWARE = [
 
     "django.middleware.common.CommonMiddleware",
 
+    # Apply SEO headers outside access-control middleware so even
+    # early login redirects for private paths carry noindex/no-store.
+    "core.middleware.SEOMiddleware",
+
     "django.middleware.csrf.CsrfViewMiddleware",
 
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -309,8 +313,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
 
     "core.middleware.RoleAccessMiddleware",
-
-    "core.middleware.SEOMiddleware",
 
     "core.middleware.CacheHeaderMiddleware",
 
