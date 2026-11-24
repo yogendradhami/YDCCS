@@ -38,6 +38,7 @@ from .seo_data import (
     LOCATION_ALIASES,
     SERVICE_DEFINITIONS,
     SERVICE_SLUG_ALIASES,
+    get_curated_service_location_slugs,
     get_location_definition,
 )
 from .forms import (
@@ -2752,6 +2753,15 @@ def service_page(request, service_slug):
 
     if not service:
         raise Http404("Service not found")
+
+    # Keep service-location URLs available to visitors, but only allow
+    # explicitly curated service/location combinations to be indexed.
+    curated_location_slugs = get_curated_service_location_slugs(normalized_slug)
+    service["indexable"] = (
+        not location
+        or location.casefold() == "adelaide"
+        or location_slug in curated_location_slugs
+    )
 
     if location and location.casefold() != "adelaide":
         service_title = str(service.get("title") or "Cleaning Service")
