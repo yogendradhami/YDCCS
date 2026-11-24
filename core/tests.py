@@ -722,6 +722,14 @@ class SmokeTest(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    @override_settings(DEBUG=False)
+    def test_unknown_url_uses_lightweight_noindex_404_page(self):
+        response = self.client.get("/this-page-does-not-exist/")
+        self.assertEqual(response.status_code, 404)
+        body = response.content.decode("utf-8")
+        self.assertIn("ERROR 404", body)
+        self.assertIn('content="noindex, nofollow"', body)
+
     def test_canonical_service_urls_remain_200_and_self_referential(self):
         canonical_urls = [
             "/services/carpet-steam-cleaning-adelaide-glenelg/",
