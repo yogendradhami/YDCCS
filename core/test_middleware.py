@@ -1,5 +1,7 @@
 import re
+from types import SimpleNamespace
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.core.exceptions import PermissionDenied
@@ -113,6 +115,32 @@ class SeoMiddlewareTests(SimpleTestCase):
                     response["X-Robots-Tag"],
                     "noindex, nofollow",
                 )
+
+    def test_authenticated_private_paths_remain_noindex(self):
+        request = RequestFactory().get("/dashboard/")
+        request.user = SimpleNamespace(is_authenticated=True)
+        middleware = SEOMiddleware(
+            lambda current_request: HttpResponse(
+                "<main>Private page</main>",
+                content_type="text/html",
+            )
+        )
+
+        response = middleware(request)
+
+        self.assertEqual(response["X-Robots-Tag"], "noindex, nofollow")
+        self.assertEqual(response["Cache-Control"], "private, no-store")
+
+    def test_seo_middleware_wraps_access_control_middleware(self):
+        middleware = list(settings.MIDDLEWARE)
+        self.assertLess(
+            middleware.index("core.middleware.SEOMiddleware"),
+            middleware.index("security.middleware.SecurityAccessMiddleware"),
+        )
+        self.assertLess(
+            middleware.index("core.middleware.SEOMiddleware"),
+            middleware.index("core.middleware.RoleAccessMiddleware"),
+        )
 
 
 class DashboardPermissionMappingTests(SimpleTestCase):
