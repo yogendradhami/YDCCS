@@ -121,3 +121,7 @@ urlpatterns = [
         include("security_monitor.urls"),
     ),
 ]
+
+# Use a lightweight 404 renderer so missing URLs do not invoke unrelated
+# global context processors or database-backed dashboard data.
+handler404 = "core.views.custom_404"
