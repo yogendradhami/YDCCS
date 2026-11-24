@@ -2867,6 +2867,28 @@ def service_page(request, service_slug):
 # ====================================================
 
 
+def custom_404(request, exception):
+    """Render the static 404 page without running global DB-backed context processors."""
+    try:
+        content = render_to_string("404.html")
+    except Exception:
+        logger.exception("Unable to render the custom 404 page.")
+        content = (
+            "<!doctype html><html lang=\"en\"><head>"
+            "<meta charset=\"utf-8\"><meta name=\"robots\" "
+            "content=\"noindex, nofollow\"><title>Page not found</title>"
+            "</head><body><main><h1>Page not found</h1>"
+            "<p>The requested page could not be found.</p>"
+            "<a href=\"/\">Return to YD Commercial Cleaning</a>"
+            "</main></body></html>"
+        )
+    return HttpResponse(
+        content,
+        status=404,
+        content_type="text/html; charset=utf-8",
+    )
+
+
 def robots_txt(request):
     content = render_to_string("robots.txt", {"site_url": settings.SITE_URL})
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
