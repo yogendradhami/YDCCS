@@ -5,8 +5,7 @@ from django.contrib.sitemaps import Sitemap
 from django.conf import settings
 from django.urls import reverse
 
-from .seo_data import LOCATION_ALIASES
-from .seo_data import SERVICE_DEFINITIONS
+from .seo_data import SERVICE_DEFINITIONS, get_curated_service_location_slugs
 from .adelaide_local_areas import ADELAIDE_LOCAL_AREAS
 from .adelaide_local_content import ADELAIDE_LOCAL_CONTENT
 from blog.models import BlogPost
@@ -39,17 +38,15 @@ def service_page_slugs():
     slugs = []
 
     for service_slug in service_slugs:
-        for location_slug in LOCATION_ALIASES:
-            if service_slug.endswith(location_slug):
-                continue
+        canonical_service_slug = (
+            service_slug
+            if service_slug.endswith("-adelaide")
+            else f"{service_slug}-adelaide"
+        )
+        base_service_slug = canonical_service_slug.removesuffix("-adelaide")
 
-            # Adelaide CBD is represented by the existing service slug
-            # ending in "-adelaide" plus the CBD suffix. Avoid the old
-            # duplicated form "...-adelaide-adelaide-cbd".
-            if location_slug == "adelaide-cbd" and service_slug.endswith("-adelaide"):
-                slugs.append(f"{service_slug}-adelaide-cbd")
-            else:
-                slugs.append(f"{service_slug}-{location_slug}")
+        for location_slug in get_curated_service_location_slugs(base_service_slug):
+            slugs.append(f"{canonical_service_slug}-{location_slug}")
 
     return sorted(set(slugs))
 
