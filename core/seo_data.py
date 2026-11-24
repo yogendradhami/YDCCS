@@ -1931,6 +1931,38 @@ LOCATION_REGION_DATA = {
 }
 
 
+def get_curated_service_location_slugs(service_slug):
+    """Return only suburb slugs explicitly listed for a service profile.
+
+    Service-location URLs outside this curated list may still resolve for
+    existing links, but they should not be promoted for search indexing.
+    """
+    base_slug = str(service_slug or "").strip().strip("/").lower()
+    base_slug = base_slug.removesuffix("-adelaide")
+
+    alias_target = SERVICE_SLUG_ALIASES.get(base_slug)
+    if alias_target:
+        base_slug = alias_target.removesuffix("-adelaide")
+
+    definition = SERVICE_DEFINITIONS.get(base_slug)
+    if not definition:
+        return set()
+
+    location_slugs_by_name = {
+        name.strip().casefold(): slug
+        for slug, name in LOCATION_ALIASES.items()
+    }
+    curated_slugs = set()
+    for location_name in definition.get("locations", []):
+        location_slug = location_slugs_by_name.get(
+            str(location_name).strip().casefold()
+        )
+        if location_slug and location_slug != "adelaide":
+            curated_slugs.add(location_slug)
+
+    return curated_slugs
+
+
 # ----------------------------------------------------
 # Dynamic Location SEO Generator
 # ----------------------------------------------------
