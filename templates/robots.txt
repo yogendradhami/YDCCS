@@ -1,16 +1,6 @@
 User-agent: *
 Allow: /
-Allow: /static/
-Allow: /media/
-Allow: /sitemap.xml
-Disallow: /admin/
-Disallow: /dashboard/
-Disallow: /portal/
-Disallow: /employee/
-Disallow: /checkout/
-Disallow: /account/
-Disallow: /login/
-Disallow: /register/
-Disallow: /password-reset/
 
+# Private and transactional routes send X-Robots-Tag: noindex.
+# Do not block crawlers here: they must be able to read that directive.
 Sitemap: {{ site_url }}/sitemap.xml

@@ -302,6 +302,11 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
 
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
+    # Run after AuthenticationMiddleware (uses request.user), but before
+    # access-control middleware so early private-path redirects are tagged.
+    "core.middleware.SEOMiddleware",
+
     "security.middleware.SecurityAccessMiddleware",
     "security.middleware.PublicEmailVerificationMiddleware",
     "induction.middleware.EmployeeInductionMiddleware",
@@ -309,8 +314,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
 
     "core.middleware.RoleAccessMiddleware",
-
-    "core.middleware.SEOMiddleware",
 
     "core.middleware.CacheHeaderMiddleware",
 

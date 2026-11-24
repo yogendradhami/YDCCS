@@ -38,6 +38,7 @@ from .seo_data import (
     LOCATION_ALIASES,
     SERVICE_DEFINITIONS,
     SERVICE_SLUG_ALIASES,
+    get_curated_service_location_slugs,
     get_location_definition,
 )
 from .forms import (
@@ -2753,6 +2754,15 @@ def service_page(request, service_slug):
     if not service:
         raise Http404("Service not found")
 
+    # Keep service-location URLs available to visitors, but only allow
+    # explicitly curated service/location combinations to be indexed.
+    curated_location_slugs = get_curated_service_location_slugs(normalized_slug)
+    service["indexable"] = (
+        not location
+        or location.casefold() == "adelaide"
+        or location_slug in curated_location_slugs
+    )
+
     if location and location.casefold() != "adelaide":
         service_title = str(service.get("title") or "Cleaning Service")
         service_title = service_title.removesuffix(" Adelaide").strip()
@@ -2855,6 +2865,28 @@ def service_page(request, service_slug):
 # robots.txt
 # Tells search engines what they can crawl
 # ====================================================
+
+
+def custom_404(request, exception):
+    """Render the static 404 page without running global DB-backed context processors."""
+    try:
+        content = render_to_string("404.html")
+    except Exception:
+        logger.exception("Unable to render the custom 404 page.")
+        content = (
+            "<!doctype html><html lang=\"en\"><head>"
+            "<meta charset=\"utf-8\"><meta name=\"robots\" "
+            "content=\"noindex, nofollow\"><title>Page not found</title>"
+            "</head><body><main><h1>Page not found</h1>"
+            "<p>The requested page could not be found.</p>"
+            "<a href=\"/\">Return to YD Commercial Cleaning</a>"
+            "</main></body></html>"
+        )
+    return HttpResponse(
+        content,
+        status=404,
+        content_type="text/html; charset=utf-8",
+    )
 
 
 def robots_txt(request):

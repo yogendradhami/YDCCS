@@ -199,7 +199,9 @@ class SmokeTest(TestCase):
         sitemap = sitemap_response.content.decode("utf-8")
         self.assertIn("<urlset", sitemap)
         self.assertNotIn("<sitemapindex", sitemap)
-        self.assertGreaterEqual(sitemap.count("<url>"), 1790)
+        sitemap_url_count = sitemap.count("<url>")
+        self.assertGreaterEqual(sitemap_url_count, 250)
+        self.assertLess(sitemap_url_count, 1790)
         self.assertIn(f"<loc>{settings.SITE_URL}/</loc>", sitemap)
         sitemap_root = ElementTree.fromstring(sitemap_response.content)
         sitemap_urls = [
@@ -252,6 +254,18 @@ class SmokeTest(TestCase):
         }
         self.assertNotIn("Disallow: /", robots_lines)
         self.assertNotIn("Disallow: /booking/", robots_lines)
+        for private_path in (
+            "/admin/",
+            "/dashboard/",
+            "/portal/",
+            "/employee/",
+            "/checkout/",
+            "/account/",
+            "/login/",
+            "/register/",
+            "/password-reset/",
+        ):
+            self.assertNotIn(f"Disallow: {private_path}", robots_lines)
         self.assertIn(f"Sitemap: {settings.SITE_URL}/sitemap.xml", body)
 
     def test_booking_page_is_indexable_with_self_referencing_canonical(self):
@@ -345,6 +359,25 @@ class SmokeTest(TestCase):
                 body = resp.content.decode("utf-8")
                 self.assertIn(expected_title, body)
                 self.assertNotIn("Adelaide Adelaide", body)
+
+    def test_curated_service_locations_are_indexable_and_unprofiled_locations_are_not(self):
+        curated = self.client.get(
+            "/services/bathroom-cleaning-adelaide-glenelg/"
+        )
+        self.assertEqual(curated.status_code, 200)
+        self.assertIn(
+            'content="index, follow"',
+            curated.content.decode("utf-8"),
+        )
+
+        unprofiled = self.client.get(
+            "/services/bathroom-cleaning-adelaide-aldgate/"
+        )
+        self.assertEqual(unprofiled.status_code, 200)
+        self.assertIn(
+            'content="noindex, follow"',
+            unprofiled.content.decode("utf-8"),
+        )
 
     @patch("core.views._get_service_google_reviews", return_value=[])
     def test_service_directory_and_definition_pages_are_reachable(self, _reviews):
@@ -690,6 +723,14 @@ class SmokeTest(TestCase):
             follow=False,
         )
         self.assertEqual(response.status_code, 404)
+
+    @override_settings(DEBUG=False)
+    def test_unknown_url_uses_lightweight_noindex_404_page(self):
+        response = self.client.get("/this-page-does-not-exist/")
+        self.assertEqual(response.status_code, 404)
+        body = response.content.decode("utf-8")
+        self.assertIn("ERROR 404", body)
+        self.assertIn('content="noindex, nofollow"', body)
 
     def test_canonical_service_urls_remain_200_and_self_referential(self):
         canonical_urls = [

@@ -794,14 +794,6 @@ class SEOMiddleware:
             return response
 
         # ======================================================
-        # AUTHENTICATED RESPONSES
-        # ======================================================
-
-        if request.user.is_authenticated:
-            response["Cache-Control"] = "private, no-store"
-            return response
-
-        # ======================================================
         # PRIVATE APPLICATION AREAS
         # ======================================================
 
@@ -810,17 +802,31 @@ class SEOMiddleware:
             "/dashboard/",
             "/portal/",
             "/employee/",
+            "/checkout/",
+            "/account/",
+            "/login/",
+            "/register/",
+            "/password-reset/",
         )
 
         if request.path.startswith(private_paths):
             response["X-Robots-Tag"] = "noindex, nofollow"
             response["Cache-Control"] = "private, no-store"
+            return response
+
+        # ======================================================
+        # AUTHENTICATED RESPONSES
+        # ======================================================
+
+        if request.user.is_authenticated:
+            response["Cache-Control"] = "private, no-store"
+            return response
 
         # ======================================================
         # PUBLIC HTML
         # ======================================================
 
-        elif (
+        if (
             response.status_code == 200
             and "text/html" in response.get("Content-Type", "")
         ):

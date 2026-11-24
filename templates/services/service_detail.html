@@ -15,6 +15,9 @@
 {% endblock %}
 
 
+{% block robots_meta %}{% if service.indexable %}index, follow{% else %}noindex, follow{% endif %}{% endblock %}
+
+
 {% block title %}
 {% if location and location != "Adelaide" %}
 {{ service.title|cut:" Adelaide" }} in {{ location }} | YD Commercial Cleaning
