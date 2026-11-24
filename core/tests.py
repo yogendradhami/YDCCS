@@ -252,6 +252,18 @@ class SmokeTest(TestCase):
         }
         self.assertNotIn("Disallow: /", robots_lines)
         self.assertNotIn("Disallow: /booking/", robots_lines)
+        for private_path in (
+            "/admin/",
+            "/dashboard/",
+            "/portal/",
+            "/employee/",
+            "/checkout/",
+            "/account/",
+            "/login/",
+            "/register/",
+            "/password-reset/",
+        ):
+            self.assertNotIn(f"Disallow: {private_path}", robots_lines)
         self.assertIn(f"Sitemap: {settings.SITE_URL}/sitemap.xml", body)
 
     def test_booking_page_is_indexable_with_self_referencing_canonical(self):
