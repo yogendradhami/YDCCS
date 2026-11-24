@@ -1944,6 +1944,10 @@ def get_curated_service_location_slugs(service_slug):
     if alias_target:
         base_slug = alias_target.removesuffix("-adelaide")
 
+    # Standard bathroom cleaning uses the curated bathroom-cleaning profile.
+    if base_slug == "standard-bathroom-cleaning":
+        base_slug = "bathroom-cleaning"
+
     definition = SERVICE_DEFINITIONS.get(base_slug)
     if not definition:
         return set()
