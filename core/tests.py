@@ -358,6 +358,25 @@ class SmokeTest(TestCase):
                 self.assertIn(expected_title, body)
                 self.assertNotIn("Adelaide Adelaide", body)
 
+    def test_curated_service_locations_are_indexable_and_unprofiled_locations_are_not(self):
+        curated = self.client.get(
+            "/services/bathroom-cleaning-adelaide-glenelg/"
+        )
+        self.assertEqual(curated.status_code, 200)
+        self.assertIn(
+            '<meta name="robots" content="index, follow">',
+            curated.content.decode("utf-8"),
+        )
+
+        unprofiled = self.client.get(
+            "/services/bathroom-cleaning-adelaide-aldgate/"
+        )
+        self.assertEqual(unprofiled.status_code, 200)
+        self.assertIn(
+            '<meta name="robots" content="noindex, follow">',
+            unprofiled.content.decode("utf-8"),
+        )
+
     @patch("core.views._get_service_google_reviews", return_value=[])
     def test_service_directory_and_definition_pages_are_reachable(self, _reviews):
         directory = self.client.get(reverse("services_home"))
