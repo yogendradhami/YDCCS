@@ -810,6 +810,11 @@ class SEOMiddleware:
             "/dashboard/",
             "/portal/",
             "/employee/",
+            "/checkout/",
+            "/account/",
+            "/login/",
+            "/register/",
+            "/password-reset/",
         )
 
         if request.path.startswith(private_paths):
