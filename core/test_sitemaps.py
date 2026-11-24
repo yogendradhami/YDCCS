@@ -17,8 +17,46 @@ from core.sitemaps import (
     ServicesIndexSitemap,
     StaticViewSitemap,
     _base_service_slug_for_local_page,
+    service_page_slugs,
 )
 from services.models import Service
+from core.seo_data import get_curated_service_location_slugs
+
+
+class CuratedServiceLocationIndexingTests(TestCase):
+    def test_service_locations_follow_the_curated_profile(self):
+        locations = get_curated_service_location_slugs("bathroom-cleaning")
+
+        self.assertIn("glenelg", locations)
+        self.assertIn("prospect", locations)
+        self.assertNotIn("aldgate", locations)
+
+    def test_database_only_service_does_not_generate_unprofiled_local_pages(self):
+        self.assertEqual(
+            get_curated_service_location_slugs("standard-bathroom-cleaning"),
+            set(),
+        )
+
+    def test_generated_sitemap_uses_only_curated_service_locations(self):
+        class ServiceRows:
+            def values_list(self, *args, **kwargs):
+                return [
+                    "carpet-steam-cleaning-adelaide",
+                    "standard-bathroom-cleaning-adelaide",
+                ]
+
+        service_page_slugs.cache_clear()
+        try:
+            with patch("core.sitemaps.Service.objects.filter", return_value=ServiceRows()):
+                slugs = set(service_page_slugs())
+        finally:
+            service_page_slugs.cache_clear()
+
+        self.assertIn("carpet-steam-cleaning-adelaide-glenelg", slugs)
+        self.assertNotIn("carpet-steam-cleaning-adelaide-aldgate", slugs)
+        self.assertFalse(
+            any(slug.startswith("standard-bathroom-cleaning-adelaide-") for slug in slugs)
+        )
 
 
 class LocalServiceSitemapPerformanceTests(TestCase):
