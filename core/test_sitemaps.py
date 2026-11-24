@@ -31,11 +31,12 @@ class CuratedServiceLocationIndexingTests(TestCase):
         self.assertIn("prospect", locations)
         self.assertNotIn("aldgate", locations)
 
-    def test_database_only_service_does_not_generate_unprofiled_local_pages(self):
-        self.assertEqual(
-            get_curated_service_location_slugs("standard-bathroom-cleaning"),
-            set(),
-        )
+    def test_standard_bathroom_uses_curated_bathroom_locations(self):
+        locations = get_curated_service_location_slugs("standard-bathroom-cleaning")
+
+        self.assertIn("glenelg", locations)
+        self.assertIn("prospect", locations)
+        self.assertNotIn("aldgate", locations)
 
     def test_generated_sitemap_uses_only_curated_service_locations(self):
         class ServiceRows:
