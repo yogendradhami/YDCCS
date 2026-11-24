@@ -86,6 +86,34 @@ class SeoMiddlewareTests(SimpleTestCase):
 
         self.assertEqual(response["X-Robots-Tag"], "noindex, nofollow")
 
+    def test_private_and_transactional_paths_all_receive_noindex(self):
+        paths = (
+            "/admin/",
+            "/dashboard/",
+            "/portal/",
+            "/employee/",
+            "/checkout/",
+            "/account/",
+            "/login/",
+            "/register/",
+            "/password-reset/",
+        )
+        for path in paths:
+            with self.subTest(path=path):
+                request = RequestFactory().get(path)
+                request.user = AnonymousUser()
+                middleware = SEOMiddleware(
+                    lambda current_request: HttpResponse(
+                        "<main>Private page</main>",
+                        content_type="text/html",
+                    )
+                )
+                response = middleware(request)
+                self.assertEqual(
+                    response["X-Robots-Tag"],
+                    "noindex, nofollow",
+                )
+
 
 class DashboardPermissionMappingTests(SimpleTestCase):
     def test_property_damage_reports_require_employee_report_view_permission(self):
