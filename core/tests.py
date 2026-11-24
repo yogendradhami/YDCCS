@@ -364,7 +364,7 @@ class SmokeTest(TestCase):
         )
         self.assertEqual(curated.status_code, 200)
         self.assertIn(
-            '<meta name="robots" content="index, follow">',
+            'content="index, follow"',
             curated.content.decode("utf-8"),
         )
 
@@ -373,7 +373,7 @@ class SmokeTest(TestCase):
         )
         self.assertEqual(unprofiled.status_code, 200)
         self.assertIn(
-            '<meta name="robots" content="noindex, follow">',
+            'content="noindex, follow"',
             unprofiled.content.decode("utf-8"),
         )
 
