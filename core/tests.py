@@ -199,7 +199,9 @@ class SmokeTest(TestCase):
         sitemap = sitemap_response.content.decode("utf-8")
         self.assertIn("<urlset", sitemap)
         self.assertNotIn("<sitemapindex", sitemap)
-        self.assertGreaterEqual(sitemap.count("<url>"), 1790)
+        sitemap_url_count = sitemap.count("<url>")
+        self.assertGreaterEqual(sitemap_url_count, 250)
+        self.assertLess(sitemap_url_count, 1790)
         self.assertIn(f"<loc>{settings.SITE_URL}/</loc>", sitemap)
         sitemap_root = ElementTree.fromstring(sitemap_response.content)
         sitemap_urls = [
